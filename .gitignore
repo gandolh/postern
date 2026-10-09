@@ -1,0 +1,23 @@
+# Dependencies and builds
+node_modules/
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+.vite/
+vite.config.ts.timestamp-*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local secrets and the dev mail server's state
+.env
+.env.*
+!.env.example
+dev/.env
+dev/data/
+
+# Editors
+.vscode/
+.idea/

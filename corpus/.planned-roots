@@ -1,0 +1,6 @@
+# Directories the briefs will create. lint.sh skips them until they exist;
+# remove a line when its directory lands (brief 01 creates jmap and web,
+# brief 02 creates dev).
+jmap
+web
+dev
