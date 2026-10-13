@@ -1,5 +1,5 @@
 ---
-summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, remote images, attachments, spoofed senders), the shared gandolh.ro origin, token handling, the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, the CSP for /webmail, and the malicious-mail test corpus. Read before touching message rendering, sign-in, storage or headers.
+summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, remote images, attachments, spoofed senders), the shared production origin, token handling, the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, the CSP for /webmail, and the malicious-mail test corpus. Read before touching message rendering, sign-in, storage or headers.
 updated: 2026-10-09
 ---
 
@@ -11,7 +11,7 @@ updated: 2026-10-09
    CSS that disguises a phishing form, tracking pixels, `javascript:` and
    look-alike links, a forged `From:` display name, and attachments named to
    deceive (`invoice.pdf.html`).
-2. **The shared origin.** Any script on `gandolh.ro`, in any estate app, runs
+2. **The shared origin.** Any script on the production origin, in any estate app, runs
    with Postern's origin ([decisions.md](decisions.md)).
 3. **Stolen tokens.** A bearer token is the mailbox.
 4. **Framing.** Another site embedding Postern to trick clicks.

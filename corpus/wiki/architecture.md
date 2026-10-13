@@ -21,8 +21,8 @@ without a browser. The UI then depends on a contract, not on raw JMAP.
 ## Request path
 
 ```
-browser ── https://gandolh.ro/webmail/…      → Caddy static files (SPA fallback)
-        └─ https://gandolh.ro/webmail-api/…  → Caddy handle_path (prefix stripped)
+browser ── https://example.com/webmail/…      → Caddy static files (SPA fallback)
+        └─ https://example.com/webmail-api/…  → Caddy handle_path (prefix stripped)
                                                 → Stalwart HTTP listener (loopback)
 ```
 
@@ -38,10 +38,10 @@ owns that port; a second claimant fails synth.
 ## JMAP session and URL rebasing
 
 The session object (`GET /jmap/session`) returns absolute URLs built from
-Stalwart's hostname: `https://mail.gandolh.ro/jmap/…` for `apiUrl`,
+Stalwart's hostname: `https://mail.<domain>/jmap/…` for `apiUrl`,
 `downloadUrl`, `uploadUrl` and `eventSourceUrl`. The client rewrites each onto
 `/webmail-api/` before use (brief 03). The rejected alternative was setting
-`STALWART_PUBLIC_URL=https://gandolh.ro/webmail-api`. That would move every
+`STALWART_PUBLIC_URL=https://example.com/webmail-api`. That would move every
 discovery URL, the admin UI's OAuth included.
 
 ## Sign-in

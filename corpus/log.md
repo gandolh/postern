@@ -6,8 +6,8 @@ The owner asked for their own webmail, "similar as feature and aspect to
 Gmail". It is a new project, saved locally; the owner creates the remote repo
 later.
 
-Owner calls: the name is Postern, and it is served at `gandolh.ro/webmail`, on
-the apex rather than `mail.gandolh.ro`.
+Owner calls: the name is Postern, and it is served at `/webmail`, on
+the apex rather than `mail.<domain>`.
 
 Researched against the Stalwart 0.16 source the same day:
 

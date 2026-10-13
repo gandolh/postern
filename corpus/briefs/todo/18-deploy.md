@@ -1,4 +1,4 @@
-# Task 18: Deploy at gandolh.ro/webmail
+# Task 18: Deploy at /webmail
 
 ## Context
 
@@ -47,8 +47,8 @@ commit style.
    Stalwart, add it to `../vps-deploy/infrastructure/mail/plan.ndjson`.
 5. Hand the owner the exact commands (`node cli.ts mail pre-deploy` for the
    Caddyfile, then the Postern deploy) and a smoke-test list:
-   - sign in as `me@gandolh.ro`;
-   - read, send to another `@gandolh.ro` address;
+   - sign in as `johndoe@example.com`;
+   - read, send to another address on the same domain;
    - live update;
    - headers present (`curl -I`).
 
@@ -56,6 +56,6 @@ commit style.
 
 - In `../vps-deploy`: typecheck, `--check` and a dry run of both stacks pass,
   and the Caddyfile diff shows only the new blocks.
-- After the owner deploys: `https://gandolh.ro/webmail` signs in and reads the
-  owner's mail. `curl -I` shows the CSP. No request goes to `mail.gandolh.ro`
+- After the owner deploys: `/webmail` signs in and reads the
+  owner's mail. `curl -I` shows the CSP. No request goes to `mail.<domain>`
   from the page.

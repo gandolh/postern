@@ -99,7 +99,7 @@ updated: <YYYY-MM-DD>
   DOM. See [wiki/security.md](wiki/security.md).
 - **Tokens live in memory only.** Never `localStorage`, `sessionStorage`,
   IndexedDB or a cookie the app's script can read. Postern shares the
-  gandolh.ro origin with every other estate app; see
+  production origin with every other estate app; see
   [wiki/decisions.md](wiki/decisions.md).
 - **No backend of our own.** Postern is static files plus Stalwart. A feature
   that seems to need a server is a decision to bring to the owner first.
@@ -109,7 +109,7 @@ updated: <YYYY-MM-DD>
 - **Deploys, git hooks and `npm link` are owner steps.** Write the exact
   commands down and hand them over.
 - **Never test against the real mailbox.** Development and tests use the
-  local Stalwart in `dev/` (brief 02), never mail.gandolh.ro.
+  local Stalwart in `dev/` (brief 02), never mail.<domain>.
 
 ## brief-board
 

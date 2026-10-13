@@ -36,7 +36,7 @@ does not exist yet (the owner creates it).
 **Wave 5: hardening and deploy**
 - [16](../briefs/todo/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11.
 - [17](../briefs/todo/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04.
-- [18](../briefs/todo/18-deploy.md): deploy at gandolh.ro/webmail through `../vps-deploy`. Owner steps. After 17.
+- [18](../briefs/todo/18-deploy.md): deploy at /webmail through `../vps-deploy`. Owner steps. After 17.
 
 ## Parked (todos)
 

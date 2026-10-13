@@ -3,7 +3,7 @@
 ## Context
 
 Postern shows hostile content, holds the keys to the owner's mailbox, and
-shares the `gandolh.ro` origin with every estate app
+shares the production origin with every estate app
 ([security.md](../../wiki/security.md), [decisions.md](../../wiki/decisions.md)).
 Briefs 04 and 07 built the defences. This brief proves them with automated
 tests, and sets the HTTP headers production will send.

@@ -9,7 +9,7 @@ Three things in one brief:
   subscription is registered with Stalwart as a JMAP `PushSubscription`.
   Stalwart sends Web Push with VAPID.
 - **Offline cache:** whether to have one is an owner decision. On the shared
-  `gandolh.ro` origin, a cache of mail in IndexedDB is readable by any estate
+  production origin, a cache of mail in IndexedDB is readable by any estate
   script, even with Postern closed
   ([open-questions.md](../../wiki/open-questions.md)).
 

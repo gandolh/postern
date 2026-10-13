@@ -5,7 +5,7 @@
 Stalwart is the identity provider. Postern signs in with OAuth (authorization
 code + PKCE) through Stalwart's own endpoints on the same origin. TOTP is asked
 when the account has it. Tokens live in memory only: Postern shares the
-`gandolh.ro` origin with every estate app
+production origin with every estate app
 ([decisions.md](../../wiki/decisions.md), [security.md](../../wiki/security.md)).
 
 Two questions from [open-questions.md](../../wiki/open-questions.md) are

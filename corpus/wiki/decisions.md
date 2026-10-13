@@ -1,5 +1,5 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at gandolh.ro/webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only; the house stack. Read before proposing to change any of these.
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only; the house stack. Read before proposing to change any of these.
 updated: 2026-10-09
 ---
 
@@ -32,17 +32,17 @@ tokens from page scripts, but a script on the same origin could still drive it.
 That is the threat the next entry is about. It would also be one more service
 to run. Revisit if a feature truly needs one.
 
-## Served at gandolh.ro/webmail, sharing the estate's origin
-_2026-10-09, owner_. Postern lives at `https://gandolh.ro/webmail`, and Stalwart
-is reachable at `https://gandolh.ro/webmail-api`. Rejected:
+## Served at /webmail, sharing the estate's origin
+_2026-10-09, owner_. Postern lives at `/webmail`, and Stalwart
+is reachable at `/webmail-api`. Rejected:
 
-- `mail.gandolh.ro/webmail`: its own origin, shared only with Stalwart's admin
+- `mail.<domain>/webmail`: its own origin, shared only with Stalwart's admin
   UI.
-- `webmail.gandolh.ro`: fully isolated, but it needs CORS, and Stalwart's only
+- `webmail.<domain>`: fully isolated, but it needs CORS, and Stalwart's only
   CORS option allows every origin.
 
 **What it costs:** a browser origin is scheme + host + port, so every app on
-`gandolh.ro` (atrium, prm, ward's UI, the presentation sites, and every
+the production origin (atrium, prm, ward's UI, the presentation sites, and every
 dependency they load) runs in the same origin as Postern. A script injected into
 any of them can read Postern's memory through a same-origin frame, call
 `/webmail-api` with its tokens, and act as the mailbox. Ward and the other apps
@@ -72,7 +72,7 @@ lose the labels.
 _2026-10-09_. Every body is sanitised, then shown through `srcdoc` in an
 `<iframe sandbox>` without `allow-scripts` or `allow-same-origin`. Remote images
 stay blocked until asked for. Rejected: sanitising and inserting the HTML into
-the app's DOM. One sanitiser bug would then be script execution on `gandolh.ro`,
+the app's DOM. One sanitiser bug would then be script execution on the production origin,
 which, per the entry above, is every app's problem. See
 [security.md](security.md).
 

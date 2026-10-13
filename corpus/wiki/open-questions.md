@@ -46,7 +46,7 @@ Gmail trains on it. Stalwart's filter has a Bayes classifier and a
 
 ## Is an offline cache acceptable on the shared origin?
 
-Gmail caches mail for offline reading. In IndexedDB on `gandolh.ro`, the cache
+Gmail caches mail for offline reading. In IndexedDB on the production origin, the cache
 would be readable by any script on the estate's origin, even with Postern
 closed. Encrypting it with a key held only in memory protects nothing while
 the app is open. Brief 16 decides, with the owner.

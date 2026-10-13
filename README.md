@@ -1,6 +1,6 @@
 # Postern
 
-A webmail for gandolh.ro, in the browser at https://gandolh.ro/webmail. It looks
+A webmail for the owner's production domain, in the browser at `/webmail`. It looks
 and works like Gmail (conversations, labels, search, keyboard shortcuts), and it
 talks JMAP to the estate's own Stalwart mail server. There is no backend of its
 own: Stalwart is the backend.
