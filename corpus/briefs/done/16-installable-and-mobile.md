@@ -63,3 +63,25 @@ Three things in one brief:
   from a dev build.
 - The phone layout passes brief 14's keyboard and screen-reader checks too.
 - The offline decision is recorded.
+
+## Outcome (2026-10-20)
+
+Built. Chrome reports no installability errors and the worker controls
+`/webmail/`. Offline (owner decision: no offline mail) the installed app opens
+to the sign-in page, which now says the device is offline. Web Push works
+end to end: from headed Chrome through FCM, a message from bob showed as a
+notification with sender and subject 671 ms after delivery with Postern's
+tab closed, and a Node client on Mozilla's push service decrypted it in
+408 ms. The worker holds no token: Stalwart's `emailpush` sends sender and
+subject itself, encrypted to the subscription. The controller recorded that
+as a decision the owner may flip, since a displayed notification is readable
+by any script on the origin. Phone layouts at 360 and 412 px are single
+column with swipe actions (configurable per device), pull to refresh and a
+floating Compose button; brief 14's axe sweep is clean there.
+
+Limits: Stalwart caps a push subscription at 7 days, renewed at each sign-in;
+idle sign-out unsubscribes the browser but leaves the server's copy until the
+next sign-in or expiry; two accounts in one browser profile share one push
+endpoint. Owner steps (Android install, the real push check, Safari on iOS
+16.4+, `webPushContact` and outbound HTTPS to push services in
+`../vps-deploy`) are in [status.md](../../wiki/status.md).

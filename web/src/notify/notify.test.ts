@@ -67,6 +67,8 @@ describe("notifyNewMail", () => {
     expect(notifyNewMail([msg("2", "2026-10-20T10:05:00Z")], d)).toBe(1);
     expect(made[0]!.title).toBe("Bob");
     expect(made[0]!.options.body).toBe("Subject 2");
+    // Brief 16: the route a click opens when the worker shows it.
+    expect(made[0]!.options.data).toEqual({ hash: "#inbox/T2" });
     made[0]!.onclick!();
     expect(d.focusWindow).toHaveBeenCalled();
     expect(d.openConversation).toHaveBeenCalledWith("T2");

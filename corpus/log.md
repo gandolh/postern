@@ -206,3 +206,21 @@ accessibility pass: axe-core clean on every route in both themes, contrast
 checked per token pair, focus restored after list actions, reduced motion
 honoured, no horizontal scroll at 640 px. The screen-reader check by ear is an
 owner step listed in the [brief](briefs/done/14-keyboard-and-accessibility.md).
+
+## [2026-10-20] decision | No offline mail; closed-app notifications name the sender
+
+The owner chose no offline mail: the installed app caches its shell and
+nothing else. The controller kept sender and subject in closed-app
+notifications, which Stalwart's `emailpush` delivers encrypted without any
+token in the worker, and recorded the cost (a displayed notification is
+readable by any script on the origin) so the owner can flip it. Both are in
+[decisions.md](wiki/decisions.md); the offline open question is gone.
+
+## [2026-10-20] done | Brief 16: installable app, Web Push and the phone
+
+A PWA scoped to `/webmail/` caching only its shell, Web Push while closed
+(checked through FCM and Mozilla), and a phone layout with swipe actions,
+pull to refresh and a floating Compose button. The service worker's estate
+rules (no `Service-Worker-Allowed`, no root-scope worker anywhere on the
+origin) are in [security.md](wiki/security.md).
+[Brief](briefs/done/16-installable-and-mobile.md).

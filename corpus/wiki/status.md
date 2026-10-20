@@ -34,7 +34,7 @@ does not exist yet (the owner creates it).
 - [15](../briefs/done/15-contacts.md): contacts on JMAP Contacts, recipient autocomplete, sender cards. After 08. **Done 2026-10-20.**
 
 **Wave 5: hardening and deploy**
-- [16](../briefs/todo/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11.
+- [16](../briefs/done/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11. **Done 2026-10-20.**
 - [17](../briefs/todo/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04.
 - [18](../briefs/todo/18-deploy.md): deploy at /webmail through `../vps-deploy`. Owner steps. After 17.
 
@@ -47,3 +47,25 @@ Each needs server work, or a check against Stalwart, before it can be a brief:
 - [inbox category tabs](../todos/inbox-category-tabs.md)
 - [calendar invites](../todos/calendar-invites.md)
 - [conversation view off](../todos/conversation-view-off.md) (a list mode, not server work)
+
+## Owner steps
+
+Things only the owner can do, collected from the briefs as they finished.
+
+- **Screen reader by ear** (brief 14): the checklist is at the end of
+  [brief 14](../briefs/done/14-keyboard-and-accessibility.md).
+- **Install on Android** (brief 16, after the deploy): open `/webmail/` in
+  Chrome, menu, "Install app", launch from the home screen; in airplane mode
+  it opens to the sign-in page and says it is offline.
+- **Real push** (brief 16): Settings, General, "Notifications for new mail
+  when Postern is closed", allow; close Postern; mail yourself from another
+  account; the notification shows sender and subject and opens the
+  conversation. iOS needs 16.4 or later and Postern added to the Home Screen
+  first.
+- **In `../vps-deploy`'s mail plan** (brief 16): set Stalwart's
+  `webPushContact` (Apple requires the VAPID subject), keep the VAPID key
+  stable across upgrades, and allow outbound HTTPS from the mail host to the
+  push services.
+- **Token lifetimes** (brief 04): decide whether to shorten production's
+  access and refresh token lifetimes, since Stalwart cannot revoke a token
+  ([open-questions.md](open-questions.md)).

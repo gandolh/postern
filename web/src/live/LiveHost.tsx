@@ -23,6 +23,18 @@ export function LiveHost() {
   const labelsStore = useLabelsStore();
   const labels = useLabels();
   const [status, setStatus] = useState<PushStatus>("connecting");
+  // Brief 16: with Postern's service worker running, notifications go through
+  // it (Android has no Notification constructor; a click then reaches the
+  // worker, which tells this page to open the conversation).
+  const registration = useRef<ServiceWorkerRegistration | null>(null);
+  useEffect(() => {
+    void navigator.serviceWorker
+      ?.getRegistration(import.meta.env.BASE_URL)
+      .then((r) => {
+        registration.current = r?.active ? r : null;
+      })
+      .catch(() => undefined);
+  }, []);
   const unread = labels.system.inbox.label?.unreadThreads ?? 0;
 
   // The setting is read for this account.
@@ -63,7 +75,12 @@ export function LiveHost() {
           const fresh = detector.observe(list as unknown as InboxMessage[]);
           if (notify) {
             notifyNewMail(fresh, {
-              create: (title, options) => new Notification(title, options),
+              create: (title, options) => {
+                const worker = registration.current;
+                if (!worker) return new Notification(title, options);
+                void worker.showNotification(title, options).catch(() => undefined);
+                return { onclick: null, close() {} };
+              },
               permission: () => (typeof Notification === "undefined" ? "unsupported" : Notification.permission),
               watchingInbox: () => {
                 const route = getRoute();
@@ -71,7 +88,7 @@ export function LiveHost() {
               },
               focusWindow: () => window.focus(),
               openConversation: (threadId) => navigate({ kind: "system", view: "inbox", conversationId: threadId }),
-              icon: "/favicon.svg",
+              icon: `${import.meta.env.BASE_URL}pwa-192x192.png`,
             });
           }
         } catch {

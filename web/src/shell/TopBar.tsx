@@ -34,7 +34,8 @@ export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
       </div>
       <div className="shell-topbar-end">
         <StatusSlot />
-        <IconButton label="Help" icon={CircleHelp} onClick={help.open} />
+        {/* shell-help: hidden on phones (mobile.css), where the shortcuts it lists don't apply. */}
+        <IconButton className="shell-help" label="Help" icon={CircleHelp} onClick={help.open} />
         <IconButton label="Settings" icon={Settings} tooltip="end" href={formatRoute({ kind: "settings", section: "general" })} />
         <AccountMenu />
       </div>

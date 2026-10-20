@@ -126,9 +126,11 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
   retries the stream every 60 s; it was back within 6 s in the dev test. The
   Vite dev proxy holds a proxied response's headers until the first body
   chunk, so `web/vite.config.ts` flushes event-stream headers itself.
-- **While it is closed:** Web Push. JMAP `PushSubscription` with the browser's
-  push endpoint; Stalwart signs with VAPID. A service worker shows the
-  notification (brief 16).
+- **While it is closed:** Web Push, built in brief 16: the subscription asks
+  Stalwart for the sender and subject of new Inbox mail, and the service worker
+  shows them with no token (see [decisions.md](decisions.md)). The JMAP
+  `PushSubscription` carries the browser's push endpoint, Stalwart signs with
+  VAPID, and the subscription is destroyed on sign-out.
 - **Fallback:** poll the `Email`, `Mailbox` and `Thread` states every 30 s
   (`Foo/get` with `ids: []`). The session `state` does not move when mail
   changes, so polling it would miss everything.
@@ -139,8 +141,8 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
 - **Display preferences** (density, reading pane, shortcuts on/off): per
   device, in the browser. Not secret. Brief 12 decides the store.
 - **Label colours:** JMAP `Mailbox` has no colour field. Brief 09 decides.
-- **Offline cache:** none until brief 16, which has to weigh the shared origin
-  first.
+- **Offline cache:** none, by the owner's decision of 2026-10-20. The
+  service worker caches the app shell only ([decisions.md](decisions.md)).
 
 ## Local development
 

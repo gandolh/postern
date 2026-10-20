@@ -102,6 +102,20 @@ updated: 2026-10-20
   address, which a sender failing DMARC can forge (Gmail has the same gap).
   Every internationalised link is flagged as punycode, legitimate or not.
 
+## The service worker (brief 16)
+
+- Scope `/webmail/`. It precaches the app shell only, routes nothing under
+  `/webmail-api`, holds no token and makes no JMAP call.
+- **Estate rules it depends on:** Caddy must never send
+  `Service-Worker-Allowed`, and no estate app may register a worker with
+  scope `/`. On a first load, before Postern's own worker controls the page,
+  a root-scope worker would see Postern's `/webmail-api` requests, the
+  `Authorization` header included. Another app cannot claim `/webmail/`
+  without serving a script under `/webmail/`.
+- **Notifications are readable.** While one is on screen, any script on the
+  origin can read its sender and subject through
+  `registration.getNotifications()` ([decisions.md](decisions.md)).
+
 ## CSP for /webmail (draft, set by Caddy in brief 18)
 
 ```

@@ -5,6 +5,8 @@ import { useId } from "react";
 import { useAccount } from "../auth";
 import { useDesktopNotifications } from "../notify";
 import { UNDO_SEND_SECONDS, usePrefs, type ImagesPreference, type UndoSendSeconds } from "../prefs";
+import { SwipeSettings } from "../mobile/SwipeSettings";
+import { WebPushToggle } from "../push/WebPushToggle";
 import { forgetImagesFrom, imageAllowanceList, useImageAllowance } from "../render/allowance";
 import { DENSITIES, READING_PANES, THEMES, useTheme, type Density, type ReadingPane, type ThemePreference } from "../theme";
 import { VacationForm } from "./VacationForm";
@@ -38,6 +40,8 @@ export function GeneralSettings() {
         Keyboard shortcuts on
       </label>
       <NotificationsToggle />
+      <WebPushToggle />
+      <SwipeSettings />
       <VacationForm />
     </div>
   );

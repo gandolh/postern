@@ -16,6 +16,7 @@ import { undoLast } from "../actions/undo";
 import { useMailActions } from "../actions/useMailActions";
 import { useAccount, useJmap } from "../auth";
 import { useLabels } from "../labels/useLabels";
+import { useListGestures } from "../mobile/useListGestures";
 import { navigate, withConversation, type LabelRoute, type MailRoute } from "../shell/router";
 import { ConnectionLost, EmptyState, ListSkeleton } from "../shell/states";
 import { useMinuteClock } from "./clock";
@@ -352,6 +353,18 @@ export function ConversationList(props: ConversationListProps) {
 
   useEffect(() => setActiveList(api), [api]);
 
+  // Brief 16: on a touch screen, swipe a row (archive / delete / read, per the
+  // device's prefs) and pull the list down to refresh. The same row handlers
+  // as the hover buttons; the toolbar and keys still do it all.
+  const gestureLayer = useListGestures({
+    bodyRef,
+    rows,
+    context: presentation,
+    isUnread: (row) => isUnread(row, scope),
+    act: (row, action) => (action === "archive" ? handlers.onArchive(row) : action === "delete" ? handlers.onDelete(row) : handlers.onToggleRead(row)),
+    refresh: () => api.refresh(),
+  });
+
   // Load the next page as the end of what is loaded comes into view.
   useEffect(() => {
     if (snapshot.status !== "ready" || snapshot.complete) return;
@@ -537,6 +550,7 @@ export function ConversationList(props: ConversationListProps) {
       ) : null}
       <div ref={bodyRef} className="list-body">
         <div ref={probeRef} className="list-probe" aria-hidden="true" />
+        {gestureLayer}
         {body}
       </div>
       <div className="visually-hidden" role="status" aria-live="polite">

@@ -11,11 +11,17 @@ import { ListRoute } from "../list/ListRoute";
 import { SearchRoute } from "../search/SearchRoute";
 import { SettingsRoutes } from "../settings/SettingsRoutes";
 import { useDisplaySettings, type ReadingPane } from "../theme";
+import { PHONE_QUERY } from "./breakpoints";
 import { formatRoute, INBOX, withoutConversation, type LabelRoute, type Route } from "./router";
 import { ConnectionLost, EmptyState, ListSkeleton } from "./states";
+import { useMediaQuery } from "./useMediaQuery";
 
 export function MainArea({ route }: { route: Route }) {
-  const { readingPane } = useDisplaySettings();
+  const { readingPane: chosen } = useDisplaySettings();
+  // Brief 16: a phone has room for one column, so the list and the conversation
+  // stack as routes (back returns to the list), whatever the reading pane setting.
+  const phone = useMediaQuery(PHONE_QUERY);
+  const readingPane: ReadingPane = phone ? "none" : chosen;
   switch (route.kind) {
     case "settings":
       return <SettingsRoutes section={route.section} />;

@@ -8,7 +8,7 @@
 //   desktop notifications          notify/settings.ts
 //   allowed image senders          render/allowance.ts
 //
-// To add a preference (brief 16: swipe actions, etc.): add a field to
+// To add a preference (brief 16 added swipeLeft / swipeRight): add a field to
 // AccountPrefs, its default to DEFAULT_PREFS, a validator line in
 // normalise(), and a getter/setter pair at the bottom. Bump PREFS_VERSION only
 // for a change that cannot be read by the old normalise().
@@ -21,6 +21,9 @@ export const PREFS_VERSION = 1;
 export const UNDO_SEND_SECONDS = [5, 10, 20, 30] as const;
 export type UndoSendSeconds = (typeof UNDO_SEND_SECONDS)[number];
 export type ImagesPreference = "ask" | "always";
+/** What swiping a conversation row does on a touch screen (brief 16). "read" toggles read and unread. */
+export const SWIPE_ACTIONS = ["archive", "delete", "read", "none"] as const;
+export type SwipeAction = (typeof SWIPE_ACTIONS)[number];
 
 export interface AccountPrefs {
   /** How long a sent message is held so Undo works. */
@@ -31,6 +34,9 @@ export interface AccountPrefs {
   shortcuts: boolean;
   /** The identity new messages are sent from, when the composer has no better guess. null = the first one. */
   defaultIdentityId: string | null;
+  /** Swiping a row to the left / to the right on a touch screen (brief 16). Gmail's default: both archive. */
+  swipeLeft: SwipeAction;
+  swipeRight: SwipeAction;
 }
 
 export const DEFAULT_PREFS: Readonly<AccountPrefs> = Object.freeze({
@@ -38,7 +44,13 @@ export const DEFAULT_PREFS: Readonly<AccountPrefs> = Object.freeze({
   images: "ask",
   shortcuts: true,
   defaultIdentityId: null,
+  swipeLeft: "archive",
+  swipeRight: "archive",
 });
+
+function swipeAction(value: unknown, fallback: SwipeAction): SwipeAction {
+  return SWIPE_ACTIONS.find((a) => a === value) ?? fallback;
+}
 
 const PREFIX = "postern.prefs.";
 const LAST = "postern.prefs.lastAccount";
@@ -63,6 +75,8 @@ export function normalise(raw: unknown): AccountPrefs {
     images: images === "ask" || images === "always" ? images : DEFAULT_PREFS.images,
     shortcuts: typeof shortcuts === "boolean" ? shortcuts : DEFAULT_PREFS.shortcuts,
     defaultIdentityId: typeof identity === "string" && identity !== "" ? identity : null,
+    swipeLeft: swipeAction(raw["swipeLeft"], DEFAULT_PREFS.swipeLeft),
+    swipeRight: swipeAction(raw["swipeRight"], DEFAULT_PREFS.swipeRight),
   };
 }
 
@@ -155,4 +169,9 @@ export function subscribeShortcutsEnabled(listener: (enabled: boolean) => void):
 
 export function getDefaultIdentityId(): string | null {
   return current.defaultIdentityId;
+}
+
+/** Brief 16: what a swipe does, read when the swipe ends (so a change applies at once). */
+export function getSwipeActions(): { left: SwipeAction; right: SwipeAction } {
+  return { left: current.swipeLeft, right: current.swipeRight };
 }

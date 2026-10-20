@@ -121,3 +121,12 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `Email/set` handler, checked in its v0.16.25 source). The classifier is FTRL logistic regression,
   retrained every 12 hours once it has 100 samples of each kind. The UI says
   "Your mail server learns from this."
+- **Web Push** (brief 16): the VAPID key is the session capability
+  `urn:ietf:params:jmap:webpush-vapid` (`applicationServerKey`). With
+  `emailpush`, a subscription can ask for the new message's id, thread,
+  sender and subject on delivery, filtered to the Inbox, encrypted to the
+  subscription's keys. `PushSubscription/get` will not return `url` or `keys`,
+  so a device finds its own subscription by `deviceClientId`. Stalwart caps
+  `expires` at 7 days; every sign-in extends it, and a device unused for a
+  week stops getting pushes until it signs in. One verification push per
+  account per minute; the push URL must be https.

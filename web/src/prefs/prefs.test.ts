@@ -7,7 +7,7 @@ import { allowsImagesFrom } from "../render/allowance";
 import { getUndoSendDelay } from "../send/undoDelay";
 import { resetDisplaySettings, getDisplaySettings, setTheme, setDensity } from "../theme/displaySettings";
 import { DISPLAY_KEY, loadDisplaySettings, startDisplayPersistence } from "./display";
-import { PREFS_VERSION, getPrefs, getShortcutsEnabled, normalise, resetPrefs, setPrefs, setPrefsAccount, startPrefs, subscribeShortcutsEnabled } from "./prefs";
+import { PREFS_VERSION, getPrefs, getShortcutsEnabled, getSwipeActions, normalise, resetPrefs, setPrefs, setPrefsAccount, startPrefs, subscribeShortcutsEnabled } from "./prefs";
 import { clearMemory } from "./storage";
 
 beforeEach(() => {
@@ -26,10 +26,37 @@ describe("normalise", () => {
     expect(normalise({ version: 99, undoSendSeconds: 30 }).undoSendSeconds).toBe(5);
     expect(normalise("x").images).toBe("ask");
     const n = normalise({ version: PREFS_VERSION, undoSendSeconds: 7, images: "sometimes", shortcuts: "yes", defaultIdentityId: 4 });
-    expect(n).toEqual({ undoSendSeconds: 5, images: "ask", shortcuts: true, defaultIdentityId: null });
+    expect(n).toEqual({ undoSendSeconds: 5, images: "ask", shortcuts: true, defaultIdentityId: null, swipeLeft: "archive", swipeRight: "archive" });
   });
   it("keeps valid fields", () => {
-    expect(normalise({ version: 1, undoSendSeconds: 20, images: "always", shortcuts: false, defaultIdentityId: "I2" })).toEqual({ undoSendSeconds: 20, images: "always", shortcuts: false, defaultIdentityId: "I2" });
+    expect(normalise({ version: 1, undoSendSeconds: 20, images: "always", shortcuts: false, defaultIdentityId: "I2" })).toEqual({
+      undoSendSeconds: 20,
+      images: "always",
+      shortcuts: false,
+      defaultIdentityId: "I2",
+      swipeLeft: "archive",
+      swipeRight: "archive",
+    });
+  });
+});
+
+describe("swipe actions (brief 16)", () => {
+  it("default to archive both ways, as Gmail's do", () => {
+    expect(getSwipeActions()).toEqual({ left: "archive", right: "archive" });
+  });
+  it("keep a valid choice per direction and refuse anything else", () => {
+    expect(normalise({ version: PREFS_VERSION, swipeLeft: "delete", swipeRight: "none" })).toMatchObject({ swipeLeft: "delete", swipeRight: "none" });
+    expect(normalise({ version: PREFS_VERSION, swipeLeft: "explode", swipeRight: 3 })).toMatchObject({ swipeLeft: "archive", swipeRight: "archive" });
+  });
+  it("are saved per account and read at once", () => {
+    setPrefsAccount("alice@postern.test");
+    setPrefs({ swipeLeft: "read", swipeRight: "delete" });
+    expect(getSwipeActions()).toEqual({ left: "read", right: "delete" });
+    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({ swipeLeft: "read", swipeRight: "delete" });
+    setPrefsAccount("bob@postern.test");
+    expect(getSwipeActions()).toEqual({ left: "archive", right: "archive" });
+    setPrefsAccount("alice@postern.test");
+    expect(getSwipeActions()).toEqual({ left: "read", right: "delete" });
   });
 });
 

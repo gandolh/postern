@@ -9,6 +9,7 @@
 
 import { AuthSession, JmapClient, type FetchLike, type SignInOutcome } from "@postern/jmap";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { runBeforeSignOut } from "../push/beforeSignOut";
 import "./auth.css";
 import { API_BASE, redirectUri } from "./config";
 import { SessionContext, type SignedInSession } from "./context";
@@ -76,7 +77,12 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
       const session: SignedInSession = {
         client,
         account: account.name ? { username: account.username, name: account.name } : { username: account.username },
-        signOut: () => auth.signOut("user"),
+        // Brief 16: work that needs the tokens one last time (destroying this
+        // device's Web Push subscription) runs first, for at most 2 s.
+        signOut: async () => {
+          await runBeforeSignOut();
+          await auth.signOut("user");
+        },
       };
       setView({ kind: "signedIn", auth, session, expired: false });
       return "signedIn";

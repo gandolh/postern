@@ -3,10 +3,12 @@ export { PrefsHost } from "./PrefsHost";
 export { startDisplayPersistence } from "./display";
 export {
   DEFAULT_PREFS,
+  SWIPE_ACTIONS,
   UNDO_SEND_SECONDS,
   getDefaultIdentityId,
   getPrefs,
   getShortcutsEnabled,
+  getSwipeActions,
   setPrefs,
   setPrefsAccount,
   setShortcutsEnabled,
@@ -15,6 +17,7 @@ export {
   subscribeShortcutsEnabled,
   type AccountPrefs,
   type ImagesPreference,
+  type SwipeAction,
   type UndoSendSeconds,
 } from "./prefs";
 export { usePrefs } from "./usePrefs";

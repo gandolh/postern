@@ -13,6 +13,9 @@ import { HelpSheet, KeysProvider, ShortcutsHost } from "../keys";
 import { LabelsProvider, useLabels } from "../labels/useLabels";
 import { LiveHost } from "../live/LiveHost";
 import { PrefsHost } from "../prefs";
+import { PushHost } from "../push/PushHost";
+import { PhoneComposeButton } from "../mobile";
+import { PHONE_QUERY, WIDE_QUERY } from "./breakpoints";
 import { MainArea } from "./MainArea";
 import { Nav, type NavProps } from "./Nav";
 import { isCanonicalHash, navigate, parseRoute, subscribeRoute, useRoute } from "./router";
@@ -23,9 +26,7 @@ import { ToastProvider } from "./toast";
 import { TopBar } from "./TopBar";
 import { useMediaQuery } from "./useMediaQuery";
 
-/** Wide screens show the full navigation; narrower ones a rail of icons; phones none until opened. */
-export const WIDE_QUERY = "(min-width: 64rem)";
-export const PHONE_QUERY = "(max-width: 37.4375rem)";
+export { PHONE_QUERY, WIDE_QUERY } from "./breakpoints";
 
 export function Shell() {
   return (
@@ -37,6 +38,7 @@ export function Shell() {
               <PrefsHost />
               <ShellLayout />
               <LiveHost />
+              <PushHost />
             </StatusSlotProvider>
           </KeysProvider>
         </ComposerProvider>
@@ -108,6 +110,8 @@ function ShellLayout() {
           <MainArea route={route} />
         </main>
       </div>
+      {/* Brief 16: phones have no navigation on screen, so Compose floats bottom-right. */}
+      {phone && mode === "hidden" ? <PhoneComposeButton route={route} /> : null}
       <div className="shell-compose-layer">
         <ComposerHost />
       </div>

@@ -1,5 +1,5 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); the house stack. Read before proposing to change any of these.
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack. Read before proposing to change any of these.
 updated: 2026-10-20
 ---
 
@@ -136,6 +136,28 @@ honour too. Rejected:
   upgrade, for settings the owner rarely changes.
 - **A hidden settings message in its own label.** It syncs everywhere, but
   the label shows up as a folder in the phone's mail app.
+
+## No offline mail
+_2026-10-20, owner_. The installed app caches only its shell (HTML, JS, CSS,
+fonts, icons). No mail, no `/webmail-api` response, no IndexedDB and no
+offline outbox. Offline, it opens to the sign-in page (tokens die with the
+tab) and says it cannot reach the mail server. Rejected: caching the
+conversation list, and caching recent mail with an outbox. Either would sit
+in storage that any script on the shared origin can read, even with Postern
+closed, and encrypting it with an in-memory key protects nothing while the
+app is open.
+
+## Closed-app notifications show sender and subject
+_2026-10-20, controller; the owner may flip it_. When Web Push is on, Stalwart
+pushes the new message's sender and subject (JMAP `emailpush`, encrypted to
+the subscription's keys) and the service worker shows them, without any
+token. Rejected: a generic "New mail" only, which hides nothing a script
+could not learn by other means while Postern is open, but shows less than the
+brief asked for. Cost: while a notification is on screen, any script on the
+origin can read its sender and subject through
+`registration.getNotifications()`, even with Postern closed. Web Push is off
+until the user turns it on. To go generic, `emailPushConfig()` in
+`web/src/push/PushHost.tsx` returns null.
 
 ## The house stack
 _2026-10-09_. TypeScript, React 19 and Vite 8, with Vitest and ESLint, in npm

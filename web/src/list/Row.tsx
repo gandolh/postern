@@ -226,7 +226,8 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
               </span>
               {row.preview || row.snippet?.preview ? (
                 <span className="list-snippet">
-                  {" – "}
+                  {/* Its own span so the phone row (brief 16, mobile.css), which puts the snippet on a line of its own, can drop it. */}
+                  <span className="list-snippet-sep">{" – "}</span>
                   <Highlighted html={row.snippet?.preview} fallback={row.preview} />
                 </span>
               ) : null}

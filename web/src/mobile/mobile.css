@@ -1,0 +1,359 @@
+/* The phone (brief 16): touch targets, the phone row, the floating Compose
+   button, and the swipe and pull-to-refresh visuals. Tokens only.
+
+   Phones are under 37.4375rem (600 px), the shell's PHONE_QUERY. Every rule
+   for them sits in that media query; the gesture visuals also serve touch
+   screens wider than a phone. Selectors carry one extra class where they
+   override a module's own rule (list.css, shell.css, search.css), so the
+   order the bundles load in does not matter. */
+
+/* The browser's pull-to-refresh reloads the page, and a reload signs you out
+   (tokens live in memory only). The list has its own (useListGestures). */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+/* ---- Swipe: the colour behind a row ---------------------------------------- */
+
+.mobile-swipe-backdrop {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  color: var(--color-on-accent-soft);
+  background: var(--color-accent-soft);
+  pointer-events: none;
+}
+
+.mobile-swipe-backdrop[hidden] {
+  display: none;
+}
+
+.mobile-swipe-backdrop[data-direction="left"] {
+  justify-content: flex-end;
+}
+
+.mobile-swipe-backdrop[data-action="delete"] {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.mobile-swipe-backdrop[data-action="none"] {
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken);
+}
+
+.mobile-swipe-backdrop[data-armed="true"][data-action="archive"],
+.mobile-swipe-backdrop[data-armed="true"][data-action="read"] {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}
+
+.mobile-swipe-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.mobile-swipe-icon {
+  display: none;
+}
+
+.mobile-swipe-backdrop[data-action="archive"] .mobile-swipe-icon[data-for="archive"],
+.mobile-swipe-backdrop[data-action="delete"] .mobile-swipe-icon[data-for="delete"],
+.mobile-swipe-backdrop[data-action="read"] .mobile-swipe-icon[data-for="read"] {
+  display: inline-block;
+}
+
+/* The row being swiped slides over the colour; it keeps its own background. */
+.list-page .list-row[data-swiping] {
+  position: relative;
+  z-index: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- Pull to refresh -------------------------------------------------------- */
+
+.mobile-pull {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.mobile-pull[hidden] {
+  display: none;
+}
+
+.mobile-pull[data-armed="true"] {
+  color: var(--color-accent);
+}
+
+/* ---- Phones ------------------------------------------------------------------- */
+
+@media (max-width: 37.4375rem) {
+  /* Every target at least 44 px (Apple's and WCAG 2.5.5's size), at any density. */
+  :root,
+  :root[data-density] {
+    --row-height: 5rem;
+    --nav-item-height: 2.75rem;
+    --toolbar-height: 3rem;
+  }
+
+  .icon-btn,
+  .shell-topbar .icon-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .btn {
+    min-height: 2.75rem;
+  }
+
+  .input {
+    min-height: 2.75rem;
+  }
+
+  /* Top bar: menu, search, settings, account. The mark and Help (it lists
+     keyboard shortcuts) give their room to the search box. */
+  .shell-topbar .shell-brand,
+  .shell-topbar .shell-help {
+    display: none;
+  }
+
+  .shell-topbar .search-box {
+    padding-right: var(--space-1);
+  }
+
+  .shell-topbar .search-box .icon-btn {
+    flex: none;
+  }
+
+  /* The list toolbar. */
+  .list-page .list-check,
+  .list-page .list-select .list-check {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .list-page .list-select-menu .icon-btn {
+    width: 2.75rem;
+  }
+
+  /* With a selection the actions take two lines rather than run off the
+     screen; Snooze (not built yet) and the dividers give up their room. */
+  .list-page .list-toolbar {
+    flex-wrap: wrap;
+    gap: 0;
+    padding-inline: var(--space-1);
+  }
+
+  .list-page .list-toolbar-group {
+    gap: 0;
+  }
+
+  .list-page .list-toolbar-divider,
+  .list-page .icon-btn.list-unavailable {
+    display: none;
+  }
+
+  /* The phone row, Gmail's app in shape: senders and date, then subject and
+     snippet over two lines; the checkbox on the left, the star bottom-right. */
+  .list-page .list-row {
+    position: relative;
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "controls senders end"
+      "controls main main";
+    align-items: start;
+    column-gap: var(--space-2);
+    row-gap: var(--space-1);
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-1);
+    touch-action: pan-y;
+  }
+
+  .list-page .list-row:hover {
+    box-shadow: none;
+  }
+
+  .list-page .list-controls {
+    grid-area: controls;
+    align-self: start;
+  }
+
+  .list-page .list-senders {
+    grid-area: senders;
+    align-self: center;
+  }
+
+  .list-page .list-end {
+    grid-area: end;
+    align-self: center;
+    min-width: 0;
+  }
+
+  .list-page .list-main {
+    grid-area: main;
+    align-items: flex-start;
+    padding-right: 2.5rem;
+  }
+
+  .list-page .list-text {
+    display: -webkit-box;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .list-page .list-subject {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .list-page .list-snippet {
+    display: inline;
+  }
+
+  .list-page .list-snippet-sep {
+    display: none;
+  }
+
+  .list-page .list-chips {
+    max-width: 40%;
+  }
+
+  .list-page .icon-btn.list-star {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .list-page .list-important,
+  .list-page .list-row .list-hover {
+    display: none;
+  }
+
+  .list-page .list-row:hover .list-date,
+  .list-page .list-row:focus-within .list-date,
+  .list-page .list-row:hover .list-attachment,
+  .list-page .list-row:focus-within .list-attachment {
+    display: inline-flex;
+  }
+
+  /* An open conversation: the sender (opens the contact card) and the
+     details toggle. */
+  .conv-page .conv-msg-sender {
+    min-height: 2.75rem;
+    align-items: center;
+  }
+
+  .conv-page .conv-details-toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  /* The composer: full screen here already (brief 08's composer.css); its
+     controls get the same 44 px. The format bar wraps onto two lines. */
+  .compose-titlebar .compose-titlebar-actions .icon-btn,
+  .compose-form .compose-format .compose-format-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .compose-titlebar .compose-title-btn,
+  .compose-form .compose-row,
+  .compose-form .compose-row-actions,
+  .compose-form .compose-input,
+  .compose-form .compose-select,
+  .compose-form .btn.compose-send {
+    min-height: 2.75rem;
+  }
+
+  .compose-form .compose-link-btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  /* Settings: radio choices, and the label table's checkboxes (the one in a
+     <label> gets a 44 px box; the bare one grows to 24 px, well spaced). */
+  .settings-form .settings-choice label,
+  .settings-form .settings-check {
+    min-height: 2.75rem;
+  }
+
+  .labels-manager td > label {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .labels-manager td input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+  }
+
+  /* Room under the last row for the floating Compose button. */
+  .list-page .list-canvas {
+    margin-bottom: 5rem;
+  }
+
+  /* The toast sits above the Compose button (the toast region is outside .shell). */
+  body:has(.mobile-compose) .shell-toast-region {
+    bottom: calc(3.5rem + var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ---- The floating Compose button --------------------------------------------- */
+
+.mobile-compose {
+  position: fixed;
+  right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: 0 var(--space-5) 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-on-accent-soft);
+  background: var(--color-accent-soft);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+
+.mobile-compose:hover {
+  background: var(--color-accent-soft-hover);
+}
+
+.mobile-compose:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

@@ -1,6 +1,7 @@
 // The sign-in page: Postern's two-step sign-in, shaped like Gmail's.
 
 import type { SignInOutcome } from "@postern/jmap";
+import { useSyncExternalStore } from "react";
 import { STALWART_ACCOUNT_URL } from "./config";
 import { SignInForm } from "./SignInForm";
 
@@ -10,7 +11,22 @@ export interface SignInPageProps {
   notice?: "idle";
 }
 
+function subscribeOnline(onChange: () => void): () => void {
+  window.addEventListener("online", onChange);
+  window.addEventListener("offline", onChange);
+  return () => {
+    window.removeEventListener("online", onChange);
+    window.removeEventListener("offline", onChange);
+  };
+}
+
+/** The installed app opens offline to this page (tokens die with the tab), so say why signing in can't work yet. */
+function useOnline(): boolean {
+  return useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true);
+}
+
 export function SignInPage({ onSignIn, notice }: SignInPageProps) {
+  const online = useOnline();
   return (
     <main className="auth-page">
       <div className="auth-card">
@@ -20,6 +36,11 @@ export function SignInPage({ onSignIn, notice }: SignInPageProps) {
             You were signed out after a long time without activity. Sign in again to continue.
           </p>
         ) : null}
+        {online ? null : (
+          <p className="auth-notice" role="status">
+            You're offline. Postern keeps no mail on this device, so connect to sign in.
+          </p>
+        )}
         <SignInForm onSignIn={onSignIn} title="Sign in" subtitle="with your mail account, to continue to Postern" />
       </div>
       {STALWART_ACCOUNT_URL ? (

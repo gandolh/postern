@@ -121,6 +121,21 @@ describe("the sign-in page", () => {
     expect(screen.getByLabelText("Password").closest("form")?.getAttribute("method")).toBe("post");
   });
 
+  it("says when the device is offline, and stops saying it once back online", () => {
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    try {
+      render(<SessionProvider fetch={fakeStalwart().fetch}>{null}</SessionProvider>);
+      expect(screen.getByText(/You're offline/)).toBeTruthy();
+      onLine.mockReturnValue(true);
+      act(() => {
+        window.dispatchEvent(new Event("online"));
+      });
+      expect(screen.queryByText(/You're offline/)).toBeNull();
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
   it("signs in with email and password, and keeps nothing in storage", async () => {
     const server = fakeStalwart();
     const user = userEvent.setup();
