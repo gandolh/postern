@@ -6,6 +6,7 @@ import { AlertTriangle, ChevronDown, CornerUpLeft, CornerUpRight, MoreVertical, 
 import { useId, useState } from "react";
 import { FLAGGED, SEEN } from "../actions/conversation";
 import { AttachmentList } from "../attachments/AttachmentList";
+import { SenderHoverCard } from "../contacts/SenderHoverCard";
 import { formatFullDate } from "../list/format";
 import { MenuButton } from "../list/Menu";
 import { IconButton } from "../shell/IconButton";
@@ -99,7 +100,15 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
 
   if (!expanded) {
     return (
-      <article id={messageCardId(message.id)} className="conv-msg" data-expanded="false" data-unread={unread || undefined} tabIndex={-1} aria-labelledby={headingId} onFocus={onFocusCard}>
+      <article
+        id={messageCardId(message.id)}
+        className="conv-msg"
+        data-expanded="false"
+        data-unread={unread || undefined}
+        tabIndex={-1}
+        aria-labelledby={headingId}
+        onFocus={onFocusCard}
+      >
         <h2 className="conv-msg-heading" id={headingId}>
           <button type="button" className="conv-msg-line" aria-expanded={false} onClick={actions.toggle}>
             <Avatar name={name} />
@@ -136,16 +145,18 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
       <header className="conv-msg-head">
         <Avatar name={name} />
         <div className="conv-msg-who">
-          <h2 className="conv-msg-heading" id={headingId}>
-            <button type="button" className="conv-msg-sender" aria-expanded={true} onClick={actions.toggle} title="Collapse this message">
-              <bdi className="conv-sender-name">{name}</bdi>
-              {from && displayName(from) ? (
-                <span className="conv-sender-address">
-                  &lt;<bdi>{from.email}</bdi>&gt;
-                </span>
-              ) : null}
-            </button>
-          </h2>
+          <SenderHoverCard address={from}>
+            <h2 className="conv-msg-heading" id={headingId}>
+              <button type="button" className="conv-msg-sender" aria-expanded={true} onClick={actions.toggle} title="Collapse this message">
+                <bdi className="conv-sender-name">{name}</bdi>
+                {from && displayName(from) ? (
+                  <span className="conv-sender-address">
+                    &lt;<bdi>{from.email}</bdi>&gt;
+                  </span>
+                ) : null}
+              </button>
+            </h2>
+          </SenderHoverCard>
           {forged ? (
             <p className="conv-forged" role="note">
               <AlertTriangle aria-hidden="true" />

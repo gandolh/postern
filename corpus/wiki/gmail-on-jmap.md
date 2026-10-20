@@ -95,3 +95,11 @@ calendars, principals, mail:share, websocket, plus Web Push for
   dates mean always on) and has no "contacts only" switch. `Quota/get`
   returns nothing until a quota is set, then one account-wide octets quota.
   `Identity/set` updates name, reply-to and both signatures.
+- **Contacts** (brief 15): each account has one default address book, which
+  CardDAV serves at `/dav/card/<account>/default/`. Stalwart assigns no `uid`
+  to a card created over JMAP, and a `uid` cannot change later, so Postern
+  sets `urn:uuid:<random>` on create; groups (`kind: "group"`) list members
+  by uid. Patching the full name leaves the old components behind, so edits
+  replace whole maps.
+  `ContactCard/query` text and name filters found
+  nothing in tests, so Postern loads every card and filters in the browser.

@@ -88,6 +88,7 @@ export {
   type CreatedPushSubscription,
 } from "./methods/push-subscription.js";
 export { AddressBookMethods, ContactCardMethods } from "./methods/contacts.js";
+export * from "./contacts/index.js";
 
 export {
   BlobMethods,

@@ -31,7 +31,7 @@ does not exist yet (the owner creates it).
 - [12](../briefs/done/12-settings.md): the settings pages: display, identities and signatures, vacation responder, storage. After 08. **Done 2026-10-20.**
 - [13](../briefs/todo/13-filters-and-spam.md): filters as Sieve, block sender, report spam and not spam. After 09 and 12.
 - [14](../briefs/todo/14-keyboard-and-accessibility.md): Gmail's keyboard shortcuts, the help sheet, accessibility pass. After 07 and 08.
-- [15](../briefs/todo/15-contacts.md): contacts on JMAP Contacts, recipient autocomplete, sender cards. After 08.
+- [15](../briefs/done/15-contacts.md): contacts on JMAP Contacts, recipient autocomplete, sender cards. After 08. **Done 2026-10-20.**
 
 **Wave 5: hardening and deploy**
 - [16](../briefs/todo/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11.

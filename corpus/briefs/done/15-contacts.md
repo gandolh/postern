@@ -36,3 +36,16 @@ owner's phone.
 - A contact added in Postern appears through CardDAV (check with a client or
   `curl`).
 - Hover cards open on hover and on keyboard focus.
+
+## Outcome (2026-10-20)
+
+Built. Autocomplete ranks saved contacts and "Other contacts" (addresses
+alice sent to, collected from Sent and never stored) by match, then
+frequency and recency; a matching group expands to its members. The sender
+hover card opens on hover and on keyboard focus. The Contacts page lists,
+searches, adds, edits and deletes. On `dev/`, "bo" suggested bob and "ca" an
+Other contact; a contact added in Postern appeared over CardDAV as a vCard
+4.0. Stalwart's quirks are in [gmail-on-jmap.md](../../wiki/gmail-on-jmap.md).
+Not done: picking a group as one chip (needs a composer change), live sync of
+contacts (they refresh after 30 s or when the page opens), and de-duplicating
+contacts from the search box's sender suggestions.

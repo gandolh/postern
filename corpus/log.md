@@ -169,3 +169,11 @@ decision now says which are device-wide and which per account. What
 Stalwart's vacation responder, quota and identities do is in
 [gmail-on-jmap.md](wiki/gmail-on-jmap.md). Conversation view off is filed as
 [a todo](todos/conversation-view-off.md). [Brief](briefs/done/12-settings.md).
+
+## [2026-10-20] done | Brief 15: contacts
+
+JMAP Contacts in `@postern/jmap`, a Contacts page at `#contacts`, recipient
+autocomplete from contacts and from people alice has written to, sender
+hover cards, and a Contacts group in search suggestions. Checked over
+CardDAV. Stalwart's contact quirks are in
+[gmail-on-jmap.md](wiki/gmail-on-jmap.md). [Brief](briefs/done/15-contacts.md).

@@ -1,0 +1,169 @@
+.contacts-add {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.contacts-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .contacts-body:has(.contacts-form) {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
+  }
+}
+
+.contacts-search {
+  width: 100%;
+  margin-block-end: var(--space-3);
+}
+
+.contacts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.contacts-item + .contacts-item {
+  border-block-start: 1px solid var(--color-border);
+}
+
+.contacts-item[data-selected="true"] {
+  background: var(--color-row-selected);
+}
+
+.contacts-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: var(--row-height);
+  padding: var(--space-2) var(--row-padding-inline);
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.contacts-row:hover {
+  background: var(--color-row-hover);
+}
+
+.contacts-name {
+  flex: 0 1 14rem;
+  min-width: 0;
+  font-weight: var(--weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contacts-sub {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contacts-status,
+.contacts-note {
+  color: var(--color-text-muted);
+}
+
+.contacts-error {
+  color: var(--color-danger);
+}
+
+.contacts-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.contacts-form-title {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.contacts-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.contacts-field .input {
+  font-size: var(--text-md);
+  color: var(--color-text);
+}
+
+.contacts-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.contacts-delete {
+  margin-inline-start: auto;
+  color: var(--color-danger);
+}
+
+/* The sender's card: opens under the name on hover and on keyboard focus. */
+.contacts-hover {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.contacts-hovercard {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  z-index: 20;
+  min-width: 16rem;
+  max-width: min(24rem, 90vw);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contacts-hovercard-name {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.contacts-hovercard-address {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.contacts-hovercard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-1);
+}
