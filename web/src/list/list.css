@@ -1,0 +1,553 @@
+/* The conversation list (brief 06): toolbar, select-all banner, the
+   virtualised grid of rows. Tokens only (theme/tokens.css). Every row is
+   exactly --row-height tall, so the virtualiser can place it by index.
+
+   Classes other briefs may reuse:
+     .list-page          a full-height column: toolbar on top, a scrolling body
+     .list-toolbar       the bar above a list (also for search results)
+     .list-row           a conversation row (role="row"); data-unread, data-open, aria-selected
+     .list-chip          a label chip on a row (on top of base.css .chip)
+     .list-icon-btn      a compact .icon-btn that fits in a row at every density
+     .list-mark          a search highlight inside a row */
+
+.list-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  container-type: inline-size;
+  container-name: list;
+}
+
+/* ---- Toolbar ------------------------------------------------------------- */
+
+.list-toolbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--toolbar-height);
+  padding: 0 var(--space-2) 0 var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.list-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.list-toolbar-divider {
+  flex: none;
+  width: 1px;
+  height: 1.25rem;
+  margin: 0 var(--space-1);
+  background: var(--color-border);
+}
+
+.list-select {
+  display: flex;
+  align-items: center;
+  margin-right: var(--space-1);
+}
+
+.list-select .list-check {
+  width: 2rem;
+  height: 2.5rem;
+}
+
+.list-select-menu .icon-btn {
+  width: 1.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.list-select-menu .lucide {
+  --icon-size: 1rem;
+}
+
+.list-text-btn {
+  min-height: 2rem;
+  padding: 0 var(--space-3);
+  font-size: var(--text-md);
+}
+
+.icon-btn.list-unavailable {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.icon-btn.list-unavailable:hover {
+  color: var(--color-text-muted);
+  background: transparent;
+}
+
+.list-paging {
+  margin-left: auto;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Menus ------------------------------------------------------------------ */
+
+.list-menu {
+  position: relative;
+}
+
+.list-menu-popup {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  padding: var(--space-2) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+}
+
+.list-menu-popup[data-align="end"] {
+  left: auto;
+  right: 0;
+}
+
+.list-menu-item {
+  display: block;
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  font-size: var(--text-md);
+  text-align: start;
+  color: var(--color-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.list-menu-item:hover,
+.list-menu-item:focus-visible {
+  background: var(--color-hover);
+}
+
+.list-menu-item:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.list-menu-item:disabled {
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+}
+
+/* ---- The "select all" banner -------------------------------------------------- */
+
+.list-banner {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-md);
+  color: var(--color-text);
+  background: var(--color-surface-sunken);
+}
+
+.list-banner-action {
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---- Body and grid -------------------------------------------------------------- */
+
+.list-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Measures --row-height in px for the virtualiser. */
+.list-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: var(--row-height);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.list-canvas {
+  position: relative;
+}
+
+.list-rows {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+/* ---- A row ------------------------------------------------------------------- */
+
+.list-row {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 13rem) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-3);
+  height: var(--row-height);
+  padding: 0 var(--space-3) 0 var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-md);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+  background: var(--color-row-read);
+  cursor: pointer;
+  user-select: none;
+}
+
+.list-row[data-unread] {
+  background: var(--color-row);
+}
+
+.list-row:hover {
+  background: var(--color-row-hover);
+  box-shadow: inset 0 -1px 0 var(--color-border-strong);
+}
+
+.list-row[aria-selected="true"] {
+  background: var(--color-row-selected);
+}
+
+.list-row[data-open] {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.list-row:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.list-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Checkbox, star, important marker. */
+.list-controls {
+  gap: 0;
+}
+
+.list-check {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  cursor: pointer;
+}
+
+.list-check input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.icon-btn.list-icon-btn {
+  width: 2rem;
+  height: 2rem;
+}
+
+.list-icon-btn .lucide {
+  --icon-size: 1.125rem;
+}
+
+/* Compact rows are 32px with a border: keep the controls inside. */
+:root[data-density="compact"] .icon-btn.list-icon-btn,
+:root[data-density="compact"] .list-row .list-check {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+/* A toggle's state is its colour and fill here, not base.css's pressed background. */
+.icon-btn.list-star[aria-pressed="true"],
+.icon-btn.list-important[aria-pressed="true"] {
+  background: transparent;
+}
+
+.icon-btn.list-star[aria-pressed="true"]:hover,
+.icon-btn.list-important[aria-pressed="true"]:hover {
+  background: var(--color-hover);
+}
+
+.list-star[aria-pressed="true"] {
+  color: var(--color-star);
+}
+
+.list-star[aria-pressed="true"] .lucide {
+  fill: currentColor;
+}
+
+.list-important {
+  color: var(--color-text-subtle);
+}
+
+.list-important[aria-pressed="true"] {
+  color: var(--color-accent);
+}
+
+.list-important[aria-pressed="true"] .lucide {
+  fill: currentColor;
+}
+
+/* Senders. */
+.list-senders {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-text);
+}
+
+.list-sender[data-unread],
+.list-row[data-unread] .list-count {
+  font-weight: var(--weight-bold);
+}
+
+.list-sender-prefix,
+.list-count {
+  color: var(--color-text-muted);
+}
+
+.list-draft {
+  color: var(--color-danger);
+}
+
+/* Chips, subject and snippet. */
+.list-main {
+  gap: var(--space-2);
+  overflow: hidden;
+}
+
+/* The chips keep their width, up to 45% of the row; past that, they shrink to ellipses. */
+.list-chips {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  max-width: 45%;
+  overflow: hidden;
+}
+
+/* A chip that runs out of room ends in an ellipsis rather than being cut. */
+.chip.list-chip {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 2.75rem;
+  min-height: 0;
+  padding: 0 var(--space-2);
+  overflow: hidden;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1.25rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.list-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.list-subject {
+  color: var(--color-text);
+}
+
+.list-row[data-unread] .list-subject {
+  font-weight: var(--weight-bold);
+}
+
+.list-snippet {
+  color: var(--color-text-muted);
+}
+
+.list-mark {
+  border-radius: var(--radius-sm);
+  color: inherit;
+  background: var(--color-accent-soft);
+}
+
+/* Attachment, date, hover actions. */
+.list-end {
+  justify-content: flex-end;
+  gap: var(--space-2);
+  min-width: 5.5rem;
+}
+
+.list-attachment {
+  display: inline-flex;
+  color: var(--color-text-muted);
+}
+
+.list-attachment .lucide {
+  --icon-size: 1rem;
+}
+
+.list-date {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.list-row[data-unread] .list-date {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.list-hover {
+  display: none;
+  align-items: center;
+  gap: 0;
+}
+
+.list-row:hover .list-hover,
+.list-row:focus-within .list-hover {
+  display: flex;
+}
+
+.list-row:hover .list-date,
+.list-row:hover .list-attachment,
+.list-row:focus-within .list-date,
+.list-row:focus-within .list-attachment {
+  display: none;
+}
+
+/* Rows not loaded yet. */
+.list-row-placeholder {
+  cursor: default;
+  background: var(--color-row);
+}
+
+.list-row-placeholder:hover {
+  background: var(--color-row);
+  box-shadow: none;
+}
+
+.list-skeleton-check {
+  width: 1rem;
+  height: 1rem;
+  margin-left: var(--space-2);
+}
+
+.list-skeleton-text {
+  width: 70%;
+  height: 0.75rem;
+}
+
+.list-skeleton-date {
+  width: 3rem;
+  height: 0.75rem;
+}
+
+/* ---- Delete forever? ------------------------------------------------------------ */
+
+.list-confirm {
+  max-width: min(28rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+}
+
+.list-confirm::backdrop {
+  background: var(--color-scrim);
+}
+
+.list-confirm-title {
+  font-size: var(--text-xl);
+}
+
+.list-confirm-body {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.list-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.btn.list-confirm-danger {
+  border-color: transparent;
+  color: var(--color-surface);
+  background: var(--color-danger);
+}
+
+.btn.list-confirm-danger:hover {
+  color: var(--color-surface);
+  background: var(--color-danger);
+  filter: brightness(0.92);
+}
+
+/* ---- Narrow lists: the reading pane on the right, phones ------------------------- */
+
+@container list (max-width: 46rem) {
+  .list-row {
+    grid-template-columns: auto minmax(6rem, 9rem) minmax(0, 1fr) auto;
+    column-gap: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .list-important,
+  .list-chips {
+    display: none;
+  }
+
+  .list-paging {
+    display: none;
+  }
+}
+
+@container list (max-width: 30rem) {
+  .list-row {
+    grid-template-columns: auto minmax(4rem, 7rem) minmax(0, 1fr) auto;
+  }
+
+  .list-snippet {
+    display: none;
+  }
+
+  .list-end {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-row {
+    transition: none;
+  }
+}

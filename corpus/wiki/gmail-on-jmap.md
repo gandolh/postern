@@ -15,7 +15,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 | Conversations | `Thread`; `Email/query` with `collapseThreads: true` | native | 06, 07 |
 | Labels | `Mailbox`; a message's `mailboxIds` is a set | native | 09 |
 | Inbox, Sent, Drafts, Spam, Trash | mailboxes with `role` inbox, sent, drafts, junk, trash | native | 05 |
-| All Mail | the archive-role mailbox, plus "no filter" for search | native | 05, 09 |
+| All Mail | the list: everything outside Spam and Trash (`inMailboxOtherThan`); archived mail with no label goes to the archive-role mailbox | native | 05, 06 |
 | Archive | remove the Inbox from `mailboxIds`; with no other label, add Archive | native | 06 |
 | Starred | keyword `$flagged` | native | 06 |
 | Read / unread | keyword `$seen` | native | 06, 07 |

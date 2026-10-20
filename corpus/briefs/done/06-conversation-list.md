@@ -50,3 +50,23 @@ message with no other label goes to All Mail.
 - Scrolling 2,000 conversations stays smooth, with no more requests than pages
   scrolled.
 - Unit tests cover the archive and mailbox-patch logic.
+
+## Outcome (2026-10-20)
+
+Built with a hand-rolled virtual list: scrolling all 2,035 Inbox
+conversations took one request per page of 50, at most 26 rows in the DOM,
+median frame 16.6 ms. Each action was checked from IMAP and undone; alice's
+2,816 messages ended identical to the seed. Choices beyond the spec:
+
+- A conversation's messages "in this view" are Gmail's: everything outside
+  Trash and Spam, or in Trash and Spam only their own. Star, read, delete and
+  report spam act on that set; archive acts on Inbox membership.
+- Delete moves each message to Trash only; undo restores its labels. Delete
+  forever (Trash and Spam only) is confirmed and destroys.
+- All Mail lists everything outside Spam and Trash
+  (`inMailboxOtherThan`). The archive mailbox is created on first need.
+- Starring from the row is quiet, as in Gmail, but still undoable with `z`.
+
+Not run against `dev/`, only in unit tests: report spam, not spam and delete
+forever. `web/test/` is now typechecked (`web/tsconfig.test.json`). The last
+undo is module-level and outlives sign-out (it then fails quietly).

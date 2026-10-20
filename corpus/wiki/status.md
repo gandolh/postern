@@ -18,7 +18,7 @@ does not exist yet (the owner creates it).
 
 **Wave 2: reading**
 - [05](../briefs/done/05-app-shell.md): the Gmail layout: top bar, navigation with system labels and counts, routes, themes, the visual identity. After 04. **Done 2026-10-20.**
-- [06](../briefs/todo/06-conversation-list.md): the conversation list: virtualised, selection, bulk actions, archive, star, read, undo. After 05.
+- [06](../briefs/done/06-conversation-list.md): the conversation list: virtualised, selection, bulk actions, archive, star, read, undo. After 05. **Done 2026-10-20.**
 - [07](../briefs/todo/07-read-a-conversation.md): reading a conversation: sandboxed HTML, blocked images, attachments, quoted text. After 06.
 
 **Wave 3: writing and organising**

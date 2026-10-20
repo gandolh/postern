@@ -79,3 +79,13 @@ counts from `Mailbox/get`, a toast, and states for loading, empty labels and
 being offline. Later briefs fill placeholder files the shell already renders.
 [design.md](wiki/design.md) records the tokens. Verified in Chrome against
 `dev/`; 260 tests. [Brief](briefs/done/05-app-shell.md).
+
+## [2026-10-20] done | Brief 06: the conversation list
+
+One row per conversation, paged 50 at a time in one batched request each,
+with Gmail's senders line, label chips, selection (ranges, "select all N"),
+a toolbar, hover actions, and optimistic archive, delete, star, read and
+important with Undo. All Mail lists everything outside Spam and Trash, as in
+Gmail ([gmail-on-jmap.md](wiki/gmail-on-jmap.md)). The list exposes hooks for
+live updates (brief 11) and shortcuts (brief 14). Checked from IMAP; 358
+tests. [Brief](briefs/done/06-conversation-list.md).
