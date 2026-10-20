@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- The Postern mark: a wall with a small side gate in it. Patina on limestone. -->
+  <rect width="32" height="32" rx="8" fill="#1c6a57"/>
+  <path d="M15 32V20a4 4 0 0 1 8 0v12z" fill="#f2f4f1"/>
+</svg>

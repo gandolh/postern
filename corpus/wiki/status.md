@@ -17,7 +17,7 @@ does not exist yet (the owner creates it).
 - [04](../briefs/done/04-sign-in.md): sign-in through Stalwart (OAuth + PKCE + TOTP), tokens in memory, sign-out. After 03. **Done 2026-10-20.**
 
 **Wave 2: reading**
-- [05](../briefs/todo/05-app-shell.md): the Gmail layout: top bar, navigation with system labels and counts, routes, themes, the visual identity. After 04.
+- [05](../briefs/done/05-app-shell.md): the Gmail layout: top bar, navigation with system labels and counts, routes, themes, the visual identity. After 04. **Done 2026-10-20.**
 - [06](../briefs/todo/06-conversation-list.md): the conversation list: virtualised, selection, bulk actions, archive, star, read, undo. After 05.
 - [07](../briefs/todo/07-read-a-conversation.md): reading a conversation: sandboxed HTML, blocked images, attachments, quoted text. After 06.
 

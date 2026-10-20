@@ -70,3 +70,12 @@ sign-in page, the session-expired dialog and `useJmap()`. Stalwart cannot
 revoke tokens; [security.md](wiki/security.md) records what that costs.
 Verified in Chrome and against `dev/`, including TOTP for bob. 182 tests.
 [Brief](briefs/done/04-sign-in.md).
+
+## [2026-10-20] done | Brief 05: the app shell and visual system
+
+Gmail's layout in Postern's own palette, type and mark, with light and dark
+themes, three densities, hash routes with working back and forward, label
+counts from `Mailbox/get`, a toast, and states for loading, empty labels and
+being offline. Later briefs fill placeholder files the shell already renders.
+[design.md](wiki/design.md) records the tokens. Verified in Chrome against
+`dev/`; 260 tests. [Brief](briefs/done/05-app-shell.md).

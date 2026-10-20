@@ -58,3 +58,21 @@ builds the frame every later screen sits in, and settles the visual system with
   on the shell.
 - design.md records the tokens and icon set; nothing on screen is Google
   branding.
+
+## Outcome (2026-10-20)
+
+Built. The palette is stone neutrals with one weathered-copper green accent,
+the type is Atkinson Hyperlegible Next (its l, I and 1 differ, which helps
+spot look-alike addresses) with its Mono, and the icons are lucide. All are
+self-hosted and recorded in [design.md](../../wiki/design.md). Lighthouse
+accessibility scored 100 on the signed-in shell in both themes.
+
+So that later briefs never edit the shell, the shell renders placeholder
+components at the paths those briefs own (`list/ListRoute.tsx`,
+`conversation/ConversationView.tsx`, `search/*`, `settings/SettingsRoutes.tsx`,
+`contacts/ContactsRoute.tsx`, `composer/`, `keys/`, `live/LiveHost.tsx`,
+`labels/LabelMenu.tsx`), and exports the router, a single toast and the
+labels store. Beyond the spec: display settings include the reading pane
+(the shell lays out the split), and the search box already navigates to
+`#search/<query>`. "No conversations in Spam" is checked in jsdom only,
+because the seed has no empty label.

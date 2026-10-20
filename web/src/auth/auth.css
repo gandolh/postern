@@ -1,129 +1,178 @@
-/* Sign-in, the session-expired dialog and the placeholder: minimal and local.
-   Brief 05 brings the design tokens and restyles these. */
+/* Sign-in, the session-expired dialog: Postern's tokens (web/src/theme), light
+   and dark from the same values. Restyled in brief 05; the markup and its
+   selectors are brief 04's. */
 
 .auth-page {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
-  box-sizing: border-box;
-  font-family: system-ui, sans-serif;
-  color: #1f1f1f;
-  background: #f0f4f9;
+  gap: var(--space-4);
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--space-4);
+  color: var(--color-text);
+  background: var(--color-canvas);
 }
 
 .auth-card,
 .auth-dialog {
   width: 100%;
   max-width: 28rem;
-  box-sizing: border-box;
-  padding: 2rem;
-  border: 0;
-  border-radius: 1.5rem;
-  background: #fff;
-  font-family: system-ui, sans-serif;
-  color: #1f1f1f;
+  padding: var(--space-10) var(--space-8) var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-dialog {
+  box-shadow: var(--shadow-lg);
 }
 
 .auth-dialog::backdrop {
-  background: rgb(0 0 0 / 0.4);
+  background: var(--color-scrim);
 }
 
+/* The wordmark, with the mark drawn from the accent: a wall with a small gate in it. */
 .auth-wordmark {
-  margin: 0 0 1rem;
-  font-size: 1.25rem;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-6);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.auth-wordmark::before {
+  content: "";
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-accent);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill-rule='evenodd' d='M8 0h16a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8zM15 32V20a4 4 0 0 1 8 0v12z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .auth-form h1,
 .auth-form h2 {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 400;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
 }
 
 .auth-subtitle,
 .auth-help,
 .auth-footer {
-  margin: 0 0 0.75rem;
-  color: #444746;
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
 }
 
 .auth-footer {
   max-width: 28rem;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   text-align: center;
 }
 
 .auth-form label {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
 }
 
 .auth-form input[type="email"],
 .auth-form input[type="password"],
 .auth-form input[type="text"] {
-  padding: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   font: inherit;
-  border: 1px solid #747775;
-  border-radius: 0.25rem;
+  font-size: var(--text-lg);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.auth-form input[type="email"]:focus-visible,
+.auth-form input[type="password"]:focus-visible,
+.auth-form input[type="text"]:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -1px;
+  border-color: var(--color-focus);
 }
 
 .auth-form input[aria-invalid="true"] {
-  border-color: #b3261e;
+  border-color: var(--color-danger);
 }
 
 .auth-check {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  min-height: 2rem;
+  cursor: pointer;
+}
+
+.auth-check input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
 }
 
 .auth-chip {
   align-self: flex-start;
-  margin: 0 0 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid #747775;
-  border-radius: 1rem;
-  font-size: 0.875rem;
+  margin: 0 0 var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
 }
 
 .auth-error {
   margin: 0;
-  color: #b3261e;
+  font-weight: var(--weight-medium);
+  color: var(--color-danger);
 }
 
 .auth-notice {
-  margin: 0 0 1rem;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  background: #e8f0fe;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-on-accent-soft);
+  background: var(--color-accent-soft);
 }
 
 .auth-actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .auth-actions button[type="submit"] {
-  padding: 0.6rem 1.5rem;
+  min-height: 2.5rem;
+  padding: 0 var(--space-6);
   border: 0;
-  border-radius: 1.25rem;
+  border-radius: var(--radius-md);
   font: inherit;
-  color: #fff;
-  background: #0b57d0;
+  font-weight: var(--weight-semibold);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
   cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.auth-actions button[type="submit"]:hover {
+  background: var(--color-accent-hover);
 }
 
 .auth-actions button:disabled {
@@ -132,12 +181,18 @@
 }
 
 .auth-link {
+  padding: var(--space-2) 0;
   border: 0;
-  padding: 0;
   font: inherit;
-  color: #0b57d0;
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
   background: none;
   cursor: pointer;
+}
+
+.auth-link:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
 }
 
 .auth-visually-hidden {
@@ -149,35 +204,8 @@
   white-space: nowrap;
 }
 
-@media (prefers-color-scheme: dark) {
-  .auth-page {
-    color: #e3e3e3;
-    background: #131314;
-  }
-  .auth-card,
-  .auth-dialog {
-    color: #e3e3e3;
-    background: #1f1f1f;
-  }
-  .auth-subtitle,
-  .auth-help,
-  .auth-footer {
-    color: #c4c7c5;
-  }
-  .auth-notice {
-    background: #0e2a52;
-  }
-  .auth-link {
-    color: #a8c7fa;
-  }
-  .auth-form input[type="email"],
-  .auth-form input[type="password"],
-  .auth-form input[type="text"] {
-    color: inherit;
-    background: transparent;
-    border-color: #8e918f;
-  }
-  .auth-error {
-    color: #f2b8b5;
+@media (max-width: 37.4375rem) {
+  .auth-card {
+    padding: var(--space-8) var(--space-5) var(--space-6);
   }
 }

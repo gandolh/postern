@@ -1,0 +1,33 @@
+/* The help sheet stub (brief 14 replaces it). */
+
+.keys-sheet {
+  width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+}
+
+.keys-sheet::backdrop {
+  background: var(--color-scrim);
+}
+
+.keys-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.keys-sheet-head h2 {
+  font-size: var(--text-xl);
+}
+
+.keys-sheet-body {
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+}

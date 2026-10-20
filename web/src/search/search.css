@@ -1,0 +1,49 @@
+/* The search box in the top bar (brief 10 restyles it as it grows). */
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 3rem;
+  padding: 0 var(--space-3) 0 var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--color-hover);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.search-box:focus-within {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.search-box-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  font-size: var(--text-lg);
+  color: var(--color-text);
+  background: transparent;
+}
+
+.search-box-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.search-box-input:focus-visible {
+  outline: none;
+}
+
+.search-box:has(.search-box-input:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: 0;
+}
+
+.search-box-input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
