@@ -42,3 +42,17 @@ reader carries the stream. Notifications while the app is closed are brief 16.
 - A change made from an IMAP client (star, move) shows up live.
 - Stopping and restarting the dev Stalwart reconnects without a reload.
 - Notifications fire only when enabled and only for the Inbox.
+
+## Outcome (2026-10-20)
+
+Built. `LiveHost` runs one push reader per sign-in and feeds every
+`StateChange` to the labels store, the lists and (through the actions bus)
+the open conversation and search. Measured on `dev/`: SMTP to visible in the
+Inbox in 295 ms; an IMAP star showed within 2.5 s. The controller restarted
+the dev Stalwart with Postern open: it polled, then reconnected without a
+reload, and the next message arrived within 2 s. That check found the Vite
+dev proxy holding event-stream headers until the first 30 s ping, which kept
+"Reconnecting…" up for half a minute; `web/vite.config.ts` now flushes them.
+Desktop notifications are off by default and per device; real permission
+prompts could not be tested headless (checked with a stubbed
+`Notification`).

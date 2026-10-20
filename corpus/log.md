@@ -112,3 +112,12 @@ with suggestions and an advanced-search dropdown, and results with
 highlighted snippets and every list action. What Stalwart's search can and
 cannot do is now in [gmail-on-jmap.md](wiki/gmail-on-jmap.md).
 [Brief](briefs/done/10-search.md).
+
+## [2026-10-20] done | Brief 11: live updates and notifications
+
+New mail, stars and moves show without a reload; the tab title and favicon
+carry the Inbox unread count; desktop notifications are opt-in, per device,
+Inbox only, sender and subject only. Reconnects after a server restart were
+checked by the controller, which also fixed the dev proxy holding
+event-stream headers. [architecture.md](wiki/architecture.md) has the as-built
+notes. [Brief](briefs/done/11-live-updates.md).

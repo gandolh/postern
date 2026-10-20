@@ -118,6 +118,14 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
   can send the header, and parse the server-sent events by hand. The
   `StateChange` events drive `Email/changes` and `Email/queryChanges` (brief 11).
   Caddy flushes `text/event-stream` responses as they arrive.
+- **As built (brief 11):** one reader per sign-in for `Email`, `Mailbox`,
+  `Thread` and `EmailDelivery`. Each `StateChange` re-syncs the labels and
+  every mounted list, and announces "settled" on the actions bus so an open
+  conversation and search results refresh. Mail sent over SMTP showed in an
+  open Inbox 295 ms later. After a Stalwart restart the reader polls, then
+  retries the stream every 60 s; it was back within 6 s in the dev test. The
+  Vite dev proxy holds a proxied response's headers until the first body
+  chunk, so `web/vite.config.ts` flushes event-stream headers itself.
 - **While it is closed:** Web Push. JMAP `PushSubscription` with the browser's
   push endpoint; Stalwart signs with VAPID. A service worker shows the
   notification (brief 16).
