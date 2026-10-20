@@ -72,7 +72,7 @@ function attributionBefore(quote: Element): Node[] {
       out.push(s);
       continue;
     }
-    if (ATTRIBUTION.test(text) && text.length < 500) {
+    if (text.length < 500 && ATTRIBUTION.test(text)) {
       out.push(s);
       return out;
     }
@@ -154,10 +154,12 @@ export function splitPlainQuote(text: string): SplitText {
     // The attribution: one line, or two when a long "On … <address>" wrapped before "wrote:".
     const one = (lines[i] ?? "").trim();
     const two = `${(lines[i - 1] ?? "").trim()} ${one}`;
-    if (ATTRIBUTION.test(one)) start = i;
-    else if (i > 0 && ATTRIBUTION.test(two)) start = i - 1;
+    // Attribution lines are short; never run the pattern over a long hostile line.
+    if (one.length < 500 && ATTRIBUTION.test(one)) start = i;
+    else if (i > 0 && two.length < 1000 && ATTRIBUTION.test(two)) start = i - 1;
   }
-  const main = lines.slice(0, start).join("\n").replace(/\s+$/, "");
+  // trimEnd(), not /\s+$/: the regex retries from every space of a long run (brief 17).
+  const main = lines.slice(0, start).join("\n").trimEnd();
   if (main.trim() === "") return { main: text, quote: null };
   return { main, quote: lines.slice(start).join("\n") };
 }

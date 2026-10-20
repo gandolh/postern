@@ -46,3 +46,24 @@ tests, and sets the HTTP headers production will send.
 - `npm run test:e2e` runs the hostile suite green against `dev/`.
 - The CSP is final in security.md, and the production build works under it.
 - No serious finding from `security-review` is left unrecorded.
+
+## Outcome (2026-10-20)
+
+Built. `npm run test:e2e` builds Postern, serves it behind Caddy in Docker
+with the final headers, proxies `/webmail-api` to `dev/`, and runs 32
+Playwright tests: one per hostile fixture (no script, no request before
+"Display images", no top navigation, the exact sandbox, no message markup in
+the app's DOM), DNS, the CSP walk with zero violations across every screen,
+and the token checks. No fixture got through. The final CSP and headers, and
+the `/webmail-api` path allowlist, are in
+[security-headers.md](../../wiki/security-headers.md); `style-src
+'unsafe-inline'` stays, because sandboxed frames inherit the app's policy.
+Fixes: slow regexes a hostile plain-text message could exploit, look-alike
+link detection that no longer flags every internationalised domain, a
+DMARC-pass check before a per-sender image allowance applies, and DNS
+prefetching off in frames. `npm audit` found nothing.
+
+Open at this commit: F1 (High), any script on the shared origin can rewrite
+the service worker's precache and gain a lasting foothold. The controller
+fixes it in the next commit (see [log.md](../../log.md)). Lower findings are
+in [security-findings.md](../../wiki/security-findings.md).

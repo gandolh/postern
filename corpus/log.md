@@ -224,3 +224,13 @@ pull to refresh and a floating Compose button. The service worker's estate
 rules (no `Service-Worker-Allowed`, no root-scope worker anywhere on the
 origin) are in [security.md](wiki/security.md).
 [Brief](briefs/done/16-installable-and-mobile.md).
+
+## [2026-10-20] done | Brief 17: security hardening
+
+A Playwright suite behind Caddy proves every hostile fixture harmless, the
+final CSP works on every screen, and no secret reaches storage, URLs, logs
+or another page on the origin. The headers brief 18 must set are in
+[security-headers.md](wiki/security-headers.md), findings in
+[security-findings.md](wiki/security-findings.md). It found one High: the
+service worker's cache is writable by any script on the origin.
+[Brief](briefs/done/17-security-hardening.md).

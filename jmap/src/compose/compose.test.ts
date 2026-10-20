@@ -210,6 +210,14 @@ describe("quoting", () => {
     expect(q.html).not.toMatch(/<script|<b>/);
   });
 
+  it("trims a hostile original's trailing whitespace in linear time (brief 17)", () => {
+    const start = performance.now();
+    const text = `hi${" ".repeat(200_000)}x${" ".repeat(200_000)}`;
+    expect(replyQuote(original, text, fmt).text.endsWith("x")).toBe(true);
+    expect(forwardQuote(original, text, fmt).text.endsWith("x")).toBe(true);
+    expect(performance.now() - start).toBeLessThan(500);
+  });
+
   it("builds the forward block with Gmail's header lines", () => {
     const q = forwardQuote(original, "Plans attached.", fmt);
     expect(q.text).toBe(

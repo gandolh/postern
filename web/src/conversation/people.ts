@@ -14,7 +14,7 @@ export function displayName(address: EmailAddress): string {
   return (address.name ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
 }
 
-const ADDRESS_IN_NAME = /[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+/;
+const ADDRESS_IN_NAME = /(?<![^\s@<>"'])[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+/;
 
 /** The address a display name pretends to be, when it differs from the real one. */
 export function forgedAddressInName(address: EmailAddress): string | null {

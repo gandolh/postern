@@ -10,8 +10,10 @@
 //
 // The document carries its own CSP as defence in depth (the sanitiser has
 // already removed every remote URL until "Display images"; this would catch
-// a sanitiser miss), a no-referrer policy, Postern's base style, the
-// message's sanitised styles, then Postern's overrides.
+// a sanitiser miss), a no-referrer policy, DNS prefetching off (Chrome may
+// resolve a link's host ahead of a click, which tells the sender's DNS server
+// the message was opened), Postern's base style, the message's sanitised
+// styles, then Postern's overrides.
 
 import { FLAG_ATTR } from "./flag";
 import type { SanitizedHtml } from "./sanitize";
@@ -93,6 +95,7 @@ export function buildSrcdoc(clean: Pick<SanitizedHtml, "headHtml" | "bodyHtml" |
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="${frameCsp(view.allowRemote)}">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="x-dns-prefetch-control" content="off">
 <meta name="color-scheme" content="${scheme}">
 <style>${baseCss(scheme)}</style>
 ${clean.headHtml}

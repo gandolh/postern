@@ -11,6 +11,14 @@ describe("senders", () => {
     expect(forgedAddressInName({ name: null, email: "a@b.test" })).toBeNull();
   });
 
+  it("stays fast on a long hostile display name (brief 17)", () => {
+    const start = performance.now();
+    expect(forgedAddressInName({ name: "a".repeat(200_000), email: "x@evil.test" })).toBeNull();
+    expect(forgedAddressInName({ name: `${"a".repeat(100_000)}@bank`, email: "x@evil.test" })).toBeNull();
+    expect(forgedAddressInName({ name: `${"b".repeat(100_000)}@bank.test`, email: "x@evil.test" })).toBe(`${"b".repeat(100_000)}@bank.test`);
+    expect(performance.now() - start).toBeLessThan(500);
+  });
+
   it("names recipients the short way, me included", () => {
     expect(recipientsLine([{ name: "Alice Archer", email: "alice@postern.test" }, { name: "Bob Baker", email: "bob@postern.test" }], [{ name: null, email: "carol@x.test" }], "alice@postern.test")).toBe("to me, Bob, carol");
     expect(recipientsLine(null, null, "me@x")).toBe("to undisclosed recipients");

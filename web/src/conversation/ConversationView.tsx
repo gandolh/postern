@@ -445,7 +445,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
                   me={me}
                   body={snapshot.bodies.get(item.message.id)}
                   theme={resolvedTheme}
-                  allowRemote={imagesShown.has(item.message.id) || (item.message.from?.[0] ? allowance.allows(item.message.from[0].email) : false)}
+                  allowRemote={imagesShown.has(item.message.id) || (item.message.from?.[0] ? allowance.allows(item.message.from[0].email, item.message.authResults) : false)}
                   canReportSpam={viewKind !== "spam"}
                   senderBlocked={item.message.from?.[0] ? block.isBlocked(item.message.from[0].email) : false}
                   actions={cardActions(item.message, item.index)}

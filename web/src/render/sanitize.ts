@@ -6,7 +6,7 @@
 //   const clean = sanitizeMessageHtml(html, { allowRemote: false, cidUrls });
 //   clean.blockedRemote   remote images left out (the "Images are not displayed" bar)
 //   clean.hasQuote        a trailing quote was marked (the "…" toggle)
-//   clean.suspiciousLinks links whose text names another host, or punycode hosts
+//   clean.suspiciousLinks links whose text names another host, or look-alike hosts (./idn.ts)
 //
 // Rules, beyond DOMPurify's defaults (no script, no event handlers, no
 // javascript: URLs):
@@ -26,6 +26,7 @@
 import createDOMPurify, { type Config, type DOMPurify, type UponSanitizeAttributeHookEvent } from "dompurify";
 import { sanitizeCss, setsColours } from "./css";
 import { FLAG_ATTR, FLAG_STYLE } from "./flag";
+import { lookalikeHost } from "./idn";
 import { markQuote, QUOTE_ATTR } from "./quotes";
 import { imageUrl, linkHost, rewriteSrcset, safeLinkUrl } from "./urls";
 
@@ -42,8 +43,12 @@ export interface SuspiciousLink {
   text: string;
   /** Where it really goes (the host, punycode as sent). */
   host: string;
-  /** The text names another host, or the host is punycode (look-alike letters). */
-  reason: "mismatch" | "punycode";
+  /**
+   * The text names another host, or the host is written to pass for another:
+   * scripts mixed in one label, or all letters imitating Latin ones
+   * (./idn.ts). An ordinary internationalised name is not flagged.
+   */
+  reason: "mismatch" | "lookalike";
 }
 
 export interface SanitizedHtml {
@@ -283,7 +288,7 @@ function sameSite(claimed: string, real: string): boolean {
   return a === b || b.endsWith(`.${a}`);
 }
 
-/** Note links whose text names another host, and punycode hosts; mark them in the frame too. */
+/** Note links whose text names another host, and look-alike hosts; mark them in the frame too. */
 function flagLinks(body: HTMLElement): SuspiciousLink[] {
   const out: SuspiciousLink[] = [];
   for (const a of Array.from(body.querySelectorAll("a[href]"))) {
@@ -293,7 +298,7 @@ function flagLinks(body: HTMLElement): SuspiciousLink[] {
     const claimed = claimedHost(text);
     let reason: SuspiciousLink["reason"] | null = null;
     if (claimed && !sameSite(claimed, host)) reason = "mismatch";
-    else if (host.split(".").some((label) => label.startsWith("xn--"))) reason = "punycode";
+    else if (lookalikeHost(host) !== null) reason = "lookalike";
     if (!reason) continue;
     out.push({ text, host, reason });
     a.setAttribute("title", `Goes to ${host}`);

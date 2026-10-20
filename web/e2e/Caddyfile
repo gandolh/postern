@@ -1,0 +1,76 @@
+# Postern served the way production serves it, for the browser tests
+# (brief 17). global-setup.ts runs it in Docker (caddy:2.11.7) on
+# 127.0.0.1:5193, with web/dist mounted at /srv/webmail and the dev Stalwart
+# reached through Docker Desktop's host.docker.internal.
+#
+# The /webmail and /webmail-api blocks are the shape brief 18 gives the
+# estate's Caddy; corpus/wiki/security-headers.md has the header set and why
+# each one is there. Only three things here are test scaffolding: plain HTTP on
+# :80, the /probe/ stand-in for another estate app, and the env defaults.
+#
+# POSTERN_CSP overrides the policy for one run (used once, to check whether the
+# app itself needs style-src 'unsafe-inline'). Leave it unset otherwise.
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:80 {
+	# Another estate app on the same origin, with no headers of its own.
+	# tokens.spec.ts probes Postern's storage, caches and windows from here.
+	handle_path /probe/* {
+		header Content-Type "text/html; charset=utf-8"
+		respond `<!doctype html><html lang="en"><meta charset="utf-8"><title>Another estate app</title><p>Another app on the same origin.</p></html>` 200
+	}
+
+	redir /webmail /webmail/ 308
+
+	handle_path /webmail/* {
+		root * /srv/webmail
+		header {
+			Content-Security-Policy "{$POSTERN_CSP:default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'}"
+			Cross-Origin-Opener-Policy "same-origin"
+			Cross-Origin-Resource-Policy "same-origin"
+			Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=(), display-capture=(), publickey-credentials-get=(), browsing-topics=()"
+			Referrer-Policy "no-referrer"
+			X-Content-Type-Options "nosniff"
+			X-Frame-Options "DENY"
+			X-DNS-Prefetch-Control "off"
+			-Server
+		}
+		# handle_path has stripped /webmail: these paths are inside it.
+		@revalidate path / /index.html /sw.js /manifest.webmanifest
+		header @revalidate Cache-Control "no-cache"
+		header /assets/* Cache-Control "public, max-age=31536000, immutable"
+		header /manifest.webmanifest Content-Type "application/manifest+json"
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+
+	# Stalwart, prefix stripped, and only the paths Postern calls: JMAP
+	# (session, API, upload, download, event source) and the three sign-in
+	# endpoints. Stalwart's admin UI, account pages, OAuth login page and
+	# management API stay off the shared origin.
+	@api path /webmail-api/jmap/* /webmail-api/api/auth /webmail-api/auth/token /webmail-api/auth/userinfo
+	handle @api {
+		uri strip_prefix /webmail-api
+		header {
+			# Postern reads these with fetch(), where a CSP does nothing. It
+			# stops any page Stalwart serves here running script on the origin.
+			Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; sandbox"
+			Cross-Origin-Resource-Policy "same-origin"
+			Referrer-Policy "no-referrer"
+			X-Content-Type-Options "nosniff"
+			-Server
+		}
+		reverse_proxy {$POSTERN_API:host.docker.internal:18080} {
+			# The JMAP event source streams: write each event as it comes.
+			flush_interval -1
+		}
+	}
+
+	handle {
+		respond 404
+	}
+}

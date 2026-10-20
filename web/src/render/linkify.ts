@@ -6,29 +6,39 @@ import { safeLinkUrl } from "./urls";
 
 export type TextRun = { kind: "text"; text: string } | { kind: "link"; text: string; href: string };
 
-const CANDIDATE = /\b(?:https?:\/\/|mailto:|www\.)[^\s<>"'`]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+/gi;
+// A message's text is hostile input and can be 1 MB, so both patterns stay
+// linear (brief 17): an address only starts where a run of address
+// characters starts (the lookbehind), and its parts are bounded by RFC 5321's
+// lengths, so a long run with no "@" is not rescanned from every position.
+const CANDIDATE = /\b(?:https?:\/\/|mailto:|www\.)[^\s<>"'`]+|(?<![\w.+-])[\w.+-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi;
 
-/** Trailing punctuation is the sentence's, not the URL's; a closing bracket stays if the URL opened one. */
+const CLOSERS: Record<string, string> = { ")": "(", "]": "[", "}": "{", ">": "<" };
+
+/** Trailing punctuation is the sentence's, not the URL's; a closing bracket stays if the URL opened one. One pass. */
 function trimTrailing(url: string): string {
-  let out = url;
-  for (;;) {
-    const last = out.slice(-1);
+  const count = (c: string) => {
+    let n = 0;
+    for (const ch of url) if (ch === c) n++;
+    return n;
+  };
+  const balance = new Map<string, number>();
+  for (const [close, open] of Object.entries(CLOSERS)) balance.set(close, count(close) - count(open));
+  let end = url.length;
+  while (end > 0) {
+    const last = url[end - 1] as string;
     if (/[.,;:!?'"*_]/.test(last)) {
-      out = out.slice(0, -1);
+      end--;
       continue;
     }
-    const pairs: Record<string, string> = { ")": "(", "]": "[", "}": "{", ">": "<" };
-    const open = pairs[last];
-    if (open !== undefined) {
-      const opens = out.split(open).length - 1;
-      const closes = out.split(last).length - 1;
-      if (closes > opens) {
-        out = out.slice(0, -1);
-        continue;
-      }
+    const surplus = balance.get(last);
+    if (surplus !== undefined && surplus > 0) {
+      balance.set(last, surplus - 1);
+      end--;
+      continue;
     }
-    return out;
+    break;
   }
+  return url.slice(0, end);
 }
 
 /** Cut text into text and link runs. Every href is http:, https: or mailto:. */

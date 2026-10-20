@@ -89,7 +89,7 @@ export function quotePlainText(text: string): string {
 /** The quote under a reply: the attribution line, then the original's text in a blockquote. */
 export function replyQuote(message: QuoteSource, originalText: string, format: QuoteFormat = {}): Quote {
   const attribution = quoteAttribution(message, format);
-  const body = originalText.replace(/\r\n?/g, "\n").replace(/\s+$/, "");
+  const body = originalText.replace(/\r\n?/g, "\n").trimEnd();
   return {
     text: `${attribution}\n${quotePlainText(body)}`,
     html:
@@ -117,7 +117,7 @@ export function forwardHeaderLines(message: QuoteSource, format: QuoteFormat = {
 /** The forwarded message: Gmail's header block, a blank line, then the original's text (not quoted with ">"). */
 export function forwardQuote(message: QuoteSource, originalText: string, format: QuoteFormat = {}): Quote {
   const lines = forwardHeaderLines(message, format);
-  const body = originalText.replace(/\r\n?/g, "\n").replace(/\s+$/, "");
+  const body = originalText.replace(/\r\n?/g, "\n").trimEnd();
   return {
     text: `${lines.join("\n")}\n\n${body}`,
     html:

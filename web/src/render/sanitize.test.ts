@@ -47,11 +47,12 @@ describe("the hostile seed set", () => {
 
       it("keeps no script, frame, form control or dangerous element in the body", () => {
         for (const tag of DANGEROUS_TAGS) expect(body.querySelector(tag), tag).toBeNull();
-        // The only <meta> elements are Postern's own three, in the head.
+        // The only <meta> elements are Postern's own, in the head.
         expect(Array.from(doc.querySelectorAll("meta")).map((m) => m.getAttribute("http-equiv") ?? m.getAttribute("name") ?? "charset")).toEqual([
           "charset",
           "Content-Security-Policy",
           "referrer",
+          "x-dns-prefetch-control",
           "color-scheme",
         ]);
       });
@@ -214,10 +215,23 @@ describe("fixture specifics", () => {
     expect(clean.body.querySelectorAll("[data-postern-flag]")).toHaveLength(4);
   });
 
-  it("punycode-domain: every look-alike host is flagged", () => {
+  it("punycode-domain: the look-alike hosts are flagged, the ordinary Cyrillic one is not", () => {
     const clean = sanitizeMessageHtml(get("punycode-domain"));
-    expect(clean.suspiciousLinks).toHaveLength(4);
-    for (const link of clean.suspiciousLinks) expect(link.host).toMatch(/xn--/);
+    // аррӏе (all Cyrillic, every letter imitating Latin; its text also
+    // names apple.test, so it is a mismatch first), аpple and раypal (Cyrillic
+    // and Latin in one label). почта.test is a Cyrillic word, not a disguise:
+    // Chrome shows it in Unicode too.
+    expect(clean.suspiciousLinks.map((l) => [l.host, l.reason])).toEqual([
+      ["xn--80ak6aa92e.test", "mismatch"],
+      ["xn--pple-43d.test", "lookalike"],
+      ["xn--ypal-43d9g.test", "lookalike"],
+    ]);
+    expect(clean.body.querySelectorAll("[data-postern-flag]")).toHaveLength(3);
+  });
+
+  it("an ordinary internationalised link is not flagged", () => {
+    const clean = sanitizeMessageHtml('<a href="https://münchen.de/">Stadt</a> <a href="https://пример.рф/">пример</a> <a href="https://例え.jp/">例</a>');
+    expect(clean.suspiciousLinks).toEqual([]);
   });
 
   it("forged-sender: plain prose survives", () => {
@@ -299,6 +313,12 @@ describe("the srcdoc", () => {
     for (const forbidden of ["allow-scripts", "allow-same-origin", "allow-forms", "allow-top-navigation", "allow-top-navigation-by-user-activation", "allow-modals"]) {
       expect(tokens).not.toContain(forbidden);
     }
+  });
+
+  it("turns DNS prefetching off, so no link's host is looked up before a click (brief 17)", () => {
+    const srcdoc = buildSrcdoc(sanitizeMessageHtml('<a href="https://evil.test/x">x</a>'), { foldQuote: false, theme: "light", allowRemote: false });
+    const doc = new DOMParser().parseFromString(srcdoc, "text/html");
+    expect(doc.head.querySelector('meta[http-equiv="x-dns-prefetch-control"]')?.getAttribute("content")).toBe("off");
   });
 
   it("carries its own CSP, no-referrer, and the quote fold", () => {

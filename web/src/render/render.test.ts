@@ -3,7 +3,7 @@
 // URLs, the frame-height estimate, the per-device image allowance.
 
 import { afterEach, describe, expect, it } from "vitest";
-import { allowImagesFrom, allowsImagesFrom, forgetImagesFrom, imageAllowanceList } from "./allowance";
+import { allowImagesFrom, allowsImagesFrom, dmarcPassed, forgetImagesFrom, imageAllowanceList, setAlwaysDisplayImages } from "./allowance";
 import { decodeCssEscapes, sanitizeCss } from "./css";
 import { linkify } from "./linkify";
 import { estimateFrameHeight } from "./measure";
@@ -89,6 +89,33 @@ describe("linkify", () => {
   it("never links javascript:, data: or other schemes", () => {
     const runs = linkify("javascript:alert(1) data:text/html,x vbscript:x file:///etc/passwd");
     expect(runs.every((r) => r.kind === "text")).toBe(true);
+  });
+
+  it("still finds addresses inside punctuation, and leaves a local part over 64 characters alone", () => {
+    expect(linkify("(alice.b+tag@mail.example.org)").filter((r) => r.kind === "link").map((r) => r.text)).toEqual(["alice.b+tag@mail.example.org"]);
+    expect(linkify(`${"a".repeat(65)}@x.test`).every((r) => r.kind === "text")).toBe(true);
+  });
+});
+
+describe("hostile plain text stays fast (brief 17)", () => {
+  // Each of these took seconds to minutes before: a regex rescanning a long
+  // run from every position, or trimming one character at a time.
+  const fast = (label: string, run: () => unknown) => {
+    const start = performance.now();
+    run();
+    expect(performance.now() - start, label).toBeLessThan(500);
+  };
+
+  it("linkify: a URL ending in 100k brackets or dots, and a 200k run with no @", () => {
+    fast("brackets", () => expect(linkify(`http://x.test/${")".repeat(100_000)}`)[0]).toEqual({ kind: "link", text: "http://x.test/", href: "http://x.test/" }));
+    fast("dots", () => linkify(`http://x.test/a${".".repeat(100_000)}`));
+    fast("word run", () => expect(linkify("a".repeat(200_000)).every((r) => r.kind === "text")).toBe(true));
+    fast("dotted run", () => linkify(`${"a.".repeat(100_000)}@`));
+  });
+
+  it("splitPlainQuote: a long whitespace run, and a long last line before the quote", () => {
+    fast("spaces", () => splitPlainQuote(`hello${" ".repeat(200_000)}x\n> quoted`));
+    fast("long line", () => splitPlainQuote(`${"On On wrote ".repeat(50_000)}\n> quoted`));
   });
 });
 
@@ -237,12 +264,44 @@ describe("the frame-height estimate", () => {
 describe("the per-device image allowance", () => {
   afterEach(() => window.localStorage.clear());
 
+  const PASS = ["mx.postern.test; dkim=pass header.d=shop.test; spf=pass smtp.mailfrom=bounce@shop.test; dmarc=pass (p=reject dis=none) header.from=shop.test"];
+
   it("is per account, lower-cased, and survives in localStorage", () => {
     allowImagesFrom("alice@postern.test", "News@Shop.test");
-    expect(allowsImagesFrom("alice@postern.test", "news@shop.test")).toBe(true);
-    expect(allowsImagesFrom("bob@postern.test", "news@shop.test")).toBe(false);
+    expect(allowsImagesFrom("alice@postern.test", "news@shop.test", PASS)).toBe(true);
+    expect(allowsImagesFrom("bob@postern.test", "news@shop.test", PASS)).toBe(false);
     expect(JSON.parse(window.localStorage.getItem("postern.images.alice@postern.test") ?? "[]")).toEqual(["news@shop.test"]);
     forgetImagesFrom("alice@postern.test", "news@shop.test");
     expect(imageAllowanceList("alice@postern.test")).toEqual([]);
+  });
+
+  it("applies only to a message that passed DMARC for the sender's domain (brief 17)", () => {
+    allowImagesFrom("alice@postern.test", "news@shop.test");
+    const allows = (results: string[]) => allowsImagesFrom("alice@postern.test", "news@shop.test", results);
+    expect(allows(PASS)).toBe(true);
+    // A forged From: no policy, a failed check, no header at all.
+    expect(allows(["mx.postern.test; spf=pass smtp.mailfrom=x@evil.test; dmarc=none header.from=shop.test"])).toBe(false);
+    expect(allows(["mx.postern.test; dkim=fail; spf=fail; dmarc=fail (p=reject) header.from=shop.test"])).toBe(false);
+    expect(allows([])).toBe(false);
+    // A pass for another domain, or a pass the sender wrote below the server's own header.
+    expect(allows(["mx.postern.test; dmarc=pass header.from=evil.test"])).toBe(false);
+    expect(allows(["mx.postern.test; spf=softfail", "mx.postern.test; dmarc=pass header.from=shop.test"])).toBe(false);
+    // "dmarc=pass" inside a comment is not a result.
+    expect(allows(["mx.postern.test; spf=none (dmarc=pass header.from=shop.test); dmarc=fail header.from=shop.test"])).toBe(false);
+    expect(allows(["mx.postern.test; spf=none (a (nested; dmarc=pass) comment); dmarc=fail"])).toBe(false);
+  });
+
+  it("reads Stalwart's header shape", () => {
+    expect(dmarcPassed(["mail.postern.test; dkim=pass header.d=northwind.example.com; spf=pass smtp.mailfrom=carol.chen@northwind.example.com; dmarc=pass header.from=northwind.example.com"], "carol.chen@northwind.example.com")).toBe(true);
+    expect(dmarcPassed(["mail.postern.test; dmarc=PASS"], "a@b.test")).toBe(true);
+  });
+
+  it("the global setting shows everyone's images, DMARC or not", () => {
+    setAlwaysDisplayImages(true);
+    try {
+      expect(allowsImagesFrom("alice@postern.test", "anyone@evil.test", [])).toBe(true);
+    } finally {
+      setAlwaysDisplayImages(false);
+    }
   });
 });

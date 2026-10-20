@@ -1,5 +1,5 @@
 ---
-summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, remote images, attachments, spoofed senders), the shared production origin, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, the CSP for /webmail, and the malicious-mail test corpus. Read before touching message rendering, sign-in, storage or headers.
+summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), the shared production origin and what a script elsewhere on it can still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
 updated: 2026-10-20
 ---
 
@@ -31,8 +31,9 @@ updated: 2026-10-20
   sanitiser's job, not the CSP's.
 - **Senders and links.**
   - Always show the real address next to the display name.
-  - Flag a mismatch between a link's text and its target, and punycode or
-    mixed-script domains.
+  - Flag a mismatch between a link's text and its target, and a host
+    written to pass for another (scripts mixed in one label, or every letter
+    imitating Latin); an ordinary internationalised name is not flagged.
   - Show Stalwart's authentication results (SPF, DKIM, DMARC) on demand, as
     Gmail's "Show original" does.
 - **Attachments.**
@@ -98,9 +99,22 @@ updated: 2026-10-20
   `!important` style, and message markup loses any `postern*` class or id.
   Image previews stop at 20 MB; inline images load up to 8 MB each and 16 MB
   per message on open, the rest on request.
-- **Known gaps:** "Always display images from <sender>" trusts the From
-  address, which a sender failing DMARC can forge (Gmail has the same gap).
-  Every internationalised link is flagged as punycode, legitimate or not.
+- **Brief 17 (2026-10-20):**
+  - Look-alike hosts are decided in `web/src/render/idn.ts`: a label that
+    mixes scripts (Japanese, Chinese and Korean mixes with Latin allowed),
+    one whose letters all imitate Latin under a TLD of another script, or a
+    Latin letter made to pass for another. münchen.de and почта.test are not
+    flagged; аpple.test and аррӏе.test are.
+  - "Always display images from <sender>" applies only when the topmost
+    Authentication-Results (Stalwart's own) says `dmarc=pass` for the
+    sender's domain. Stalwart keeps a sender-written header with its own
+    name underneath its result, so only the topmost one counts. The global
+    "always display" setting is unchanged.
+  - Every frame turns DNS prefetching off, so no link's host is resolved
+    before a click.
+  - Plain-text bodies, quotes and display names are scanned in linear time;
+    before, one hostile message could freeze the tab
+    ([security-findings.md](security-findings.md), F2).
 
 ## The service worker (brief 16)
 
@@ -116,24 +130,61 @@ updated: 2026-10-20
   origin can read its sender and subject through
   `registration.getNotifications()` ([decisions.md](decisions.md)).
 
-## CSP for /webmail (draft, set by Caddy in brief 18)
+## Headers (final since brief 17)
 
-```
-default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
-img-src 'self' data: blob: https:; media-src 'self' blob:; font-src 'self';
-connect-src 'self'; frame-src 'self' blob:; frame-ancestors 'none';
-base-uri 'none'; form-action 'self'; object-src 'none'
-```
+The CSP, COOP, CORP, Permissions-Policy and the rest, with the reason for each
+and the Caddy shape, are in [security-headers.md](security-headers.md).
+`style-src 'unsafe-inline'` stays, and only for the message frames: a
+`srcdoc` frame inherits the app's policy and cannot loosen it, and message
+markup needs inline styles. `frame-ancestors 'none'` and COOP `same-origin`
+mean no other app on the origin can frame Postern or script a Postern window
+it opened.
 
-`style-src 'unsafe-inline'` is there for the message frames, whose sanitised
-inline styles inherit this policy. Tighten it if brief 17 finds a way.
+## What a script elsewhere on the origin can still do
 
-## The malicious-mail corpus
+Checked from a stand-in estate page (`tokens.spec.ts`, 2026-10-20). It
+**cannot** read a token: none is in storage, cookies, IndexedDB, Cache
+Storage, a URL, the DOM or a console line, and nothing is sent on a
+BroadcastChannel. It cannot frame Postern, and a window it opens on
+`/webmail/` comes back closed. It **can**:
 
-`dev/` seeds a set of hostile messages (brief 02), and brief 17 turns them into
-automated browser tests that must stay green. The set:
+- read and write Postern's per-device preferences, including ones that load
+  remote images or turn Web Push on (F6), and read the last username;
+- see the worker's registration, read a notification on screen, show its own,
+  and unregister the worker;
+- **rewrite the worker's precache, so its page is served as Postern on the
+  next visit** (F1, High, open). Until that is fixed, the shared-origin cost
+  in [decisions.md](decisions.md) is not bounded by the injected script's
+  lifetime.
 
-- script tags and event handlers, SVG with script, CSS that overlays the page;
-- `javascript:` and `data:` links, and a meta refresh;
-- remote-image trackers;
-- a forged display name, and an attachment with a double extension.
+## The malicious-mail corpus and the browser tests
+
+`dev/` seeds 17 hostile messages (brief 02): script tags and event handlers,
+SVG with script, CSS that overlays the page, `javascript:` and `data:` links,
+a meta refresh, a `<base>`, forms, frames and embeds, remote trackers, link
+text that lies, look-alike hosts, forged display names, and attachments
+named to deceive. Brief 17's suite in [web/e2e](../../web/e2e/README.md)
+(`npm run test:e2e`, Playwright and Chromium against the production build
+behind Caddy and the dev Stalwart) opens each in the real app and checks:
+
+- **No script runs.** The `__POSTERN_PWNED` canary stays unset in the app
+  and in the frame. Nothing in the frame is left for the sandbox to block:
+  no script, handler or `javascript:` URL in the `srcdoc`, and no "Blocked
+  script execution" line after a real pointer has crossed the frame and Tab
+  plus Enter has followed every link.
+- **Nothing leaves early.** No request outside `/webmail` and `/webmail-api`
+  before "Display images", and after it only the message's image hosts, with
+  no Referer. Chrome's net log shows no DNS lookup of any message host.
+- **No navigation.** The app's URL never changes, and each link opens one new
+  tab with no opener and no referrer.
+- **The frame.** Exactly `allow-popups allow-popups-to-escape-sandbox`, one
+  frame per HTML body, and no message markup in the app's own DOM.
+- **Outside the frame.** The real address and the forged-name warning, the
+  link warnings, and attachments that download under their real name.
+
+The token tests check the places above for every secret sign-in handles, the
+idle timeout (with a fake clock), and that sign-out forgets the session.
+Control tests prove the canary and the CSP watch do catch a script that
+runs. The hostile specs block the service worker (Playwright's routing is
+unreliable under one; the worker never touches message content); the CSP and
+token specs run with it.
