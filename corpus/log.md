@@ -131,3 +131,13 @@ DOMPurify into sandboxed `srcdoc` frames with remote content blocked until
 asked. Checked in Chrome against all 17 hostile fixtures. How it was built,
 and its known gaps, are in [security.md](wiki/security.md).
 [Brief](briefs/done/07-read-a-conversation.md).
+
+## [2026-10-20] resume | Briefs 01-07 and 09-11 done; next 08, then 12 and 15
+
+The owner's answers for this run (2026-10-20): sign in again after a reload,
+display settings per device, no offline mail, and build every brief through
+17 with brief 18 left for the owner to commit and deploy. Waves still to run:
+08, then 12 with 15, then 13, 14, 16, 17 and 18. Each brief's outcome note in
+`briefs/done/` names the hooks later briefs plug into (the shell renders
+placeholder files at each later brief's paths). The dev Stalwart must not be
+reset while agents run; integration test files run one at a time.
