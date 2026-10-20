@@ -1,5 +1,5 @@
 // The settings pages the shell renders for #settings/<section>: General,
-// Accounts, Labels (brief 09's manager), Filters (brief 13's stub for now).
+// Accounts, Labels (brief 09's manager), Filters (brief 13).
 // Settings apply as you change them; there is no Save button.
 //
 // Importing this module starts the per-device persistence of the display

@@ -1,4 +1,4 @@
-// RFC 9610 (JMAP for Contacts). Typed stubs: unused until brief 15.
+// RFC 9610 (JMAP for Contacts).
 // A ContactCard is a JSContact Card (RFC 9553); only the commonly used parts
 // are typed here, and the rest passes through as unknown.
 

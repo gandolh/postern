@@ -1,4 +1,4 @@
-// Brief 14 replaces this stub: the help sheet's open state, shared by the
+// The help sheet's open state, shared by the
 // help button in the top bar, the `?` shortcut and the sheet itself.
 
 import { createContext, createElement, useContext, useMemo, useState, type ReactNode } from "react";

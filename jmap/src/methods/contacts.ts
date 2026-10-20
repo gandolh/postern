@@ -1,4 +1,5 @@
-// AddressBook and ContactCard (RFC 9610). Typed stubs, unused until brief 15.
+// AddressBook and ContactCard (RFC 9610): the raw method wrappers. The
+// contacts module (`../contacts/`) builds Postern's address-book calls on them.
 
 import type { CallArgs } from "../request.js";
 import type { ChangesResponse, GetResponse, QueryChangesResponse, QueryResponse, SetResponse } from "../types/core.js";

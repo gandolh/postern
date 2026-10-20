@@ -4,7 +4,7 @@
 //   <SearchBox query? />, <SearchRoute route />   the shell renders them
 //   focusSearch()                                 brief 14's `/`
 //   useParsedSearch(query)                        a query parsed against the account's labels (null while they load)
-//   SuggestionSource, Suggestion, suggestionQuery, replaceToken   the suggestion-source interface (brief 15 adds contacts)
+//   SuggestionSource, Suggestion, suggestionQuery, replaceToken   the suggestion-source interface (contacts plug in from ../contacts/searchSource)
 
 export { SearchBox, type SearchBoxProps } from "./SearchBox";
 export { SearchRoute, type SearchRouteProps } from "./SearchRoute";

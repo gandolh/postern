@@ -67,9 +67,9 @@ export class JmapClient implements MethodCaller, RequestExecutor {
   readonly sieveScript: SieveScriptMethods;
   readonly quota: QuotaMethods;
   readonly pushSubscription: PushSubscriptionMethods;
-  /** Typed stub until brief 15. */
+  /** AddressBook methods (JMAP Contacts). */
   readonly addressBook: AddressBookMethods;
-  /** Typed stub until brief 15. */
+  /** ContactCard methods (JMAP Contacts); `../contacts/` builds on them. */
   readonly contactCard: ContactCardMethods;
   /** Upload, download, `cid:` URLs. */
   readonly blob: BlobMethods;

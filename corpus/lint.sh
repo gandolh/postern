@@ -135,7 +135,7 @@ while IFS= read -r f; do
     [[ "$planned"      == *" $root "* ]] && continue
     # Not paths: JMAP method names (`Email/query`) start upper-case, MIME types
     # (`text/html`) have a fixed set of top-level types, and hostnames
-    # (`gandolh.ro/webmail`) contain a dot.
+    # (`example.org/webmail`) contain a dot.
     [[ "$root" =~ ^[A-Z] ]] && continue
     [[ " text image audio video application multipart message font " == *" $root "* ]] && continue
     [[ "$root" == *.* ]] && continue
