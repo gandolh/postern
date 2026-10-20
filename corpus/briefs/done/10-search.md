@@ -45,3 +45,15 @@ gives the highlighted excerpts. Mapping:
 - On `dev/`, `from:bob has:attachment` and `is:unread label:<x>` return what
   `Email/query` returns for the equivalent hand-built filter.
 - Snippets highlight the matched terms. Results support every brief-06 action.
+
+## Outcome (2026-10-20)
+
+Built. `parseSearch` in `@postern/jmap` covers every operator in the spec
+plus Gmail's `{a b}` braces; `OR` binds tighter than a space, as in Gmail.
+Results reuse brief 06's list with `SearchSnippet` highlights. The search box
+is a combobox with label, recent-sender and recent-search suggestions (kept
+in memory) and pluggable sources for brief 15. On `dev/`, `from:bob
+has:attachment` and `is:unread label:work` return exactly the hand-built
+filter's ids. Stalwart limits found are in
+[gmail-on-jmap.md](../../wiki/gmail-on-jmap.md): no prefix matching, phrases
+not enforced, no header search.

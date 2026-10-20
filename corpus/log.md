@@ -104,3 +104,11 @@ colours, "show if unread", and drag a conversation onto a label. Labels made
 in Postern appear as IMAP folders and the reverse. Deleting a label never
 leaves a message with no label (checked with `Email/get`).
 [Brief](briefs/done/09-labels.md).
+
+## [2026-10-20] done | Brief 10: search
+
+A pure operator parser and filter builder in `@postern/jmap`, the search box
+with suggestions and an advanced-search dropdown, and results with
+highlighted snippets and every list action. What Stalwart's search can and
+cannot do is now in [gmail-on-jmap.md](wiki/gmail-on-jmap.md).
+[Brief](briefs/done/10-search.md).

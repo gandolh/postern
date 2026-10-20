@@ -185,7 +185,7 @@ describe("the top bar", () => {
     const user = userEvent.setup();
     const signOut = vi.fn(async () => {});
     renderShell(session(loaded, signOut));
-    expect(screen.getByRole("searchbox", { name: "Search mail" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Search mail" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Settings" })).toHaveProperty("hash", "#settings/general");
     expect(screen.getByRole("button", { name: "Main menu" }).getAttribute("aria-controls")).toBe("shell-nav");
 
@@ -206,7 +206,7 @@ describe("the top bar", () => {
   it("goes to search results from the search box", async () => {
     const user = userEvent.setup();
     renderShell(session(loaded));
-    await user.type(screen.getByRole("searchbox", { name: "Search mail" }), "from:bob/x{Enter}");
+    await user.type(screen.getByRole("combobox", { name: "Search mail" }), "from:bob/x{Enter}");
     expect(window.location.hash).toBe("#search/from%3Abob%2Fx");
   });
 

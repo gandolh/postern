@@ -71,3 +71,11 @@ calendars, principals, mail:share, websocket, plus Web Push for
 - **The event stream** pings every 30 s at the shortest and sends nothing on
   connect. A bad `sinceState` comes back as `invalidArguments`, which the
   client treats like `cannotCalculateChanges`.
+- **Search** (brief 10): `from`, `to`, `cc`, `subject`, `body`, `text`,
+  `hasAttachment`, `before`/`after`, `minSize`/`maxSize`, the keyword and
+  mailbox conditions and AND/OR/NOT all work. Words match whole and
+  case-insensitive, with no prefix match (`road` misses "roadmap"), and a
+  quoted phrase is matched as separate words. An empty OR matches nothing.
+  `bcc` is accepted but unproven. Gmail's `rfc822msgid:`, `list:`,
+  `deliveredto:`, `replyto:`, `filename:` and `category:` have nothing to map
+  to; Postern searches them as text and says so.

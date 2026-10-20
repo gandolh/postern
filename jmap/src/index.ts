@@ -138,3 +138,19 @@ export type * from "./types/sieve.js";
 export type * from "./types/contacts.js";
 export type * from "./types/push.js";
 export type * from "./types/methods.js";
+
+export {
+  parseSearch,
+  formatSearch,
+  createLabelResolver,
+  normalizeLabelName,
+  parseSearchDate,
+  parseSize,
+  subtractAge,
+  type AdvancedSearchFields,
+  type ParsedSearch,
+  type ParseSearchOptions,
+  type SearchRoles,
+  type SearchWarning,
+  type SearchWarningKind,
+} from "./search/index.js";
