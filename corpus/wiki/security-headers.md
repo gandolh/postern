@@ -26,8 +26,10 @@ X-Frame-Options: DENY
 X-DNS-Prefetch-Control: off
 ```
 
-Also: `Cache-Control: no-cache` on `/`, `index.html`, `sw.js` and
-`manifest.webmanifest`; `public, max-age=31536000, immutable` on `/webmail/assets/*`;
+Also: `Cache-Control: no-cache` by default (`?Cache-Control` in Caddy, so
+`index.html`, `sw.js`, the manifest and deep-link fallbacks all revalidate; a
+path list would miss the fallbacks, since Caddy's matchers run before
+`try_files`); `public, max-age=31536000, immutable` on `/webmail/assets/*`;
 `Content-Type: application/manifest+json` on the manifest; no `Server`
 header; never `Service-Worker-Allowed` (brief 16's estate rule).
 
@@ -129,11 +131,10 @@ What [the e2e Caddyfile](../../web/e2e/Caddyfile) proves:
 redir /webmail /webmail/ 308
 handle_path /webmail/* {
 	root * <web/dist on the server>
-	header { <the /webmail/ set above> ; -Server }
-	@revalidate path / /index.html /sw.js /manifest.webmanifest
-	header @revalidate Cache-Control "no-cache"
+	header { <the /webmail/ set above> ; ?Cache-Control "no-cache" ; -Server }
 	header /assets/* Cache-Control "public, max-age=31536000, immutable"
 	header /manifest.webmanifest Content-Type "application/manifest+json"
+	encode gzip zstd
 	try_files {path} {path}/ /index.html
 	file_server
 }

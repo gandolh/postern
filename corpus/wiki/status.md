@@ -1,12 +1,16 @@
 ---
-summary: Snapshot as of 2026-10-09. Nothing built; 18 briefs filed in five waves (foundations, reading, writing and organising, live and settings, hardening and deploy), one line each with dependencies; four Gmail features parked as todos. The order briefs run in.
-updated: 2026-10-09
+summary: Snapshot as of 2026-10-21. Briefs 01-18 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+updated: 2026-10-21
 ---
 
-# Status (2026-10-09)
+# Status (2026-10-21)
 
-Nothing is built. The project was bootstrapped on 2026-10-09; the remote repo
-does not exist yet (the owner creates it).
+Postern is built: all 18 briefs are done, with 1,136 unit and integration
+tests and a 34-test browser suite (`npm run test:e2e`) that runs the
+production build behind Caddy with the final headers. Nothing is deployed.
+Brief 18 committed the stack and routes in `../vps-deploy` (commit
+`85f0934` there); the deploy itself, and the checks only a person can do,
+are the owner steps at the end of this page. Neither repo is pushed.
 
 ## Briefs, in the order they run
 
@@ -36,7 +40,7 @@ does not exist yet (the owner creates it).
 **Wave 5: hardening and deploy**
 - [16](../briefs/done/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11. **Done 2026-10-20.**
 - [17](../briefs/done/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04. **Done 2026-10-20.**
-- [18](../briefs/todo/18-deploy.md): deploy at /webmail through `../vps-deploy`. Owner steps. After 17.
+- [18](../briefs/done/18-deploy.md): deploy at /webmail through `../vps-deploy`. Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
 
 ## Parked (todos)
 
@@ -52,6 +56,51 @@ Each needs server work, or a check against Stalwart, before it can be a brief:
 
 Things only the owner can do, collected from the briefs as they finished.
 
+- **Deploy** (brief 18). From a clean, committed checkout of this repo (the
+  build runs in it, and `npm ci` replaces its `node_modules`), in
+  `../vps-deploy`:
+
+  ```
+  node cli.ts --check              # the committed Caddyfile matches the stacks
+  node cli.ts postern pre-deploy   # /var/www/postern, then the whole Caddyfile:
+                                   # validated on the box, Caddy reloaded (sudo)
+  node cli.ts postern deploy       # npm ci + npm run build here, upload web/dist
+  node cli.ts mail server          # applies the mail plan (webPushContact) and
+                                   # restarts Stalwart: a few seconds without mail
+  ```
+
+  `postern deploy` warns that postern depends on mail; mail is live, so that
+  is expected. The Caddyfile carries both new routes, `/webmail` and
+  `/webmail-api`, so the mail stack's own pre-deploy is not needed. If the
+  box's `caddy validate` refuses the file, Caddy keeps serving the old
+  config; do not restart Caddy until the file is fixed.
+
+  Smoke test, with `<domain>` the production domain:
+
+  - `curl -sI https://<domain>/webmail/` and a deep link such as
+    `https://<domain>/webmail/inbox`: 200, `text/html`, every `/webmail/`
+    header in [security-headers.md](security-headers.md),
+    `Cache-Control: no-cache`, no `Server`.
+  - `curl -sI https://<domain>/webmail/manifest.webmanifest`:
+    `application/manifest+json`. One file under `/webmail/assets/` (a name
+    from `index.html`): `Cache-Control: public, max-age=31536000, immutable`.
+  - `curl -s -D - -o /dev/null https://<domain>/webmail-api/jmap/session`
+    (a GET; Stalwart may answer a HEAD oddly): its answer to a request with
+    no token, carrying the four `/webmail-api/` headers and no `Server`.
+  - `curl -s -o /dev/null -w '%{http_code}\n' https://<domain>/webmail-api/admin/`
+    prints 404. So do `/webmail-api/api/principal` and
+    `/webmail-api/healthz/ready`.
+  - No `Service-Worker-Allowed` on any response from the apex.
+  - In the browser at `/webmail/`: sign in as your own mailbox (the real
+    account, TOTP included), then open and read a conversation.
+  - Send a message to another address on the domain: the postmaster alias
+    lands in your own Inbox. With Postern open, it appears with no reload
+    (live update).
+  - DevTools, Network panel with "Preserve log" on, through sign-in, reading
+    and sending: every request goes to `/webmail/` or `/webmail-api/` on the
+    apex, none to the mail host. The Application panel shows the worker
+    active with scope `/webmail/`.
+  - Then the Android install and the real push below.
 - **Screen reader by ear** (brief 14): the checklist is at the end of
   [brief 14](../briefs/done/14-keyboard-and-accessibility.md).
 - **Install on Android** (brief 16, after the deploy): open `/webmail/` in
@@ -62,10 +111,13 @@ Things only the owner can do, collected from the briefs as they finished.
   account; the notification shows sender and subject and opens the
   conversation. iOS needs 16.4 or later and Postern added to the Home Screen
   first.
-- **In `../vps-deploy`'s mail plan** (brief 16): set Stalwart's
-  `webPushContact` (Apple requires the VAPID subject), keep the VAPID key
-  stable across upgrades, and allow outbound HTTPS from the mail host to the
-  push services.
+- **Web Push on Stalwart** (brief 16, configured by brief 18): the mail plan
+  in `../vps-deploy` now sets `webPushContact`, the VAPID subject Apple
+  requires, to the domain's postmaster address. The VAPID key is the one in
+  Stalwart's store and the plan leaves it alone; a lost store means a new
+  key, and each device then re-subscribes at its next sign-in. If no push
+  ever arrives, check that the mail container reaches `fcm.googleapis.com`,
+  `updates.push.services.mozilla.com` and `web.push.apple.com` over HTTPS.
 - **Token lifetimes** (brief 04): decide whether to shorten production's
   access and refresh token lifetimes, since Stalwart cannot revoke a token
   ([open-questions.md](open-questions.md)).

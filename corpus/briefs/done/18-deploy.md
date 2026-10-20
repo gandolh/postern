@@ -59,3 +59,25 @@ commit style.
 - After the owner deploys: `/webmail` signs in and reads the
   owner's mail. `curl -I` shows the CSP. No request goes to `mail.<domain>`
   from the page.
+
+## Outcome (2026-10-21)
+
+Prepared, not deployed. In `../vps-deploy` (commit `85f0934`): a `postern`
+stack serving `web/dist` at `/webmail` with the headers from
+[security-headers.md](../../wiki/security-headers.md), the `/webmail-api`
+route in the mail stack with only the JMAP and sign-in paths allowed
+(everything else 404, prefix stripped, event streams flushed), optional
+per-route headers and path allowlists in the Caddy construct (the Caddyfile
+stayed byte-identical before Postern's routes were added), a synth check that
+refuses `Service-Worker-Allowed` on the shared origin, and `webPushContact`
+in the mail plan. Typecheck, `--check`, dry runs of both stacks and
+`caddy validate` pass; the two blocks were also tested in Caddy 2.11.7 against
+a stub upstream, and the controller re-ran the e2e suite with the same block.
+No OAuth client was registered (brief 04).
+
+One change from the spec's shape: `Cache-Control: no-cache` is the default
+for everything outside `/assets/*`, because a path list misses deep links
+served by the SPA fallback. imbatranimOS's root-scope service worker runs on
+a loopback origin of its own, not the shared one. The owner's commands and
+smoke test are in [status.md](../../wiki/status.md); the post-deploy
+acceptance waits on them.

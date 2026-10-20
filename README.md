@@ -7,5 +7,16 @@ own: Stalwart is the backend.
 
 A postern is the small side gate in a castle wall.
 
-Nothing is built yet. The plan, the decisions and the work queue are in
-[corpus/](corpus/index.md); start at `corpus/index.md`.
+It is built (briefs 01 to 17) and ready to deploy. The plan, the decisions and
+the work queue are in [corpus/](corpus/index.md); start at `corpus/index.md`.
+
+## Deploy
+
+Postern ships through the estate's deploy tool, `../vps-deploy`, like every
+other app there. Its stack (`stacks/postern.ts`) runs `npm ci` and
+`npm run build` in this checkout (Node 24), then uploads `web/dist`, served
+at `/webmail` with the headers in
+[corpus/wiki/security-headers.md](corpus/wiki/security-headers.md). Stalwart
+answers at `/webmail-api` on the same origin, through a route of the mail
+stack. The owner runs the deploy; the commands and the smoke test are in
+[corpus/wiki/status.md](corpus/wiki/status.md), under Owner steps.

@@ -37,13 +37,16 @@
 			X-Content-Type-Options "nosniff"
 			X-Frame-Options "DENY"
 			X-DNS-Prefetch-Control "off"
+			# no-cache unless a path sets its own: index.html, sw.js, the
+			# manifest and deep-link fallbacks revalidate. A path matcher here
+			# would miss the fallbacks, because it runs before try_files.
+			?Cache-Control "no-cache"
 			-Server
 		}
 		# handle_path has stripped /webmail: these paths are inside it.
-		@revalidate path / /index.html /sw.js /manifest.webmanifest
-		header @revalidate Cache-Control "no-cache"
 		header /assets/* Cache-Control "public, max-age=31536000, immutable"
 		header /manifest.webmanifest Content-Type "application/manifest+json"
+		encode gzip zstd
 		try_files {path} {path}/ /index.html
 		file_server
 	}

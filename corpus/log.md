@@ -246,3 +246,13 @@ opens offline to the sign-in page. Also fixed: `SKIP_WAITING` only from a
 `/webmail/` window (F7), worker messages only from Postern's own worker (F8),
 and a page reload on a worker update only while signed out and hidden. See
 [security-findings.md](wiki/security-findings.md).
+
+## [2026-10-21] done | Brief 18: the deploy, prepared for the owner
+
+`../vps-deploy` gained the `postern` stack and the `/webmail-api` route
+(committed there as `85f0934`, not pushed), with Postern's headers, a path
+allowlist for the API and `webPushContact` for Web Push. The e2e Caddyfile
+now matches production's block. Everything passes short of the deploy,
+which is the owner's: commands and smoke test in
+[status.md](wiki/status.md). With this, every brief is done.
+[Brief](briefs/done/18-deploy.md).
