@@ -91,3 +91,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
   arrives later as a bounce in the Inbox. Submission advertises
   `maxDelayedSend` 2592000 and FUTURERELEASE, which the scheduled-send todo
   needs.
+- **Settings** (brief 12): `VacationResponse` works as the RFC says (null
+  dates mean always on) and has no "contacts only" switch. `Quota/get`
+  returns nothing until a quota is set, then one account-wide octets quota.
+  `Identity/set` updates name, reply-to and both signatures.

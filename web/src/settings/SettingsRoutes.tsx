@@ -1,18 +1,23 @@
-// Brief 12 replaces this stub with the settings pages. The shell renders it
-// for #settings/<section>.
+// The settings pages the shell renders for #settings/<section>: General,
+// Accounts, Labels (brief 09's manager), Filters (brief 13's stub for now).
+// Settings apply as you change them; there is no Save button.
 //
-// For now General carries the three display settings, applied at once
-// through the theme module's setters (brief 12 keeps them and persists them
-// per device).
+// Importing this module starts the per-device persistence of the display
+// settings (the shell imports this file statically, so it runs at load).
 
-import { useId } from "react";
+import { FiltersSettings } from "../filters/FiltersSettings";
 import { LabelManager } from "../labels/LabelManager";
+import { PrefsHost, startDisplayPersistence, startPrefs } from "../prefs";
 import { formatRoute } from "../shell/router";
+import { AccountsSettings } from "./AccountsSettings";
+import { GeneralSettings } from "./GeneralSettings";
 import "./settings.css";
-import { DENSITIES, READING_PANES, THEMES, useTheme, type Density, type ReadingPane, type ThemePreference } from "../theme";
+
+startDisplayPersistence();
+startPrefs();
 
 export interface SettingsRoutesProps {
-  /** The section in the URL: general, accounts, labels, filters (brief 13). Unknown sections are brief 12's to handle. */
+  /** The section in the URL: general, accounts, labels, filters. Unknown sections show General. */
   section: string;
 }
 
@@ -23,14 +28,11 @@ const SECTIONS: readonly { id: string; title: string }[] = [
   { id: "filters", title: "Filters" },
 ];
 
-const THEME_TITLES: Record<ThemePreference, string> = { system: "Same as the device", light: "Light", dark: "Dark" };
-const DENSITY_TITLES: Record<Density, string> = { default: "Default", comfortable: "Comfortable", compact: "Compact" };
-const PANE_TITLES: Record<ReadingPane, string> = { none: "No split", right: "Right of inbox", below: "Below inbox" };
-
 export function SettingsRoutes({ section }: SettingsRoutesProps) {
   const current = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0]!;
   return (
     <section className="shell-page" aria-labelledby="settings-title">
+      <PrefsHost />
       <header className="shell-page-header">
         <h1 id="settings-title" className="shell-page-title">
           Settings
@@ -43,48 +45,7 @@ export function SettingsRoutes({ section }: SettingsRoutesProps) {
           </a>
         ))}
       </nav>
-      {current.id === "general" ? (
-        <DisplaySettingsForm />
-      ) : current.id === "labels" ? (
-        <LabelManager />
-      ) : (
-        <p className="shell-page-body">{current.title} settings appear here.</p>
-      )}
+      {current.id === "general" ? <GeneralSettings /> : current.id === "accounts" ? <AccountsSettings /> : current.id === "labels" ? <LabelManager /> : <FiltersSettings />}
     </section>
-  );
-}
-
-function DisplaySettingsForm() {
-  const { theme, density, readingPane, setTheme, setDensity, setReadingPane } = useTheme();
-  return (
-    <div className="settings-form">
-      <Choice legend="Theme" name="theme" options={THEMES} titles={THEME_TITLES} value={theme} onChange={setTheme} />
-      <Choice legend="Density" name="density" options={DENSITIES} titles={DENSITY_TITLES} value={density} onChange={setDensity} />
-      <Choice legend="Reading pane" name="reading-pane" options={READING_PANES} titles={PANE_TITLES} value={readingPane} onChange={setReadingPane} />
-    </div>
-  );
-}
-
-interface ChoiceProps<T extends string> {
-  legend: string;
-  name: string;
-  options: readonly T[];
-  titles: Record<T, string>;
-  value: T;
-  onChange: (value: T) => void;
-}
-
-function Choice<T extends string>({ legend, name, options, titles, value, onChange }: ChoiceProps<T>) {
-  const id = useId();
-  return (
-    <fieldset className="settings-choice">
-      <legend>{legend}</legend>
-      {options.map((option) => (
-        <label key={option} htmlFor={`${id}-${option}`}>
-          <input id={`${id}-${option}`} type="radio" name={name} value={option} checked={value === option} onChange={() => onChange(option)} />
-          {titles[option]}
-        </label>
-      ))}
-    </fieldset>
   );
 }

@@ -8,6 +8,9 @@
 //   forgetImagesFrom(account, sender)   take them off (brief 12's settings)
 //   imageAllowanceList(account)         the whole list
 //   useImageAllowance(account)          the same, re-rendering on change
+//   setAlwaysDisplayImages(on)          global "always display external images"
+//                                       (brief 12's setting; default off = ask).
+//                                       While on, allowsImagesFrom is true for everyone.
 //
 // Keyed by the real From address, lower-cased, never the display name.
 
@@ -17,6 +20,15 @@ const PREFIX = "postern.images.";
 const memory = new Map<string, string[]>();
 const listeners = new Set<() => void>();
 let version = 0;
+let alwaysDisplay = false;
+
+/** Global "always display external images", set from the per-device prefs. Default off. */
+export function setAlwaysDisplayImages(on: boolean): void {
+  if (alwaysDisplay === on) return;
+  alwaysDisplay = on;
+  version++;
+  for (const l of [...listeners]) l();
+}
 
 function key(account: string): string {
   return `${PREFIX}${account.toLowerCase()}`;
@@ -51,6 +63,7 @@ export function imageAllowanceList(account: string): string[] {
 }
 
 export function allowsImagesFrom(account: string, sender: string): boolean {
+  if (alwaysDisplay) return true;
   return read(account).includes(sender.toLowerCase());
 }
 

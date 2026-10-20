@@ -12,6 +12,7 @@ import { ComposerHost, ComposerProvider } from "../composer";
 import { HelpSheet, KeysProvider, ShortcutsHost } from "../keys";
 import { LabelsProvider, useLabels } from "../labels/useLabels";
 import { LiveHost } from "../live/LiveHost";
+import { PrefsHost } from "../prefs";
 import { MainArea } from "./MainArea";
 import { Nav, type NavProps } from "./Nav";
 import { isCanonicalHash, navigate, parseRoute, subscribeRoute, useRoute } from "./router";
@@ -33,6 +34,7 @@ export function Shell() {
         <ComposerProvider>
           <KeysProvider>
             <StatusSlotProvider>
+              <PrefsHost />
               <ShellLayout />
               <LiveHost />
             </StatusSlotProvider>

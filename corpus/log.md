@@ -160,3 +160,12 @@ with undo; reply, reply all and forward threaded with `In-Reply-To` and
 `References`. What Stalwart does with drafts, forwards and failed deliveries
 is in [gmail-on-jmap.md](wiki/gmail-on-jmap.md).
 [Brief](briefs/done/08-compose-and-send.md).
+
+## [2026-10-20] done | Brief 12: settings
+
+General, Accounts, Labels and a Filters placeholder under `#settings/`,
+applying at once. Per-device preferences live in `web/src/prefs/`; the
+decision now says which are device-wide and which per account. What
+Stalwart's vacation responder, quota and identities do is in
+[gmail-on-jmap.md](wiki/gmail-on-jmap.md). Conversation view off is filed as
+[a todo](todos/conversation-view-off.md). [Brief](briefs/done/12-settings.md).

@@ -123,9 +123,10 @@ needs an `OAuthClient` with its redirect URI in `../vps-deploy`'s mail plan.
 
 ## Display settings and label colours live in this browser
 _2026-10-20, owner_. Density, theme, reading pane, undo-send delay, label
-colours and "show if unread" are kept per device in `localStorage`, keyed by
-account, and every read and write falls back to memory when storage is
-blocked. A new device starts from defaults. None of it is secret, so the
+colours and "show if unread" are kept per device in `localStorage`, and
+every read and write falls back to memory when storage is blocked. Theme,
+density and reading pane are device-wide (they apply before sign-in); the
+rest is keyed by account. A new device starts from defaults. None of it is secret, so the
 shared origin does not matter here. Show and hide in the navigation is the
 mailbox's `isSubscribed`, which lives on the server and which IMAP clients
 honour too. Rejected:

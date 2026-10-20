@@ -1,4 +1,4 @@
-/* The settings stub (brief 12 replaces it). */
+/* Settings pages (brief 12). */
 
 .settings-tabs {
   display: flex;
@@ -61,4 +61,149 @@
   width: 1.125rem;
   height: 1.125rem;
   margin: 0;
+}
+
+/* ---- Brief 12: the real pages ---- */
+
+.settings-form {
+  max-width: 44rem;
+}
+
+.settings-hint {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.settings-heading {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.settings-label {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.settings-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2rem;
+  cursor: pointer;
+}
+
+.settings-check input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+}
+
+.settings-select {
+  max-width: 24rem;
+}
+
+.settings-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.settings-saved {
+  margin: 0;
+  min-height: 1.5em;
+  color: var(--color-text-muted);
+}
+
+.settings-saved[data-failed="true"],
+.settings-error {
+  color: var(--color-danger);
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.settings-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.settings-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.settings-identity legend {
+  padding: 0 var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+
+.settings-preview {
+  width: 100%;
+  height: 8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.settings-meter {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+}
+
+.settings-meter-fill {
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.settings-meter[data-high="true"] .settings-meter-fill {
+  background: var(--color-danger);
+}
+
+.settings-tabs a:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }

@@ -51,3 +51,18 @@ question this brief answers
   - the storage bar matches `Quota/get`.
 - Display preferences survive a reload (or a new device, per the decision).
 - The decision is recorded in the wiki.
+
+## Outcome (2026-10-20)
+
+Built: General (theme, density, reading pane, undo-send delay, images ask or
+always, shortcuts on or off, desktop notifications, allowed image senders,
+the vacation responder), Accounts (identities with both signatures, the
+default identity, the storage meter, links to Stalwart's account page),
+Labels (brief 09's manager) and a placeholder for brief 13's Filters.
+Preferences are per device as the owner decided; theme, density and reading
+pane are device-wide so they apply before sign-in. The HTML signature
+preview renders only in a sandboxed frame. On `dev/`: a signature reached the
+composer, the vacation responder answered bob, and the storage bar matched
+`Quota/get` with a test quota (removed afterwards). Left out: "conversation
+view off" (filed as a todo) and "contacts only" for the vacation responder,
+which Stalwart lacks. The composer does not read the default identity yet.
