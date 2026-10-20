@@ -4,17 +4,19 @@
 // messages, the fold, mark read on open (without an undo), images on
 // request, plain text with links and its quote, the keyboard controller.
 
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { EmailBodyPart } from "@postern/jmap";
+import { JmapClient, type EmailBodyPart, type FetchLike } from "@postern/jmap";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { publishMailChange } from "../actions/bus";
 import { fakeEmail, FakeMail, MAILBOXES, type FakeEmail } from "../actions/fakeMail";
 import { clearUndo, peekUndo } from "../actions/undo";
 import { SessionContext } from "../auth/context";
 import { LabelsStore, resolveLabelRoute } from "../labels/labelsStore";
 import { LabelsStoreProvider, useLabels } from "../labels/useLabels";
 import { MESSAGE_FRAME_SANDBOX } from "../render/srcdoc";
-import type { LabelRoute } from "../shell/router";
+import { SearchConversation } from "../search/SearchConversation";
+import type { LabelRoute, SearchResultsRoute } from "../shell/router";
 import { ToastProvider } from "../shell/toast";
 import { ConversationView } from "./ConversationView";
 import { getActiveConversation } from "./registry";
@@ -224,5 +226,121 @@ describe("the conversation view", () => {
     expect(name.textContent).toBe("Support \u202Emoc.knab");
     expect(address.textContent).toBe("attacker@evil.test");
     expect(name.contains(address)).toBe(false);
+  });
+});
+
+describe("messages that arrive while the conversation is open", () => {
+  const arrive = (mail: FakeMail, email: FakeEmail) =>
+    act(() => {
+      mail.mutate((emails) => {
+        emails.set(email.id, email);
+        return { created: [email.id] };
+      });
+      publishMailChange({ kind: "settled" });
+    });
+
+  function setVisibility(state: DocumentVisibilityState) {
+    Object.defineProperty(document, "visibilityState", { value: state, configurable: true });
+  }
+
+  afterEach(() => {
+    delete (document as { visibilityState?: unknown }).visibilityState;
+  });
+
+  it("open, and are marked read at once (as Gmail does), without an undo", async () => {
+    const { mail } = await renderConversation(T1);
+    await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
+    await arrive(mail, message("e4", "T1", "2026-10-04T10:00:00Z", { text: "A NEW REPLY" }, { from: BOB, keywords: {} }));
+    expect(await screen.findByText(/A NEW REPLY/)).toBeTruthy();
+    await waitFor(() => expect(mail.emails.get("e4")!.keywords["$seen"]).toBe(true));
+    expect(peekUndo()).toBeNull();
+  });
+
+  it("wait for a hidden tab to come back before they are marked read", async () => {
+    const { mail } = await renderConversation(T1);
+    await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
+    setVisibility("hidden");
+    await arrive(mail, message("e5", "T1", "2026-10-05T10:00:00Z", { text: "WHILE AWAY" }, { from: BOB, keywords: {} }));
+    expect(await screen.findByText(/WHILE AWAY/)).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mail.emails.get("e5")!.keywords["$seen"]).toBeUndefined();
+    setVisibility("visible");
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await waitFor(() => expect(mail.emails.get("e5")!.keywords["$seen"]).toBe(true));
+  });
+});
+
+describe("a conversation opened from search results", () => {
+  /** A client on `mail` whose Mailbox/get (the labels) waits for `release()`. */
+  async function slowLabels(mail: FakeMail) {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const fetch: FetchLike = async (input, init) => {
+      if (typeof init?.body === "string" && init.body.includes('"Mailbox/get"')) await gate;
+      return mail.fetch(input, init as never);
+    };
+    const client = new JmapClient({ baseUrl: "http://fake", auth: { authorization: () => "Basic test" }, fetch });
+    await client.connect();
+    return { client, release };
+  }
+
+  function renderSearch(client: JmapClient, route: SearchResultsRoute) {
+    const labels = new LabelsStore(client, () => "A");
+    render(
+      <SessionContext.Provider value={{ client, account: { username: "alice@postern.test" }, signOut: async () => {} }}>
+        <LabelsStoreProvider store={labels}>
+          <ToastProvider>
+            <SearchConversation route={route} conversationId={route.conversationId!} />
+          </ToastProvider>
+        </LabelsStoreProvider>
+      </SessionContext.Provider>,
+    );
+  }
+
+  it("shows what the search's scope shows: in:trash, only the Trash message, with Trash's toolbar", async () => {
+    const mail = new FakeMail({
+      mailboxes: MAILBOXES,
+      emails: [
+        message("s1", "T9", "2026-10-01T10:00:00Z", { text: "IN THE INBOX" }, { from: BOB, keywords: {}, subject: "Roadmap" }),
+        message("s2", "T9", "2026-10-02T10:00:00Z", { text: "IN THE TRASH" }, { from: BOB, keywords: {}, subject: "Roadmap", mailboxIds: { b: true } }),
+      ],
+    });
+    renderSearch(await mail.connect(), { kind: "search", query: "in:trash roadmap", conversationId: "T9" });
+    await screen.findByRole("heading", { level: 1, name: "Roadmap" });
+    expect(document.getElementById("conv-message-s2")).toBeTruthy();
+    expect(document.getElementById("conv-message-s1")).toBeNull();
+    const toolbar = screen.getByRole("toolbar", { name: "Conversation actions" });
+    expect(within(toolbar).getByRole("button", { name: "Delete forever" })).toBeTruthy();
+    expect(within(toolbar).queryByRole("button", { name: "Archive" })).toBeNull();
+    await waitFor(() => expect(mail.emails.get("s2")!.keywords["$seen"]).toBe(true));
+    expect(mail.emails.get("s1")!.keywords["$seen"]).toBeUndefined();
+  });
+
+  it("waits for the labels: a Trash message stays unread and a reply draft is not a card", async () => {
+    const mail = new FakeMail({
+      mailboxes: MAILBOXES,
+      emails: [
+        message("r1", "T8", "2026-10-01T10:00:00Z", { text: "THE ORIGINAL" }, { from: BOB }),
+        message("r2", "T8", "2026-10-02T10:00:00Z", { text: "DELETED REPLY" }, { from: BOB, keywords: {}, mailboxIds: { b: true } }),
+        message("d1", "T8", "2026-10-03T10:00:00Z", { text: "MY DRAFT" }, { keywords: { $draft: true, $seen: true }, mailboxIds: { d: true }, subject: "Re: Plans" }),
+      ],
+    });
+    const { client, release } = await slowLabels(mail);
+    renderSearch(client, { kind: "search", query: "plans", conversationId: "T8" });
+    expect(screen.getByRole("status", { name: "Loading the conversation" })).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 50));
+    // Nothing is fetched or marked before the labels say which messages are in Trash or Drafts.
+    expect(mail.calls().flat()).not.toContain("Thread/get");
+    release();
+    await screen.findByRole("heading", { level: 1, name: "Plans" });
+    expect(await screen.findByText("One message in this conversation is in Trash or Spam.")).toBeTruthy();
+    expect(document.getElementById("conv-message-r1")).toBeTruthy();
+    expect(document.getElementById("conv-message-r2")).toBeNull();
+    expect(document.getElementById("conv-message-d1")).toBeNull();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mail.emails.get("r2")!.keywords["$seen"]).toBeUndefined();
+    expect(mail.calls().flat()).not.toContain("Email/set");
   });
 });

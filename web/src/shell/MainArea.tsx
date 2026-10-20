@@ -8,6 +8,7 @@ import { ConversationView } from "../conversation/ConversationView";
 import { resolveLabelRoute } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
 import { ListRoute } from "../list/ListRoute";
+import { SearchConversation } from "../search/SearchConversation";
 import { SearchRoute } from "../search/SearchRoute";
 import { SettingsRoutes } from "../settings/SettingsRoutes";
 import { useDisplaySettings, type ReadingPane } from "../theme";
@@ -32,7 +33,7 @@ export function MainArea({ route }: { route: Route }) {
         <MailSplit
           pane={readingPane}
           list={<SearchRoute key={formatRoute(withoutConversation(route))} route={route} />}
-          conversation={route.conversationId ? <ConversationView route={route} conversationId={route.conversationId} label={null} /> : null}
+          conversation={route.conversationId ? <SearchConversation route={route} conversationId={route.conversationId} /> : null}
         />
       );
     default:

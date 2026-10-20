@@ -6,6 +6,7 @@ import { FakeServer, SESSION, json, type Recorded } from "../../test/unit/helper
 import { JmapClient, JmapNetworkError, JmapUnauthorizedError } from "../index.js";
 import {
   AuthSession,
+  BEFORE_SIGN_OUT_MS,
   IDLE_TIMEOUT_MS,
   IdleTimeout,
   SessionExpiredError,
@@ -485,5 +486,118 @@ describe("security review fixes", () => {
     expect(tokenRequests(server)).toHaveLength(0);
     expect(vi.getTimerCount()).toBe(0);
     await expect(auth.authorization()).rejects.toBeInstanceOf(SignedOutError);
+  });
+});
+
+describe("before sign-out hooks", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("a user sign-out waits for the hooks, which still have the tokens, then drops them", async () => {
+    const server = stalwart();
+    const auth = session(server);
+    await auth.signIn("alice@postern.test", PASSWORD);
+    const seen: { status: string; authorization: string; reason: string }[] = [];
+    auth.onBeforeSignOut(async (reason) => {
+      await Promise.resolve();
+      seen.push({ status: auth.status, authorization: await auth.authorization(), reason });
+    });
+    await auth.signOut("user");
+    expect(seen).toEqual([{ status: "active", authorization: "Bearer A1", reason: "user" }]);
+    expect(auth.status).toBe("signedOut");
+    await expect(auth.authorization()).rejects.toBeInstanceOf(SignedOutError);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("an idle sign-out runs them too, and ends with reason idle", async () => {
+    const server = stalwart();
+    const auth = session(server);
+    const events: AuthStatusEvent[] = [];
+    auth.onStatus((e) => events.push(e));
+    await auth.signIn("alice@postern.test", PASSWORD);
+    const reasons: string[] = [];
+    const authorizations: string[] = [];
+    auth.onBeforeSignOut(async (reason) => {
+      reasons.push(reason);
+      authorizations.push(await auth.authorization());
+    });
+    await vi.advanceTimersByTimeAsync(IDLE_TIMEOUT_MS);
+    expect(reasons).toEqual(["idle"]);
+    // Eight hours outlived the access token: the hook got a refreshed one.
+    expect(authorizations).toEqual([expect.stringMatching(/^Bearer A\d+$/)]);
+    expect(auth.status).toBe("signedOut");
+    expect(events.at(-1)).toEqual({ status: "signedOut", reason: "idle" });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("after a sleep past the idle deadline, the first key press runs them before signing out", async () => {
+    const server = stalwart();
+    const auth = session(server);
+    await auth.signIn("alice@postern.test", PASSWORD);
+    const hook = vi.fn(async () => auth.authorization());
+    auth.onBeforeSignOut(hook);
+    vi.setSystemTime(Date.now() + IDLE_TIMEOUT_MS + 60_000);
+    auth.noteActivity();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(hook).toHaveBeenCalledWith("idle");
+    expect(await hook.mock.results[0]!.value).toMatch(/^Bearer A\d+$/);
+    expect(auth.status).toBe("signedOut");
+  });
+
+  it("a hook that hangs or throws does not hold the sign-out past the bound", async () => {
+    const server = stalwart();
+    const auth = session(server, { beforeSignOutMs: 500 });
+    await auth.signIn("alice@postern.test", PASSWORD);
+    auth.onBeforeSignOut(() => new Promise(() => undefined));
+    auth.onBeforeSignOut(() => {
+      throw new Error("broken hook");
+    });
+    let done = false;
+    const pending = auth.signOut().then(() => (done = true));
+    await vi.advanceTimersByTimeAsync(499);
+    expect(done).toBe(false);
+    expect(auth.status).toBe("active");
+    await vi.advanceTimersByTimeAsync(1);
+    await pending;
+    expect(auth.status).toBe("signedOut");
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("waits at most BEFORE_SIGN_OUT_MS by default, and a second sign-out joins the first", async () => {
+    const server = stalwart();
+    const auth = session(server);
+    const events: AuthStatusEvent[] = [];
+    auth.onStatus((e) => events.push(e));
+    await auth.signIn("alice@postern.test", PASSWORD);
+    const hook = vi.fn(() => new Promise(() => undefined));
+    auth.onBeforeSignOut(hook);
+    const first = auth.signOut("user");
+    const second = auth.signOut("user");
+    await vi.advanceTimersByTimeAsync(BEFORE_SIGN_OUT_MS);
+    await Promise.all([first, second]);
+    expect(hook).toHaveBeenCalledOnce();
+    expect(events.filter((e) => e.status === "signedOut")).toHaveLength(1);
+  });
+
+  it("skips the hooks when there are no tokens to lend (expired), and an unregistered hook never runs", async () => {
+    const server = stalwart();
+    const auth = session(server);
+    await auth.signIn("alice@postern.test", PASSWORD);
+    const gone = vi.fn();
+    const off = auth.onBeforeSignOut(gone);
+    off();
+    const hook = vi.fn();
+    auth.onBeforeSignOut(hook);
+    server.once("POST /auth/token", () => json({ error: "invalid_grant" }, 400));
+    await auth.refresh();
+    expect(auth.status).toBe("expired");
+    await auth.signOut();
+    expect(hook).not.toHaveBeenCalled();
+    expect(gone).not.toHaveBeenCalled();
+    expect(auth.status).toBe("signedOut");
   });
 });

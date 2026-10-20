@@ -18,6 +18,7 @@ export { Capability, capabilityOf, type CapabilityUrn } from "./capabilities.js"
 export {
   AuthSession,
   REFRESH_LEAD_MS,
+  BEFORE_SIGN_OUT_MS,
   IdleTimeout,
   IDLE_TIMEOUT_MS,
   SignInError,
@@ -39,6 +40,7 @@ export {
   type SignInOutcome,
   type SignInOptions,
   type SignOutReason,
+  type BeforeSignOutHook,
   type IdleTimeoutOptions,
   type SignInFailure,
   type AuthCodeRequest,

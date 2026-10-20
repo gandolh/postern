@@ -3,6 +3,8 @@
 export {
   AuthSession,
   REFRESH_LEAD_MS,
+  BEFORE_SIGN_OUT_MS,
+  type BeforeSignOutHook,
   type AuthSessionOptions,
   type AuthStatus,
   type AuthStatusEvent,

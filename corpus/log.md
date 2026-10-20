@@ -256,3 +256,14 @@ now matches production's block. Everything passes short of the deploy,
 which is the owner's: commands and smoke test in
 [status.md](wiki/status.md). With this, every brief is done.
 [Brief](briefs/done/18-deploy.md).
+
+## [2026-10-21] maintenance | Seams fixed after a final review
+
+Seven seams between finished briefs, fixed with tests. Every sign-out, user
+or idle, first saves drafts, sends what is held for Undo and drops Web Push
+(at most 3 s, [security.md](wiki/security.md)), then clears the address bar
+and the undo list. Search opens a conversation in the search's scope, once
+the labels are in. A toast's Undo runs its own action, `z` the newest, Undo
+send and Block sender included. Open conversations keep in-flight stars and
+mark arrivals read; session errors no longer toast. Brief 12's note that the
+composer does not read the default identity yet is stale: it does.

@@ -4,14 +4,15 @@
 //      archiving needs it;
 //   2. apply them locally at once (the bus: every list and conversation view);
 //   3. send one Email/set; on failure, put the local state back and say so;
-//   4. offer Undo (toast and `z`), which sends the inverse patch;
+//   4. offer Undo (toast and `z`, ./undo), which sends the inverse patch;
+//      a quiet action (no toast) is still on `z`;
 //   5. sync the label counts and tell the screens to refresh.
 //
 // Framework-free so it is testable; useMailActions() wires it to the session,
 // the labels store and the shell's toast.
 
 import { isAbortError, SessionExpiredError, SignedOutError, type Id, type MethodCaller, type PatchObject } from "@postern/jmap";
-import { publishMailChange } from "./bus";
+import { publishMailChange, publishPending } from "./bus";
 import { shownMessages, type Conversation, type ConversationScope, type MailboxRoles } from "./conversation";
 import { destroyMessages, sendPlan, type SendResult } from "./execute";
 import { isEmptyPlan, reversePlan, type MessagePlan } from "./patches";
@@ -162,15 +163,18 @@ export function createMailActions(deps: MailActionDeps): MailActions {
 
   async function undoDone(done: MessagePlan): Promise<void> {
     const back = reversePlan(done);
-    publishMailChange({ kind: "patch", update: back.update });
+    const answered = publishPending(back.update);
     let result: SendResult;
     try {
       result = await sendPlan(deps.caller, back);
     } catch (err) {
+      answered();
       publishMailChange({ kind: "patch", update: back.inverse });
       settle();
       if (!isQuietError(err)) toast(UNDO_FAILED_MESSAGE);
       return;
+    } finally {
+      answered();
     }
     if (!isEmptyPlan(result.failed)) publishMailChange({ kind: "patch", update: result.failed.inverse });
     settle();
@@ -189,15 +193,18 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     if (isEmptyPlan(plan)) return "nothing";
     const count = plan.conversationIds.length;
 
-    publishMailChange({ kind: "patch", update: plan.update });
+    const answered = publishPending(plan.update);
     let result: SendResult;
     try {
       result = await sendPlan(deps.caller, plan);
     } catch (err) {
+      answered();
       publishMailChange({ kind: "patch", update: plan.inverse });
       settle();
       if (!isQuietError(err)) toast(copy.failed(count));
       return "failed";
+    } finally {
+      answered();
     }
 
     const failedCount = conversationsIn(plan, Object.keys(result.failed.update));
@@ -235,15 +242,18 @@ export function createMailActions(deps: MailActionDeps): MailActions {
       }
     }
     const count = new Set(conversationOf.values()).size;
-    publishMailChange({ kind: "patch", update: hide });
+    const answered = publishPending(hide);
     let errors: Record<Id, unknown>;
     try {
       ({ errors } = await destroyMessages(deps.caller, [...ids]));
     } catch (err) {
+      answered();
       publishMailChange({ kind: "patch", update: restore });
       settle();
       if (!isQuietError(err)) toast(COPY.deleteForever.failed(count));
       return "failed";
+    } finally {
+      answered();
     }
     const refused = Object.keys(errors);
     if (refused.length > 0) {

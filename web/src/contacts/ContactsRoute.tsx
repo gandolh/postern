@@ -15,6 +15,7 @@ import {
 } from "@postern/jmap";
 import { Plus, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
 import { ConfirmDialog } from "../list/ConfirmDialog";
 import { EmptyState } from "../shell/states";
@@ -71,6 +72,8 @@ export function ContactsRoute() {
       if (editing?.kind === "edit" && editing.card.id === card.id) setEditing(null);
       toast.show({ message: `Deleted ${contactName(card) || "contact"}` });
     } catch (e) {
+      // Session trouble is the sign-in layer's to show.
+      if (isQuietError(e)) return;
       toast.show({
         message: e instanceof Error ? `Could not delete: ${e.message}` : "Could not delete the contact",
       });
@@ -145,6 +148,7 @@ export function ContactsRoute() {
                 });
                 setEditing(null);
               } catch (e) {
+                if (isQuietError(e)) return;
                 toast.show({
                   message: e instanceof Error ? `Could not save: ${e.message}` : "Could not save the contact",
                 });

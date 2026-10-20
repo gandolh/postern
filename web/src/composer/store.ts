@@ -3,9 +3,11 @@
 // (keeps the draft), discard, send with Undo. One store per signed-in session,
 // made by ComposerProvider; brief 14's keys reach it through getComposer().
 
-import { isAbortError, type Id, type Identity, type JmapClient } from "@postern/jmap";
+import { type Id, type Identity, type JmapClient } from "@postern/jmap";
 import { publishMailChange, type MailChange } from "../actions/bus";
 import { DRAFT } from "../actions/conversation";
+import { isQuietError } from "../actions/runner";
+import { clearUndo, runUndo, setUndo, type UndoEntry } from "../actions/undo";
 import { inlineReplySlotId } from "../conversation/inlineReply";
 import type { LabelsStore } from "../labels/labelsStore";
 import { navigate, type Route } from "../shell/router";
@@ -58,7 +60,13 @@ export class ComposerStore {
   /** Drafts closed (or discarded) in this session: not opened again on their own. */
   readonly #closed = new Set<Id>();
   readonly #gone = new Set<Id>();
+  /** Send presses still saving their draft (not held yet). */
+  readonly #starting = new Set<Promise<void>>();
+  /** The Undo of each message held for Undo send, in the shared undo list (`z`, the toast). */
+  readonly #undo = new Map<string, UndoEntry>();
   #disposed = false;
+  /** A sign-out is under way: messages go out and drafts save, with no toasts or refreshes. */
+  #signingOut = false;
 
   constructor(deps: ComposerDeps) {
     this.#deps = deps;
@@ -280,7 +288,8 @@ export class ComposerStore {
       // Not saved: keep the window (minimised) so nothing is lost.
       session.setPlacement("minimised");
       this.#add(session);
-      this.#deps.toast.show({ message: explainSaveError(err) || "Couldn't save the draft." });
+      // Session trouble is the sign-in layer's to show (actions/runner.ts).
+      if (!isQuietError(err)) this.#deps.toast.show({ message: explainSaveError(err) || "Couldn't save the draft." });
       return;
     }
     for (const id of session.draftIds()) this.#closed.add(id);
@@ -306,7 +315,7 @@ export class ComposerStore {
       this.#deps.toast.show({ message: "Draft discarded." });
       this.#settled();
     } catch (err) {
-      if (isAbortError(err)) return;
+      if (isQuietError(err)) return;
       this.#deps.toast.show({ message: "Couldn't discard the draft. It's still in Drafts." });
     }
   }
@@ -319,6 +328,16 @@ export class ComposerStore {
    * undo delay, then submit it.
    */
   async send(key: string): Promise<void> {
+    const run = this.#send(key);
+    this.#starting.add(run);
+    try {
+      await run;
+    } finally {
+      this.#starting.delete(run);
+    }
+  }
+
+  async #send(key: string): Promise<void> {
     const session = this.get(key);
     if (!session || session.state.sending || this.outbox.has(key)) return;
     session.setSendError(null);
@@ -351,11 +370,13 @@ export class ComposerStore {
           draftsMailboxId: this.#deps.labels.mailboxIdForRole("drafts"),
           sentMailboxId: this.#deps.labels.mailboxIdForRole("sent"),
         }),
+      onSend: () => this.#dropUndo(key),
       onSent: () => {
         const threadId = session.state.threadId;
         this.#remove(session);
         session.dispose();
         if (recipients) this.#deps.recipients.remember([...recipients.to, ...recipients.cc, ...recipients.bcc]);
+        if (this.#signingOut) return;
         this.#settled();
         this.#deps.toast.show({
           message: "Message sent.",
@@ -363,17 +384,26 @@ export class ComposerStore {
         });
       },
       onFailed: (err) => {
-        if (session.disposed || this.#disposed) return;
+        if (session.disposed || this.#disposed || this.#signingOut) return;
         session.setSending(false);
         session.setSendError(explainSendError(err));
         if (session.state.placement === "inline" && session.state.threadId && !this.#hasInlineSlot(session.state.threadId)) session.setPlacement("docked");
         if (session.state.placement === "minimised") session.setPlacement("docked");
         session.requestFocus("window");
-        this.#deps.toast.show({ message: "Couldn't send the message. It's saved in Drafts." });
+        if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't send the message. It's saved in Drafts." });
       },
     });
     if (delay > 0) {
-      this.#deps.toast.show({ message: "Message sent.", action: { label: "Undo", onClick: () => this.undoSend(key) }, duration: null });
+      // In the shared undo list, so `z` undoes this send too, and the toast's Undo runs its own entry.
+      const entry: UndoEntry = {
+        label: "Message sent.",
+        undo: async () => {
+          this.undoSend(key);
+        },
+      };
+      this.#undo.set(key, entry);
+      setUndo(entry);
+      this.#deps.toast.show({ message: "Message sent.", action: { label: "Undo", onClick: () => void runUndo(entry) }, duration: null });
     } else {
       this.#deps.toast.show({ message: "Sending…", duration: null });
     }
@@ -382,6 +412,7 @@ export class ComposerStore {
   /** Undo send: nothing was submitted; the draft comes back in its window. */
   undoSend(key: string): boolean {
     if (!this.outbox.undo(key)) return false;
+    this.#dropUndo(key);
     const session = this.get(key);
     if (session) {
       session.setSending(false);
@@ -391,6 +422,14 @@ export class ComposerStore {
     }
     this.#deps.toast.show({ message: "Sending undone." });
     return true;
+  }
+
+  /** The held message went out or came back: its Undo is gone from `z` and the toast. */
+  #dropUndo(key: string): void {
+    const entry = this.#undo.get(key);
+    if (!entry) return;
+    this.#undo.delete(key);
+    clearUndo(entry);
   }
 
   // ---- Drafts in a conversation ------------------------------------------------------------------
@@ -434,9 +473,34 @@ export class ComposerStore {
     return this.isGone(newest.id) ? null : newest.id;
   }
 
-  /** Sign-out: stop every composer. Held messages are not sent (they stay in Drafts). */
+  /**
+   * A sign-out is coming (the user's or the idle timeout's) and the tokens
+   * still work (auth/beforeSignOut.ts): send every message held for Undo now,
+   * since the user already saw "Message sent", and save every draft with
+   * unsaved changes. Resolves once all of it has its answer; the sign-out
+   * bounds the wait.
+   */
+  async flushForSignOut(): Promise<void> {
+    if (this.#disposed) return;
+    this.#signingOut = true;
+    const sends = (async () => {
+      // A Send still saving its draft holds the message a moment later.
+      await Promise.allSettled([...this.#starting]);
+      await this.outbox.sendAllNow();
+    })();
+    const saves = this.#sessions
+      .filter((s) => !s.state.sending && !this.outbox.has(s.key))
+      .map(async (s) => {
+        s.captureBody();
+        await s.flush();
+      });
+    await Promise.allSettled([sends, ...saves]);
+  }
+
+  /** The session ended: stop every composer. A sign-out sent the held messages first (flushForSignOut); any still held here stay in Drafts. */
   dispose(): void {
     this.#disposed = true;
+    for (const key of [...this.#undo.keys()]) this.#dropUndo(key);
     this.outbox.dispose();
     for (const s of this.#sessions) s.dispose();
     for (const u of this.#unsubscribe.values()) u();
@@ -448,5 +512,6 @@ export class ComposerStore {
   /** StrictMode's dev re-run disposes and activates again; a real unmount leaves it disposed. */
   activate(): void {
     this.#disposed = false;
+    this.#signingOut = false;
   }
 }

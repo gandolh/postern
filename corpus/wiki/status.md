@@ -5,7 +5,7 @@ updated: 2026-10-21
 
 # Status (2026-10-21)
 
-Postern is built: all 18 briefs are done, with 1,136 unit and integration
+Postern is built: all 18 briefs are done, with 1,165 unit and integration
 tests and a 34-test browser suite (`npm run test:e2e`) that runs the
 production build behind Caddy with the final headers. Nothing is deployed.
 Brief 18 committed the stack and routes in `../vps-deploy` (commit

@@ -30,6 +30,13 @@ const MAX_DELAY_MS = 2_147_483_647;
 const REFRESH_RETRY = { initialMs: 5_000, maxMs: 5 * 60_000 };
 
 /**
+ * The longest a sign-out waits on its before-sign-out hooks: long enough for a
+ * draft save and a message submission on a slow line, short enough that
+ * signing out never feels stuck.
+ */
+export const BEFORE_SIGN_OUT_MS = 3000;
+
+/**
  * - `signedOut`: no tokens. Before the first sign-in and after `signOut()`.
  * - `active`: tokens in hand; `authorization()` works.
  * - `expired`: a refresh was refused (the refresh token ran out, or the
@@ -41,6 +48,9 @@ export type AuthStatus = "signedOut" | "active" | "expired";
 
 /** Why the session ended: the user asked, or the idle timeout passed. */
 export type SignOutReason = "user" | "idle";
+
+/** Work that needs the tokens one last time, awaited before a sign-out drops them. */
+export type BeforeSignOutHook = (reason: SignOutReason) => unknown;
 
 export interface AuthStatusEvent {
   status: AuthStatus;
@@ -76,6 +86,8 @@ export interface AuthSessionOptions {
   idleTimeoutMs?: number;
   /** Default `REFRESH_LEAD_MS`. */
   refreshLeadMs?: number;
+  /** How long a sign-out waits on the before-sign-out hooks. Default `BEFORE_SIGN_OUT_MS`. */
+  beforeSignOutMs?: number;
   /** Injected for tests. */
   now?: () => number;
 }
@@ -109,6 +121,8 @@ export class AuthSession implements AuthProvider {
   readonly #lead: number;
   readonly #idle: IdleTimeout;
   readonly #listeners = new Set<(event: AuthStatusEvent) => void>();
+  readonly #beforeSignOut = new Set<BeforeSignOutHook>();
+  readonly #beforeSignOutMs: number;
 
   #status: AuthStatus = "signedOut";
   #account: AuthAccount | undefined;
@@ -123,6 +137,8 @@ export class AuthSession implements AuthProvider {
   #timer: ReturnType<typeof setTimeout> | undefined;
   #retryAttempt = 0;
   #signingIn = false;
+  /** A sign-out waiting on its hooks; a second sign-out joins it. */
+  #ending: Promise<void> | undefined;
 
   constructor(options: AuthSessionOptions) {
     this.baseUrl = normalizeBase(options.baseUrl);
@@ -132,10 +148,11 @@ export class AuthSession implements AuthProvider {
     this.#fetch = options.fetch ?? ((input, init) => fetch(input, init));
     this.#now = options.now ?? Date.now;
     this.#lead = options.refreshLeadMs ?? REFRESH_LEAD_MS;
+    this.#beforeSignOutMs = options.beforeSignOutMs ?? BEFORE_SIGN_OUT_MS;
     this.#idle = new IdleTimeout({
       timeoutMs: options.idleTimeoutMs,
       now: this.#now,
-      onIdle: () => this.#end("idle"),
+      onIdle: () => void this.#signOut("idle"),
     });
   }
 
@@ -152,6 +169,22 @@ export class AuthSession implements AuthProvider {
   onStatus(listener: (event: AuthStatusEvent) => void): () => void {
     this.#listeners.add(listener);
     return () => this.#listeners.delete(listener);
+  }
+
+  /**
+   * Run `hook` before every sign-out, the user's and the idle timeout's,
+   * while the tokens still work: save the drafts, send a message held for
+   * Undo, destroy this device's push subscription. The hooks run together and
+   * the sign-out waits for them for at most `beforeSignOutMs`; one that throws
+   * or hangs costs only its own work. A session that is not active (expired,
+   * signed out) has no tokens to lend, so its sign-out skips them. Returns
+   * the unregister.
+   */
+  onBeforeSignOut(hook: BeforeSignOutHook): () => void {
+    this.#beforeSignOut.add(hook);
+    return () => {
+      this.#beforeSignOut.delete(hook);
+    };
   }
 
   /**
@@ -278,7 +311,8 @@ export class AuthSession implements AuthProvider {
   /**
    * The user did something (a key, a click, a scroll). Resets the idle
    * timeout, unless its deadline already passed (the machine slept through
-   * it): then this signs out with reason `idle`. Cheap enough for every event.
+   * it): then this starts the sign-out with reason `idle` (see `signOut`).
+   * Cheap enough for every event.
    */
   noteActivity(): void {
     this.#idle.activity();
@@ -288,20 +322,48 @@ export class AuthSession implements AuthProvider {
    * Sign out with reason `idle` if the idle deadline has passed, without
    * counting as activity. Call it when the tab becomes visible or gains focus,
    * so a machine that slept through the deadline signs out on wake. True when
-   * it signed out.
+   * the sign-out began; it completes at once with no before-sign-out hooks,
+   * else once they have run (see `signOut`).
    */
   checkIdle(): boolean {
     return this.#idle.check();
   }
 
   /**
-   * Sign out: forget the tokens and the account, stop the timers, tell the
+   * Sign out: run the before-sign-out hooks (bounded, see `onBeforeSignOut`),
+   * then forget the tokens and the account, stop the timers, tell the
    * listeners, and cancel a sign-in still running (it rejects with
-   * SignedOutError). Stalwart 0.16.25 has no revocation endpoint, so a token
-   * copied before this stays valid until it expires; there is nothing to call.
+   * SignedOutError). Resolves once signed out. A sign-out already waiting on
+   * its hooks is joined, not repeated. Stalwart 0.16.25 has no revocation
+   * endpoint, so a token copied before this stays valid until it expires;
+   * there is nothing to call.
+   *
+   * While the hooks run the session stays `active` and `authorization()`
+   * still answers: their requests go through the same client as any other,
+   * so the window (at most `beforeSignOutMs`) is open to every caller. The
+   * idle clock is already stopped by then.
    */
   async signOut(reason: SignOutReason = "user"): Promise<void> {
-    this.#end(reason);
+    return this.#signOut(reason);
+  }
+
+  #signOut(reason: SignOutReason): Promise<void> {
+    if (this.#ending) return this.#ending;
+    if (this.#status !== "active" || this.#beforeSignOut.size === 0) {
+      this.#end(reason);
+      return Promise.resolve();
+    }
+    this.#idle.stop();
+    const hooks = [...this.#beforeSignOut];
+    const ending = settleWithin(
+      hooks.map((hook) => Promise.resolve().then(() => hook(reason))),
+      this.#beforeSignOutMs,
+    ).finally(() => {
+      this.#ending = undefined;
+      this.#end(reason);
+    });
+    this.#ending = ending;
+    return ending;
   }
 
   async #runRefresh(token: string, generation: number): Promise<boolean> {
@@ -399,5 +461,18 @@ export class AuthSession implements AuthProvider {
         });
       }
     }
+  }
+}
+
+/** Wait for every promise to settle, or for `ms`, whichever comes first. Never rejects; leaves no timer behind. */
+async function settleWithin(promises: readonly Promise<unknown>[], ms: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, Math.min(MAX_DELAY_MS, Math.max(0, ms)));
+  });
+  try {
+    await Promise.race([Promise.allSettled(promises), deadline]);
+  } finally {
+    clearTimeout(timer);
   }
 }

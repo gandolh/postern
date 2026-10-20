@@ -5,7 +5,7 @@
 import { createLabelResolver, parseSearch, type MailFilter } from "@postern/jmap";
 import { useCallback } from "react";
 import { ensureAllMail } from "../actions/allMail";
-import { actionCopy } from "../actions/runner";
+import { actionCopy, isQuietError } from "../actions/runner";
 import { rolesFrom, useMailActions } from "../actions/useMailActions";
 import { useJmap } from "../auth";
 import { useLabels } from "../labels/useLabels";
@@ -40,7 +40,8 @@ export function useApplyToExisting(): (filter: MailFilter) => Promise<void> {
       try {
         found = await findMatchingConversations(client, parsed.filter);
       } catch (e) {
-        toast.show({ message: `Couldn't look for matching conversations: ${e instanceof Error ? e.message : "unknown error"}` });
+        // Session trouble is the sign-in layer's to show.
+        if (!isQuietError(e)) toast.show({ message: `Couldn't look for matching conversations: ${e instanceof Error ? e.message : "unknown error"}` });
         return;
       }
       if (found.conversations.length === 0) {
@@ -50,8 +51,8 @@ export function useApplyToExisting(): (filter: MailFilter) => Promise<void> {
       if (filter.actions.archive && roles.archive === undefined) {
         try {
           roles = { ...roles, archive: await ensureAllMail(client, store) };
-        } catch {
-          toast.show({ message: APPLY_COPY.failed(found.conversations.length) });
+        } catch (e) {
+          if (!isQuietError(e)) toast.show({ message: APPLY_COPY.failed(found.conversations.length) });
           return;
         }
       }

@@ -6,11 +6,17 @@
 // children, so every token, cache and piece of in-memory mail state goes with
 // it. The next sign-in starts from a fresh one. Tokens never leave the
 // AuthSession (corpus/wiki/security.md).
+//
+// Before either sign-out drops the tokens, the app's before-sign-out hooks
+// run (./beforeSignOut.ts: unsaved drafts, a message held for Undo, Web
+// Push), for at most BEFORE_SIGN_OUT_MS.
 
 import { AuthSession, JmapClient, type FetchLike, type SignInOutcome } from "@postern/jmap";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { runBeforeSignOut } from "../push/beforeSignOut";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { clearPendingPatches } from "../actions/bus";
+import { clearUndo } from "../actions/undo";
 import "./auth.css";
+import { BEFORE_SIGN_OUT_MS, runBeforeSignOut } from "./beforeSignOut";
 import { API_BASE, redirectUri } from "./config";
 import { SessionContext, type SignedInSession } from "./context";
 import { SessionExpiredDialog } from "./SessionExpiredDialog";
@@ -32,20 +38,51 @@ type View =
   | { kind: "signedOut"; auth: AuthSession; notice?: "idle" }
   | { kind: "signedIn"; auth: AuthSession; session: SignedInSession; expired: boolean };
 
+/**
+ * Nothing of the session that just ended may reach the next one in this tab.
+ * The address bar goes back to /webmail/ with no hash: a `#search/<query>/<id>`
+ * left there would be the next person's first screen, and their search box
+ * would show the query. replaceState swaps the current entry instead of
+ * adding one. The page cannot erase the earlier history entries, so Back can
+ * still reach the old hashes; they open on the sign-in page. The undo list
+ * (closures over the old client) goes too, and so do the optimistic patches
+ * still waiting on a write (actions/bus.ts).
+ */
+function forgetTheSession(): void {
+  clearUndo();
+  clearPendingPatches();
+  window.history.replaceState(null, "", redirectUri());
+}
+
 export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeoutMs }: SessionProviderProps) {
   // Frozen at mount, so a parent re-rendering with a new `fetch` cannot sign the user out.
   const [options] = useState(() => ({ baseUrl, fetch, idleTimeoutMs }));
   const createAuth = useCallback(
-    () => new AuthSession({ baseUrl: options.baseUrl, redirectUri: redirectUri(), fetch: options.fetch, idleTimeoutMs: options.idleTimeoutMs }),
+    () =>
+      new AuthSession({
+        baseUrl: options.baseUrl,
+        redirectUri: redirectUri(),
+        fetch: options.fetch,
+        idleTimeoutMs: options.idleTimeoutMs,
+        beforeSignOutMs: BEFORE_SIGN_OUT_MS,
+      }),
     [options],
   );
   const [view, setView] = useState<View>(() => ({ kind: "signedOut", auth: createAuth() }));
   const { auth } = view;
+  // The AuthSession whose app is on screen (a sign-in whose connect failed never showed one).
+  const shown = useRef<AuthSession | null>(null);
 
   // Follow the token holder: expired, signed in again, signed out (by the user or the idle timeout).
   useEffect(() => {
+    // The app's hooks, before every sign-out of this session; the same bound on both sides.
+    const offBeforeSignOut = auth.onBeforeSignOut(() => runBeforeSignOut(BEFORE_SIGN_OUT_MS));
     const unsubscribe = auth.onStatus((event) => {
       if (event.status === "signedOut") {
+        if (shown.current === auth) {
+          shown.current = null;
+          forgetTheSession();
+        }
         setView({ kind: "signedOut", auth: createAuth(), notice: event.reason === "idle" ? "idle" : undefined });
       } else {
         const expired = event.status === "expired";
@@ -53,6 +90,7 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
       }
     });
     return () => {
+      offBeforeSignOut();
       unsubscribe();
       // Leaving the tree must not leave tokens or timers behind.
       void auth.signOut();
@@ -77,13 +115,10 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
       const session: SignedInSession = {
         client,
         account: account.name ? { username: account.username, name: account.name } : { username: account.username },
-        // Brief 16: work that needs the tokens one last time (destroying this
-        // device's Web Push subscription) runs first, for at most 2 s.
-        signOut: async () => {
-          await runBeforeSignOut();
-          await auth.signOut("user");
-        },
+        // The before-sign-out hooks run inside (see the effect above).
+        signOut: () => auth.signOut("user"),
       };
+      shown.current = auth;
       setView({ kind: "signedIn", auth, session, expired: false });
       return "signedIn";
     },

@@ -5,6 +5,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { runBeforeSignOut } from "../auth/beforeSignOut";
 import { SessionContext } from "../auth/context";
 import { LabelsStore } from "../labels/labelsStore";
 import { LabelsStoreProvider } from "../labels/useLabels";
@@ -112,6 +113,27 @@ describe("the composer window", () => {
     expect(sent["subject"]).toBe("Lunch");
     expect((sent["bodyValues"] as Record<string, { value: string }>)["html"]?.value).toBe("<div>Noon?</div>");
     expect((sent["bodyValues"] as Record<string, { value: string }>)["text"]?.value).toBe("Noon?");
+  });
+
+  it("before a sign-out, the message held for Undo goes out and the typed text is saved", async () => {
+    setUndoSendDelay(60_000);
+    const { user, window } = await renderComposer();
+    await user.type(within(window).getByRole("combobox", { name: "To" }), "bob@postern.test,");
+    await user.type(within(window).getByRole("textbox", { name: "Subject" }), "Sent before sign-out");
+    write(window, "Bye");
+    await user.keyboard("{Control>}{Enter}{/Control}");
+    await screen.findByText("Message sent.");
+    // A second message, typed but not autosaved yet.
+    await user.click(screen.getByRole("button", { name: "Compose" }));
+    const second = await screen.findByRole("dialog", { name: "New Message" });
+    await user.type(within(second).getByRole("textbox", { name: "Subject" }), "Unsaved");
+    expect(server.submissions).toHaveLength(0);
+
+    await act(() => runBeforeSignOut());
+
+    expect(server.submissions).toHaveLength(1);
+    const subjects = [...server.emails.values()].map((e) => e["subject"]);
+    expect(subjects).toEqual(expect.arrayContaining(["Sent before sign-out", "Unsaved"]));
   });
 
   it("minimises, goes full screen and back", async () => {

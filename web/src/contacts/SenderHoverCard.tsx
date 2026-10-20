@@ -8,6 +8,7 @@
 import type { EmailAddress } from "@postern/jmap";
 import { Mail, Search, UserPlus } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type FocusEvent, type ReactNode } from "react";
+import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
 import { useCompose } from "../composer/compose";
 import { nameOrAddress } from "../conversation/people";
@@ -100,9 +101,12 @@ function HoverCardBody({ id, address, close }: { id: string; address: EmailAddre
         },
       });
     } catch (e) {
-      toast.show({
-        message: e instanceof Error ? `Could not add the contact: ${e.message}` : "Could not add the contact",
-      });
+      // Session trouble is the sign-in layer's to show.
+      if (!isQuietError(e)) {
+        toast.show({
+          message: e instanceof Error ? `Could not add the contact: ${e.message}` : "Could not add the contact",
+        });
+      }
     } finally {
       setAdding(false);
     }

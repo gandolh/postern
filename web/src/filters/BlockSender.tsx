@@ -1,6 +1,7 @@
 // Block "<sender>" from a message's menu: asks first, then adds the address
 // to Postern's script, which files that sender's new mail into Spam. Unblock
-// takes it out again (here or in Settings → Filters).
+// takes it out again (here or in Settings → Filters). The block's Undo is in
+// the shared undo list (actions/undo.ts), so `z` undoes it too.
 //
 //   const block = useBlockSender();
 //   block.isBlocked("bob@x.test"); block.ask({ name, email }); block.unblock("bob@x.test");
@@ -8,6 +9,8 @@
 
 import { withBlocked, withoutBlocked, type EmailAddress } from "@postern/jmap";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { isQuietError } from "../actions/runner";
+import { runUndo, setUndo, type UndoEntry } from "../actions/undo";
 import { ConfirmDialog } from "../list/ConfirmDialog";
 import "../list/list.css";
 import { useToast } from "../shell/toast";
@@ -45,7 +48,8 @@ export function useBlockSender(): BlockSender {
         await store.save((set) => withoutBlocked(set, address));
         toast.show({ message: `${address} unblocked.` });
       } catch (e) {
-        toast.show({ message: `Couldn't unblock ${address}: ${errorText(e)}` });
+        // Session trouble is the sign-in layer's to show.
+        if (!isQuietError(e)) toast.show({ message: `Couldn't unblock ${address}: ${errorText(e)}` });
       }
     },
     [store, toast],
@@ -58,12 +62,14 @@ export function useBlockSender(): BlockSender {
       try {
         outcome = await store.save((set) => withBlocked(set, address));
       } catch (e) {
-        toast.show({ message: `Couldn't block ${address}: ${errorText(e)}` });
+        if (!isQuietError(e)) toast.show({ message: `Couldn't block ${address}: ${errorText(e)}` });
         return;
       }
+      const entry: UndoEntry = { label: `${address} blocked.`, undo: () => unblock(address) };
+      setUndo(entry);
       toast.show({
         message: `${address} blocked. New messages from them will go to Spam.${outcome.heldByVacation ? ` ${FILTERS_OFF_NOTE}` : ""}`,
-        action: { label: "Undo", onClick: () => void unblock(address) },
+        action: { label: "Undo", onClick: () => void runUndo(entry) },
       });
     },
     [store, toast, unblock],

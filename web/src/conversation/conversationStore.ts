@@ -13,6 +13,10 @@
 // Freshness: every action's optimistic patch (actions/bus) applies at once;
 // "settled", a push StateChange that moves the Email state (brief 11:
 // applyConversationStateChange), window focus and coming online refresh.
+// A refresh's answer may predate a write still in flight (a star sent a
+// moment ago), so the patches still pending, and those published while the
+// request was out, go back on top of it: the star stays on until its own
+// write settles.
 
 import {
   isAbortError,
@@ -26,7 +30,7 @@ import {
   type StateChange,
   type Thread,
 } from "@postern/jmap";
-import { subscribeMailChanges } from "../actions/bus";
+import { pendingPatches, subscribeMailChanges } from "../actions/bus";
 import type { ConversationMessage } from "../actions/conversation";
 import { applyPatch } from "../actions/patches";
 import { isQuietError } from "../actions/runner";
@@ -198,6 +202,19 @@ export function bodyOf(
   return { kind: "text", text: chunks.join("\n\n"), truncated, encodingProblem };
 }
 
+/** `messages` with `updates` applied in order (each a message id → patch map). */
+function overlay(messages: ConvMessage[], updates: readonly Readonly<Record<Id, PatchObject>>[]): ConvMessage[] {
+  if (updates.length === 0) return messages;
+  return messages.map((m) => {
+    let next = m;
+    for (const update of updates) {
+      const patch = update[m.id];
+      if (patch) next = applyPatch(next, patch);
+    }
+    return next;
+  });
+}
+
 function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 }
@@ -218,6 +235,8 @@ export class ConversationStore {
   #refreshing: Promise<void> | null = null;
   #again = false;
   #disposed = false;
+  /** The patches heard while a load's request is out, in order. */
+  #duringLoad: Readonly<Record<Id, PatchObject>>[] | null = null;
 
   constructor(caller: MethodCaller, conversationId: Id, options: ConversationStoreOptions = {}) {
     this.#caller = caller;
@@ -265,6 +284,7 @@ export class ConversationStore {
   }
 
   #applyLocal(update: Readonly<Record<Id, PatchObject>>): void {
+    this.#duringLoad?.push(update);
     let changed = false;
     const messages = this.#snapshot.messages.map((m) => {
       const patch = update[m.id];
@@ -303,6 +323,10 @@ export class ConversationStore {
 
   async #load(): Promise<void> {
     const signal = this.#abort.signal;
+    // Writes still out when the request leaves, then whatever is published while it is out.
+    const held = pendingPatches();
+    const during: Readonly<Record<Id, PatchObject>>[] = [];
+    this.#duringLoad = during;
     try {
       const r = this.#caller.request();
       const t = r.call("Thread/get", { ids: [this.conversationId] });
@@ -328,12 +352,14 @@ export class ConversationStore {
         this.#set({ status: "missing", messages: [], error: null });
         return;
       }
-      this.#set({ status: "ready", messages, error: null });
+      this.#set({ status: "ready", messages: overlay(messages, [...held, ...during]), error: null });
     } catch (err) {
       if (isAbortError(err) || this.#disposed) return;
       if (isQuietError(err)) return;
       // Keep what is on screen; only an empty view shows the error.
       if (this.#snapshot.status !== "ready") this.#set({ status: "error", error: err });
+    } finally {
+      this.#duringLoad = null;
     }
   }
 

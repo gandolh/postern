@@ -47,29 +47,23 @@ export interface ConversationViewProps {
   conversationId: string;
   /** The label it was opened from, or null when opened from search results. */
   label: ResolvedLabel | null;
+  /**
+   * Opened from search results: the search's own scope (`in:trash` and
+   * `in:spam` show only those messages, every other search leaves them out),
+   * as the results list has it. Default "normal". A label route takes it from
+   * the label instead.
+   */
+  scope?: ConversationScope["kind"];
 }
 
-export function ConversationView({ route, conversationId, label }: ConversationViewProps) {
+export function ConversationView({ route, conversationId, label, scope }: ConversationViewProps) {
   const client = useJmap();
   const { store, snapshot } = useConversationStore(client, conversationId);
   const backHref = formatRoute(withoutConversation(route));
   const backLabel = label ? `Back to ${label.title}` : "Back to search results";
+  const kind = label ? scopeKind(label) : (scope ?? "normal");
 
-  if (snapshot.status === "loading") {
-    return (
-      <section className="conv-page" aria-busy="true" aria-labelledby="conv-subject">
-        <PlaceholderHeading />
-        <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
-        <div className="conv-scroll">
-          <div className="conv-loading" role="status" aria-label="Loading the conversation">
-            <span className="skeleton conv-skeleton-title" />
-            <span className="skeleton conv-skeleton-card" />
-            <span className="skeleton conv-skeleton-card" />
-          </div>
-        </div>
-      </section>
-    );
-  }
+  if (snapshot.status === "loading") return <ConversationLoading backHref={backHref} backLabel={backLabel} />;
   if (snapshot.status === "missing") {
     return (
       <section className="conv-page" aria-labelledby="conv-subject">
@@ -95,7 +89,35 @@ export function ConversationView({ route, conversationId, label }: ConversationV
       </section>
     );
   }
-  return <ConversationBody key={conversationId} route={route} label={label} conversationId={conversationId} snapshot={snapshot} loadBodies={(ids) => void store.loadBodies(ids)} loadInlineImages={(id) => void store.loadInlineImages(id)} />;
+  return (
+    <ConversationBody
+      key={conversationId}
+      route={route}
+      label={label}
+      kind={kind}
+      conversationId={conversationId}
+      snapshot={snapshot}
+      loadBodies={(ids) => void store.loadBodies(ids)}
+      loadInlineImages={(id) => void store.loadInlineImages(id)}
+    />
+  );
+}
+
+/** The screen while the conversation (or the labels it needs) loads. */
+export function ConversationLoading({ backHref, backLabel }: { backHref: string; backLabel: string }) {
+  return (
+    <section className="conv-page" aria-busy="true" aria-labelledby="conv-subject">
+      <PlaceholderHeading />
+      <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
+      <div className="conv-scroll">
+        <div className="conv-loading" role="status" aria-label="Loading the conversation">
+          <span className="skeleton conv-skeleton-title" />
+          <span className="skeleton conv-skeleton-card" />
+          <span className="skeleton conv-skeleton-card" />
+        </div>
+      </div>
+    </section>
+  );
 }
 
 /** Every state of the screen has its h1; until the subject is known, a hidden one. */
@@ -149,13 +171,15 @@ export function foldItems(messages: readonly ConvMessage[], isExpanded: (id: Id)
 interface BodyProps {
   route: MailRoute;
   label: ResolvedLabel | null;
+  /** Which messages it shows: the label's view, or the search's scope. */
+  kind: ConversationScope["kind"];
   conversationId: Id;
   snapshot: ConversationSnapshot;
   loadBodies: (ids: Id[]) => void;
   loadInlineImages: (id: Id) => void;
 }
 
-function ConversationBody({ route, label, conversationId, snapshot, loadBodies, loadInlineImages }: BodyProps) {
+function ConversationBody({ route, label, kind, conversationId, snapshot, loadBodies, loadInlineImages }: BodyProps) {
   const client = useJmap();
   const account = useAccount();
   const me = account.username;
@@ -171,7 +195,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
 
   const rolesKey = JSON.stringify(rolesFrom(labels.store));
   const roles = useMemo(() => JSON.parse(rolesKey) as MailboxRoles, [rolesKey]);
-  const scope = useMemo<ConversationScope>(() => ({ kind: scopeKind(label), roles }), [label, roles]);
+  const scope = useMemo<ConversationScope>(() => ({ kind, roles }), [kind, roles]);
   const conversation = useMemo<Conversation<ConvMessage>>(() => ({ id: conversationId, messages: snapshot.messages }), [conversationId, snapshot.messages]);
   // A reply draft sits in the conversation it answers. The composer opens the
   // ones in Drafts inline under the last message (brief 08), so those are not
@@ -204,7 +228,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   // Open at first sight: the unread messages and the newest. Messages that arrive later open too.
   const [initial] = useState(() => ({
     ids: new Set(snapshot.messages.map((m) => m.id)),
-    unread: new Set(shownMessages({ id: conversationId, messages: snapshot.messages }, { kind: scopeKind(label), roles }).filter((m) => m.keywords[SEEN] !== true).map((m) => m.id)),
+    unread: new Set(shownMessages({ id: conversationId, messages: snapshot.messages }, { kind, roles }).filter((m) => m.keywords[SEEN] !== true).map((m) => m.id)),
   }));
   const [overrides, setOverrides] = useState<ReadonlyMap<Id, boolean>>(new Map());
   const [revealed, setRevealed] = useState(false);
@@ -237,6 +261,33 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
     void markReadOnOpen(client, conversation, scope, () => void labels.store.sync());
   }, [client, conversation, scope, labels.store]);
 
+  // Messages that arrive while the conversation is open show open (isExpanded),
+  // so they are read too, as in Gmail: marked at once while the tab is visible,
+  // else when it comes back. No undo, as on open.
+  const arrivedRef = useRef(new Set<Id>());
+  const arrivedKey = shown
+    .filter((m) => !initial.ids.has(m.id) && m.keywords[SEEN] !== true && isExpanded(m.id))
+    .map((m) => m.id)
+    .join(",");
+  useEffect(() => {
+    if (!arrivedKey) return;
+    const ids = arrivedKey.split(",");
+    const mark = (): boolean => {
+      if (document.visibilityState === "hidden") return false;
+      const fresh = new Set(ids.filter((id) => !arrivedRef.current.has(id)));
+      for (const id of fresh) arrivedRef.current.add(id);
+      const messages = conversation.messages.filter((m) => fresh.has(m.id));
+      if (messages.length > 0) void markReadOnOpen(client, { id: conversationId, messages }, scope, () => void labels.store.sync());
+      return true;
+    };
+    if (mark()) return;
+    const onVisible = () => {
+      if (mark()) document.removeEventListener("visibilitychange", onVisible);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [arrivedKey, client, conversationId, conversation, scope, labels.store]);
+
   // Focus the subject when the conversation takes the whole panel (not when it opens beside the list).
   useEffect(() => {
     if (readingPane === "none") headingRef.current?.focus({ preventScroll: true });
@@ -245,8 +296,8 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   }, []);
 
   const scopeOne = useCallback((m: ConvMessage): Conversation<ConvMessage>[] => [{ id: conversationId, messages: [m] }], [conversationId]);
-  const viewKind = label?.view;
-  const inTrashOrSpam = viewKind === "trash" || viewKind === "spam";
+  // The toolbar follows what is shown: a search in Trash or Spam acts as those labels do.
+  const inTrashOrSpam = kind !== "normal";
 
   const openCompose = useCallback(
     (mode: ComposeMode, emailId?: Id) => {
@@ -389,7 +440,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
       <ConversationToolbarShell backHref={formatRoute(backRoute)} backLabel={label ? `Back to ${label.title}` : "Back to search results"}>
         <span className="conv-toolbar-divider" aria-hidden="true" />
         {!inTrashOrSpam ? <IconButton label="Archive" icon={Archive} onClick={conversationActions.archive} /> : null}
-        {viewKind === "spam" ? (
+        {kind === "spam" ? (
           <IconButton label="Not spam" icon={ShieldCheck} onClick={conversationActions.notSpam} />
         ) : (
           <IconButton label="Report spam" icon={ShieldAlert} onClick={conversationActions.reportSpam} />
@@ -446,7 +497,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
                   body={snapshot.bodies.get(item.message.id)}
                   theme={resolvedTheme}
                   allowRemote={imagesShown.has(item.message.id) || (item.message.from?.[0] ? allowance.allows(item.message.from[0].email, item.message.authResults) : false)}
-                  canReportSpam={viewKind !== "spam"}
+                  canReportSpam={kind !== "spam"}
                   senderBlocked={item.message.from?.[0] ? block.isBlocked(item.message.from[0].email) : false}
                   actions={cardActions(item.message, item.index)}
                   onFocusCard={() => setCursor(item.message.id)}

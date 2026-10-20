@@ -1,8 +1,8 @@
 // Web Push for the signed-in session (brief 16). The shell renders it once,
 // inside the labels provider. On sign-in it extends (or makes) this device's
-// subscription if the person turned Web Push on here; before a user sign-out
-// it destroys it while the tokens still work; after any sign-out it
-// unsubscribes the browser, which needs no token.
+// subscription if the person turned Web Push on here; before every sign-out
+// (the user's or the idle timeout's) it destroys it while the tokens still
+// work; after any sign-out it unsubscribes the browser, which needs no token.
 
 import type { EmailPushConfig, Id, JmapClient } from "@postern/jmap";
 import { useEffect, useState } from "react";

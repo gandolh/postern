@@ -209,6 +209,39 @@ describe("the other actions", () => {
     expect(h.toasts.at(-1)!.message).toBe("Action undone.");
   });
 
+  it("archive, then a quiet star: the toast's Undo undoes the archive, and z the star", async () => {
+    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })]);
+    await h.actions.archive(conversations(h.mail, "T1"), scope);
+    const archiveToast = h.toasts.at(-1)!;
+    expect(archiveToast.message).toBe("Conversation archived.");
+    await h.actions.star(conversations(h.mail, "T2"), scope, { toast: false });
+    // The archive's toast is still the one on screen; z now means the star.
+    expect(h.toasts.at(-1)).toBe(archiveToast);
+    expect(peekUndo()).toEqual({ label: "Conversation starred." });
+
+    archiveToast.action!.onClick();
+    await vi.waitFor(() => expect(h.mail.emails.get("1")!.mailboxIds).toEqual({ a: true }));
+    expect(h.mail.emails.get("2")!.keywords).toEqual({ $flagged: true });
+    expect(peekUndo()).toEqual({ label: "Conversation starred." });
+
+    expect(await undoLast()).toBe(true);
+    expect(h.mail.emails.get("2")!.keywords).toEqual({});
+    expect(h.mail.emails.get("1")!.mailboxIds).toEqual({ a: true });
+    expect(peekUndo()).toBeNull();
+  });
+
+  it("an entry runs once: after z undid the archive, its toast's Undo does nothing", async () => {
+    const h = await harness([fakeEmail({ id: "1", threadId: "T1" })]);
+    await h.actions.archive(conversations(h.mail, "T1"), scope);
+    const archiveToast = h.toasts.at(-1)!;
+    expect(await undoLast()).toBe(true);
+    const posts = h.mail.posts.length;
+    archiveToast.action!.onClick();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(h.mail.posts.length).toBe(posts);
+    expect(h.mail.emails.get("1")!.mailboxIds).toEqual({ a: true });
+  });
+
   it("mark read and unread act on every message shown", async () => {
     const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T1", mailboxIds: { e: true } })]);
     await h.actions.markRead(conversations(h.mail, "T1"), scope);

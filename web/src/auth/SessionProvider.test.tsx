@@ -8,6 +8,10 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { pendingPatches, publishPending } from "../actions/bus";
+import { peekUndo, setUndo } from "../actions/undo";
+import { formatRoute, useRoute } from "../shell/router";
+import { onBeforeSignOut } from "./beforeSignOut";
 import { SessionProvider, useAccount, useJmap, useSignOut } from "./index";
 
 const PASSWORD = "correct horse battery staple";
@@ -85,9 +89,11 @@ function App() {
     lastClient = client;
   }, [client]);
   const [count, setCount] = useState(0);
+  const route = useRoute();
   return (
     <main>
       <p>Signed in as {account.username}</p>
+      <p>Route: {formatRoute(route)}</p>
       <p>Name: {account.name}</p>
       <button type="button" onClick={() => setCount((c) => c + 1)}>
         Clicked {count}
@@ -347,5 +353,104 @@ describe("the signed-in session", () => {
     expect(screen.getByText("Signed in as alice@postern.test")).toBeTruthy();
     expect((await screen.findByRole("status", {}, { timeout: 2000 })).textContent).toMatch(/signed out after a long time without activity/);
     expect(screen.getByRole("heading", { name: "Sign in" })).toBeTruthy();
+  });
+});
+
+describe("before and after a sign-out", () => {
+  /** The Authorization sent on each session fetch a before-sign-out hook made. */
+  function hookThatUsesTheTokens(server: ReturnType<typeof fakeStalwart>) {
+    const sent: (string | undefined)[] = [];
+    const off = onBeforeSignOut(async () => {
+      const before = server.seen.length;
+      await lastClient?.connect();
+      sent.push(...server.seen.slice(before).map((s) => s.authorization));
+    });
+    return { sent, off };
+  }
+
+  it("a user sign-out runs the app's hooks while the tokens still work, then drops them", async () => {
+    const server = fakeStalwart();
+    const user = userEvent.setup();
+    render(
+      <SessionProvider fetch={server.fetch}>
+        <App />
+      </SessionProvider>,
+    );
+    await signIn(user);
+    await screen.findByText("Signed in as alice@postern.test");
+    const client = lastClient;
+    const hook = hookThatUsesTheTokens(server);
+    try {
+      await user.click(screen.getByRole("button", { name: "Sign out" }));
+      expect(await screen.findByRole("heading", { name: "Sign in" })).toBeTruthy();
+      expect(hook.sent).toEqual(["Bearer A1"]);
+      await expect(client?.connect()).rejects.toBeInstanceOf(SignedOutError);
+    } finally {
+      hook.off();
+    }
+  });
+
+  it("an idle sign-out runs them too", async () => {
+    const server = fakeStalwart();
+    const user = userEvent.setup();
+    render(
+      <SessionProvider fetch={server.fetch} idleTimeoutMs={300}>
+        <App />
+      </SessionProvider>,
+    );
+    await signIn(user);
+    await screen.findByText("Signed in as alice@postern.test");
+    const hook = hookThatUsesTheTokens(server);
+    try {
+      expect((await screen.findByRole("status", {}, { timeout: 2000 })).textContent).toMatch(/signed out after a long time without activity/);
+      expect(hook.sent).toEqual(["Bearer A1"]);
+    } finally {
+      hook.off();
+    }
+  });
+
+  it("leaves nothing of the session in the address bar or the undo list, without adding a history entry", async () => {
+    window.history.replaceState(null, "", "#search/secret%20plans/T1");
+    const server = fakeStalwart();
+    const user = userEvent.setup();
+    render(
+      <SessionProvider fetch={server.fetch}>
+        <App />
+      </SessionProvider>,
+    );
+    await signIn(user);
+    expect(await screen.findByText("Route: #search/secret%20plans/T1")).toBeTruthy();
+    setUndo({ label: "Conversation archived.", undo: async () => {} });
+    // A write that never answers before the sign-out.
+    publishPending({ M1: { "keywords/$flagged": true } });
+    const entries = window.history.length;
+
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
+    await screen.findByRole("heading", { name: "Sign in" });
+
+    expect(window.location.hash).toBe("");
+    expect(window.location.pathname).toBe(new URL(import.meta.env.BASE_URL, window.location.origin).pathname);
+    expect(window.history.length).toBe(entries);
+    expect(peekUndo()).toBeNull();
+    expect(pendingPatches()).toEqual([]);
+
+    // The next person to sign in on this tab starts at the Inbox.
+    await signIn(user);
+    expect(await screen.findByText("Route: #inbox")).toBeTruthy();
+  });
+
+  it("an idle sign-out clears the address bar too", async () => {
+    window.history.replaceState(null, "", "#search/secret/T1");
+    const server = fakeStalwart();
+    const user = userEvent.setup();
+    render(
+      <SessionProvider fetch={server.fetch} idleTimeoutMs={300}>
+        <App />
+      </SessionProvider>,
+    );
+    await signIn(user);
+    await screen.findByText("Route: #search/secret/T1");
+    await screen.findByRole("status", {}, { timeout: 2000 });
+    expect(window.location.hash).toBe("");
   });
 });

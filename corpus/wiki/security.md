@@ -1,6 +1,6 @@
 ---
-summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), the shared production origin and what a script elsewhere on it can still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
-updated: 2026-10-20
+summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), the shared production origin and what a script elsewhere on it can still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
+updated: 2026-10-21
 ---
 
 # Security
@@ -59,6 +59,16 @@ updated: 2026-10-20
   count a machine's sleep, so the deadline is also checked when the tab becomes
   visible or gains focus, on the first input (which then signs out instead of
   restarting the clock) and before each request. Brief 17 tests it.
+- **The last work before a sign-out.** Both sign-outs, the user's and the
+  idle timeout's, first give the app at most `BEFORE_SIGN_OUT_MS` (3 s) with
+  the tokens still valid ([../../web/src/auth/beforeSignOut.ts](../../web/src/auth/beforeSignOut.ts)):
+  unsaved drafts are saved, a message held for Undo send goes out (the user
+  already saw "Message sent"), and this device's Web Push subscription is
+  destroyed. The hooks' requests share the client, so in that window
+  `authorization()` answers any caller. Then the address bar goes back to
+  `/webmail/` with no hash (replaced, not pushed; the page cannot erase the
+  earlier history entries) and the undo list empties, so the next person on
+  the tab inherits neither the route nor an undo.
 - **Failed passwords and the ban.** Stalwart counts failed sign-ins per IP and
   per address; by default 100 failures in 24 hours (`authBanRate`) block the
   IP. Production keeps that rate, bans for 24 hours (`authBanPeriod`), and

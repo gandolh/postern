@@ -2,11 +2,12 @@
 // Block "<sender>": asks, saves the address in Postern's script, says so with
 // an Undo; Unblock takes it out.
 
-import { generateSieve, parseFilterScript } from "@postern/jmap";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { generateSieve, parseFilterScript, SessionExpiredError } from "@postern/jmap";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { FakeMail, MAILBOXES } from "../actions/fakeMail";
+import { clearUndo, peekUndo, undoLast } from "../actions/undo";
 import { SessionContext } from "../auth/context";
 import { ToastProvider } from "../shell/toast";
 import { useBlockSender } from "./BlockSender";
@@ -41,7 +42,10 @@ async function renderHarness(io: FakeScripts) {
   return userEvent.setup();
 }
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  clearUndo();
+});
 
 describe("Block sender", () => {
   it("asks, blocks, offers Undo", async () => {
@@ -57,6 +61,45 @@ describe("Block sender", () => {
     await user.click(screen.getByRole("button", { name: "Undo" }));
     await screen.findByText("bob@postern.test unblocked.");
     expect(parseFilterScript(io.source("postern")).blocked).toEqual([]);
+  });
+
+  it("is in the shared undo list: z undoes the block", async () => {
+    const io = new FakeScripts();
+    const user = await renderHarness(io);
+    await user.click(screen.getByRole("button", { name: "menu" }));
+    await user.click(screen.getByRole("button", { name: "Block" }));
+    await screen.findByText("bob@postern.test blocked. New messages from them will go to Spam.");
+    expect(peekUndo()).toEqual({ label: "bob@postern.test blocked." });
+    await act(async () => {
+      expect(await undoLast()).toBe(true);
+    });
+    await screen.findByText("bob@postern.test unblocked.");
+    expect(parseFilterScript(io.source("postern")).blocked).toEqual([]);
+    expect(peekUndo()).toBeNull();
+  });
+
+  it("says nothing when the session expired under it (the sign-in layer does)", async () => {
+    const io = new FakeScripts();
+    const user = await renderHarness(io);
+    io.save = async () => {
+      throw new SessionExpiredError();
+    };
+    await user.click(screen.getByRole("button", { name: "menu" }));
+    await user.click(screen.getByRole("button", { name: "Block" }));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText(/Couldn't block/)).toBeNull();
+    expect(screen.queryByText(/blocked\./)).toBeNull();
+  });
+
+  it("says when the server refused for any other reason", async () => {
+    const io = new FakeScripts();
+    const user = await renderHarness(io);
+    io.save = async () => {
+      throw new Error("the script store is full");
+    };
+    await user.click(screen.getByRole("button", { name: "menu" }));
+    await user.click(screen.getByRole("button", { name: "Block" }));
+    await screen.findByText("Couldn't block bob@postern.test: the script store is full");
   });
 
   it("cancel does nothing", async () => {

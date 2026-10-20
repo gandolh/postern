@@ -13,7 +13,7 @@
 
 import type { EmailAddress, Id } from "@postern/jmap";
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useAccount, useJmap } from "../auth";
+import { onBeforeSignOut, useAccount, useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
 import { getDefaultIdentityId } from "../prefs";
 import { useToast } from "../shell/toast";
@@ -76,7 +76,10 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     store.activate();
     const unset = setActiveComposer(store);
+    // Before any sign-out drops the tokens: send what is held for Undo, save unsaved drafts.
+    const offSignOut = onBeforeSignOut(() => store.flushForSignOut());
     return () => {
+      offSignOut();
       unset();
       store.dispose();
     };

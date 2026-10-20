@@ -4,8 +4,10 @@
 // held for Undo and then submitted with onSuccessUpdateEmail, replies and
 // forwards carry the right recipients, subject, threading, quote and files.
 
+import { JmapClient, SessionExpiredError } from "@postern/jmap";
 import type { ToastOptions } from "../shell/toast";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearUndo, peekUndo, setUndo, undoLast } from "../actions/undo";
 import { ComposeTestServer, MAILBOXES } from "../send/testServer";
 import { setUndoSendDelay, DEFAULT_UNDO_SEND_DELAY_MS } from "../send/undoDelay";
 import { ComposerStore } from "./store";
@@ -529,5 +531,138 @@ describe("review fixes", () => {
     const reply = store.open({ mode: "reply", emailId: "P1", threadId: "TP" });
     await ready(reply.key);
     expect(reply.state.identityId).toBe("I1");
+  });
+});
+
+describe("signing out (user or idle) while the tokens still work", () => {
+  beforeEach(() => clearUndo());
+
+  it("submits a message held for Undo at once: the user already saw \"Message sent\"", async () => {
+    setUndoSendDelay(60_000);
+    const s = store.open({ to: [bob], subject: "Before I go" });
+    await ready(s.key);
+    s.setText("x");
+    await store.send(s.key);
+    expect(toasts.at(-1)).toMatchObject({ message: "Message sent.", action: { label: "Undo" } });
+    expect(server.submissions).toHaveLength(0);
+    const shown = toasts.length;
+
+    await store.flushForSignOut();
+
+    expect(server.submissions).toHaveLength(1);
+    expect(server.emails.get(s.draftId!)!.mailboxIds).toEqual({ [MAILBOXES.sent]: true });
+    expect(store.outbox.busy).toBe(false);
+    // No toasts on the way out, and z no longer reaches the send.
+    expect(toasts).toHaveLength(shown);
+    expect(peekUndo()).toBeNull();
+  });
+
+  it("waits for a Send still saving its draft, then submits it too", async () => {
+    setUndoSendDelay(60_000);
+    const s = store.open({ to: [bob], subject: "Racing" });
+    await ready(s.key);
+    s.setText("x");
+    const sending = store.send(s.key);
+    await store.flushForSignOut();
+    await sending;
+    expect(server.submissions).toHaveLength(1);
+  });
+
+  it("saves a draft typed within the autosave delay", async () => {
+    store.dispose();
+    const client = await server.connect();
+    store = new ComposerStore({
+      client,
+      username: "alice@postern.test",
+      labels: { mailboxIdForRole: (role) => (MAILBOXES as Record<string, string>)[role], sync: async () => {} },
+      toast: { show: (o) => (toasts.push(o), { dismiss: () => {} }) },
+      recipients: { suggest: async () => [], remember: vi.fn() },
+      hasInlineSlot: () => false,
+      viewportWidth: () => 2000,
+      session: { autosaveDelayMs: 60_000 },
+    });
+    const s = store.open({ to: [bob], subject: "Half written" });
+    await ready(s.key);
+    s.setText("the first line");
+    expect(s.state.save).toBe("dirty");
+    expect(drafts()).toHaveLength(0);
+
+    await store.flushForSignOut();
+
+    expect(drafts()).toHaveLength(1);
+    expect(drafts()[0]).toMatchObject({ subject: "Half written", to: [bob] });
+    expect(server.submissions).toHaveLength(0);
+  });
+});
+
+describe("Undo send in the shared undo list (z and the toast)", () => {
+  beforeEach(() => clearUndo());
+
+  it("archive, then send: z undoes the send, not the archive", async () => {
+    setUndoSendDelay(60_000);
+    const archive = { label: "Conversation archived.", undo: vi.fn(async () => {}) };
+    setUndo(archive);
+    const s = store.open({ to: [bob], subject: "Oops" });
+    await ready(s.key);
+    s.setText("x");
+    await store.send(s.key);
+    expect(peekUndo()).toEqual({ label: "Message sent." });
+
+    expect(await undoLast()).toBe(true);
+
+    expect(s.state.sending).toBe(false);
+    expect(toasts.at(-1)?.message).toBe("Sending undone.");
+    expect(archive.undo).not.toHaveBeenCalled();
+    expect(server.submissions).toHaveLength(0);
+    // z undid the most recent action; pressing it again does not reach further back.
+    expect(await undoLast()).toBe(false);
+  });
+
+  it("once the message goes out, z has nothing of it left to undo", async () => {
+    const s = await (async () => {
+      const x = store.open({ to: [bob], subject: "Gone" });
+      await ready(x.key);
+      x.setText("x");
+      return x;
+    })();
+    await store.send(s.key);
+    expect(peekUndo()).toEqual({ label: "Message sent." });
+    await vi.waitFor(() => expect(server.submissions).toHaveLength(1));
+    expect(peekUndo()).toBeNull();
+  });
+});
+
+describe("session trouble is the sign-in layer's to show", () => {
+  it("a send refused because the session expired keeps the draft, with no error toast", async () => {
+    store.dispose();
+    let expired = false;
+    const client = new JmapClient({
+      baseUrl: "http://fake",
+      auth: {
+        authorization: () => {
+          if (expired) throw new SessionExpiredError();
+          return "Basic test";
+        },
+      },
+      fetch: server.fetch,
+    });
+    await client.connect();
+    store = new ComposerStore({
+      client,
+      username: "alice@postern.test",
+      labels: { mailboxIdForRole: (role) => (MAILBOXES as Record<string, string>)[role], sync: async () => {} },
+      toast: { show: (o) => (toasts.push(o), { dismiss: () => {} }) },
+      recipients: { suggest: async () => [], remember: vi.fn() },
+      hasInlineSlot: () => false,
+      viewportWidth: () => 2000,
+    });
+    const s = store.open({ to: [bob], subject: "Late" });
+    await ready(s.key);
+    s.setText("x");
+    await store.send(s.key);
+    expired = true;
+    await vi.waitFor(() => expect(s.state.sending).toBe(false));
+    expect(toasts.map((t) => t.message)).not.toContain("Couldn't send the message. It's saved in Drafts.");
+    expect(drafts()).toHaveLength(1);
   });
 });

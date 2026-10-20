@@ -1,9 +1,9 @@
 // "Delete all spam messages now" (Spam) and "Empty Trash now" (Trash), at the
 // top of those lists as in Gmail. Counts first, asks, then deletes forever.
 
-import { isAbortError } from "@postern/jmap";
 import { useState } from "react";
-import { publishMailChange } from "../actions/bus";
+import { publishMailChange, publishPending } from "../actions/bus";
+import { isQuietError } from "../actions/runner";
 import { emptyConfirmText, emptyDoneText, emptyLabel, listEmptyable, type EmptyableLabel, type EmptyPlan } from "../actions/spam";
 import { rolesFrom } from "../actions/useMailActions";
 import { useJmap } from "../auth";
@@ -28,7 +28,8 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
       if (p.destroy.length === 0 && p.release.length === 0) toast.show({ message: `${where} is already empty.` });
       else setPlan(p);
     } catch (e) {
-      if (!isAbortError(e)) toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
+      // Session trouble is the sign-in layer's to show.
+      if (!isQuietError(e)) toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
     } finally {
       setBusy(false);
     }
@@ -38,13 +39,16 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
     setPlan(null);
     setBusy(true);
     // Hide them at once in every list; "settled" below brings back anything the server kept.
-    publishMailChange({ kind: "patch", update: Object.fromEntries(p.destroy.map((id) => [id, { mailboxIds: {} }])) });
+    const answered = publishPending(Object.fromEntries(p.destroy.map((id) => [id, { mailboxIds: {} }])));
     try {
       const result = await emptyLabel(client, p);
+      answered();
       toast.show({ message: emptyDoneText(label, result) });
     } catch (e) {
-      if (!isAbortError(e)) toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
+      answered();
+      if (!isQuietError(e)) toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
     } finally {
+      answered();
       setBusy(false);
       void labels.sync();
       publishMailChange({ kind: "settled" });
