@@ -8,5 +8,6 @@
 {"@type":"update","object":"Http","value":{"rateLimitAuthenticated":null,"rateLimitAnonymous":null}}
 {"@type":"update","object":"Jmap","value":{"maxUploadCount":100000,"uploadQuota":4000000000}}
 {"@type":"update","object":"SpamSettings","value":{"scoreSpam":100.0}}
+{"@type":"upsert","object":"MtaInboundThrottle","matchOn":["description"],"value":{"ip":{"description":"Sender IP throttle","enable":false,"key":{"remoteIp":true},"match":{"match":{},"else":"true"},"rate":{"count":5,"period":1000}},"rcpt":{"description":"Sender address to recipient throttle","enable":false,"key":{"senderDomain":true,"rcpt":true},"match":{"match":{},"else":"true"},"rate":{"count":25,"period":3600000}}}}
 {"@type":"update","object":"Asn","value":{"@type":"Disabled"}}
 {"@type":"create","object":"Action","value":{"reload":{"@type":"ReloadSettings"}}}

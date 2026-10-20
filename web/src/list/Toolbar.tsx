@@ -1,16 +1,21 @@
 // The list's toolbar, as Gmail's: the select checkbox and menu; with nothing
 // selected, refresh and where you are ("1–17 of 2,035"); with a selection,
 // archive, report spam, delete, mark read or unread, snooze (not yet), move
-// to, labels and more.
+// to, labels and more ("Filter messages like these", brief 13). In Spam and
+// Trash with nothing selected: "Delete all spam messages now" / "Empty Trash now".
 
 import type { Id } from "@postern/jmap";
 import { Archive, ChevronDown, Clock, EllipsisVertical, Mail, MailOpen, OctagonAlert, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useAccount } from "../auth";
+import { EmptyLabelButton } from "../filters/EmptyLabelButton";
+import { filterMessagesLike } from "../filters/likeThese";
 import { LabelMenu } from "../labels/LabelMenu";
 import { IconButton } from "../shell/IconButton";
 import type { LabelRoute } from "../shell/router";
 import type { SelectKind } from "./controller";
 import { MenuButton, type MenuItem } from "./Menu";
+import { getActiveList } from "./registry";
 import type { ListPresentation } from "./types";
 
 export interface ToolbarProps {
@@ -47,6 +52,7 @@ export interface ToolbarProps {
 
 export function Toolbar(props: ToolbarProps) {
   const { presentation, selectedCount, someUnread } = props;
+  const me = useAccount().username;
   const checkRef = useRef<HTMLInputElement>(null);
   const some = selectedCount > 0;
   const mixed = some && !props.allLoadedSelected;
@@ -71,7 +77,13 @@ export function Toolbar(props: ToolbarProps) {
     ...(props.someImportant ? [{ label: "Mark as not important", onSelect: () => props.onImportant(false) }] : []),
     ...(props.someUnstarred ? [{ label: "Add star", onSelect: () => props.onStar(true) }] : []),
     ...(props.someStarred ? [{ label: "Remove star", onSelect: () => props.onStar(false) }] : []),
+    {
+      label: "Filter messages like these",
+      onSelect: () => void getActiveList()?.targets().then((rows) => filterMessagesLike(rows.flatMap((r) => r.messages), me)),
+    },
   ];
+  const route = props.labelRoute;
+  const emptyable = route?.kind === "system" && (route.view === "spam" || route.view === "trash") ? (route.view === "spam" ? "junk" : "trash") : null;
 
   return (
     <div className="list-toolbar" role="toolbar" aria-label="Conversation actions">
@@ -126,6 +138,7 @@ export function Toolbar(props: ToolbarProps) {
       ) : (
         <div className="list-toolbar-group">
           <IconButton label="Refresh" icon={RefreshCw} onClick={props.onRefresh} />
+          {emptyable ? <EmptyLabelButton label={emptyable} /> : null}
         </div>
       )}
 

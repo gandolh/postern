@@ -18,6 +18,7 @@ import { QuotaBar, formatBytes, pickStorageQuota } from "./QuotaBar";
 import { dateOnly, toUtc } from "./VacationForm";
 
 vi.mock("../labels/LabelManager", () => ({ LabelManager: () => <p>label manager</p> }));
+vi.mock("../filters/FiltersSettings", () => ({ FiltersSettings: () => <p>filters page</p> }));
 vi.mock("../notify", () => ({
   useDesktopNotifications: () => ({ enabled: false, permission: "default", setEnabled: async () => true }),
 }));
@@ -81,12 +82,12 @@ describe("tabs", () => {
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual(["General", "Accounts", "Labels", "Filters"]);
     expect(within(nav).getByRole("link", { name: "Accounts" }).getAttribute("aria-current")).toBe("page");
   });
-  it("renders the label manager and the filters stub", () => {
+  it("renders the label manager and the filters page", () => {
     const { unmount } = renderSettings("labels");
     expect(screen.getByText("label manager")).toBeTruthy();
     unmount();
     renderSettings("filters");
-    expect(screen.getByText("Filters arrive with brief 13.")).toBeTruthy();
+    expect(screen.getByText("filters page")).toBeTruthy();
   });
 });
 

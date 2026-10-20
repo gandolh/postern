@@ -27,7 +27,7 @@ import {
   planTrash,
   type LabelChange,
 } from "./plans";
-import { planNotSpam, planReportSpam } from "./spam";
+import { NOT_SPAM_COPY, planNotSpam, planReportSpam, REPORT_SPAM_COPY } from "./spam";
 import { runUndo, setUndo, type UndoEntry } from "./undo";
 
 /** The part of the shell's toast API the actions use. */
@@ -104,18 +104,9 @@ export const COPY = {
     "Couldn't delete the conversation.",
     "Couldn't delete {n} conversations.",
   ),
-  reportSpam: actionCopy(
-    "Conversation reported as spam.",
-    "{n} conversations reported as spam.",
-    "Couldn't report the conversation as spam.",
-    "Couldn't report {n} conversations as spam.",
-  ),
-  notSpam: actionCopy(
-    "Conversation marked as not spam and moved to Inbox.",
-    "{n} conversations marked as not spam and moved to Inbox.",
-    "Couldn't move the conversation out of Spam.",
-    "Couldn't move {n} conversations out of Spam.",
-  ),
+  // Spam's own words: Stalwart trains its spam filter on both (spam.ts).
+  reportSpam: REPORT_SPAM_COPY,
+  notSpam: NOT_SPAM_COPY,
   read: actionCopy("Conversation marked as read.", "{n} conversations marked as read.", "Couldn't mark the conversation as read.", "Couldn't mark {n} conversations as read."),
   unread: actionCopy(
     "Conversation marked as unread.",

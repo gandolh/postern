@@ -9,9 +9,16 @@
 //             (Gmail hides trashed mail from labels); undo puts the labels back
 //   star      stars the conversation's latest message; unstar clears every star
 //   read      marks every message shown read (or unread)
+//
+// Archive, delete, move and report spam leave a reply draft alone (a `$draft`
+// message in Drafts, inside a conversation with other messages): the open
+// conversation shows it as the inline composer, not as a card, and moving it
+// would only have the next autosave bring it back (ConversationView.tsx does
+// the same). A conversation that is nothing but drafts is acted on whole.
 
 import type { Id } from "@postern/jmap";
 import {
+  DRAFT,
   FLAGGED,
   IMPORTANT,
   SEEN,
@@ -56,7 +63,7 @@ export function archiveNeedsAllMail(conversations: readonly Conversation[], scop
   const inbox = scope.roles.inbox;
   if (inbox === undefined) return false;
   return conversations.some((c) =>
-    shownMessages(c, scope).some((m) => m.mailboxIds[inbox] === true && Object.keys(m.mailboxIds).length === 1),
+    movedMessages(c, scope).some((m) => m.mailboxIds[inbox] === true && Object.keys(m.mailboxIds).length === 1),
   );
 }
 
@@ -67,7 +74,7 @@ export function archiveNeedsAllMail(conversations: readonly Conversation[], scop
  */
 export function planArchive(conversations: readonly Conversation[], scope: ConversationScope): MessagePlan {
   const inbox = need(scope.roles, "inbox");
-  return planEdits(conversations.map(asShown(scope)), (m) => removeWithFallback(m, inbox, scope.roles.archive));
+  return planEdits(conversations.map(asMoved(scope)), (m) => removeWithFallback(m, inbox, scope.roles.archive));
 }
 
 // ---- Trash ---------------------------------------------------------------
@@ -78,7 +85,7 @@ export function planArchive(conversations: readonly Conversation[], scope: Conve
  */
 export function planTrash(conversations: readonly Conversation[], scope: ConversationScope): MessagePlan {
   const trash = need(scope.roles, "trash");
-  return planEdits(conversations.map(asShown(scope)), (m) => moveOnly(m, trash));
+  return planEdits(conversations.map(asMoved(scope)), (m) => moveOnly(m, trash));
 }
 
 /** Every label off, `target` on. */
@@ -165,10 +172,10 @@ export function planLabels(conversations: readonly Conversation[], scope: Conver
  */
 export function planMove(conversations: readonly Conversation[], scope: ConversationScope, from: Id | undefined, to: Id): MessagePlan {
   if (to === scope.roles.trash || to === scope.roles.junk) {
-    return planEdits(conversations.map(asShown(scope)), (m) => moveOnly(m, to));
+    return planEdits(conversations.map(asMoved(scope)), (m) => moveOnly(m, to));
   }
   const fromSystem = from !== undefined && (from === scope.roles.trash || from === scope.roles.junk);
-  return planEdits(conversations.map(asShown(scope)), (m) => {
+  return planEdits(conversations.map(asMoved(scope)), (m) => {
     // Out of Trash or Spam, a message keeps nothing of where it was.
     if (fromSystem) return moveOnly(m, to);
     const mailboxIds: Record<Id, boolean> = { [to]: true };
@@ -180,4 +187,24 @@ export function planMove(conversations: readonly Conversation[], scope: Conversa
 /** The conversation reduced to the messages shown: what each planner acts on. */
 function asShown(scope: ConversationScope) {
   return <M extends ConversationMessage>(c: Conversation<M>) => ({ id: c.id, messages: shownMessages(c, scope) });
+}
+
+/** Is the message a draft sitting in Drafts (a reply being written)? */
+function isDraftInDrafts(message: ConversationMessage, roles: MailboxRoles): boolean {
+  return message.keywords[DRAFT] === true && roles.drafts !== undefined && message.mailboxIds[roles.drafts] === true;
+}
+
+/**
+ * The messages archive, delete, move and report spam act on: those shown,
+ * less any draft in Drafts, unless drafts are all there is.
+ */
+export function movedMessages<M extends ConversationMessage>(conversation: Conversation<M>, scope: ConversationScope): readonly M[] {
+  const shown = shownMessages(conversation, scope);
+  const kept = shown.filter((m) => !isDraftInDrafts(m, scope.roles));
+  return kept.length > 0 ? kept : shown;
+}
+
+/** The conversation reduced to the messages a move acts on. */
+function asMoved(scope: ConversationScope) {
+  return <M extends ConversationMessage>(c: Conversation<M>) => ({ id: c.id, messages: movedMessages(c, scope) });
 }

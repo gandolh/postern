@@ -157,3 +157,5 @@ export {
 } from "./search/index.js";
 
 export * from "./compose/index.js";
+
+export * from "./sieve/index.js";

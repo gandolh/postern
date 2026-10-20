@@ -167,3 +167,47 @@ describe("the conversation as shown", () => {
     expect(shownMessages(c, normal).map((x) => x.id)).toEqual(["1"]);
   });
 });
+
+describe("a reply draft in the conversation (brief 08 review)", () => {
+  // Drafts is "d": a reply being written sits there with $draft, next to the messages it answers.
+  const withDrafts = { ...roles, drafts: "d" };
+  const scope: ConversationScope = { kind: "normal", roles: withDrafts };
+  const thread = () => conv("T", m("1", ["a"]), m("2", ["a", "i"]), m("draft", ["d"], ["$draft", "$seen"]));
+
+  it("delete moves the messages to Trash and leaves the open reply draft in Drafts", () => {
+    const plan = planTrash([thread()], scope);
+    expect(Object.keys(plan.update).sort()).toEqual(["1", "2"]);
+    const [after1] = after([thread()], plan.update);
+    expect(after1!.messages.find((x) => x.id === "draft")!.mailboxIds).toEqual({ d: true });
+  });
+
+  it("report spam, move and archive leave it too", () => {
+    expect(Object.keys(planReportSpam([thread()], scope).update).sort()).toEqual(["1", "2"]);
+    expect(Object.keys(planMove([thread()], scope, "a", "i").update).sort()).toEqual(["1", "2"]);
+    expect(Object.keys(planMove([thread()], scope, undefined, "b").update).sort()).toEqual(["1", "2"]);
+    const archive = conv("T", m("1", ["a"]), m("draft", ["d", "a"], ["$draft"]));
+    expect(Object.keys(planArchive([archive], scope).update)).toEqual(["1"]);
+  });
+
+  it("acts on a conversation that is nothing but drafts", () => {
+    const only = conv("D", m("draft", ["d"], ["$draft"]));
+    expect(planTrash([only], scope).update).toEqual({ draft: { "mailboxIds/d": null, "mailboxIds/b": true } });
+    expect(Object.keys(planReportSpam([only], scope).update)).toEqual(["draft"]);
+  });
+
+  it("acts on a $draft message that is not in Drafts, and on a Drafts message without $draft", () => {
+    const odd = conv("T", m("1", ["a"]), m("2", ["i"], ["$draft"]), m("3", ["d"]));
+    expect(Object.keys(planTrash([odd], scope).update).sort()).toEqual(["1", "2", "3"]);
+  });
+
+  it("still marks it read and stars as before (only moves skip it)", () => {
+    const c = conv("T", m("1", ["a"]), m("draft", ["d"], ["$draft"]));
+    expect(Object.keys(planRead([c], scope, true).update).sort()).toEqual(["1", "draft"]);
+  });
+
+  it("undoes exactly", () => {
+    const c = thread();
+    const plan = planTrash([c], scope);
+    expect(after(after([c], plan.update), plan.inverse)).toEqual([c]);
+  });
+});

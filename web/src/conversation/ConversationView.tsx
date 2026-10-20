@@ -14,10 +14,12 @@ import { DRAFT, FLAGGED, labelIdsOf, SEEN, shownMessages, type Conversation, typ
 import { planEdits } from "../actions/patches";
 import { planTrash } from "../actions/plans";
 import { actionCopy, COPY } from "../actions/runner";
-import { planReportSpam } from "../actions/spam";
+import { NOT_SPAM_COPY, planNotSpam, planReportSpam, REPORT_SPAM_COPY, REPORT_SPAM_MESSAGE_COPY } from "../actions/spam";
 import { rolesFrom, useMailActions } from "../actions/useMailActions";
 import { useAccount, useJmap } from "../auth";
 import { useCompose, type ComposeMode } from "../composer";
+import { useBlockSender } from "../filters/BlockSender";
+import { filterMessagesLike } from "../filters/likeThese";
 import { LabelMenu } from "../labels/LabelMenu";
 import type { ResolvedLabel } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
@@ -163,6 +165,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   const { readingPane } = useDisplaySettings();
   const allowance = useImageAllowance(me);
   const renderInlineReply = useInlineReplyRenderer();
+  const block = useBlockSender();
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const rolesKey = JSON.stringify(rolesFrom(labels.store));
@@ -257,11 +260,12 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
         goBack();
       },
       reportSpam: () => {
-        void actions.reportSpam([acted], scope);
+        // Spam's own copy (the server learns from it); roles as they are now, as the runner does.
+        void actions.run(() => planReportSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), REPORT_SPAM_COPY);
         goBack();
       },
       notSpam: () => {
-        void actions.notSpam([acted], scope);
+        void actions.run(() => planNotSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), NOT_SPAM_COPY);
         goBack();
       },
       markUnread: () => {
@@ -274,7 +278,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
         goBack();
       },
     }),
-    [actions, acted, scope, goBack],
+    [actions, acted, scope, goBack, labels.store],
   );
 
   const cardActions = (m: ConvMessage, index: number): MessageCardActions => ({
@@ -302,11 +306,15 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
       if (shown.length === 1) goBack();
     },
     reportSpam: () => {
-      void actions.run(
-        () => planReportSpam(scopeOne(m), scope),
-        actionCopy("Message reported as spam.", "Messages reported as spam.", "Couldn't report the message as spam.", "Couldn't report the messages as spam."),
-      );
+      void actions.run(() => planReportSpam(scopeOne(m), scope), REPORT_SPAM_MESSAGE_COPY);
       if (shown.length === 1) goBack();
+    },
+    filterLike: () => filterMessagesLike([m], me),
+    block: () => {
+      const sender = m.from?.[0];
+      if (!sender) return;
+      if (block.isBlocked(sender.email)) void block.unblock(sender.email);
+      else block.ask(sender);
     },
     showOriginal: () => setOriginal(m),
     displayImages: () => setImagesShown((s) => new Set(s).add(m.id)),
@@ -432,6 +440,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
                   theme={resolvedTheme}
                   allowRemote={imagesShown.has(item.message.id) || (item.message.from?.[0] ? allowance.allows(item.message.from[0].email) : false)}
                   canReportSpam={viewKind !== "spam"}
+                  senderBlocked={item.message.from?.[0] ? block.isBlocked(item.message.from[0].email) : false}
                   actions={cardActions(item.message, item.index)}
                   onFocusCard={() => setCursor(item.message.id)}
                 />
@@ -446,6 +455,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
       </div>
 
       {original ? <ShowOriginal message={original} onClose={() => setOriginal(null)} /> : null}
+      {block.dialog}
       {confirmForever ? (
         <ConfirmDialog
           title="Delete forever?"

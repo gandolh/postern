@@ -25,6 +25,10 @@ export interface MessageCardActions {
   markUnreadFromHere: () => void;
   trash: () => void;
   reportSpam: () => void;
+  /** Brief 13: open the filter editor with this sender. */
+  filterLike: () => void;
+  /** Brief 13: block (or unblock, when `senderBlocked`) the sender. */
+  block: () => void;
   showOriginal: () => void;
   displayImages: () => void;
   alwaysDisplayImages: () => void;
@@ -42,6 +46,8 @@ export interface MessageCardProps {
   allowRemote: boolean;
   /** Spam and Trash have no "Report spam" for a message. */
   canReportSpam: boolean;
+  /** The sender is on the blocked list (the menu offers Unblock). */
+  senderBlocked?: boolean;
   actions: MessageCardActions;
   onFocusCard: () => void;
 }
@@ -86,7 +92,7 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-export function MessageCard({ message, expanded, last, me, body, theme, allowRemote, canReportSpam, actions, onFocusCard }: MessageCardProps) {
+export function MessageCard({ message, expanded, last, me, body, theme, allowRemote, canReportSpam, senderBlocked = false, actions, onFocusCard }: MessageCardProps) {
   const headingId = useId();
   const detailsId = useId();
   const [details, setDetails] = useState(false);
@@ -137,6 +143,8 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
     { label: "Mark unread from here", onSelect: actions.markUnreadFromHere },
     { label: "Delete this message", onSelect: actions.trash },
     ...(canReportSpam && !fromMe ? [{ label: "Report spam", onSelect: actions.reportSpam }] : []),
+    ...(from && !fromMe ? [{ label: `${senderBlocked ? "Unblock" : "Block"} "${name}"`, onSelect: actions.block }] : []),
+    { label: "Filter messages like these", onSelect: actions.filterLike },
     { label: "Show original", onSelect: actions.showOriginal },
   ];
 

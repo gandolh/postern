@@ -48,3 +48,20 @@ open question to answer here.
   message correctly, delivered over SMTP, not through Postern.
 - Blocking an address sends its next message to Spam. Unblocking restores.
 - A hand-written Sieve script survives Postern saving its own.
+
+## Outcome (2026-10-20)
+
+Built. Filters are one generated Sieve script, round-trip tested with 60
+unit tests including hostile strings, and every criterion and action was
+delivered over SMTP on `dev/`. Blocking and unblocking work; a hand-written
+active script survives through `include`. Report spam does train Stalwart's
+classifier, so the UI says so. "Never send it to Spam" works, because an
+explicit `fileinto` overrides the spam verdict.
+
+Found on the way: Stalwart's vacation responder is a Sieve script, and only
+one script can be active, so the settings page warns and turns the filters
+back on when the responder goes off. The dev server's inbound SMTP throttles
+are now off in `dev/plan.ndjson`, because test mail from one domain hit the
+25-an-hour limit. List actions skip an open reply draft (from the brief-08
+review). Delete in the Drafts view keeps the reply draft, where Gmail would
+discard it.

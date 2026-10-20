@@ -5,8 +5,8 @@ accounts and a corpus of ordinary and hostile mail. It mirrors production's
 setup (`../vps-deploy/infrastructure/mail/`): same images, a `config.json` that
 only says where the database lives, and everything else in `plan.ndjson`,
 applied with the CLI. What this one drops: no recursive resolver, no
-PROXY-protocol trust, no ACME, no TLS. It is plain HTTP, SMTP and IMAP on
-loopback, and the only mailbox we ever test against.
+PROXY-protocol trust, no ACME, no TLS, no inbound SMTP throttles. It is plain
+HTTP, SMTP and IMAP on loopback, and the only mailbox we ever test against.
 
 > Never develop against the owner's real mailbox. That is a hard rule
 > (`corpus/CLAUDE.md`). Everything here lives on `postern.test`.
@@ -50,6 +50,14 @@ Stop without wiping: `docker compose -f dev/docker-compose.yml down`
 | `11143` | IMAP | Plain text. Plain-text auth is allowed in dev. |
 
 No TLS: these are cleartext, loopback only.
+
+Stalwart's two default inbound throttles are off here (`MtaInboundThrottle` in
+`plan.ndjson`): "Sender IP throttle" (5 messages a second per IP, and every
+local connection arrives from the same Docker gateway) and "Sender address to
+recipient throttle" (25 messages an hour from one sender domain to one
+recipient). With them on, a burst of test mail to alice from `postern.test`
+made Stalwart refuse bob's replies for an hour and broke the compose
+integration test. Production keeps both.
 
 ## Accounts
 

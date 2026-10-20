@@ -31,7 +31,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 | Vacation responder | `VacationResponse` | native | 12 |
 | Filters | `SieveScript` (JMAP for Sieve); Postern writes the Sieve | native, generated | 13 |
 | Block sender | a Sieve rule to Spam or discard | native, generated | 13 |
-| Report spam / not spam | move to or from junk; `$junk` / `$notjunk` keywords | native; training to check | 13 |
+| Report spam / not spam | move to or from junk; `$junk` / `$notjunk` keywords; trains Stalwart's classifier | native | 13 |
 | Contacts, autocomplete | `AddressBook`, `ContactCard` (JMAP Contacts) | native | 15 |
 | New mail live | event source read with `fetch()`; `Email/changes`, `queryChanges` | native | 11 |
 | Notifications while closed | `PushSubscription` + Web Push | native | 16 |
@@ -103,3 +103,21 @@ calendars, principals, mail:share, websocket, plus Web Push for
   replace whole maps.
   `ContactCard/query` text and name filters found
   nothing in tests, so Postern loads every card and filters in the browser.
+- **Filters** (brief 13): Postern writes one script, `postern`, marked as
+  generated, files labels by mailbox id (RFC 9042, which also needs
+  `require "mailbox"`), and keeps blocked senders in it so they sync. A
+  hand-written active script is kept running through `include :personal
+  :optional`. Stalwart allows one active script, and **the vacation
+  responder is itself a script** (`vacation`): turning it on stops the
+  filters, and turning it off turns them back on. An explicit `fileinto`
+  overrides Stalwart's spam verdict, which is how "never send it to Spam"
+  works. Sieve quirks: a variable set inside a block is local to it, `${`
+  in any string is read as a variable, and backslashes are written as
+  `${hex:5C}`. Sieve's `:contains` matches substrings, not Gmail's whole
+  words.
+- **Report spam trains the classifier.** Gaining `$junk` or the Junk label
+  stores a spam sample; gaining `$notjunk`, losing `$junk` or leaving Junk
+  (other than to Trash) stores a not-spam one (Stalwart's
+  `Email/set` handler, checked in its v0.16.25 source). The classifier is FTRL logistic regression,
+  retrained every 12 hours once it has 100 samples of each kind. The UI says
+  "Your mail server learns from this."

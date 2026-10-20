@@ -189,3 +189,12 @@ touching a hidden reply draft, discard during undo send). New messages now
 start from the per-device default identity. Still open: deleting a
 conversation from the list moves its open reply draft to Trash, and the
 composer's next autosave puts it back (`web/src/actions/plans.ts`).
+
+## [2026-10-20] done | Brief 13: filters, blocking and spam
+
+Gmail-style filters saved as one generated Sieve script, "Filter messages
+like these" with "Also apply to matching conversations", Block sender, and
+Report spam / Not spam, which train Stalwart's classifier (the open question
+is answered and gone). The vacation responder and the filters share
+Stalwart's single active script slot; [gmail-on-jmap.md](wiki/gmail-on-jmap.md)
+explains. Dev's inbound SMTP throttles are off. [Brief](briefs/done/13-filters-and-spam.md).
