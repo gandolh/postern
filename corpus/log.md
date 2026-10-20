@@ -121,3 +121,13 @@ Inbox only, sender and subject only. Reconnects after a server restart were
 checked by the controller, which also fixed the dev proxy holding
 event-stream headers. [architecture.md](wiki/architecture.md) has the as-built
 notes. [Brief](briefs/done/11-live-updates.md).
+
+## [2026-10-20] done | Brief 07: reading a conversation
+
+The conversation view with Gmail's folding, message cards with the real
+address beside every name, details from `Authentication-Results`, show
+original, attachments with image and PDF preview, and bodies sanitised with
+DOMPurify into sandboxed `srcdoc` frames with remote content blocked until
+asked. Checked in Chrome against all 17 hostile fixtures. How it was built,
+and its known gaps, are in [security.md](wiki/security.md).
+[Brief](briefs/done/07-read-a-conversation.md).

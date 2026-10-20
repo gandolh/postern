@@ -1,0 +1,672 @@
+/* The open conversation (brief 07): toolbar, subject and chips, message
+   cards (collapsed lines and open messages), the message frame, banners,
+   the quote toggle, the "N older messages" fold, Show original. */
+
+.conv-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  container-type: inline-size;
+  container-name: conv;
+}
+
+/* ---- Toolbar ------------------------------------------------------------- */
+
+.conv-toolbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--toolbar-height);
+  padding: 0 var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.conv-toolbar-divider {
+  flex: none;
+  width: 1px;
+  height: 1.25rem;
+  margin: 0 var(--space-1);
+  background: var(--color-border);
+}
+
+.conv-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ---- Header -------------------------------------------------------------- */
+
+.conv-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-5) var(--space-6) var(--space-3) calc(var(--space-6) + 2.5rem + var(--space-3));
+}
+
+.conv-subject {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.conv-subject:focus {
+  outline: none;
+}
+
+.conv-subject:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-sm);
+}
+
+.conv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip.conv-chip .lucide {
+  --icon-size: 0.875rem;
+}
+
+.conv-note {
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.conv-hidden-note {
+  padding: 0 var(--space-6) 0 calc(var(--space-6) + 2.5rem + var(--space-3));
+}
+
+.conv-link-btn {
+  display: inline;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.conv-link-btn:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ---- Messages ------------------------------------------------------------ */
+
+.conv-messages {
+  margin: 0;
+  padding: 0 0 var(--space-4);
+  list-style: none;
+}
+
+.conv-messages > li + li .conv-msg,
+.conv-messages > li + .conv-fold {
+  border-top: 1px solid var(--color-border);
+}
+
+.conv-msg {
+  padding: 0 var(--space-6);
+}
+
+.conv-msg:focus {
+  outline: none;
+}
+
+.conv-msg:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.conv-msg-heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.conv-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-on-accent-soft);
+  background: var(--color-accent-soft);
+}
+
+/* A collapsed message: one line. */
+.conv-msg-line {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(8rem, 14rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 3.5rem;
+  padding: var(--space-2) 0;
+  border: 0;
+  text-align: start;
+  color: var(--color-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.conv-msg-line:hover .conv-line-from {
+  text-decoration: underline;
+}
+
+.conv-msg-line .conv-avatar {
+  width: 2rem;
+  height: 2rem;
+  font-size: var(--text-sm);
+  justify-self: center;
+}
+
+.conv-line-from {
+  overflow: hidden;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.conv-msg[data-unread] .conv-line-from {
+  font-weight: var(--weight-bold);
+}
+
+.conv-line-address {
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.conv-line-preview {
+  overflow: hidden;
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.conv-line-date,
+.conv-msg-date {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* An open message. */
+.conv-msg-head {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4) 0 var(--space-2);
+}
+
+.conv-msg-who {
+  min-width: 0;
+}
+
+.conv-msg-sender {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  text-align: start;
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+}
+
+.conv-sender-name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+/* The real address, always shown: the font tells l from I and 0 from O. */
+.conv-sender-address {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.conv-forged {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-1) 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.conv-forged .lucide {
+  --icon-size: 1rem;
+  margin-top: 0.1rem;
+}
+
+.conv-msg-to {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.conv-details-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  background: none;
+  cursor: pointer;
+}
+
+.conv-details-toggle:hover {
+  background: var(--color-hover);
+}
+
+.conv-details-toggle .lucide {
+  --icon-size: 1rem;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.conv-details-toggle[aria-expanded="true"] .lucide {
+  transform: rotate(180deg);
+}
+
+.conv-details {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  max-width: 40rem;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-sm);
+}
+
+.conv-details dt {
+  color: var(--color-text-muted);
+  text-align: end;
+}
+
+.conv-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.conv-details-none {
+  color: var(--color-text-subtle);
+}
+
+.conv-msg-side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.conv-msg-date {
+  margin-right: var(--space-1);
+}
+
+.icon-btn.conv-star[aria-pressed="true"] {
+  color: var(--color-star);
+  background: transparent;
+}
+
+.icon-btn.conv-star[aria-pressed="true"] .lucide {
+  fill: currentColor;
+}
+
+/* ---- Bodies ---------------------------------------------------------------- */
+
+.conv-body,
+.conv-msg .att-section,
+.conv-reply-actions {
+  margin-left: calc(2.5rem + var(--space-3));
+}
+
+.conv-body {
+  padding-bottom: var(--space-3);
+}
+
+.conv-body-loading {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+.conv-skeleton-line {
+  display: block;
+  height: 0.875rem;
+  border-radius: var(--radius-sm);
+}
+
+.conv-skeleton-short {
+  width: 60%;
+}
+
+.conv-loading {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.conv-skeleton-title {
+  display: block;
+  width: min(30rem, 70%);
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.conv-skeleton-card {
+  display: block;
+  height: 6rem;
+  border-radius: var(--radius-md);
+}
+
+/* The sandboxed frame. Its edge can be dragged when the estimate is short. */
+.conv-frame-wrap {
+  min-height: 3rem;
+  overflow: hidden;
+  resize: vertical;
+  border-radius: var(--radius-md);
+}
+
+.conv-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color-scheme: normal;
+}
+
+.conv-frame-more {
+  margin-top: var(--space-2);
+}
+
+.conv-plain {
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.conv-plain-quote {
+  margin-top: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--color-border-strong);
+  color: var(--color-text-muted);
+}
+
+.conv-quote-toggle {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  height: 1.25rem;
+  margin-top: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken);
+  cursor: pointer;
+}
+
+.conv-quote-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
+}
+
+.conv-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background: var(--color-surface-sunken);
+}
+
+.conv-banner > .lucide {
+  --icon-size: 1.125rem;
+  margin-top: 0.1rem;
+  color: var(--color-text-muted);
+}
+
+.conv-banner-warning {
+  color: var(--color-on-warning-soft);
+  background: var(--color-warning-soft);
+}
+
+.conv-banner-warning > .lucide {
+  color: inherit;
+}
+
+.conv-banner-title {
+  font-weight: var(--weight-semibold);
+}
+
+.conv-banner-list {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+.conv-reply-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3) 0 var(--space-5);
+}
+
+.conv-reply-actions .btn {
+  border-radius: var(--radius-pill);
+}
+
+.conv-reply-actions .lucide {
+  --icon-size: 1.125rem;
+}
+
+.conv-inline-reply:empty {
+  display: none;
+}
+
+.conv-inline-reply {
+  padding: 0 var(--space-6) var(--space-6) calc(var(--space-6) + 2.5rem + var(--space-3));
+}
+
+/* ---- "N older messages" -------------------------------------------------------- */
+
+.conv-fold {
+  position: relative;
+  padding: var(--space-2) var(--space-6);
+}
+
+.conv-fold::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.conv-fold-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) 0 0;
+  border: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.conv-fold-count {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.conv-fold-button:hover .conv-fold-count {
+  background: var(--color-hover);
+}
+
+/* ---- Show original ------------------------------------------------------------- */
+
+.conv-original {
+  width: min(64rem, calc(100vw - 2 * var(--space-4)));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+}
+
+.conv-original[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.conv-original::backdrop {
+  background: var(--color-scrim);
+}
+
+.conv-original-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.conv-original-title {
+  flex: 1;
+  font-size: var(--text-lg);
+}
+
+.conv-original-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+}
+
+.conv-original-facts dt {
+  color: var(--color-text-muted);
+}
+
+.conv-original-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.conv-original-source {
+  flex: 1 1 auto;
+  min-height: 12rem;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  overflow: auto;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.conv-original > .conv-note {
+  padding: 0 var(--space-5);
+}
+
+/* ---- Narrow (reading pane, phone) ---------------------------------------------- */
+
+@container conv (max-width: 40rem) {
+  .conv-header,
+  .conv-hidden-note,
+  .conv-inline-reply {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .conv-msg,
+  .conv-fold {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .conv-body,
+  .conv-msg .att-section,
+  .conv-reply-actions {
+    margin-left: 0;
+  }
+
+  .conv-msg-line {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+  }
+
+  .conv-line-preview {
+    display: none;
+  }
+
+  .conv-msg-head {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .conv-msg-side {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}

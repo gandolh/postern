@@ -1,0 +1,165 @@
+/* Attachment chips and the image viewer (brief 07). */
+
+.att-section {
+  padding: var(--space-2) 0 var(--space-4);
+  border-top: 1px dashed var(--color-border);
+}
+
+.att-heading {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.att-heading-size {
+  font-weight: var(--weight-regular);
+}
+
+.att-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.att-chip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  width: 17rem;
+  max-width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.att-chip[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+.att-chip[data-warning] {
+  border-color: var(--color-danger);
+}
+
+.att-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  text-align: start;
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+}
+
+.att-main:hover {
+  background: var(--color-hover);
+}
+
+.att-icon {
+  color: var(--color-accent);
+}
+
+.att-chip[data-warning] .att-icon {
+  color: var(--color-danger);
+}
+
+.att-text {
+  display: grid;
+  min-width: 0;
+}
+
+.att-name {
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.att-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.icon-btn.att-action {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-btn.att-action .lucide {
+  --icon-size: 1.125rem;
+}
+
+.att-warning {
+  grid-column: 1 / -1;
+  margin: var(--space-1) var(--space-1) 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+/* ---- The image viewer ---------------------------------------------------------- */
+
+.att-viewer {
+  width: min(72rem, calc(100vw - 2 * var(--space-4)));
+  height: min(48rem, calc(100dvh - 2 * var(--space-6)));
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+}
+
+.att-viewer[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.att-viewer::backdrop {
+  background: var(--color-scrim);
+}
+
+.att-viewer-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.att-viewer-title {
+  flex: 1;
+  overflow: hidden;
+  font-size: var(--text-lg);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.att-viewer-stage {
+  display: grid;
+  flex: 1 1 auto;
+  place-items: center;
+  min-height: 0;
+  background: var(--color-surface-sunken);
+}
+
+.att-viewer-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.att-viewer-note {
+  color: var(--color-text-muted);
+}

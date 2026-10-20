@@ -57,3 +57,17 @@ hostile until proven otherwise. The rendering rules in
 - Attachments download with the right names. Images and PDFs preview.
 - No code path inserts message HTML into the app's own DOM (code review plus a
   grep for `dangerouslySetInnerHTML`).
+
+## Outcome (2026-10-20)
+
+Built. All 17 hostile fixtures render in Chrome without running script,
+without a remote request before "Display images", and without leaving their
+frame; every frame's sandbox is exactly the two allowed tokens. Long
+conversations fold ("11 older messages"), quotes fold behind "…", inline
+`cid:` images show as `data:` URLs, and attachments download under their real
+names. Choices and gaps are in [security.md](../../wiki/security.md)
+("Message rendering as built"): estimated frame height, PDFs in a new tab,
+content dropped on purpose, and the image allowance trusting a forgeable From.
+Mark-read on open sends its own change, so it never replaces the user's last
+undo. The grep finds only two `outerHTML` reads that serialise DOMPurify's
+detached document.

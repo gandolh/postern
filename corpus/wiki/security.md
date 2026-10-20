@@ -70,6 +70,30 @@ updated: 2026-10-20
 - **No third-party scripts, fonts or analytics.** Everything is self-hosted
   from `/webmail`.
 
+## Message rendering as built (brief 07, 2026-10-20)
+
+- **Sanitiser:** DOMPurify 3.4.16 in a detached document
+  (`web/src/render/sanitize.ts`), then a `srcdoc` frame with exactly
+  `sandbox="allow-popups allow-popups-to-escape-sandbox"`. Each frame also
+  carries its own CSP and `no-referrer`, as a second layer.
+- **Dropped on purpose:** inline SVG and MathML, audio and video, forms and
+  every form control, remote fonts and `@import` (even after "Display
+  images"). `position: fixed`, `absolute` and `sticky` become `static`, which
+  can flatten a newsletter's layout. A message with its own `<style>` stays on
+  a light background in dark mode.
+- **Inline images** are `data:` URLs. A `blob:` URL made by the app shows as a
+  broken image inside the opaque-origin frame (tested in Chrome).
+- **Frame height** cannot be measured, because the frame cannot script and
+  the app cannot read it. It is estimated from the sanitised document, capped
+  at 1.5 times the viewport, and scrolls inside past that, with "Show full
+  message" to lift the cap.
+- **PDF preview** opens in a new tab with no opener, after checking the bytes
+  start with `%PDF-`. Chrome refuses a PDF in any sandboxed frame. Images
+  preview in a `sandbox=""` frame and are typed by their bytes.
+- **Known gaps:** "Always display images from <sender>" trusts the From
+  address, which a sender failing DMARC can forge (Gmail has the same gap).
+  Every internationalised link is flagged as punycode, legitimate or not.
+
 ## CSP for /webmail (draft, set by Caddy in brief 18)
 
 ```
