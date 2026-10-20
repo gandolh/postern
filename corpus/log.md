@@ -267,3 +267,13 @@ the labels are in. A toast's Undo runs its own action, `z` the newest, Undo
 send and Block sender included. Open conversations keep in-flight stars and
 mark arrivals read; session errors no longer toast. Brief 12's note that the
 composer does not read the default identity yet is stale: it does.
+
+## [2026-10-21] decision | The shared-origin cost, revisited as built
+
+The "Served at /webmail" entry in [decisions.md](wiki/decisions.md) still
+said a script elsewhere on the origin could frame Postern and use its tokens.
+As built, `frame-ancestors 'none'` and COOP close that, no token is in any
+storage, and the service worker refuses planted files. The entry now names
+what such a script can still do (preferences, notifications, the worker's
+registration, and a look-alike sign-in form the password manager may fill).
+The decision itself stands.

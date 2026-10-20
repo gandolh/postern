@@ -1,6 +1,6 @@
 ---
 summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack. Read before proposing to change any of these.
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Decisions
@@ -43,17 +43,27 @@ is reachable at `/webmail-api`. Rejected:
 
 **What it costs:** a browser origin is scheme + host + port, so every app on
 the production origin (atrium, prm, ward's UI, the presentation sites, and every
-dependency they load) runs in the same origin as Postern. A script injected into
-any of them can read Postern's memory through a same-origin frame, call
-`/webmail-api` with its tokens, and act as the mailbox. Ward and the other apps
-already share that origin, so this adds no new kind of risk to the estate. It
-puts much more value behind the existing one.
+dependency they load) runs in the same origin as Postern. When this was decided,
+a script injected into any of them could have framed Postern, read its memory
+and called `/webmail-api` with its tokens. As built (revisited 2026-10-21),
+`frame-ancestors 'none'` and COOP close the frame and opener routes, and the
+tokens are in no storage, so that script cannot reach a token (proved by
+`web/e2e/tokens.spec.ts`). What it still can do is everything that rides on
+origin-wide storage: rewrite Postern's preferences, read a notification on
+screen, unregister the service worker, and show a sign-in form of its own that
+the browser's password manager may fill, since saved passwords belong to the
+origin. Its attempt to plant a page in the service worker's cache is refused
+(the worker checks every file's hash). The list is in
+[security.md](security.md). Ward and the other apps already share that origin,
+so this adds no new kind of risk to the estate. It puts much more value behind
+the existing one.
 
 **Mitigations, all required:**
 
 - tokens in memory only;
 - message HTML only in the sandbox;
-- a strict CSP on `/webmail`;
+- a strict CSP on `/webmail`, with `frame-ancestors 'none'` and COOP;
+- a service worker that serves only files whose hash it knows;
 - no third-party scripts.
 
 Revisit if an app with untrusted content (user uploads rendered as HTML, a

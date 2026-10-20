@@ -162,10 +162,11 @@ BroadcastChannel. It cannot frame Postern, and a window it opens on
   remote images or turn Web Push on (F6), and read the last username;
 - see the worker's registration, read a notification on screen, show its own,
   and unregister the worker;
-- **rewrite the worker's precache, so its page is served as Postern on the
-  next visit** (F1, High, open). Until that is fixed, the shared-origin cost
-  in [decisions.md](decisions.md) is not bounded by the injected script's
-  lifetime.
+- write to Cache Storage, but not have it served: the worker checks every
+  cached file against a hash baked into `sw.js` and rebuilds its headers
+  (F1, fixed 2026-10-20);
+- show a sign-in form of its own, which the browser's password manager may
+  fill, because saved passwords belong to the origin, not to `/webmail/`.
 
 ## The malicious-mail corpus and the browser tests
 
