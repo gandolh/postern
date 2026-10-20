@@ -198,3 +198,11 @@ Report spam / Not spam, which train Stalwart's classifier (the open question
 is answered and gone). The vacation responder and the filters share
 Stalwart's single active script slot; [gmail-on-jmap.md](wiki/gmail-on-jmap.md)
 explains. Dev's inbound SMTP throttles are off. [Brief](briefs/done/13-filters-and-spam.md).
+
+## [2026-10-20] done | Brief 14: keyboard shortcuts and accessibility
+
+Gmail's shortcuts with `g` sequences and a searchable help sheet, and an
+accessibility pass: axe-core clean on every route in both themes, contrast
+checked per token pair, focus restored after list actions, reduced motion
+honoured, no horizontal scroll at 640 px. The screen-reader check by ear is an
+owner step listed in the [brief](briefs/done/14-keyboard-and-accessibility.md).

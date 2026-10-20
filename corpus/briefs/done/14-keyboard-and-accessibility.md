@@ -48,3 +48,29 @@ across everything built so far.
 - Triage the Inbox (open, archive, next, reply, send) without a mouse.
 - axe reports no serious or critical issues on any route. Screen-reader smoke
   test: NVDA or VoiceOver reads the list and a conversation sensibly.
+
+## Outcome (2026-10-20)
+
+Built. Every shortcut in the spec is bound (plus `Shift+c` for full-screen
+compose and `+`/`-` for important) through one registry in `web/src/keys/`;
+none fires in a field, a menu, a dialog, with Ctrl, Alt or Meta held, or when
+shortcuts are off in settings. The Inbox was triaged without a mouse (open,
+archive, next, reply, send). axe-core 4.10.2 found nothing at any level on
+every route in both themes once three issues were fixed (a help-sheet scroll
+region, a small composer button, a duplicate banner landmark). Contrast
+passes for 44 token pairs per theme; the light yellow label colour was
+darkened to pass. Focus returns to the row after archive, delete, spam and
+`u`. Unread rows now say "Unread" to screen readers.
+
+Left: `j`/`k` inside a full-width conversation does nothing (no list is
+mounted); the row's star button reads "Not starred" (a double negative); the
+row's accessible name is long; Back by link or browser does not restore the
+row's focus; search results do not take focus. The message frames were not
+scanned by axe.
+
+Owner step, by ear with NVDA or VoiceOver: the Inbox grid announces its name,
+row count and position, and unread rows start with "Unread"; selecting with
+`x` announces the count; an open conversation reads its subject heading and
+each collapsed message's sender, address and date; archiving announces
+"Conversation archived" once; the `?` sheet, the `l` and `v` menus, a hostile
+message's forged-sender warning, and "Message sent." after Ctrl+Enter.

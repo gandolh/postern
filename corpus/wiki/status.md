@@ -30,7 +30,7 @@ does not exist yet (the owner creates it).
 - [11](../briefs/done/11-live-updates.md): live updates by fetch-streamed event source, unread counts in the tab, desktop notifications. After 06. **Done 2026-10-20.**
 - [12](../briefs/done/12-settings.md): the settings pages: display, identities and signatures, vacation responder, storage. After 08. **Done 2026-10-20.**
 - [13](../briefs/done/13-filters-and-spam.md): filters as Sieve, block sender, report spam and not spam. After 09 and 12. **Done 2026-10-20.**
-- [14](../briefs/todo/14-keyboard-and-accessibility.md): Gmail's keyboard shortcuts, the help sheet, accessibility pass. After 07 and 08.
+- [14](../briefs/done/14-keyboard-and-accessibility.md): Gmail's keyboard shortcuts, the help sheet, accessibility pass. After 07 and 08. **Done 2026-10-20.**
 - [15](../briefs/done/15-contacts.md): contacts on JMAP Contacts, recipient autocomplete, sender cards. After 08. **Done 2026-10-20.**
 
 **Wave 5: hardening and deploy**

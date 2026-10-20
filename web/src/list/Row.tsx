@@ -205,6 +205,7 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
         />
       </div>
       <div role="gridcell" className="list-cell list-senders" title={view.senders.text}>
+        {view.unread ? <span className="visually-hidden">Unread, </span> : null}
         <Senders summary={view.senders} />
       </div>
       <div role="gridcell" className="list-cell list-main">

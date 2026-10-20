@@ -25,6 +25,7 @@ import type { ResolvedLabel } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
 import { ConfirmDialog } from "../list/ConfirmDialog";
 import { chipLabels, type ChipLabel } from "../list/format";
+import { requestReturnFocus } from "../list/returnFocus";
 import { useImageAllowance } from "../render/allowance";
 import { IconButton } from "../shell/IconButton";
 import { formatRoute, navigate, withoutConversation, type MailRoute } from "../shell/router";
@@ -192,7 +193,13 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   const last = shown[shown.length - 1];
   const hiddenCount = snapshot.messages.length - inScope.length;
   const backRoute = useMemo(() => withoutConversation(route), [route]);
-  const goBack = useCallback(() => navigate(backRoute), [backRoute]);
+  const goBack = useCallback(
+    (removed = false) => {
+      requestReturnFocus(removed === true);
+      navigate(backRoute);
+    },
+    [backRoute],
+  );
 
   // Open at first sight: the unread messages and the newest. Messages that arrive later open too.
   const [initial] = useState(() => ({
@@ -253,20 +260,20 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
     () => ({
       archive: () => {
         void actions.archive([acted], scope);
-        goBack();
+        goBack(true);
       },
       trash: () => {
         void actions.trash([acted], scope);
-        goBack();
+        goBack(true);
       },
       reportSpam: () => {
         // Spam's own copy (the server learns from it); roles as they are now, as the runner does.
         void actions.run(() => planReportSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), REPORT_SPAM_COPY);
-        goBack();
+        goBack(true);
       },
       notSpam: () => {
         void actions.run(() => planNotSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), NOT_SPAM_COPY);
-        goBack();
+        goBack(true);
       },
       markUnread: () => {
         void actions.markUnread([acted], scope);
@@ -275,7 +282,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
       deleteForever: () => {
         setConfirmForever(false);
         void actions.deleteForever([acted], scope);
-        goBack();
+        goBack(true);
       },
     }),
     [actions, acted, scope, goBack, labels.store],

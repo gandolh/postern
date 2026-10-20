@@ -24,6 +24,7 @@ import type { ListController, SelectKind } from "./controller";
 import type { ChipLabel } from "./format";
 import type { ListStore } from "./listStore";
 import { setActiveList } from "./registry";
+import { rememberOpened, takeReturnFocus } from "./returnFocus";
 import { ConversationRowView, PlaceholderRow, type RowContext, type RowHandlers } from "./Row";
 import { Toolbar } from "./Toolbar";
 import type { ConversationRow, ListPresentation, ListQuery } from "./types";
@@ -117,6 +118,18 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
       const gone = new Set(rows.map((r) => r.id));
       set.setSelection((s) => (s.all || [...s.ids].some((id) => gone.has(id)) ? { ...s, all: false, ids: new Set([...s.ids].filter((id) => !gone.has(id))) } : s));
     }
+    // Keyboard focus moves to the next row (else the previous) so it is not lost with the row.
+    const active = document.activeElement;
+    if (active === document.body || active?.closest("[role='grid']")) {
+      const gone = new Set(rows.map((r) => r.id));
+      const all = get().rows;
+      const last = all.reduce((at, r, i) => (gone.has(r.id) ? i : at), -1);
+      const next = all.slice(last + 1).find((r) => !gone.has(r.id)) ?? [...all].reverse().find((r) => !gone.has(r.id));
+      if (next) {
+        requestFocus();
+        set.setFocusId(next.id);
+      }
+    }
     await run(rows);
   };
 
@@ -159,6 +172,7 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
     const target = id ?? get().focusId;
     if (!target) return;
     set.setFocusId(target);
+    rememberOpened(target, Math.max(0, get().rows.findIndex((r) => r.id === target)));
     navigate(withConversation(get().route, target));
   };
 
@@ -343,6 +357,13 @@ export function ConversationList(props: ConversationListProps) {
     if (snapshot.status !== "ready" || snapshot.complete) return;
     if (virtual.end > rows.length - LOAD_AHEAD) store.ensureLoaded(virtual.end + LOAD_AHEAD);
   }, [virtual.end, rows.length, snapshot.status, snapshot.complete, store]);
+
+  // Back from a conversation: focus returns to its row (or the one that took its place).
+  useEffect(() => {
+    if (snapshot.status !== "ready") return;
+    const id = takeReturnFocus(rows);
+    if (id) api.focusRow(id);
+  });
 
   // Keyboard focus follows focusRow / moveFocus once the row is rendered.
   useEffect(() => {

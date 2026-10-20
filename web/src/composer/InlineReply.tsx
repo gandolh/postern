@@ -11,11 +11,29 @@
 
 import type { Id } from "@postern/jmap";
 import { FilePen } from "lucide-react";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { InlineReplyContext } from "../conversation/inlineReply";
 import { useComposerStore } from "./compose";
 import { ComposeForm } from "./ComposeForm";
 import { COMPOSER_ATTR } from "./shortcuts";
+
+/** The inline reply's frame: when it goes (sent, discarded), focus returns to where it was when the reply opened. */
+function InlineFrame({ label, composeKey, children }: { label: string; composeKey: string; children: ReactNode }) {
+  const ref = useRef<HTMLElement>(null);
+  const opener = useRef<Element | null>(typeof document === "undefined" ? null : document.activeElement);
+  useLayoutEffect(() => {
+    const from = opener.current;
+    return () => {
+      const active = document.activeElement;
+      if (from instanceof HTMLElement && from.isConnected && (active === document.body || active === null || !active.isConnected)) from.focus();
+    };
+  }, []);
+  return (
+    <section ref={ref} className="compose-inline" aria-label={label} {...{ [COMPOSER_ATTR]: composeKey }}>
+      {children}
+    </section>
+  );
+}
 
 export function InlineReplySlot({ context }: { context: InlineReplyContext }) {
   const store = useComposerStore();
@@ -59,9 +77,9 @@ export function InlineReplySlot({ context }: { context: InlineReplyContext }) {
     const session = store.get(state.key);
     if (!session) return null;
     return (
-      <section className="compose-inline" aria-label={state.mode === "forward" ? "Forward" : "Reply"} {...{ [COMPOSER_ATTR]: state.key }}>
+      <InlineFrame label={state.mode === "forward" ? "Forward" : "Reply"} composeKey={state.key}>
         <ComposeForm session={session} state={state} variant="inline" onPopOut={() => store.setPlacement(state.key, "docked")} />
-      </section>
+      </InlineFrame>
     );
   }
   if (offered && offered.threadId === context.threadId && !busy && !cardIds.has(offered.draftId)) {

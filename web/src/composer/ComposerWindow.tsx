@@ -29,6 +29,17 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
   const minimised = placement === "minimised";
   const fullscreen = placement === "fullscreen";
 
+  // Closing returns focus to where it was when the window opened (the list row, the Reply button).
+  const opener = useRef<Element | null>(typeof document === "undefined" ? null : document.activeElement);
+  useLayoutEffect(() => {
+    const from = opener.current;
+    const dialog = ref.current;
+    return () => {
+      const active = document.activeElement;
+      if (from instanceof HTMLElement && from.isConnected && (active === document.body || active === null || dialog?.contains(active) || !active.isConnected)) from.focus();
+    };
+  }, []);
+
   // Modal in full screen, non-modal otherwise; the same element throughout.
   useLayoutEffect(() => {
     const dialog = ref.current;
@@ -95,7 +106,7 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
         session.addFiles(Array.from(e.dataTransfer.files));
       }}
     >
-      <header className="compose-titlebar">
+      <div className="compose-titlebar">
         <h2 id={titleId} className="compose-title">
           {fullscreen ? (
             <span className="compose-title-text">{titleOf(state)}</span>
@@ -110,7 +121,7 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
           <IconButton label={fullscreen ? "Exit full screen" : "Full screen"} icon={fullscreen ? Minimize2 : Maximize2} tooltip="end" onClick={toggleFullscreen} />
           <IconButton label="Save & close" icon={X} tooltip="end" onClick={close} />
         </span>
-      </header>
+      </div>
       <div className="compose-window-body" hidden={minimised}>
         <ComposeForm session={session} state={state} variant="window" />
         {dragging ? (
