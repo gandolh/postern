@@ -68,3 +68,22 @@ See [gmail-on-jmap.md](../../wiki/gmail-on-jmap.md).
 - Reply and forward thread correctly: one conversation in both mailboxes.
 - Drafts autosave and survive closing the window. Undo send returns the draft.
 - Unit tests cover the reply and forward header building and the quoting.
+
+## Outcome (2026-10-20)
+
+Built with no new dependency: Postern's own contentEditable editor (no
+`execCommand`), with one sanitising entry point (`sanitizeForEditor`, a
+strict DOMPurify allow-list) for paste, drop, reopened drafts, signatures
+and quotes. Quoted originals are text only. On `dev/`, alice sent bob a
+message with an attachment and an inline image (bytes matched by sha256),
+and a reply and a forward each stayed one conversation in both mailboxes.
+Drafts autosave 2.5 s after typing and reopen from Drafts in the composer;
+undo send holds the submission 5 s (`setUndoSendDelay` for brief 12).
+
+Not as specified: a send to an unreachable domain cannot fail at send time
+on Stalwart 0.16; it moves to Sent and a bounce arrives later (see
+[gmail-on-jmap.md](../../wiki/gmail-on-jmap.md)). Errors the server does
+report keep the draft and explain. Automatic Bcc from an identity is not
+applied. The controller hid reply drafts from the conversation's message
+cards, since the composer shows them inline. The build now warns that the
+main chunk is 548 kB.

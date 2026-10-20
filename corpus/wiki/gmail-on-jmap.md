@@ -79,3 +79,15 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `bcc` is accepted but unproven. Gmail's `rfc822msgid:`, `list:`,
   `deliveredto:`, `replyto:`, `filename:` and `category:` have nothing to map
   to; Postern searches them as text and says so.
+- **Writing mail** (brief 08): an existing Email's subject and body cannot be
+  updated, so a draft is replaced by create plus destroy in one request,
+  keeping its Message-ID and so its conversation. A create refuses `null` on
+  an address header. A forward can reuse the original's part `blobId`s
+  without downloading. `sentAt` is stamped by the server; Bcc is stripped
+  from delivered copies and kept on the Sent copy. A custom `header:X-*` on a
+  draft is delivered to the recipient, so internal markers never go there.
+- **A failed delivery is not a send error.** `EmailSubmission/set` to an
+  unreachable domain succeeds and the message moves to Sent; the failure
+  arrives later as a bounce in the Inbox. Submission advertises
+  `maxDelayedSend` 2592000 and FUTURERELEASE, which the scheduled-send todo
+  needs.

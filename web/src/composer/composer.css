@@ -1,0 +1,768 @@
+/* The composer (brief 08): windows docked bottom-right in .shell-compose-layer,
+   minimised to a title bar, full screen as a modal dialog, and the inline
+   reply under a conversation. Tokens only. */
+
+/* ---- The window ---------------------------------------------------------------- */
+
+.compose-window {
+  position: relative;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  width: 34rem;
+  max-width: calc(100vw - 2 * var(--space-4));
+  height: min(38rem, calc(100vh - var(--topbar-height) - var(--space-4)));
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  animation: compose-in var(--duration-normal) var(--ease-out);
+}
+
+.compose-window:not([open]) {
+  display: none;
+}
+
+.compose-window[data-placement="minimised"] {
+  width: 16rem;
+  height: auto;
+}
+
+.compose-window[data-placement="fullscreen"] {
+  position: fixed;
+  inset: 0;
+  width: min(72rem, calc(100vw - 4rem));
+  max-width: none;
+  height: min(56rem, calc(100vh - 4rem));
+  margin: auto;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.compose-window::backdrop {
+  background: var(--color-scrim);
+}
+
+@keyframes compose-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+.compose-titlebar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 var(--space-1) 0 var(--space-4);
+  background: var(--color-surface-sunken);
+}
+
+.compose-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.compose-title-btn,
+.compose-title-text {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) 0;
+  overflow: hidden;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+  background: none;
+}
+
+.compose-title-btn {
+  cursor: pointer;
+}
+
+.compose-title-btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.compose-titlebar-actions {
+  display: flex;
+  flex: none;
+  --icon-size: 1.125rem;
+}
+
+.compose-titlebar-actions .icon-btn {
+  width: 2rem;
+  height: 2rem;
+}
+
+.compose-window-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.compose-window-body[hidden] {
+  display: none;
+}
+
+.compose-drop {
+  position: absolute;
+  inset: var(--space-2);
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-on-accent-soft);
+  background: var(--color-accent-soft);
+}
+
+/* ---- The form ------------------------------------------------------------------ */
+
+.compose-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  outline: none;
+}
+
+.compose-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+}
+
+.compose-row {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  margin: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.compose-row:focus-within {
+  border-bottom-color: var(--color-focus);
+  box-shadow: inset 0 -1px 0 var(--color-focus);
+}
+
+.compose-row-label {
+  flex: none;
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+}
+
+.compose-row-actions {
+  display: flex;
+  flex: none;
+  align-self: flex-start;
+  min-height: 2.5rem;
+  align-items: center;
+}
+
+.compose-link-btn {
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  background: none;
+  cursor: pointer;
+}
+
+.compose-link-btn:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.compose-input,
+.compose-select {
+  flex: 1 1 auto;
+  min-width: 6rem;
+  padding: var(--space-2) 0;
+  border: 0;
+  font: inherit;
+  font-size: var(--text-md);
+  color: var(--color-text);
+  background: transparent;
+  outline: none;
+}
+
+.compose-input::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.compose-select {
+  cursor: pointer;
+}
+
+/* ---- Recipient chips -------------------------------------------------------------- */
+
+.compose-chips {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-1) 0;
+  list-style: none;
+}
+
+.compose-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  background: var(--color-surface-sunken);
+}
+
+.compose-chip[data-invalid] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.compose-chip-text {
+  max-width: 18rem;
+  padding: var(--space-0) var(--space-1) var(--space-0) var(--space-3);
+  overflow: hidden;
+  border: 0;
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.compose-chip[data-invalid] .compose-chip-text {
+  text-decoration: underline wavy;
+  text-underline-offset: 3px;
+}
+
+.compose-chip-remove {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: var(--space-0);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: inherit;
+  background: none;
+  cursor: pointer;
+  --icon-size: 0.875rem;
+}
+
+.compose-chip-remove:hover {
+  background: var(--color-hover);
+}
+
+.compose-chip-text:focus-visible,
+.compose-chip-remove:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--radius-pill);
+}
+
+.compose-chip-input {
+  display: flex;
+  flex: 1 1 8rem;
+  min-width: 8rem;
+}
+
+.compose-suggestions {
+  position: absolute;
+  top: calc(100% + var(--space-0));
+  left: var(--space-8);
+  z-index: 8;
+  min-width: 18rem;
+  max-width: calc(100% - var(--space-8));
+  max-height: 16rem;
+  margin: 0;
+  padding: var(--space-1) 0;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+}
+
+.compose-suggestions[hidden] {
+  display: none;
+}
+
+.compose-suggestion {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.compose-suggestion:hover,
+.compose-suggestion[aria-selected="true"] {
+  background: var(--color-hover);
+}
+
+.compose-suggestion-email {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ---- Body -------------------------------------------------------------------------------- */
+
+.compose-error {
+  flex: none;
+  margin: var(--space-2) var(--space-4) 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.compose-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.compose-editor {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.compose-editor-body,
+.compose-plain {
+  flex: 1 0 auto;
+  min-height: 8rem;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  font: inherit;
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: transparent;
+  outline: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.compose-plain {
+  resize: none;
+}
+
+.compose-editor-body p,
+.compose-editor-body ul,
+.compose-editor-body ol,
+.compose-editor-body pre,
+.compose-editor-body h1,
+.compose-editor-body h2,
+.compose-editor-body h3 {
+  margin: 0;
+}
+
+.compose-editor-body ul,
+.compose-editor-body ol {
+  padding-left: 1.5em;
+}
+
+.compose-editor-body ul {
+  list-style: disc;
+}
+
+.compose-editor-body ol {
+  list-style: decimal;
+}
+
+.compose-editor-body blockquote {
+  margin: 0 0 0 0.8ex;
+  padding-left: 1ex;
+  border-left: 2px solid var(--color-border-strong);
+}
+
+.compose-editor-body a {
+  color: var(--color-accent);
+}
+
+.compose-editor-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.compose-editor-body pre,
+.compose-editor-body code {
+  font-family: var(--font-mono);
+}
+
+.compose-editor-body table {
+  border-collapse: collapse;
+}
+
+.compose-editor-body td,
+.compose-editor-body th {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+}
+
+.compose-editor-body .postern_signature,
+.compose-editor-body .postern_quote {
+  color: var(--color-text-muted);
+}
+
+.compose-trimmed {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  align-self: flex-start;
+  width: 2rem;
+  height: 1.25rem;
+  margin: 0 var(--space-4) var(--space-2);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken);
+  cursor: pointer;
+  --icon-size: 1rem;
+}
+
+.compose-trimmed:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
+}
+
+/* ---- Formatting bar and the link editor ------------------------------------------- */
+
+.compose-format {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--space-0);
+  margin: var(--space-1) var(--space-3) 0;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  --icon-size: 1.125rem;
+}
+
+.compose-format .compose-format-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+}
+
+.compose-format .compose-format-btn[data-tooltip]::after {
+  top: auto;
+  bottom: calc(100% + var(--space-1));
+}
+
+.compose-link {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-1) var(--space-3) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+}
+
+.compose-link-title {
+  font-weight: var(--weight-semibold);
+}
+
+.compose-link-field {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.compose-link-error {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+}
+
+.compose-link-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ---- Attachments ------------------------------------------------------------------------ */
+
+.compose-tray {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-1) var(--space-4) var(--space-2);
+  list-style: none;
+}
+
+.compose-file {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-1) 0 var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  background: var(--color-surface-sunken);
+  --icon-size: 1rem;
+}
+
+.compose-file[data-status="error"] {
+  background: var(--color-danger-soft);
+}
+
+.compose-file-icon {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+.compose-file[data-status="error"] .compose-file-icon,
+.compose-file-error {
+  color: var(--color-danger);
+}
+
+.compose-file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compose-file-meta {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+.compose-file-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.compose-file-progress progress {
+  width: 6rem;
+  accent-color: var(--color-accent);
+}
+
+.compose-file .compose-file-remove {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+/* ---- Footer --------------------------------------------------------------------------------- */
+
+.compose-footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+}
+
+.btn.compose-send {
+  min-height: 2.5rem;
+  margin-right: var(--space-2);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  font-weight: var(--weight-semibold);
+}
+
+.compose-footer .icon-btn[data-tooltip]::after {
+  top: auto;
+  bottom: calc(100% + var(--space-1));
+}
+
+.compose-save {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-subtle);
+}
+
+.compose-menu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.compose-menu {
+  position: absolute;
+  bottom: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  padding: var(--space-1) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+}
+
+.compose-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
+  border: 0;
+  font: inherit;
+  font-size: var(--text-md);
+  text-align: left;
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+}
+
+.compose-menu-item[aria-checked="true"] {
+  padding-left: var(--space-3);
+}
+
+.compose-menu-item[aria-checked="true"]::before {
+  content: "✓";
+  width: var(--space-3);
+}
+
+.compose-menu-item:hover,
+.compose-menu-item:focus-visible {
+  background: var(--color-hover);
+  outline: none;
+}
+
+/* ---- Questions -------------------------------------------------------------------------------- */
+
+.compose-question {
+  max-width: min(28rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+}
+
+.compose-question::backdrop {
+  background: var(--color-scrim);
+}
+
+.compose-question-title {
+  font-size: var(--text-xl);
+}
+
+.compose-question-body {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.compose-question-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.btn.compose-question-danger {
+  border-color: transparent;
+  color: var(--color-surface);
+  background: var(--color-danger);
+}
+
+.btn.compose-question-danger:hover {
+  color: var(--color-surface);
+  background: var(--color-danger);
+  filter: brightness(0.92);
+}
+
+/* ---- Inline reply -------------------------------------------------------------------------- */
+
+.compose-inline {
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.compose-inline .compose-form {
+  min-height: 15rem;
+}
+
+.compose-inline .compose-body {
+  overflow: visible;
+}
+
+.compose-inline .compose-row:first-child {
+  margin-top: var(--space-1);
+}
+
+.btn.compose-draft-offer {
+  margin-top: var(--space-4);
+  --icon-size: 1.125rem;
+}
+
+/* ---- Phones: a docked composer takes the screen ------------------------------------------------ */
+
+@media (max-width: 37.4375rem) {
+  .compose-window[data-placement="docked"],
+  .compose-window[data-placement="fullscreen"] {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    width: auto;
+    max-width: none;
+    height: auto;
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compose-window {
+    animation: none;
+  }
+}

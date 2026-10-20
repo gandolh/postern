@@ -154,3 +154,5 @@ export {
   type SearchWarning,
   type SearchWarningKind,
 } from "./search/index.js";
+
+export * from "./compose/index.js";

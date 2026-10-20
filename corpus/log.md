@@ -150,3 +150,13 @@ of the sanitiser as a working single escape, so blocking a tracking pixel
 rested on the frame's CSP alone. Fixed, with four Minor ones (nested-CSS
 `position`, bidi isolation, forgeable link pills, preview size caps). See
 [security.md](wiki/security.md).
+
+## [2026-10-20] done | Brief 08: compose and send
+
+Docked, stackable composer windows and inline replies; recipient chips;
+a rich-text editor whose every HTML input is sanitised; attachments with
+upload progress and pasted images as `cid:` parts; autosaved drafts; send
+with undo; reply, reply all and forward threaded with `In-Reply-To` and
+`References`. What Stalwart does with drafts, forwards and failed deliveries
+is in [gmail-on-jmap.md](wiki/gmail-on-jmap.md).
+[Brief](briefs/done/08-compose-and-send.md).

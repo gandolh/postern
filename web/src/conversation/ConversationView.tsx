@@ -10,7 +10,7 @@
 import type { Id } from "@postern/jmap";
 import { Archive, ArrowLeft, Inbox, MailOpen, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { FLAGGED, labelIdsOf, SEEN, shownMessages, type Conversation, type ConversationScope, type MailboxRoles } from "../actions/conversation";
+import { DRAFT, FLAGGED, labelIdsOf, SEEN, shownMessages, type Conversation, type ConversationScope, type MailboxRoles } from "../actions/conversation";
 import { planEdits } from "../actions/patches";
 import { planTrash } from "../actions/plans";
 import { actionCopy, COPY } from "../actions/runner";
@@ -169,9 +169,16 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   const roles = useMemo(() => JSON.parse(rolesKey) as MailboxRoles, [rolesKey]);
   const scope = useMemo<ConversationScope>(() => ({ kind: scopeKind(label), roles }), [label, roles]);
   const conversation = useMemo<Conversation<ConvMessage>>(() => ({ id: conversationId, messages: snapshot.messages }), [conversationId, snapshot.messages]);
-  const shown = useMemo(() => shownMessages(conversation, scope), [conversation, scope]);
+  // A reply draft sits in the conversation it answers. The composer opens it
+  // inline under the last message (brief 08), so it is not also a card here,
+  // unless the conversation is nothing but drafts.
+  const inScope = useMemo(() => shownMessages(conversation, scope), [conversation, scope]);
+  const shown = useMemo(() => {
+    const sent = inScope.filter((m) => m.keywords[DRAFT] !== true);
+    return sent.length > 0 ? sent : inScope;
+  }, [inScope]);
   const last = shown[shown.length - 1];
-  const hiddenCount = snapshot.messages.length - shown.length;
+  const hiddenCount = snapshot.messages.length - inScope.length;
   const backRoute = useMemo(() => withoutConversation(route), [route]);
   const goBack = useCallback(() => navigate(backRoute), [backRoute]);
 
