@@ -10,6 +10,7 @@ import { expect, test, type BrowserContext, type Page, type Request } from "@pla
 import { goTo, openConversation, signIn, stubOutsideWorld } from "./lib/app.ts";
 import { hostileSet, password } from "./lib/devmail.ts";
 import { APP_URL, ORIGIN, PROBE_URL } from "./lib/env.ts";
+import { APP_HEADERS } from "./lib/headers.ts";
 
 test.use({ serviceWorkers: "allow" });
 
@@ -285,35 +286,100 @@ test("sign-out forgets the session; Stalwart 0.16 cannot revoke the token", asyn
   expect(Object.keys(session.accounts ?? {}).length, "Stalwart 0.16.25 has no revocation: the copied token still opens the session").toBeGreaterThan(0);
 });
 
-// ---- Known finding, recorded in corpus/wiki/security-findings.md (F1) -------
-// Cache Storage belongs to the whole origin. A script in any estate app can
-// replace the service worker's precached index.html, and the worker then
-// serves that page, with no CSP, as Postern on every later visit: a lasting
-// foothold that sees the password at the next sign-in. Marked as an expected
-// failure until the worker checks what it serves (or stops precaching):
-// when this starts passing, Playwright reports it, and the mark comes off.
-test("another app's page cannot replace what the service worker serves as Postern", async ({ context }) => {
-  test.fail(true, "F1: the worker serves Cache Storage entries any same-origin script can rewrite");
+// ---- Finding F1 (corpus/wiki/security-findings.md), fixed ---------------------
+// Cache Storage belongs to the whole origin: a script in any estate app can
+// rewrite the worker's cache. The worker checks every cached body against a
+// SHA-256 baked into sw.js and builds the response itself with production's
+// headers (web/src/sw/shell.ts), so a rewritten entry is never served and a
+// stripped one cannot drop the CSP.
+
+/** Open Postern once so its worker installs (and fills its cache), then close it. */
+async function installWorker(context: BrowserContext): Promise<void> {
   const app = await context.newPage();
   await app.goto(APP_URL);
   await app.evaluate(async () => navigator.serviceWorker.ready);
+  await expect.poll(() => app.evaluate(async () => (await caches.keys()).some((n) => n.startsWith("postern-shell-")))).toBe(true);
   await app.close();
+}
 
+/** From another app's page: replace every cached copy of a Postern path, in every cache on the origin. */
+function poison(probe: Page, path: RegExp, body: string, headers: Record<string, string>): Promise<number> {
+  return probe.evaluate(
+    async ({ source, flags, body, headers }) => {
+      const re = new RegExp(source, flags);
+      let n = 0;
+      for (const name of await caches.keys()) {
+        const cache = await caches.open(name);
+        for (const request of await cache.keys()) {
+          if (!re.test(new URL(request.url).pathname)) continue;
+          await cache.put(request, new Response(body, { headers }));
+          n++;
+        }
+      }
+      return n;
+    },
+    { source: path.source, flags: path.flags, body, headers },
+  );
+}
+
+const FORGED_PAGE = "<!doctype html><title>Postern</title><script>window.__POSTERN_POISONED = true</script>";
+const poisoned = (p: Page) => p.evaluate(() => (window as unknown as { __POSTERN_POISONED?: boolean }).__POSTERN_POISONED).catch(() => undefined);
+
+test("another app's page cannot replace what the service worker serves as Postern", async ({ context }) => {
+  await installWorker(context);
   const probe = await context.newPage();
   await probe.goto(PROBE_URL);
-  await probe.evaluate(async () => {
-    for (const name of await caches.keys()) {
-      const cache = await caches.open(name);
-      for (const request of await cache.keys()) {
-        if (!/\/webmail\/index\.html/.test(request.url)) continue;
-        const page = "<!doctype html><title>Postern</title><script>window.__POSTERN_POISONED = true</script>";
-        await cache.put(request, new Response(page, { headers: { "content-type": "text/html" } }));
-      }
-    }
-  });
+  expect(await poison(probe, /\/webmail\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" }), "cached copies replaced").toBeGreaterThan(0);
 
   const next = await context.newPage();
   await next.goto(APP_URL);
   await next.waitForTimeout(500);
-  expect(await next.evaluate(() => (window as unknown as { __POSTERN_POISONED?: boolean }).__POSTERN_POISONED), "a replaced shell ran").toBeUndefined();
+  expect(await poisoned(next), "a replaced shell ran").toBeUndefined();
+  await expect(next.locator("input[name=username]")).toBeVisible();
+});
+
+test("a cached file with the right bytes but stripped headers is served with production's headers; a forged script never runs", async ({ context }) => {
+  await installWorker(context);
+  const probe = await context.newPage();
+  await probe.goto(PROBE_URL);
+  // The genuine page with no headers at all (no CSP), and a forged app script.
+  const genuine = await probe.evaluate(async () => (await fetch("/webmail/index.html")).text());
+  expect(await poison(probe, /\/webmail\/index\.html$/, genuine, {})).toBeGreaterThan(0);
+  expect(await poison(probe, /\/webmail\/assets\/index-[^/]+\.js$/, "window.__POSTERN_POISONED = true", { "content-type": "text/javascript" })).toBeGreaterThan(0);
+
+  const next = await context.newPage();
+  const response = await next.goto(APP_URL);
+  expect(response?.fromServiceWorker(), "the page came from the worker's cache").toBe(true);
+  const headers = response?.headers() ?? {};
+  for (const [name, value] of Object.entries(APP_HEADERS)) expect(headers[name], name).toBe(value);
+  await expect(next.locator("input[name=username]")).toBeVisible();
+  expect(await poisoned(next), "a forged script ran").toBeUndefined();
+});
+
+test("offline, the installed app opens to the sign-in page from the verified cache; a forged copy never runs", async ({ context }) => {
+  await installWorker(context);
+  const probe = await context.newPage();
+  await probe.goto(PROBE_URL);
+  await context.setOffline(true);
+  try {
+    const offline = await context.newPage();
+    const response = await offline.goto(APP_URL);
+    expect(response?.fromServiceWorker(), "served by the worker").toBe(true);
+    for (const [name, value] of Object.entries(APP_HEADERS)) expect(response?.headers()[name], name).toBe(value);
+    await expect(offline.getByText("You're offline.", { exact: false })).toBeVisible();
+    await expect(offline.locator("input[name=username]")).toBeVisible();
+    await offline.close();
+
+    // Rewritten while offline: the worker drops it, the network is down, so the page does not open at all.
+    expect(await poison(probe, /\/webmail\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" })).toBeGreaterThan(0);
+    const next = await context.newPage();
+    const failed = await next.goto(APP_URL).then(
+      () => null,
+      (err: Error) => err.message.split("\n")[0] ?? "error",
+    );
+    expect(await poisoned(next), "a replaced shell ran offline").toBeUndefined();
+    expect(failed, "the forged copy is refused, and with the network down the page does not open").toMatch(/ERR_FAILED|ERR_INTERNET_DISCONNECTED/);
+  } finally {
+    await context.setOffline(false);
+  }
 });

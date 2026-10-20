@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { anyVisible, appWindows, clickHash, hashFor, notificationsFor, parsePushPayload, windowForClick, type WindowLike } from "./notify";
-import { OPEN, PUSH_VERIFICATION, readWorkerMessage, WILL_NOTIFY } from "./protocol";
+import { mayRequestUpdate, OPEN, PUSH_VERIFICATION, readWorkerMessage, WILL_NOTIFY } from "./protocol";
 
 const IMAGES = { icon: "/webmail/pwa-192x192.png", badge: "/webmail/pwa-badge-96x96.png" };
 
@@ -127,5 +127,24 @@ describe("readWorkerMessage", () => {
     expect(readWorkerMessage({ type: WILL_NOTIFY })).toEqual({ type: WILL_NOTIFY });
     expect(readWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: 1 })).toBeNull();
     expect(readWorkerMessage("hello")).toBeNull();
+  });
+});
+
+describe("mayRequestUpdate (finding F7)", () => {
+  const ORIGIN = "https://estate.example";
+  const client = (url: string, over: Record<string, unknown> = {}) => ({ type: "window", frameType: "top-level", url, ...over });
+
+  it("lets only a top-level Postern window make a waiting worker take over", () => {
+    expect(mayRequestUpdate(client(`${ORIGIN}/webmail/#inbox`), ORIGIN, "/webmail/")).toBe(true);
+  });
+
+  it("refuses another estate app's page, a frame, a worker, another origin, or nothing", () => {
+    expect(mayRequestUpdate(client(`${ORIGIN}/atrium/`), ORIGIN, "/webmail/")).toBe(false);
+    expect(mayRequestUpdate(client(`${ORIGIN}/webmail-api/x`), ORIGIN, "/webmail/")).toBe(false);
+    expect(mayRequestUpdate(client(`${ORIGIN}/webmail/`, { frameType: "nested" }), ORIGIN, "/webmail/")).toBe(false);
+    expect(mayRequestUpdate(client(`${ORIGIN}/webmail/`, { type: "worker" }), ORIGIN, "/webmail/")).toBe(false);
+    expect(mayRequestUpdate(client("https://evil.example/webmail/"), ORIGIN, "/webmail/")).toBe(false);
+    expect(mayRequestUpdate({ scriptURL: `${ORIGIN}/webmail/sw.js` }, ORIGIN, "/webmail/")).toBe(false);
+    expect(mayRequestUpdate(null, ORIGIN, "/webmail/")).toBe(false);
   });
 });

@@ -234,3 +234,15 @@ or another page on the origin. The headers brief 18 must set are in
 [security-findings.md](wiki/security-findings.md). It found one High: the
 service worker's cache is writable by any script on the origin.
 [Brief](briefs/done/17-security-hardening.md).
+
+## [2026-10-20] maintenance | The service worker serves only verified files (F1)
+
+Brief 17 found that any script on the shared origin could rewrite the
+service worker's precache and gain a lasting foothold. The worker now keeps
+its own cache, checks every file against a SHA-256 baked into `sw.js` at build
+time, and builds each response itself with the production headers, so a
+forged entry or stripped headers are never served. The installed app still
+opens offline to the sign-in page. Also fixed: `SKIP_WAITING` only from a
+`/webmail/` window (F7), worker messages only from Postern's own worker (F8),
+and a page reload on a worker update only while signed out and hidden. See
+[security-findings.md](wiki/security-findings.md).

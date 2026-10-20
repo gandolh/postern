@@ -3,7 +3,7 @@
 // with vite-plugin-pwa, not under Vitest.
 
 import { registerSW } from "virtual:pwa-register";
-import { listenToWorker, updateWaiting } from "./register";
+import { listenToWorker, updateWaiting, workerTookOver } from "./register";
 
 export function registerWorker(): void {
   if (!("serviceWorker" in navigator)) return;
@@ -11,6 +11,12 @@ export function registerWorker(): void {
   const update = registerSW({
     onNeedRefresh() {
       updateWaiting(() => void update(true));
+    },
+    // Without this, vite-plugin-pwa reloads every Postern tab that saw the
+    // update waiting as soon as any one of them lets it take over, signed-in
+    // tabs included, and a reload signs you out (finding F7's follow-on).
+    onNeedReload() {
+      workerTookOver();
     },
   });
 }

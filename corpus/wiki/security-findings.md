@@ -1,5 +1,5 @@
 ---
-summary: Every security finding from brief 17's whole-repo review (2026-10-20), by severity, with file and line, what an attacker gets, and whether it was fixed (with its test) or is open and whose lane the fix belongs in. The open High one is the service worker's precache, which any script on the shared origin can rewrite. Read before working on the service worker, push, prefs, filters or anything the shared origin can reach, and when picking security follow-ups.
+summary: Every security finding from brief 17's whole-repo review (2026-10-20), by severity, with file and line, what an attacker gets, and whether it was fixed (with its test) or is open and whose lane the fix belongs in. The High one, the service worker's precache any script on the shared origin could rewrite, is fixed (hashes baked into sw.js, checked on every read). Read before working on the service worker, push, prefs, filters or anything the shared origin can reach, and when picking security follow-ups.
 updated: 2026-10-20
 ---
 
@@ -12,34 +12,6 @@ means a script running in any estate app on the shared origin
 ([decisions.md](decisions.md)). Line numbers are as of 2026-10-20.
 
 ## Open
-
-### F1 · High · A same-origin script can replace what the worker serves as Postern
-
-- **Where:** [web/src/sw/sw.ts](../../web/src/sw/sw.ts) lines 43 and 46-51
-  (`precacheAndRoute`, and navigations answered with the cached
-  `index.html`). workbox-precaching 7.4.1's `PrecacheStrategy` serves the
-  cache match with no integrity check.
-- **Attack:** Cache Storage belongs to the whole origin, and the cache name
-  (`workbox-precache-v2-<scope>`) is predictable. A script on `/other/`
-  `put`s its own `index.html` (or a JS chunk) into Postern's precache. The
-  worker then serves it as Postern on every later visit, with no CSP, because
-  the forged response has no headers.
-- **Gets:** a lasting foothold inside Postern that sees the password and TOTP
-  code at the next sign-in. It outlives the original bug, a password change
-  and a deploy that leaves that file's revision alone. This is more than the
-  accepted shared-origin cost, which lasts only while the injected script
-  runs.
-- **Proven:** `tokens.spec.ts` replaces the cached `index.html` from
-  `/probe/`, and the next load runs it. The test is marked as an expected
-  failure, so it flips when fixed.
-- **Fix (web/src/sw, brief 16's lane; Caddy cannot help):**
-  - either check each precached response against a SHA-256 baked into
-    `sw.js` (the browser fetches the worker script from the network, never
-    from Cache Storage) and fall back to the network on a mismatch;
-  - or stop precaching (a push-only worker), and delete every
-    `workbox-precache-*` cache on activate. Offline only ever showed the
-    sign-in page. Check that installability survives without a fetch
-    handler.
 
 ### F6 · Low · Security-relevant preferences live where any same-origin script can write
 
@@ -56,33 +28,6 @@ means a script running in any estate app on the shared origin
 - **Fix:** none complete while these live in localStorage (owner decision
   2026-10-20). Show a lasting indicator while "always display images" or Web
   Push is on, and confirm those values once per sign-in.
-
-### F7 · Low · Any same-origin page can make the worker take over, which reloads and signs out
-
-- **Where:** [web/src/sw/sw.ts](../../web/src/sw/sw.ts) lines 37-39 accept
-  `SKIP_WAITING` from any client, while an update is waiting.
-- **Fix:** act only when `event.source` is a window client under the scope.
-
-### F8 · Low · The page takes worker messages from any worker
-
-- **Where:** [web/src/push/register.ts](../../web/src/push/register.ts) lines
-  47-61 (`handleWorkerMessage`) and 72 (the listener) never check
-  `event.source`. A worker another estate app
-  registers at its own scope can reach Postern's tab: fake Web Push
-  verification codes (turning push on fails), or learn from `WILL_NOTIFY`
-  whether the user is signed in. Not tried in a browser.
-- **Fix:** require `event.source` to be the worker whose `scriptURL` is
-  `/webmail/sw.js`.
-
-### F9 · Low · "Also apply to matching conversations" can search for something else
-
-- **Where:** [web/src/filters/retroactive.ts](../../web/src/filters/retroactive.ts)
-  line 20 (`criteriaToSearch`) passes "Has the words" through as search
-  syntax, since `joinWords` (`jmap/src/sieve/model.ts` line 124) quotes only
-  words with a space in them: `-foo` becomes NOT, `OR` and `AND` vanish. A filter whose words are just `OR` matches all
-  mail outside Spam and Trash, and a Delete action then hits up to 5,000
-  conversations (undoable). The user types the words, hence Low.
-- **Fix:** quote each word in `criteriaToSearch`, and show the count first.
 
 ### F4b · Low · The DMARC gate trusts the topmost Authentication-Results
 
@@ -123,6 +68,43 @@ means a script running in any estate app on the shared origin
 - **No revocation:** a token copied before sign-out keeps working until it
   expires. `tokens.spec.ts` asserts this, so a Stalwart that gains
   revocation shows up.
+- `npm audit` (2026-10-20, after brief 17): one moderate advisory in Vite
+  8.2.2's dev server (`launch-editor` on Windows, GHSA-698v-4r3x-3vcv). Dev
+  only, never shipped, and the estate pins Vite 8.2.2; left until the house
+  stack moves.
+
+## Fixed after brief 17 (each with a test)
+
+- **F1 · High · A same-origin script could replace what the worker serves as
+  Postern.** Fixed: the build bakes a SHA-256 of every shell file into
+  `sw.js`, and [web/src/sw/shell.ts](../../web/src/sw/shell.ts) serves a
+  cached body only if it hashes right, built into a fresh response with
+  production's headers ([headers.ts](../../web/src/sw/headers.ts), shared
+  with the e2e suite); anything else is dropped and goes to the network.
+  Tests: `shell.test.ts`, and the three worker tests in `tokens.spec.ts`
+  (forged page, stripped headers plus a forged script, offline).
+- **F7 · Low · Any same-origin page could make the worker take over.** Fixed:
+  `SKIP_WAITING` counts only from a top-level window under `/webmail/`
+  (`mayRequestUpdate`), and no signed-in Postern tab reloads when a new
+  worker takes over (`onNeedReload` in `web/src/push/install.ts`). Tests in
+  `web/src/sw/notify.test.ts`.
+- **F8 · Low · The page took worker messages from any worker.** Fixed: a
+  message counts only from the `/webmail/` registration's active worker
+  running `/webmail/sw.js` (`acceptsSource` in `web/src/push/register.ts`). Tests in
+  `web/src/push/register.test.ts`.
+
+### F9 · Low · "Also apply to matching conversations" can search for something else
+
+- **Where:** [web/src/filters/retroactive.ts](../../web/src/filters/retroactive.ts)
+  line 20 (`criteriaToSearch`) passes "Has the words" through as search
+  syntax, since `joinWords` (`jmap/src/sieve/model.ts` line 124) quotes only
+  words with a space in them: `-foo` becomes NOT, `OR` and `AND` vanish. A filter whose words are just `OR` matches all
+  mail outside Spam and Trash, and a Delete action then hits up to 5,000
+  conversations (undoable). The user types the words, hence Low.
+- **Fix:** quote each word in `criteriaToSearch`, and show the count first.
+- **Fixed (2026-10-20, `095c59f`):** words that look like search syntax
+  (`OR`, `AND`, a leading `-`, a colon or brackets) are quoted, so the
+  search reads them as plain words, as the Sieve rule does.
 
 ## Fixed in brief 17 (each with a test)
 

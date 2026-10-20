@@ -53,3 +53,30 @@ export function readWorkerMessage(data: unknown): WorkerMessage | null {
 export function isNotificationHash(hash: string): boolean {
   return /^#inbox(\/[A-Za-z0-9_-]{1,255})?$/.test(hash);
 }
+
+/** What the worker sees of a message's sender: a Client's type, URL and frame type. */
+export interface MessageSourceLike {
+  type?: string;
+  url?: string;
+  frameType?: string;
+}
+
+/**
+ * May this sender make a waiting worker take over (finding F7)? Only a
+ * top-level window of Postern's own: same origin, under the scope. A waiting
+ * worker controls no client yet, so "one of its own clients" cannot be asked;
+ * the path is what tells Postern's windows from another estate app's, since
+ * frame-ancestors 'none' and COOP same-origin keep other apps' script out of
+ * any /webmail/ window.
+ */
+export function mayRequestUpdate(source: unknown, origin: string, scope: string): boolean {
+  if (typeof source !== "object" || source === null) return false;
+  const s = source as MessageSourceLike;
+  if (s.type !== "window" || s.frameType !== "top-level" || typeof s.url !== "string") return false;
+  try {
+    const url = new URL(s.url);
+    return url.origin === origin && url.pathname.startsWith(scope);
+  } catch {
+    return false;
+  }
+}

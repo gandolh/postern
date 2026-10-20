@@ -9,7 +9,7 @@ Settled by brief 17 and proven by the browser tests in [web/e2e](../../web/e2e/R
 (`csp.spec.ts`): the production build, served by Caddy 2.11.7 with
 [the e2e Caddyfile](../../web/e2e/Caddyfile), every screen walked with zero
 CSP violations. The same text lives in
-[web/e2e/lib/headers.ts](../../web/e2e/lib/headers.ts), which the test checks
+[web/src/sw/headers.ts](../../web/src/sw/headers.ts), which the test checks
 the served headers against. Change the three together. Why the headers
 matter: [security.md](security.md).
 

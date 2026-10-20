@@ -1,10 +1,12 @@
 /// <reference lib="webworker" />
 // Postern's service worker (brief 16; vite-plugin-pwa, injectManifest).
 //
-// 1. The app shell: precache HTML, JS, CSS, fonts, icons and the manifest,
-//    and answer navigations inside /webmail/ with index.html, so the
-//    installed app opens offline (to the sign-in page: tokens die with the
-//    tab). Nothing is cached at runtime. Never mail, never a /webmail-api
+// 1. The app shell: the files the build lists, each with a SHA-256 baked into
+//    this script, cached at install and checked on every read (shell.ts;
+//    finding F1: Cache Storage is the whole origin's, so any estate app's
+//    script can rewrite it). Navigations inside /webmail/ get index.html, so
+//    the installed app opens offline (to the sign-in page: tokens die with
+//    the tab). Nothing is cached at runtime. Never mail, never a /webmail-api
 //    response (owner decision 2026-10-20: no offline mail).
 // 2. Web Push: show new mail while Postern is closed, hand Stalwart's
 //    verification code to the page, and open the Inbox on a click.
@@ -13,13 +15,12 @@
 // arrive in the push itself (Stalwart's emailPush extension), encrypted to
 // this browser's subscription keys; the push service sees ciphertext only.
 
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute, type PrecacheEntry } from "workbox-precaching";
-import { NavigationRoute, registerRoute } from "workbox-routing";
 import { anyVisible, appWindows, clickHash, notificationsFor, openMessage, parsePushPayload, windowForClick } from "./notify";
-import { SKIP_WAITING, WILL_NOTIFY } from "./protocol";
-import { mayAnswerFromPrecache, NAVIGATION_DENYLIST, scopePath } from "./routing";
+import { mayRequestUpdate, SKIP_WAITING, WILL_NOTIFY } from "./protocol";
+import { scopePath } from "./routing";
+import { cacheNameFor, cleanupCaches, installShell, pick, serve, shellFiles, type ManifestEntry, type ShellDeps } from "./shell";
 
-declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | PrecacheEntry)[] };
+declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | ManifestEntry)[] };
 
 /** `/webmail/`: the build's base, which is also the registration's scope. */
 const SCOPE = scopePath(import.meta.env.BASE_URL);
@@ -31,26 +32,41 @@ const ASK_TIMEOUT_MS = 1000;
 
 // ---- The app shell -------------------------------------------------------------
 
-// A new worker waits. The page asks it to take over only while nobody is
-// signed in (push/register.ts): taking over reloads the page, and a reload
-// signs you out.
-self.addEventListener("message", (event) => {
-  if ((event.data as { type?: unknown } | null)?.type === SKIP_WAITING) void self.skipWaiting();
+const SHELL_DEPS: ShellDeps = {
+  caches: self.caches,
+  fetch: (input, init) => self.fetch(input, init),
+  scopeUrl: `${ORIGIN}${SCOPE}`,
+};
+// The build's list, with a hash per file (vite.config.ts manifestTransforms).
+const FILES = shellFiles(self.__WB_MANIFEST, SHELL_DEPS.scopeUrl);
+const CACHE = cacheNameFor(FILES);
+
+self.addEventListener("install", (event) => {
+  // Best effort: a file that fails or does not match its hash is left to the
+  // network; the worker still installs.
+  event.waitUntil(installShell(FILES, CACHE, SHELL_DEPS));
 });
 
-// The build-time list, filtered once more so nothing outside the scope or under
-// the API can ever be precached or answered.
-precacheAndRoute(self.__WB_MANIFEST.filter((entry) => mayAnswerFromPrecache(new URL(typeof entry === "string" ? entry : entry.url, self.location.href), ORIGIN, SCOPE)));
-cleanupOutdatedCaches();
+self.addEventListener("activate", (event) => {
+  event.waitUntil(cleanupCaches(CACHE, SHELL_DEPS));
+});
 
-registerRoute(
-  new NavigationRoute(createHandlerBoundToURL(`${SCOPE}index.html`), {
-    allowlist: [new RegExp(`^${SCOPE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`)],
-    denylist: [...NAVIGATION_DENYLIST],
-  }),
-);
-// Nothing else is routed: every other request (the API above all) goes to the
-// network untouched and is never stored.
+self.addEventListener("fetch", (event) => {
+  const file = pick(event.request, FILES, SHELL_DEPS.scopeUrl);
+  // Everything else (the API above all) goes to the network untouched and is never stored.
+  if (!file) return;
+  event.respondWith(serve(file, event.request, CACHE, SHELL_DEPS, (work) => event.waitUntil(work)));
+});
+
+// A new worker waits. A Postern page asks it to take over only while nobody
+// is signed in there (push/register.ts), and no signed-in page reloads when it
+// does (push/install.ts). Finding F7: only a top-level window under /webmail/
+// may ask; with frame-ancestors 'none' and COOP same-origin, no other estate
+// app can run script in such a window.
+self.addEventListener("message", (event) => {
+  if ((event.data as { type?: unknown } | null)?.type !== SKIP_WAITING) return;
+  if (mayRequestUpdate(event.source, ORIGIN, SCOPE)) void self.skipWaiting();
+});
 
 // ---- Push ------------------------------------------------------------------------
 
