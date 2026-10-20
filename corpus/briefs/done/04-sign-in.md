@@ -60,3 +60,24 @@ settled here, the second by the owner:
 - A search of the code finds no `localStorage`, `sessionStorage` or `indexedDB`
   touching a token.
 - The two open questions are answered in the wiki.
+
+## Outcome (2026-10-20)
+
+Built. Verified against Stalwart v0.16.25's source and `dev/`: `POST
+/api/auth` answers `authenticated`, `mfaRequired` or `failure`, the code goes
+to `/auth/token`, and refresh tokens do not rotate until four days before
+expiry. Two limits come from Stalwart:
+
+- **Sign-out cannot revoke.** Stalwart has no revocation endpoint, so sign-out
+  forgets the tokens. A copied access token works for up to an hour, a copied
+  refresh token for up to 30 days. A test pins this.
+- **One `failure` answer** covers a wrong password, an unknown address and a
+  disabled account, so the UI cannot tell them apart.
+
+Owner decision: a reload signs in again. Postern registers no OAuth client.
+An idle timeout of 8 hours signs out, including on waking a machine that
+slept past it. A security review found four defects (a dismissable
+session-expired dialog, the idle timeout reset by the first input after
+sleep, sign-out not cancelling a first sign-in in flight, test assertions
+that would print a token); all fixed with tests. Integration tests now run
+one file at a time, because the TOTP test turns TOTP on for bob for a moment.

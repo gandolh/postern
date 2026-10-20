@@ -1,6 +1,6 @@
 /**
  * `@postern/jmap`: the only code in Postern that speaks JMAP. A typed client
- * for Stalwart: session and URL rebasing, batched requests with
+ * for Stalwart: sign-in and in-memory tokens, session and URL rebasing, batched requests with
  * back-references, the mail, submission, sieve, quota, push and contacts
  * methods, blobs, a state cache, and a fetch-based push reader.
  *
@@ -14,6 +14,39 @@ export type { AuthProvider, FetchLike } from "./http.js";
 export { Session, DEFAULT_LIMITS, type DownloadParams, type EventSourceParams } from "./session.js";
 export { rebaseUrl, expandTemplate, templateVariables, normalizeBase } from "./url.js";
 export { Capability, capabilityOf, type CapabilityUrn } from "./capabilities.js";
+
+export {
+  AuthSession,
+  REFRESH_LEAD_MS,
+  IdleTimeout,
+  IDLE_TIMEOUT_MS,
+  SignInError,
+  TokenEndpointError,
+  SessionExpiredError,
+  SignedOutError,
+  POSTERN_CLIENT_ID,
+  DEFAULT_SCOPE,
+  requestAuthCode,
+  exchangeCode,
+  refreshGrant,
+  fetchUserInfo,
+  createPkce,
+  pkceChallenge,
+  type AuthSessionOptions,
+  type AuthStatus,
+  type AuthStatusEvent,
+  type AuthAccount,
+  type SignInOutcome,
+  type SignInOptions,
+  type SignOutReason,
+  type IdleTimeoutOptions,
+  type SignInFailure,
+  type AuthCodeRequest,
+  type AuthCodeResult,
+  type TokenGrant,
+  type UserInfo,
+  type PkcePair,
+} from "./auth/index.js";
 
 export {
   RequestBuilder,

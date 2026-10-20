@@ -1,31 +1,22 @@
 ---
-summary: Genuinely unresolved questions as of 2026-10-09, each naming the brief that settles it. Whether Stalwart needs Postern registered as an OAuth client; staying signed in across reloads without storing tokens; where per-user display settings and label colours live; whether Stalwart's spam filter learns from Report spam; whether an offline cache is acceptable on the shared origin. Delete an entry the moment it is answered.
-updated: 2026-10-09
+summary: Genuinely unresolved questions as of 2026-10-20, each naming the brief that settles it. Whether production should shorten Stalwart's token lifetimes, since tokens cannot be revoked; where per-user display settings and label colours live; whether Stalwart's spam filter learns from Report spam; whether an offline cache is acceptable on the shared origin. Delete an entry the moment it is answered.
+updated: 2026-10-20
 ---
 
 # Open questions
 
 Delete an entry the moment it is answered. The history goes to `log.md`.
 
-## Does Postern have to be registered with Stalwart as an OAuth client?
+## Should production shorten Stalwart's token lifetimes?
 
-Stalwart checks the client ID and redirect URI when it swaps a code for tokens.
-It supports dynamic client registration (`registration.rs` in its source) and
-can verify a client secret, and its own web UI uses the client ID
-`stalwart-webui`. What a public browser client with its own sign-in form has
-to do is unchecked. Brief 04.
-
-## Can a user stay signed in across a reload?
-
-Tokens live in memory only ([decisions.md](decisions.md)), so a reload signs the
-user out. That is safe, and unlike Gmail. The options to weigh in brief 04:
-
-- accept it;
-- a short-lived refresh token kept only in a service worker's memory;
-- re-authenticate quietly with an app password the browser's password manager
-  fills.
-
-Each has its own leak path on a shared origin. The owner chooses.
+Stalwart cannot revoke a token ([architecture.md](architecture.md), Sign-in),
+so sign-out only forgets it: a copied access token works for up to an hour, a
+copied refresh token for up to 30 days. Production's `OidcProvider` could set
+`accessTokenExpiry` to 15 minutes, and `refreshTokenExpiry` and
+`refreshTokenRenewal` both to about a day, so each refresh hands out a new
+refresh token and an unused one dies within a day. The settings are
+server-wide: Stalwart's own web UI and any OAuth mail app would also sign in
+again after a day away. An owner call in `../vps-deploy`; brief 17 or 18.
 
 ## Where do display settings and label colours live?
 

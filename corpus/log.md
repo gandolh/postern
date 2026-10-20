@@ -51,3 +51,22 @@ every object the briefs use, blobs, a state cache for `/changes` and
 fallback. The polling fallback in [architecture.md](wiki/architecture.md) was
 wrong (the session state never moves) and is corrected. 129 tests green,
 including 15 against `dev/`. [Brief](briefs/done/03-jmap-client.md).
+
+## [2026-10-20] decision | Sign in again after a reload; no client registration
+
+The owner chose to keep tokens dying with the tab: a reload signs in again.
+The service-worker and saved-password alternatives each leave a secret that
+another estate app's script can reach. Postern is not registered as an OAuth
+client, because Stalwart only checks registration when production turns it
+on. Both are in [decisions.md](wiki/decisions.md); the two open questions are
+gone, and a new one asks whether to shorten production's token lifetimes.
+
+## [2026-10-20] done | Brief 04: sign-in through Stalwart
+
+`AuthSession` in `@postern/jmap` runs PKCE sign-in with the TOTP step, keeps
+the tokens in private fields, refreshes ahead of expiry with one refresh in
+flight, and signs out after 8 idle hours. `web/src/auth` has the two-step
+sign-in page, the session-expired dialog and `useJmap()`. Stalwart cannot
+revoke tokens; [security.md](wiki/security.md) records what that costs.
+Verified in Chrome and against `dev/`, including TOTP for bob. 182 tests.
+[Brief](briefs/done/04-sign-in.md).

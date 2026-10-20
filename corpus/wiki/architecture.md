@@ -1,5 +1,5 @@
 ---
-summary: How Postern is put together, as designed on 2026-10-09 (nothing built yet). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in with OAuth and PKCE through Stalwart's own endpoints, live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy.
+summary: How Postern is put together, as designed on 2026-10-09 (nothing built yet). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in with OAuth and PKCE through Stalwart's own endpoints (verified and built in brief 04: the /api/auth and /auth/token shapes, the TOTP retry, refresh without rotation, token lifetimes, no revocation, the account page URL), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy.
 updated: 2026-10-20
 ---
 
@@ -44,20 +44,69 @@ Stalwart's hostname: `https://mail.<domain>/jmap/…` for `apiUrl`,
 `STALWART_PUBLIC_URL=https://example.com/webmail-api`. That would move every
 discovery URL, the admin UI's OAuth included.
 
-## Sign-in
+## Sign-in (built in brief 04)
 
-Stalwart is the identity provider. The plan (brief 04, to verify):
+Stalwart is the identity provider. Verified on 2026-10-20 against Stalwart
+0.16.25's source (the OAuth and auth modules of its `http` and `common`
+crates) and the dev server. Code: [jmap/src/auth](../../jmap/src/auth/),
+[web/src/auth](../../web/src/auth/).
 
-1. Postern shows its own sign-in form and posts it to `/webmail-api/api/auth`
-   with `type: "authCode"` and a PKCE challenge.
-2. If TOTP is on, the answer is `mfaRequired`, and the form asks for the code
-   and retries with `mfaToken`.
-3. The authorization code goes to `/webmail-api/auth/token` for an access
-   token and a refresh token.
-4. JMAP calls send `Authorization: Bearer`.
+1. Postern's own form posts JSON to `/webmail-api/api/auth`: `{type:
+   "authCode", accountName, accountSecret, clientId: "postern", redirectUri,
+   scope, codeChallenge, codeChallengeMethod: "S256"}`. No browser redirect
+   happens; the code comes back in the answer.
+2. The answer is always 200 with one of `{type: "authenticated", client_code,
+   iss}` (note the snake case), `{type: "mfaRequired"}` (the password was
+   right and TOTP is on) or `{type: "failure"}`. The TOTP retry re-posts the
+   same body plus `mfaToken`, password included, so the form keeps the
+   password in component state until the code is accepted.
+3. The code goes to `/webmail-api/auth/token` (form-encoded,
+   `grant_type=authorization_code`, `code`, `client_id`, `redirect_uri`,
+   `code_verifier`). It is single use, expires in 10 minutes, and
+   `client_id` and `redirect_uri` must match step 1 byte for byte. The answer
+   has `access_token`, `refresh_token`, `expires_in`, `id_token` (discarded).
+4. JMAP calls send `Authorization: Bearer`. The display name comes from
+   `GET /auth/userinfo` (`name` is the account's description).
 
-Tokens stay in memory ([security.md](security.md)). Still open: whether the
-client must be registered with Stalwart ([open-questions.md](open-questions.md)).
+**What `failure` means.** Wrong password, wrong TOTP code, unknown address,
+a disabled account (no `Authenticate` permission) and the attempt that trips
+the ban all answer `failure`, on purpose, against account enumeration. The UI
+cannot tell a disabled account from a wrong password and says so. Other
+answers: 429 is the anonymous rate limit (100 a minute per IP by default),
+403 is an IP already banned, 401 is a malformed request (a Postern bug, never
+"wrong password"), a thrown `fetch` is the network.
+
+**Refresh.** `grant_type=refresh_token` returns a new access token. It
+returns a new refresh token only when the old one has less than
+`refreshTokenRenewal` (4 days) left, and the old one keeps working until it
+expires. Old access tokens also keep working after a refresh. Defaults, the
+same in dev and production (production's plan sets no `OidcProvider`): access
+token 1 hour, refresh token 30 days. Postern refreshes 5 minutes before
+expiry, one refresh in flight at a time. A 400 `invalid_grant` ends the
+session (the session-expired dialog); a network error keeps the tokens and
+tries again.
+
+**No revocation.** Stalwart 0.16.25 has no revocation or end-session
+endpoint. Tokens are sealed, stateless `sw1.` blobs; the only check beyond
+expiry is the account's credential version, a hash of the password hash. So
+a password change kills every token of the account, everywhere, and nothing
+else does (turning TOTP on or off does not). Sign-out can only forget the
+tokens: a copied access token stays valid for up to an hour, a copied refresh
+token for up to 30 days. [security.md](security.md) has the mitigation.
+
+**Client registration: none.** `requireClientRegistration` is false by
+default and production does not change it, so Stalwart accepts any
+`client_id` without looking it up. Postern uses the constant `postern`,
+with `redirectUri` = `${origin}/webmail/`. See
+[decisions.md](decisions.md).
+
+**Stalwart's account page** (password, TOTP, app passwords) is its own web
+app at `/account/` on Stalwart's host, not under `/webmail-api` (its asset
+paths are absolute). Postern links to it through `VITE_STALWART_ACCOUNT_URL`,
+set at build time; the dev default is the dev server's own `/account/`.
+
+Tokens stay in memory and die with the tab ([decisions.md](decisions.md)).
+After 8 hours without input Postern signs out ([security.md](security.md)).
 
 ## Live updates
 

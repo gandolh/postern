@@ -1,6 +1,6 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only; the house stack. Read before proposing to change any of these.
-updated: 2026-10-09
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; the house stack. Read before proposing to change any of these.
+updated: 2026-10-20
 ---
 
 # Decisions
@@ -80,8 +80,46 @@ which, per the entry above, is every app's problem. See
 _2026-10-09_. Access and refresh tokens never touch `localStorage`,
 `sessionStorage`, IndexedDB or a script-readable cookie. All of those are
 readable by any script on the origin. The cost is that a reload or a new tab
-means signing in again, which Gmail users do not expect. Brief 04 looks for the
-least-bad way to soften that, and the owner decides.
+means signing in again, which Gmail users do not expect. The owner kept that
+cost on 2026-10-20; see the next entry.
+
+## No staying signed in across a reload
+_2026-10-20, owner_. A reload or a new tab signs in again; the tokens die with
+the tab. The sign-in form is built for password managers instead
+(`autocomplete="username"`, `current-password`, `one-time-code`), so signing
+in again is a fill and a click. Rejected:
+
+- **A refresh token held in a service worker's memory.** Any same-origin
+  script can open a `/webmail/` frame, or `navigator.serviceWorker`, and ask
+  the worker for a token, so it hides nothing from the threat in the
+  shared-origin entry. Browsers also stop an idle worker after about 30
+  seconds, which loses the token anyway.
+- **Signing in again silently with a password manager's saved password,
+  through the Credential Management API.** Any same-origin script can call
+  `navigator.credentials.get` and read the saved password without the user
+  seeing anything, which is worse than leaking a token: a password does not
+  expire. It also cannot answer a TOTP prompt.
+
+Reason: every way to survive a reload stores a secret somewhere another
+estate app's script can reach. Revisit only if Postern gets its own origin.
+
+## Postern is not registered as an OAuth client
+_2026-10-20_. Postern signs in with the constant client ID `postern` and the
+redirect URI `${origin}/webmail/`, and registers nothing. Stalwart 0.16.25
+checks a client ID against its registry only when `requireClientRegistration`
+is on; it is off by default, and neither dev's nor production's plan turns it
+on. Stalwart only checks that the token request repeats the sign-in's
+`client_id` and `redirect_uri`. Rejected:
+
+- **An `OAuthClient` object in the plans.** Nothing would check it while
+  registration is off, and it would be one more object to keep in step in
+  `../vps-deploy`.
+- **Dynamic registration at `/auth/register`.** It returns a stateless client
+  ID sealed with the server's OAuth key: a new call on every load, or a value
+  that breaks when the key changes. A public client gains nothing from it.
+
+Revisit if production ever turns `requireClientRegistration` on: Postern then
+needs an `OAuthClient` with its redirect URI in `../vps-deploy`'s mail plan.
 
 ## The house stack
 _2026-10-09_. TypeScript, React 19 and Vite 8, with Vitest and ESLint, in npm
