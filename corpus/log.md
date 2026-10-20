@@ -89,3 +89,18 @@ important with Undo. All Mail lists everything outside Spam and Trash, as in
 Gmail ([gmail-on-jmap.md](wiki/gmail-on-jmap.md)). The list exposes hooks for
 live updates (brief 11) and shortcuts (brief 14). Checked from IMAP; 358
 tests. [Brief](briefs/done/06-conversation-list.md).
+
+## [2026-10-20] decision | Display settings and label colours stay per device
+
+The owner chose the browser over a FileNode settings file or a hidden
+settings message. Recorded in [decisions.md](wiki/decisions.md); the open
+question is gone.
+
+## [2026-10-20] done | Brief 09: labels
+
+Gmail's label menu (checkboxes, indeterminate, search, create), Move to,
+create, rename, nest and delete, a label manager in `#settings/labels`,
+colours, "show if unread", and drag a conversation onto a label. Labels made
+in Postern appear as IMAP folders and the reverse. Deleting a label never
+leaves a message with no label (checked with `Email/get`).
+[Brief](briefs/done/09-labels.md).

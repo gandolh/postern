@@ -1,5 +1,5 @@
 ---
-summary: Genuinely unresolved questions as of 2026-10-20, each naming the brief that settles it. Whether production should shorten Stalwart's token lifetimes, since tokens cannot be revoked; where per-user display settings and label colours live; whether Stalwart's spam filter learns from Report spam; whether an offline cache is acceptable on the shared origin. Delete an entry the moment it is answered.
+summary: Genuinely unresolved questions as of 2026-10-20, each naming the brief that settles it. Whether production should shorten Stalwart's token lifetimes, since tokens cannot be revoked; whether Stalwart's spam filter learns from Report spam; whether an offline cache is acceptable on the shared origin. Delete an entry the moment it is answered.
 updated: 2026-10-20
 ---
 
@@ -17,17 +17,6 @@ copied refresh token for up to 30 days. Production's `OidcProvider` could set
 refresh token and an unused one dies within a day. The settings are
 server-wide: Stalwart's own web UI and any OAuth mail app would also sign in
 again after a day away. An owner call in `../vps-deploy`; brief 17 or 18.
-
-## Where do display settings and label colours live?
-
-JMAP has no generic per-user settings object, and `Mailbox` has no colour. The
-options:
-
-- per device in the browser: simple, and lost on a new device;
-- a JSON blob in Stalwart through JMAP FileNode (it advertises `filenode`);
-- a hidden label holding one settings message.
-
-Briefs 09 and 12.
 
 ## Does Stalwart's spam filter learn from Report spam?
 

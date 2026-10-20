@@ -4,9 +4,13 @@
 
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown, ChevronRight, ChevronUp, File, Inbox, Mails, Pencil, Send, ShieldAlert, Star, Tag, Trash2, Users } from "lucide-react";
-import { useState, type CSSProperties, type MouseEvent } from "react";
+import { useMemo, useState, type CSSProperties, type MouseEvent } from "react";
 import { useCompose } from "../composer";
 import type { LabelNode, SystemEntry } from "../labels/labelsStore";
+import { useLabelColor, useLabelPrefs } from "../labels/useLabelPrefs";
+import { useLabelDropTarget } from "../labels/useLabelDropTarget";
+import { visibleNodes } from "../labels/visibility";
+import "../labels/labels.css";
 import { useLabels } from "../labels/useLabels";
 import { formatRoute, SYSTEM_VIEWS, type Route, type SystemView } from "./router";
 import { NavSkeleton } from "./states";
@@ -142,7 +146,12 @@ interface LabelTreeProps {
   rail: boolean;
 }
 
-function LabelTree({ tree, hidden, route, rail }: LabelTreeProps) {
+function LabelTree({ tree: allTree, hidden: allHidden, route, rail }: LabelTreeProps) {
+  const { prefs } = useLabelPrefs();
+  const currentId = route.kind === "label" ? route.labelId : undefined;
+  // "Show if unread" labels leave the navigation while they have nothing unread.
+  const tree = useMemo(() => visibleNodes(allTree, prefs, currentId), [allTree, prefs, currentId]);
+  const hidden = useMemo(() => visibleNodes(allHidden, prefs, currentId), [allHidden, prefs, currentId]);
   const [showHidden, setShowHidden] = useState(false);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
   const toggle = (id: string) =>
@@ -153,7 +162,7 @@ function LabelTree({ tree, hidden, route, rail }: LabelTreeProps) {
       return next;
     });
 
-  if (tree.length === 0 && hidden.length === 0) {
+  if (allTree.length === 0 && allHidden.length === 0) {
     return <p className="shell-nav-note">No labels yet</p>;
   }
 
@@ -196,6 +205,8 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
   const open = !collapsed.has(label.id);
   const hasChildren = children.length > 0;
   const unread = label.unreadThreads > 0;
+  const color = useLabelColor(label.id);
+  const drop = useLabelDropTarget(label.id, route);
   return (
     <li>
       <div className="shell-nav-row" style={{ "--depth": depth } as CSSProperties}>
@@ -219,8 +230,9 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
           aria-label={countLabel(label.title, label.unreadThreads, "unread")}
           data-unread={unread ? "true" : undefined}
           title={rail || depth > 0 ? label.path : undefined}
+          {...drop}
         >
-          <Tag aria-hidden="true" />
+          <Tag aria-hidden="true" data-label-color={color} />
           <span className="shell-nav-text">{label.title}</span> <Count value={label.unreadThreads} />
         </a>
       </div>

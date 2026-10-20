@@ -4,10 +4,13 @@
 
 import type { Id } from "@postern/jmap";
 import { Archive, Bookmark, Mail, MailOpen, Paperclip, Star, Trash2 } from "lucide-react";
-import { Fragment, memo, useMemo, type MouseEvent, type ReactNode } from "react";
+import { Fragment, memo, useMemo, type DragEvent, type MouseEvent, type ReactNode } from "react";
 import { isImportant, isStarred, isUnread, labelIdsOf, shownMessages, type ConversationScope } from "../actions/conversation";
+import { writeDrag } from "../labels/dragData";
+import { useLabelColor } from "../labels/useLabelPrefs";
 import { IconButton } from "../shell/IconButton";
 import { chipLabels, formatFullDate, formatListDate, parseHighlights, summarizeSenders, type ChipLabel, type SenderMode, type SenderSummary } from "./format";
+import { getActiveList } from "./registry";
 import type { ConversationRow, RowMessage } from "./types";
 
 /** What every row shares: the view, the account, the clock. */
@@ -59,6 +62,26 @@ export interface RowProps {
 function isControl(target: EventTarget, row: HTMLElement): boolean {
   const control = (target as Element).closest?.("button, input, a, label");
   return control !== null && control !== undefined && row.contains(control);
+}
+
+/** A label chip, in the label's colour when the owner gave it one on this device. */
+function Chip({ chip }: { chip: ChipLabel }) {
+  const color = useLabelColor(chip.id);
+  return (
+    <span className="chip list-chip" data-label-color={color}>
+      {chip.title}
+    </span>
+  );
+}
+
+/** Dragging a row onto a label in the navigation: the row, or the whole selection when the row is part of it. */
+function startDrag(event: DragEvent, row: ConversationRow, selected: boolean): void {
+  const list = getActiveList();
+  const picked = selected && list ? [...list.selectedIds] : [];
+  writeDrag(event.dataTransfer, {
+    ids: picked.includes(row.id) ? picked : [row.id],
+    all: selected && list !== null && list.allSelected,
+  });
 }
 
 function Senders({ summary }: { summary: SenderSummary }) {
@@ -135,6 +158,8 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
       aria-current={open ? "true" : undefined}
       tabIndex={tabbable ? 0 : -1}
       className="list-row"
+      draggable
+      onDragStart={(event) => startDrag(event, row, selected)}
       data-row-id={row.id}
       data-unread={view.unread || undefined}
       data-open={open || undefined}
@@ -186,9 +211,7 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
         {view.chips.length ? (
           <span className="list-chips">
             {view.chips.map((chip) => (
-              <span key={chip.id} className="chip list-chip">
-                {chip.title}
-              </span>
+              <Chip key={chip.id} chip={chip} />
             ))}
           </span>
         ) : null}

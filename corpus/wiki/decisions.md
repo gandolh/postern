@@ -1,5 +1,5 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; the house stack. Read before proposing to change any of these.
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); the house stack. Read before proposing to change any of these.
 updated: 2026-10-20
 ---
 
@@ -120,6 +120,21 @@ on. Stalwart only checks that the token request repeats the sign-in's
 
 Revisit if production ever turns `requireClientRegistration` on: Postern then
 needs an `OAuthClient` with its redirect URI in `../vps-deploy`'s mail plan.
+
+## Display settings and label colours live in this browser
+_2026-10-20, owner_. Density, theme, reading pane, undo-send delay, label
+colours and "show if unread" are kept per device in `localStorage`, keyed by
+account, and every read and write falls back to memory when storage is
+blocked. A new device starts from defaults. None of it is secret, so the
+shared origin does not matter here. Show and hide in the navigation is the
+mailbox's `isSubscribed`, which lives on the server and which IMAP clients
+honour too. Rejected:
+
+- **A JSON file in Stalwart through JMAP FileNode.** It syncs devices, but it
+  rests on Stalwart's draft FileNode support, one more thing to break on an
+  upgrade, for settings the owner rarely changes.
+- **A hidden settings message in its own label.** It syncs everywhere, but
+  the label shows up as a folder in the phone's mail app.
 
 ## The house stack
 _2026-10-09_. TypeScript, React 19 and Vite 8, with Vitest and ESLint, in npm

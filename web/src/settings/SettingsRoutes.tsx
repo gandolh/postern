@@ -6,6 +6,7 @@
 // per device).
 
 import { useId } from "react";
+import { LabelManager } from "../labels/LabelManager";
 import { formatRoute } from "../shell/router";
 import "./settings.css";
 import { DENSITIES, READING_PANES, THEMES, useTheme, type Density, type ReadingPane, type ThemePreference } from "../theme";
@@ -42,7 +43,13 @@ export function SettingsRoutes({ section }: SettingsRoutesProps) {
           </a>
         ))}
       </nav>
-      {current.id === "general" ? <DisplaySettingsForm /> : <p className="shell-page-body">{current.title} settings appear here.</p>}
+      {current.id === "general" ? (
+        <DisplaySettingsForm />
+      ) : current.id === "labels" ? (
+        <LabelManager />
+      ) : (
+        <p className="shell-page-body">{current.title} settings appear here.</p>
+      )}
     </section>
   );
 }

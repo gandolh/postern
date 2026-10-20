@@ -23,7 +23,7 @@ does not exist yet (the owner creates it).
 
 **Wave 3: writing and organising**
 - [08](../briefs/todo/08-compose-and-send.md): the composer: reply, forward, rich text, attachments, drafts, send, undo send, signatures. After 07.
-- [09](../briefs/todo/09-labels.md): labels on mailboxes: apply, remove, move, create, nest, colours. After 06.
+- [09](../briefs/done/09-labels.md): labels on mailboxes: apply, remove, move, create, nest, colours. After 06. **Done 2026-10-20.**
 - [10](../briefs/todo/10-search.md): Gmail search operators, highlighted snippets, suggestions, advanced search. After 06.
 
 **Wave 4: live and settings**
