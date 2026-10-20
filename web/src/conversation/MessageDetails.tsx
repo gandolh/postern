@@ -13,7 +13,7 @@ function Addresses({ list }: { list: readonly EmailAddress[] | null | undefined 
     <>
       {list.map((a, i) => (
         <span key={`${a.email}-${i}`} className="conv-details-address">
-          {fullAddress(a)}
+          <bdi>{fullAddress(a)}</bdi>
           {i < list.length - 1 ? ", " : ""}
         </span>
       ))}

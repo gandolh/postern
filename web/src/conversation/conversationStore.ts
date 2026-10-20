@@ -30,7 +30,7 @@ import { subscribeMailChanges } from "../actions/bus";
 import type { ConversationMessage } from "../actions/conversation";
 import { applyPatch } from "../actions/patches";
 import { isQuietError } from "../actions/runner";
-import { cidPartsToInline, findCids } from "../attachments/inline";
+import { cidPartsToInline, findCids, MAX_INLINE_ON_REQUEST_BYTES } from "../attachments/inline";
 
 /** The Authentication-Results headers, topmost (our server's) first. */
 export const AUTH_RESULTS_PROPERTY = "header:Authentication-Results:asText:all";
@@ -97,6 +97,9 @@ export type MessageBody =
       cidUrls: ReadonlyMap<string, string>;
       /** Content-IDs shown inline (their parts are not listed as attachments). */
       inlineCids: ReadonlySet<string>;
+      /** Inline images past the per-message budget, not fetched until loadInlineImages(). */
+      deferredCids: ReadonlySet<string>;
+      deferredBytes: number;
       truncated: boolean;
       encodingProblem: boolean;
     }
@@ -164,7 +167,9 @@ function partText(email: BodyEmail, part: EmailBodyPart): { value: string; trunc
 }
 
 /** The renderable body of a message: its HTML parts (text parts escaped in), else its text parts. */
-export function bodyOf(email: BodyEmail): Omit<Extract<MessageBody, { kind: "html" }>, "cidUrls" | "inlineCids"> | Extract<MessageBody, { kind: "text" | "empty" }> {
+export function bodyOf(
+  email: BodyEmail,
+): Omit<Extract<MessageBody, { kind: "html" }>, "cidUrls" | "inlineCids" | "deferredCids" | "deferredBytes"> | Extract<MessageBody, { kind: "text" | "empty" }> {
   const html = email.htmlBody ?? [];
   const text = email.textBody ?? [];
   if (html.some((p) => p.type === "text/html")) {
@@ -206,6 +211,8 @@ export class ConversationStore {
   #emailState: string | null = null;
   readonly #listeners = new Set<() => void>();
   readonly #bodies = new Map<Id, BodyState>();
+  /** The part lists of the bodies held, for inline images fetched later. */
+  readonly #parts = new Map<Id, Pick<BodyEmail, "attachments" | "htmlBody">>();
   #abort = new AbortController();
   #unsubscribeBus: (() => void) | null = null;
   #refreshing: Promise<void> | null = null;
@@ -373,14 +380,44 @@ export class ConversationStore {
           this.#bodies.set(email.id, { status: "ready", body });
           return;
         }
+        this.#parts.set(email.id, { attachments: email.attachments, htmlBody: email.htmlBody });
         const inline = await cidPartsToInline(email, findCids(body.html), this.#fetchBlob, signal);
-        this.#bodies.set(email.id, { status: "ready", body: { ...body, cidUrls: inline.urls, inlineCids: inline.cids } });
+        this.#bodies.set(email.id, {
+          status: "ready",
+          body: { ...body, cidUrls: inline.urls, inlineCids: inline.cids, deferredCids: inline.deferred, deferredBytes: inline.deferredBytes },
+        });
       }),
     );
     if (signal.aborted) {
       for (const id of wanted) if (this.#bodies.get(id)?.status === "loading") this.#bodies.delete(id);
       return;
     }
+    this.#set({ bodies: new Map(this.#bodies) });
+  }
+
+  /** "Load images": fetch a message's inline images that were past the budget (each up to MAX_INLINE_ON_REQUEST_BYTES). */
+  async loadInlineImages(id: Id): Promise<void> {
+    const held = this.#bodies.get(id);
+    const parts = this.#parts.get(id);
+    if (held?.status !== "ready" || held.body.kind !== "html" || held.body.deferredCids.size === 0 || !parts) return;
+    const signal = this.#abort.signal;
+    const inline = await cidPartsToInline(parts, held.body.deferredCids, this.#fetchBlob, signal, {
+      total: Number.POSITIVE_INFINITY,
+      perImage: MAX_INLINE_ON_REQUEST_BYTES,
+    });
+    if (signal.aborted) return;
+    const current = this.#bodies.get(id);
+    if (current?.status !== "ready" || current.body.kind !== "html") return;
+    this.#bodies.set(id, {
+      status: "ready",
+      body: {
+        ...current.body,
+        cidUrls: new Map([...current.body.cidUrls, ...inline.urls]),
+        inlineCids: new Set([...current.body.inlineCids, ...inline.cids]),
+        deferredCids: new Set(),
+        deferredBytes: 0,
+      },
+    });
     this.#set({ bodies: new Map(this.#bodies) });
   }
 }

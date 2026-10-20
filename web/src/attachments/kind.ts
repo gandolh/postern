@@ -11,6 +11,8 @@
 // The type is decided from the declared type AND the file name's last
 // extension, the more dangerous winning: `invoice.pdf.html` is HTML whatever
 // its Content-Type says, and its name is flagged as a double extension.
+// Names are read with bidi controls taken out (stripBidiControls), so
+// "Invoice_\u202Efdp.exe", shown as "Invoice_exe.pdf", is read as the .exe it is.
 
 export type AttachmentKind = "image" | "pdf" | "active" | "other";
 
@@ -22,8 +24,25 @@ const ACTIVE_EXT = new Set(["html", "htm", "shtml", "xhtml", "xht", "svg", "svgz
 /** Extensions that run as programs when opened on the desktop: a double extension ending in one is the classic trick. */
 const EXECUTABLE_EXT = new Set(["exe", "scr", "bat", "cmd", "com", "pif", "vbs", "vbe", "js", "jse", "wsf", "wsh", "ps1", "msi", "jar", "lnk", "hta", "html", "htm", "svg", "iso", "img"]);
 
+/**
+ * Characters that reorder the text around them: embeddings, overrides and
+ * isolates (U+202A-202E, U+2066-2069) and the marks (U+200E, U+200F, U+061C).
+ * "Invoice_\u202Efdp.exe" shows as "Invoice_exe.pdf". A file name has no
+ * honest use for them.
+ */
+const BIDI_CONTROLS = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+
+export function hasBidiControls(text: string | null | undefined): boolean {
+  return /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/.test(text ?? "");
+}
+
+/** The name in its real (logical) order, the reordering characters taken out. Every check below reads this. */
+export function stripBidiControls(text: string): string {
+  return text.replace(BIDI_CONTROLS, "");
+}
+
 export function extensionOf(name: string): string {
-  const m = /\.([a-z0-9]{1,10})$/i.exec(name.trim());
+  const m = /\.([a-z0-9]{1,10})$/i.exec(stripBidiControls(name).trim());
   return m ? (m[1] as string).toLowerCase() : "";
 }
 
@@ -46,7 +65,7 @@ export function attachmentKind(type: string | null | undefined, name: string | n
  * front of a different real one. Returns the two, or null.
  */
 export function doubleExtension(name: string | null | undefined): { shown: string; real: string } | null {
-  const m = /\.([a-z0-9]{2,5})\.([a-z0-9]{2,5})$/i.exec((name ?? "").trim());
+  const m = /\.([a-z0-9]{2,5})\.([a-z0-9]{2,5})$/i.exec(stripBidiControls(name ?? "").trim());
   if (!m) return null;
   const shown = (m[1] as string).toLowerCase();
   const real = (m[2] as string).toLowerCase();

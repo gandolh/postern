@@ -9,6 +9,7 @@ import { linkify } from "./linkify";
 import { estimateFrameHeight } from "./measure";
 import { markQuote, QUOTE_ATTR, splitPlainQuote } from "./quotes";
 import { sanitizeMessageHtml } from "./sanitize";
+import { buildSrcdoc } from "./srcdoc";
 import { imageUrl, parseSrcset, safeLinkUrl } from "./urls";
 
 function body(html: string): HTMLElement {
@@ -111,6 +112,73 @@ describe("CSS", () => {
   it("drops @import, @font-face, @namespace and image-set", () => {
     const out = sanitizeCss('@import "x.css"; @font-face{font-family:F;src:url(https://f.test/f.woff)} @namespace url(x); p{background:image-set("a.png" 1x)}', { allowRemote: true });
     expect(out).not.toMatch(/@import|@font-face|@namespace|image-set|f\.test|a\.png/);
+  });
+});
+
+describe("CSS escapes that survive one decoding pass (security review 2026-10-20)", () => {
+  const forms: [string, string][] = [
+    ["double-escaped url(", "a{background:\\\\75 rl(https://evil.test/a.png)}"],
+    ["escaped backslash then hex", "a{background:\\5c 75 rl(https://evil.test/a.png)}"],
+    ["double-escaped @import", '@\\\\69 mport "https://evil.test/x.css"; p{color:red}'],
+    ["double-escaped position", "a{\\\\70 osition:fixed;inset:0}"],
+    ["double-escaped image-set", 'a{background:\\\\69 mage-set("https://evil.test/a.png" 1x)}'],
+    ["triple-escaped url(", "a{background:\\\\\\\\75 rl(https://evil.test/a.png)}"],
+  ];
+  for (const [what, css] of forms) {
+    it(`neutralises ${what}`, () => {
+      const out = sanitizeCss(css, { allowRemote: false });
+      expect(out).not.toContain("\\");
+      expect(out).not.toMatch(/evil\.test|@import|position\s*:\s*fixed|image-set/i);
+    });
+  }
+
+  it("decodes to a fixed point and drops a stray backslash", () => {
+    expect(decodeCssEscapes("\\\\75 rl(")).toBe("url(");
+    expect(decodeCssEscapes("\\5c 75 rl(")).toBe("url(");
+    expect(decodeCssEscapes("a\\")).toBe("a");
+  });
+
+  it("counts double-escaped remote URLs as blocked, in <style> and style=\"\"", () => {
+    const clean = sanitizeMessageHtml(
+      '<style>p{background:\\\\75 rl(https://evil.test/a.png)}</style><p style="background:\\5c 75 rl(https://evil.test/b.png)">x</p>',
+    );
+    expect(clean.headHtml + clean.bodyHtml).not.toContain("evil.test");
+    expect(clean.blockedRemote).toBe(2);
+    const shown = sanitizeMessageHtml('<p style="background:\\\\75 rl(https://evil.test/b.png)">x</p>', { allowRemote: true });
+    expect(shown.body.querySelector("p")?.getAttribute("style")).toBe('background:url("https://evil.test/b.png")');
+  });
+
+  it("catches position after a nested rule's closing brace", () => {
+    expect(sanitizeCss(".a{.b{}position:fixed;inset:0}", { allowRemote: false })).toBe(".a{.b{}position:static;inset:0}");
+    expect(sanitizeCss(".a{&:hover{color:red}position:absolute}", { allowRemote: false })).not.toMatch(/absolute/);
+  });
+
+  it("renames a message's @layer that borrows Postern's name", () => {
+    expect(sanitizeCss("@layer postern-first{a::after{content:'x'!important}} @layer a, postern-x;", { allowRemote: false })).toBe(
+      "@layer message-postern-first{a::after{content:'x'!important}} @layer a, message-postern-x;",
+    );
+  });
+});
+
+describe("Postern's names in the message (security review 2026-10-20)", () => {
+  it("strips postern-* classes and ids, keeping the message's own", () => {
+    const clean = sanitizeMessageHtml('<span class="postern-link-flag big" id="postern-x">fake pill</span><p id="intro" class="Postern-a">x</p>');
+    expect(clean.bodyHtml).not.toMatch(/postern/i);
+    expect(clean.body.querySelector("span")?.getAttribute("class")).toBe("big");
+    expect(clean.body.querySelector("p")?.getAttribute("id")).toBe("intro");
+    expect(clean.body.querySelector("p")?.hasAttribute("class")).toBe(false);
+  });
+
+  it("draws the link pill with an inline, all-!important style, and kills its pseudo-elements from the first layer", () => {
+    const clean = sanitizeMessageHtml('<a href="https://evil.test/login">https://accounts.example.com/login</a>');
+    const pill = clean.body.querySelector("[data-postern-flag]");
+    expect(pill?.textContent).toBe("goes to evil.test");
+    const style = pill?.getAttribute("style") ?? "";
+    expect(style.startsWith("all:initial!important;display:inline-block!important")).toBe(true);
+    for (const declaration of style.split(";")) expect(declaration.endsWith("!important")).toBe(true);
+    const srcdoc = buildSrcdoc(clean, { foldQuote: false, theme: "light", allowRemote: false });
+    expect(srcdoc.indexOf("@layer postern-first;")).toBeLessThan(srcdoc.indexOf("<body"));
+    expect(srcdoc).toContain("@layer postern-first{[data-postern-flag]::before,[data-postern-flag]::after{content:none!important;display:none!important}}");
   });
 });
 

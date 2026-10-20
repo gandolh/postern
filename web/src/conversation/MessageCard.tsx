@@ -12,7 +12,7 @@ import { IconButton } from "../shell/IconButton";
 import type { BodyState, ConvMessage } from "./conversationStore";
 import { MessageBody } from "./MessageBody";
 import { MessageDetails } from "./MessageDetails";
-import { displayName, forgedAddressInName, nameOrAddress, recipientsLine } from "./people";
+import { displayName, forgedAddressInName, nameOrAddress, recipientNames } from "./people";
 import { messageCardId } from "./registry";
 
 export interface MessageCardActions {
@@ -27,6 +27,7 @@ export interface MessageCardActions {
   showOriginal: () => void;
   displayImages: () => void;
   alwaysDisplayImages: () => void;
+  loadInlineImages: () => void;
 }
 
 export interface MessageCardProps {
@@ -58,6 +59,23 @@ function cardDate(iso: string): string {
   }).format(date);
 }
 
+/** "to me, Bob, Carol", each name isolated so a name's bidi characters cannot reorder the others. */
+function Recipients({ to, cc, me }: { to: ConvMessage["to"]; cc: ConvMessage["cc"]; me: string }) {
+  const names = recipientNames(to, cc, me);
+  if (names.length === 0) return <span>to undisclosed recipients</span>;
+  return (
+    <span>
+      to{" "}
+      {names.map((n, i) => (
+        <span key={i}>
+          <bdi>{n}</bdi>
+          {i < names.length - 1 ? ", " : ""}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function Avatar({ name }: { name: string }) {
   const initial = (name.trim()[0] ?? "?").toUpperCase();
   return (
@@ -86,8 +104,13 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
           <button type="button" className="conv-msg-line" aria-expanded={false} onClick={actions.toggle}>
             <Avatar name={name} />
             <span className="conv-line-from">
-              {name}
-              {from && displayName(from) ? <span className="conv-line-address"> {from.email}</span> : null}
+              <bdi>{name}</bdi>
+              {from && displayName(from) ? (
+                <>
+                  {" "}
+                  <bdi className="conv-line-address">{from.email}</bdi>
+                </>
+              ) : null}
             </span>
             <span className="conv-line-preview">{message.preview}</span>
             <time className="conv-line-date" dateTime={date} title={formatFullDate(date)}>
@@ -115,20 +138,32 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
         <div className="conv-msg-who">
           <h2 className="conv-msg-heading" id={headingId}>
             <button type="button" className="conv-msg-sender" aria-expanded={true} onClick={actions.toggle} title="Collapse this message">
-              <span className="conv-sender-name">{name}</span>
-              {from && displayName(from) ? <span className="conv-sender-address">&lt;{from.email}&gt;</span> : null}
+              <bdi className="conv-sender-name">{name}</bdi>
+              {from && displayName(from) ? (
+                <span className="conv-sender-address">
+                  &lt;<bdi>{from.email}</bdi>&gt;
+                </span>
+              ) : null}
             </button>
           </h2>
           {forged ? (
             <p className="conv-forged" role="note">
               <AlertTriangle aria-hidden="true" />
               <span>
-                The name says <strong>{forged}</strong>, but this message came from <strong>{from?.email}</strong>.
+                The name says{" "}
+                <strong>
+                  <bdi>{forged}</bdi>
+                </strong>
+                , but this message came from{" "}
+                <strong>
+                  <bdi>{from?.email}</bdi>
+                </strong>
+                .
               </span>
             </p>
           ) : null}
           <div className="conv-msg-to">
-            <span>{recipientsLine(message.to, message.cc, me)}</span>
+            <Recipients to={message.to} cc={message.cc} me={me} />
             <button
               type="button"
               className="conv-details-toggle"
@@ -166,6 +201,7 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
         onDisplayImages={actions.displayImages}
         onAlwaysDisplayImages={from && !fromMe ? actions.alwaysDisplayImages : null}
         onShowOriginal={actions.showOriginal}
+        onLoadInlineImages={actions.loadInlineImages}
       />
       {body?.status === "ready" || body?.status === "error" ? (
         <AttachmentList

@@ -3,7 +3,9 @@
 //
 // The real address is always shown next to the display name. A display
 // name that is itself an e-mail address different from the real one
-// ("security@bank.example.com" <attacker@evil.test>) is flagged.
+// ("security@bank.example.com" <attacker@evil.test>) is flagged. Names and
+// addresses render in <bdi>, so bidi characters in a name cannot reorder the
+// address after it.
 
 import type { EmailAddress } from "@postern/jmap";
 
@@ -35,12 +37,15 @@ export function shortName(address: EmailAddress, me: string): string {
   return address.email.split("@")[0] ?? address.email;
 }
 
-/** "to me, Carol, dave@x.test" — the recipients line under a sender. */
+/** The short names of everyone a message went to (to, then cc). */
+export function recipientNames(to: readonly EmailAddress[] | null | undefined, cc: readonly EmailAddress[] | null | undefined, me: string): string[] {
+  return [...(to ?? []), ...(cc ?? [])].map((a) => shortName(a, me));
+}
+
+/** "to me, Carol, dave@x.test" — the recipients line under a sender, as text. */
 export function recipientsLine(to: readonly EmailAddress[] | null | undefined, cc: readonly EmailAddress[] | null | undefined, me: string): string {
-  const all = [...(to ?? []), ...(cc ?? [])];
-  if (all.length === 0) return "to undisclosed recipients";
-  const names = all.map((a) => shortName(a, me));
-  return `to ${names.join(", ")}`;
+  const names = recipientNames(to, cc, me);
+  return names.length === 0 ? "to undisclosed recipients" : `to ${names.join(", ")}`;
 }
 
 /** "Bob Baker <bob@x.test>" for the details panel. */

@@ -124,8 +124,9 @@ describe("the conversation view", () => {
     expect(lines[0]!.textContent).toContain("Bob Baker");
     expect(lines[0]!.textContent).toContain("bob@postern.test");
     expect(screen.getByText(/The name says/).textContent).toContain("attacker@evil.test");
-    // The real address is always next to the name.
-    expect(screen.getByText("<attacker@evil.test>")).toBeTruthy();
+    // The real address is always next to the name, each isolated.
+    const open = document.getElementById("conv-message-e3")!;
+    expect(open.querySelector(".conv-sender-address")?.textContent).toBe("<attacker@evil.test>");
   });
 
   it("marks the conversation read on open, without registering an undo", async () => {
@@ -211,5 +212,17 @@ describe("the conversation view", () => {
     expect(window.location.hash).toBe("#inbox");
     await waitFor(() => expect(Object.keys(mail.emails.get("e1")!.mailboxIds)).toEqual(["h"]));
     expect(peekUndo()?.label).toBe("Conversation archived.");
+  });
+
+  it("isolates a display name with bidi overrides from the real address after it", async () => {
+    const rlo = [message("r1", "T3", "2026-10-03T10:00:00Z", { text: "hi" }, { from: [{ name: "Support \u202Emoc.knab", email: "attacker@evil.test" }], keywords: {} })];
+    await renderConversation(rlo, "T3");
+    const card = document.getElementById("conv-message-r1")!;
+    const name = card.querySelector(".conv-sender-name")!;
+    const address = card.querySelector(".conv-sender-address bdi")!;
+    expect(name.tagName).toBe("BDI");
+    expect(name.textContent).toBe("Support \u202Emoc.knab");
+    expect(address.textContent).toBe("attacker@evil.test");
+    expect(name.contains(address)).toBe(false);
   });
 });

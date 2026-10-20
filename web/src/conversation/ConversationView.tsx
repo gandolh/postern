@@ -92,7 +92,7 @@ export function ConversationView({ route, conversationId, label }: ConversationV
       </section>
     );
   }
-  return <ConversationBody key={conversationId} route={route} label={label} conversationId={conversationId} snapshot={snapshot} loadBodies={(ids) => void store.loadBodies(ids)} />;
+  return <ConversationBody key={conversationId} route={route} label={label} conversationId={conversationId} snapshot={snapshot} loadBodies={(ids) => void store.loadBodies(ids)} loadInlineImages={(id) => void store.loadInlineImages(id)} />;
 }
 
 /** Every state of the screen has its h1; until the subject is known, a hidden one. */
@@ -149,9 +149,10 @@ interface BodyProps {
   conversationId: Id;
   snapshot: ConversationSnapshot;
   loadBodies: (ids: Id[]) => void;
+  loadInlineImages: (id: Id) => void;
 }
 
-function ConversationBody({ route, label, conversationId, snapshot, loadBodies }: BodyProps) {
+function ConversationBody({ route, label, conversationId, snapshot, loadBodies, loadInlineImages }: BodyProps) {
   const client = useJmap();
   const account = useAccount();
   const me = account.username;
@@ -293,6 +294,7 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies }
     },
     showOriginal: () => setOriginal(m),
     displayImages: () => setImagesShown((s) => new Set(s).add(m.id)),
+    loadInlineImages: () => loadInlineImages(m.id),
     alwaysDisplayImages: () => {
       const sender = m.from?.[0]?.email;
       if (sender) allowance.allow(sender);

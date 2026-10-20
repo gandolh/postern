@@ -141,3 +141,12 @@ display settings per device, no offline mail, and build every brief through
 `briefs/done/` names the hooks later briefs plug into (the shell renders
 placeholder files at each later brief's paths). The dev Stalwart must not be
 reset while agents run; integration test files run one at a time.
+
+## [2026-10-20] maintenance | Rendering hardened after a security review
+
+A review of brief 07 found no path from a message to script in Postern's
+origin. It found one Important defect: a double-escaped CSS `url()` came out
+of the sanitiser as a working single escape, so blocking a tracking pixel
+rested on the frame's CSP alone. Fixed, with four Minor ones (nested-CSS
+`position`, bidi isolation, forgeable link pills, preview size caps). See
+[security.md](wiki/security.md).

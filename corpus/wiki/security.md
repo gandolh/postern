@@ -90,6 +90,14 @@ updated: 2026-10-20
 - **PDF preview** opens in a new tab with no opener, after checking the bytes
   start with `%PDF-`. Chrome refuses a PDF in any sandboxed frame. Images
   preview in a `sandbox=""` frame and are typed by their bytes.
+- **Hardening after review (2026-10-20):** CSS escapes are decoded to a fixed
+  point and leftover backslashes dropped, so a double-escaped `url()` or
+  `@import` cannot slip through. Names, addresses and file names sit in
+  `<bdi>`, and bidi control characters are stripped from attachment names for
+  display, checks and saving. The in-frame link pill carries an inline
+  `!important` style, and message markup loses any `postern*` class or id.
+  Image previews stop at 20 MB; inline images load up to 8 MB each and 16 MB
+  per message on open, the rest on request.
 - **Known gaps:** "Always display images from <sender>" trusts the From
   address, which a sender failing DMARC can forge (Gmail has the same gap).
   Every internationalised link is flagged as punycode, legitimate or not.

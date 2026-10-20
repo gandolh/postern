@@ -4,6 +4,7 @@
 
 import { ImageOff, ShieldAlert } from "lucide-react";
 import { useMemo, useState } from "react";
+import { formatSize } from "../attachments/kind";
 import { linkify } from "../render/linkify";
 import { splitPlainQuote } from "../render/quotes";
 import { sanitizeMessageHtml, type SuspiciousLink } from "../render/sanitize";
@@ -21,6 +22,8 @@ export interface MessageBodyProps {
   onDisplayImages: () => void;
   onAlwaysDisplayImages: (() => void) | null;
   onShowOriginal: () => void;
+  /** Fetch the inline images left out by the per-message budget. */
+  onLoadInlineImages: () => void;
 }
 
 export function MessageBody({ state, ...rest }: MessageBodyProps) {
@@ -81,11 +84,18 @@ function LinkWarnings({ links }: { links: readonly SuspiciousLink[] }) {
             <li key={i}>
               {l.reason === "mismatch" ? (
                 <>
-                  “{l.text.length > 80 ? `${l.text.slice(0, 77)}…` : l.text}” goes to <strong>{l.host}</strong>
+                  “<bdi>{l.text.length > 80 ? `${l.text.slice(0, 77)}…` : l.text}</bdi>” goes to{" "}
+                  <strong>
+                    <bdi>{l.host}</bdi>
+                  </strong>
                 </>
               ) : (
                 <>
-                  A link goes to <strong>{l.host}</strong>, a name written to look like another
+                  A link goes to{" "}
+                  <strong>
+                    <bdi>{l.host}</bdi>
+                  </strong>
+                  , a name written to look like another
                 </>
               )}
             </li>
@@ -105,6 +115,7 @@ function HtmlBody({
   allowRemote,
   onDisplayImages,
   onAlwaysDisplayImages,
+  onLoadInlineImages,
 }: Omit<MessageBodyProps, "state" | "onShowOriginal"> & { body: Extract<Body, { kind: "html" }> }) {
   const [quoteOpen, setQuoteOpen] = useState(false);
   const clean = useMemo(() => sanitizeMessageHtml(body.html, { allowRemote, cidUrls: body.cidUrls }), [body, allowRemote]);
@@ -129,6 +140,18 @@ function HtmlBody({
                 </button>
               </>
             ) : null}
+          </p>
+        </div>
+      ) : null}
+      {body.deferredCids.size > 0 ? (
+        <div className="conv-banner" role="note">
+          <ImageOff aria-hidden="true" />
+          <p className="conv-banner-text">
+            {body.deferredCids.size === 1 ? "One large image in this message isn't loaded" : `${body.deferredCids.size} images in this message aren't loaded`} (
+            {formatSize(body.deferredBytes)}).{" "}
+            <button type="button" className="conv-link-btn" onClick={onLoadInlineImages}>
+              Load images
+            </button>
           </p>
         </div>
       ) : null}

@@ -4,7 +4,8 @@
 // point at it directly: the bytes are fetched (client.blob.download) and
 // handed on as an object URL.
 //
-//   saveAttachment   a download, under the attachment's real name; the blob
+//   saveAttachment   a download, under the attachment's real name (bidi
+//                    reordering characters taken out); the blob
 //                    is typed application/octet-stream so nothing renders it
 //   openPdf          Chrome's PDF viewer in a new tab. A PDF in a sandboxed
 //                    iframe is blocked by Chrome (checked 2026-10-20), and an
@@ -19,7 +20,7 @@
 
 import type { DownloadParams, JmapClient } from "@postern/jmap";
 import { rasterDataUrl } from "./inline";
-import { isPdf } from "./kind";
+import { isPdf, stripBidiControls } from "./kind";
 
 /** What a download needs to know about a part. */
 export interface AttachmentRef {
@@ -35,10 +36,14 @@ function later(url: string): void {
   setTimeout(() => URL.revokeObjectURL(url), REVOKE_AFTER_MS);
 }
 
+/** The name to show and save under: bidi controls taken out, so it reads (and sorts, and opens) as what it really is. */
 export function fileName(part: AttachmentRef): string {
-  const name = (part.name ?? "").trim();
+  const name = stripBidiControls(part.name ?? "").trim();
   return name || "attachment";
 }
+
+/** Image previews are a base64 data: URL in a srcdoc: larger images are offered as a download instead. */
+export const MAX_PREVIEW_BYTES = 20_000_000;
 
 async function bytesOf(client: JmapClient, part: AttachmentRef, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
   const params: DownloadParams = { blobId: part.blobId, name: fileName(part), type: "application/octet-stream" };
@@ -94,6 +99,7 @@ export async function openPdf(client: JmapClient, part: AttachmentRef): Promise<
 /** A data: URL for a raster image attachment, typed by its signature, for the sandboxed viewer frame. */
 export async function imageDataUrl(client: JmapClient, part: AttachmentRef, signal?: AbortSignal): Promise<string> {
   const bytes = await bytesOf(client, part, signal);
+  if (bytes.length > MAX_PREVIEW_BYTES) throw new NotPreviewableError("This image is too large to preview. Download it instead.");
   const url = rasterDataUrl(bytes);
   if (!url) throw new NotPreviewableError("This file isn't an image Postern can show.");
   return url;

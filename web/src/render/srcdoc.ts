@@ -13,7 +13,8 @@
 // a sanitiser miss), a no-referrer policy, Postern's base style, the
 // message's sanitised styles, then Postern's overrides.
 
-import { FLAG_CLASS, type SanitizedHtml } from "./sanitize";
+import { FLAG_ATTR } from "./flag";
+import type { SanitizedHtml } from "./sanitize";
 import { QUOTE_ATTR } from "./quotes";
 
 /** The sandbox of every message frame. Exactly these two tokens; brief 17 asserts it. */
@@ -51,8 +52,8 @@ export function frameCsp(allowRemote: boolean): string {
 
 // The frame cannot see the app's tokens.css: these mirror its surface, text and accent values.
 const PALETTE = {
-  light: { background: "#ffffff", text: "#18201c", muted: "#4e5853", link: "#1c6a57", border: "#d5dcd8", flag: "#5a3b00", flagBg: "#fbeed3" },
-  dark: { background: "#191f1c", text: "#e3e9e5", muted: "#aab5af", link: "#72cbae", border: "#36403b", flag: "#f6dda6", flagBg: "#3a2e14" },
+  light: { background: "#ffffff", text: "#18201c", muted: "#4e5853", link: "#1c6a57", border: "#d5dcd8" },
+  dark: { background: "#191f1c", text: "#e3e9e5", muted: "#aab5af", link: "#72cbae", border: "#36403b" },
 } as const;
 
 /** The frame's font. measure.ts measures text with the same one. */
@@ -62,7 +63,10 @@ export const FRAME_LINE_HEIGHT = 1.5;
 
 function baseCss(scheme: "light" | "dark"): string {
   const p = PALETTE[scheme];
-  return `:root{color-scheme:${scheme}}
+  // The first cascade layer: its !important rules beat any the message writes, layered or not.
+  return `@layer postern-first;
+@layer postern-first{[${FLAG_ATTR}]::before,[${FLAG_ATTR}]::after{content:none!important;display:none!important}}
+:root{color-scheme:${scheme}}
 html,body{margin:0;padding:0}
 body{font-family:${FRAME_FONT_FAMILY};font-size:${FRAME_FONT_SIZE}px;line-height:${FRAME_LINE_HEIGHT};color:${p.text};background:${p.background};overflow-wrap:break-word}
 a{color:${p.link}}
@@ -72,12 +76,9 @@ blockquote{margin:0 0 0 .8ex;padding-left:1ex;border-left:1px solid ${p.border}}
 table{max-width:100%}`;
 }
 
-function overridesCss(scheme: "light" | "dark", foldQuote: boolean): string {
-  const p = PALETTE[scheme];
-  const flag = `html body .${FLAG_CLASS}.${FLAG_CLASS}`;
+function overridesCss(foldQuote: boolean): string {
   return `html,html body{position:static!important}
 html body{overflow:auto!important;min-height:0!important}
-${flag}{display:inline-block!important;visibility:visible!important;opacity:1!important;position:static!important;margin:0 0 0 .4em!important;padding:0 .4em!important;border-radius:4px!important;font:600 12px/1.5 ${FRAME_FONT_FAMILY}!important;color:${p.flag}!important;background:${p.flagBg}!important;text-decoration:none!important}
 ${foldQuote ? `[${QUOTE_ATTR}]{display:none!important}` : ""}`;
 }
 
@@ -95,7 +96,7 @@ export function buildSrcdoc(clean: Pick<SanitizedHtml, "headHtml" | "bodyHtml" |
 <meta name="color-scheme" content="${scheme}">
 <style>${baseCss(scheme)}</style>
 ${clean.headHtml}
-<style>${overridesCss(scheme, view.foldQuote)}</style>
+<style>${overridesCss(view.foldQuote)}</style>
 </head>${clean.bodyHtml}</html>`;
 }
 

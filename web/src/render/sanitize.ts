@@ -25,6 +25,7 @@
 
 import createDOMPurify, { type Config, type DOMPurify, type UponSanitizeAttributeHookEvent } from "dompurify";
 import { sanitizeCss, setsColours } from "./css";
+import { FLAG_ATTR, FLAG_STYLE } from "./flag";
 import { markQuote, QUOTE_ATTR } from "./quotes";
 import { imageUrl, linkHost, rewriteSrcset, safeLinkUrl } from "./urls";
 
@@ -167,8 +168,19 @@ function onAttribute(node: Element, data: UponSanitizeAttributeHookEvent): void 
   const value = data.attrValue;
   const ctx = { allowRemote: s.options.allowRemote === true, cidUrls: s.options.cidUrls };
 
-  // Postern's own markers are Postern's: a message cannot pre-mark itself as a quote.
+  // Postern's own markers are Postern's: a message cannot pre-mark itself as a
+  // quote, draw Postern's link pill, or reach Postern's elements by class or id.
   if (name.startsWith("data-postern")) {
+    data.keepAttr = false;
+    return;
+  }
+  if (name === "class") {
+    const kept = value.split(/\s+/).filter((c) => c !== "" && !/^postern/i.test(c));
+    if (kept.length === 0) data.keepAttr = false;
+    else data.attrValue = kept.join(" ");
+    return;
+  }
+  if (name === "id" && /^\s*postern/i.test(value)) {
     data.keepAttr = false;
     return;
   }
@@ -271,8 +283,6 @@ function sameSite(claimed: string, real: string): boolean {
   return a === b || b.endsWith(`.${a}`);
 }
 
-const FLAG_CLASS = "postern-link-flag";
-
 /** Note links whose text names another host, and punycode hosts; mark them in the frame too. */
 function flagLinks(body: HTMLElement): SuspiciousLink[] {
   const out: SuspiciousLink[] = [];
@@ -288,7 +298,8 @@ function flagLinks(body: HTMLElement): SuspiciousLink[] {
     out.push({ text, host, reason });
     a.setAttribute("title", `Goes to ${host}`);
     const flag = a.ownerDocument.createElement("span");
-    flag.setAttribute("class", FLAG_CLASS);
+    flag.setAttribute(FLAG_ATTR, "");
+    flag.setAttribute("style", FLAG_STYLE);
     flag.textContent = `goes to ${host}`;
     a.after(flag);
   }
@@ -331,4 +342,4 @@ export function sanitizeMessageHtml(html: string, options: SanitizeOptions = {})
   };
 }
 
-export { QUOTE_ATTR, FLAG_CLASS };
+export { QUOTE_ATTR, FLAG_ATTR };

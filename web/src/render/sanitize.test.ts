@@ -211,7 +211,7 @@ describe("fixture specifics", () => {
       ["evil.test", "mismatch"],
       ["sub.evil.test", "mismatch"],
     ]);
-    expect(clean.body.querySelectorAll(".postern-link-flag")).toHaveLength(4);
+    expect(clean.body.querySelectorAll("[data-postern-flag]")).toHaveLength(4);
   });
 
   it("punycode-domain: every look-alike host is flagged", () => {

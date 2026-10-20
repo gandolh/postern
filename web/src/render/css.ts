@@ -4,7 +4,9 @@
 // same in the browser and in jsdom.
 //
 // In order:
-//   1. CSS escapes are decoded (`\75 rl(` is `url(`), so nothing hides behind them;
+//   1. CSS escapes are decoded until none are left (`\75 rl(` is `url(`, and
+//      `\\75 rl(` is too, one pass later), and any backslash left is dropped,
+//      so nothing hides behind them;
 //   2. comments go;
 //   3. `<` goes, so a </style> can never end the block early;
 //   4. @import, @font-face, @namespace and @charset go, always (no remote
@@ -23,8 +25,8 @@ export interface CssContext extends ImageUrlContext {
   onBlocked?: () => void;
 }
 
-/** Decode CSS escapes (`\75`, `\"`, line continuations) to the characters they stand for. */
-export function decodeCssEscapes(css: string): string {
+/** Decode one level of CSS escapes (`\75`, `\"`, line continuations) to the characters they stand for. */
+function decodeOnce(css: string): string {
   return css.replace(/\\(?:([0-9a-f]{1,6})[ \t\n\r\f]?|(\r\n|[\n\r\f])|([\s\S]))/gi, (_whole, hex: string | undefined, newline: string | undefined, char: string | undefined) => {
     if (newline !== undefined) return "";
     if (hex !== undefined) {
@@ -34,6 +36,25 @@ export function decodeCssEscapes(css: string): string {
     }
     return char ?? "";
   });
+}
+
+/** Passes of decoding before giving up and dropping every backslash left. */
+const MAX_DECODE_PASSES = 8;
+
+/**
+ * Decode CSS escapes until none are left, then drop any stray backslash, so
+ * the text holds no escape at all: what the regexes below see is exactly what
+ * the browser will read. A double escape (`\\75 rl(`, `\5c 75 rl(`) decodes
+ * to a single one on the first pass and to `url(` on the next.
+ */
+export function decodeCssEscapes(css: string): string {
+  let out = css;
+  for (let i = 0; i < MAX_DECODE_PASSES; i++) {
+    const next = decodeOnce(out);
+    if (next === out) break;
+    out = next;
+  }
+  return out.replace(/\\/g, "");
 }
 
 /** Index just past the end of the at-rule starting at `start`: its `;`, or its `{...}` block, or the end of the text. */
@@ -125,7 +146,8 @@ function urlArgument(arg: string): string {
 const SAFE_POSITIONS = new Set(["static", "relative", "inherit", "initial", "unset", "revert", "revert-layer"]);
 
 function neutralisePositions(css: string): string {
-  return css.replace(/(^|[\s;{])position\s*:([^;}]*)/gi, (whole, lead: string, value: string) => {
+  // Any non-name character before it: whitespace, ; { } ( and, with CSS nesting, a closing brace.
+  return css.replace(/(^|[^\w-])position\s*:([^;}]*)/gi, (whole, lead: string, value: string) => {
     const bare = value.replace(/!\s*important/i, "").trim().toLowerCase();
     return SAFE_POSITIONS.has(bare) ? whole : `${lead}position:static`;
   });
@@ -137,6 +159,8 @@ export function sanitizeCss(css: string, ctx: CssContext): string {
   out = out.replace(/\/\*[\s\S]*?(?:\*\/|$)/g, " ");
   out = out.replace(/</g, "");
   out = removeAtRules(out);
+  // Postern's cascade layers are Postern's: a message naming one is renamed out of it.
+  out = out.replace(/@layer\b[^{;]*/gi, (prelude) => prelude.replace(/\bpostern/gi, "message-postern"));
   out = replaceFunctions(out, /(?:-[a-z]+-)?image-set/, () => "none");
   out = replaceFunctions(out, /url/, (arg) => {
     const decision = imageUrl(urlArgument(arg), ctx);
@@ -145,7 +169,7 @@ export function sanitizeCss(css: string, ctx: CssContext): string {
     return "none";
   });
   out = neutralisePositions(out);
-  out = out.replace(/expression\s*\(/gi, "none(").replace(/-moz-binding/gi, "-x-binding").replace(/(^|[\s;{])behavior\s*:/gi, "$1-x-behavior:");
+  out = out.replace(/expression\s*\(/gi, "none(").replace(/-moz-binding/gi, "-x-binding").replace(/(^|[^\w-])behavior\s*:/gi, "$1-x-behavior:");
   return out;
 }
 

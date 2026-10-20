@@ -1,7 +1,9 @@
 // A message's attachments as chips: name, type, size; preview for raster
 // images (a sandboxed frame) and PDFs (a new tab); download for everything.
 // HTML, SVG and other active documents are download-only and say so, and a
-// double extension (invoice.pdf.html) is called out.
+// double extension (invoice.pdf.html) or a name using bidi characters to
+// reverse itself ("Invoice_\u202Efdp.exe") is called out. Names are shown in
+// <bdi> with those characters taken out, so they read as they really are.
 
 import { useJmap } from "../auth";
 import type { EmailBodyPart, Id } from "@postern/jmap";
@@ -10,9 +12,9 @@ import { useState } from "react";
 import { isQuietError } from "../actions/runner";
 import { IconButton } from "../shell/IconButton";
 import { useToast } from "../shell/toast";
-import { fileName, openPdf, saveAttachment, type AttachmentRef } from "./files";
+import { fileName, MAX_PREVIEW_BYTES, openPdf, saveAttachment, type AttachmentRef } from "./files";
 import { ImageViewer } from "./ImageViewer";
-import { attachmentKind, doubleExtension, formatSize, typeLabel, type AttachmentKind } from "./kind";
+import { attachmentKind, doubleExtension, formatSize, hasBidiControls, stripBidiControls, typeLabel, type AttachmentKind } from "./kind";
 import "./attachments.css";
 
 export interface AttachmentListProps {
@@ -26,11 +28,22 @@ export interface AttachmentListProps {
 
 const ICONS = { image: FileImage, pdf: FileText, active: FileCode, other: File } as const;
 
-function warningFor(part: EmailBodyPart, kind: AttachmentKind): string | null {
+/** Why a chip warns, or null. Exported for tests. */
+export function attachmentWarning(part: Pick<EmailBodyPart, "name" | "type">, kind: AttachmentKind = attachmentKind(part.type, part.name)): string | null {
+  if (hasBidiControls(part.name)) {
+    return `The name uses hidden characters that reverse its text. Its real name is ${stripBidiControls(part.name ?? "")}. Download only.`;
+  }
   const double = doubleExtension(part.name);
   if (double) return `Named like a .${double.shown} file, but it is a .${double.real} file. Download only.`;
   if (kind === "active") return "Can contain active content. Download only; Postern never opens it.";
   return null;
+}
+
+/** Images and PDFs preview, unless the chip warns or an image is past MAX_PREVIEW_BYTES (download it instead). */
+export function canPreview(part: Pick<EmailBodyPart, "size">, kind: AttachmentKind, warning: string | null): boolean {
+  if (warning !== null) return false;
+  if (kind === "image") return part.size <= MAX_PREVIEW_BYTES;
+  return kind === "pdf";
 }
 
 /** The parts worth a chip: real attachments, not the inline images already in the body. */
@@ -70,7 +83,7 @@ function AttachmentChip({ part, onPreviewImage }: { part: EmailBodyPart; onPrevi
   const kind = attachmentKind(part.type, part.name);
   const ref: AttachmentRef = { blobId: part.blobId as Id, name: part.name, type: part.type };
   const name = fileName(ref);
-  const warning = warningFor(part, kind);
+  const warning = attachmentWarning(part, kind);
   const Icon = warning ? AlertTriangle : ICONS[kind];
 
   const run = async (what: () => Promise<void>, failure: string) => {
@@ -85,15 +98,18 @@ function AttachmentChip({ part, onPreviewImage }: { part: EmailBodyPart; onPrevi
   };
 
   const download = () => void run(() => saveAttachment(client, ref), `Couldn't download ${name}.`);
-  const preview =
-    kind === "image" ? () => onPreviewImage(ref) : kind === "pdf" ? () => void run(() => openPdf(client, ref), `Couldn't open ${name}.`) : null;
+  const preview = !canPreview(part, kind, warning)
+    ? null
+    : kind === "image"
+      ? () => onPreviewImage(ref)
+      : () => void run(() => openPdf(client, ref), `Couldn't open ${name}.`);
 
   return (
     <li className="att-chip" data-kind={kind} data-warning={warning ? "true" : undefined} aria-busy={busy || undefined}>
       <button type="button" className="att-main" onClick={preview ?? download} aria-label={`${preview ? "Preview" : "Download"} ${name}`}>
         <Icon aria-hidden="true" className="att-icon" />
         <span className="att-text">
-          <span className="att-name">{name}</span>
+          <bdi className="att-name">{name}</bdi>
           <span className="att-meta">
             {typeLabel(part.type, part.name)} · {formatSize(part.size)}
           </span>

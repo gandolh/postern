@@ -5,11 +5,13 @@
 // So each raster part the HTML refers to is downloaded and inlined as a
 // data: URL (the CSP draft allows img-src data:). SVG and anything that is
 // not a raster image by its bytes is never inlined: it stays an attachment.
+// Opening a message fetches at most MAX_INLINE_TOTAL_BYTES of them (each at
+// most MAX_INLINE_IMAGE_BYTES); the rest wait for the reader's "Load images".
 
 import { cidParts, isAbortError, normalizeCid, type DownloadParams, type EmailBodyPart, type Id } from "@postern/jmap";
 import { sniffRaster } from "./kind";
 
-/** Inline images larger than this stay attachments (a data: URL is held in memory twice). */
+/** Inline images larger than this are not fetched on open (a data: URL is held in memory twice). */
 export const MAX_INLINE_IMAGE_BYTES = 8_000_000;
 
 /** Every cid the HTML refers to (src, background, CSS url()), bare. */
@@ -37,37 +39,74 @@ export interface InlineImages {
   urls: Map<string, string>;
   /** The cids shown inline: their parts are left off the attachment chips. */
   cids: Set<string>;
+  /** Raster cids left for later because they passed the budget: the reader loads them on request. */
+  deferred: Set<string>;
+  /** Their total size in bytes. */
+  deferredBytes: number;
+}
+
+/** Inline images fetched on open, at most this much per message; the rest wait for "Load images". */
+export const MAX_INLINE_TOTAL_BYTES = 16_000_000;
+/** No inline image larger than this, even on request: it stays an attachment to download. */
+export const MAX_INLINE_ON_REQUEST_BYTES = 20_000_000;
+
+export interface InlineBudget {
+  /** Total bytes to fetch. Default MAX_INLINE_TOTAL_BYTES. */
+  total?: number;
+  /** Largest single image. Default MAX_INLINE_IMAGE_BYTES. */
+  perImage?: number;
 }
 
 type PartSource = { attachments?: EmailBodyPart[] | null; htmlBody?: EmailBodyPart[] | null };
 
-/** Download and inline the raster parts among `wanted`. Failures leave that image out (its alt text shows). */
+function rasterPart(part: EmailBodyPart | undefined): part is EmailBodyPart & { blobId: string } {
+  return !!part?.blobId && part.type.toLowerCase().startsWith("image/") && !/svg/i.test(part.type);
+}
+
+/**
+ * Download and inline the raster parts among `wanted` (in the order the HTML
+ * refers to them) within the budget; the rest are `deferred`. Failures leave
+ * that image out (its alt text shows).
+ */
 export async function cidPartsToInline(
   email: PartSource,
-  wanted: ReadonlySet<string>,
+  wanted: Iterable<string>,
   fetchBlob: ((params: DownloadParams, signal: AbortSignal) => Promise<Blob>) | undefined,
   signal: AbortSignal,
+  budget: InlineBudget = {},
 ): Promise<InlineImages> {
-  const urls = new Map<string, string>();
-  const cids = new Set<string>();
-  if (!fetchBlob || wanted.size === 0) return { urls, cids };
+  const out: InlineImages = { urls: new Map(), cids: new Set(), deferred: new Set(), deferredBytes: 0 };
+  if (!fetchBlob) return out;
+  const total = budget.total ?? MAX_INLINE_TOTAL_BYTES;
+  const perImage = budget.perImage ?? MAX_INLINE_IMAGE_BYTES;
   const parts = cidParts({ attachments: email.attachments ?? undefined, htmlBody: email.htmlBody ?? undefined });
+  const chosen: [string, EmailBodyPart & { blobId: string }][] = [];
+  let spent = 0;
+  for (const cid of wanted) {
+    const part = parts.get(cid);
+    if (!rasterPart(part) || out.deferred.has(cid) || chosen.some(([c]) => c === cid)) continue;
+    if (part.size > MAX_INLINE_ON_REQUEST_BYTES) continue;
+    if (part.size > perImage || spent + part.size > total) {
+      out.deferred.add(cid);
+      out.deferredBytes += part.size;
+      continue;
+    }
+    spent += part.size;
+    chosen.push([cid, part]);
+  }
   await Promise.all(
-    [...wanted].map(async (cid) => {
-      const part = parts.get(cid);
-      if (!part?.blobId || !part.type.toLowerCase().startsWith("image/") || /svg/i.test(part.type)) return;
-      if (part.size > MAX_INLINE_IMAGE_BYTES) return;
+    chosen.map(async ([cid, part]) => {
       try {
         const blob = await fetchBlob({ blobId: part.blobId as Id, name: part.name ?? cid, type: part.type }, signal);
         const url = rasterDataUrl(new Uint8Array(await blob.arrayBuffer()));
         if (url) {
-          urls.set(cid, url);
-          cids.add(cid);
+          out.urls.set(cid, url);
+          out.cids.add(cid);
         }
       } catch (err) {
         if (!isAbortError(err)) console.warn("Inline image not loaded", err);
       }
     }),
   );
-  return { urls, cids };
+  return out;
 }
