@@ -18,7 +18,7 @@
     "dev:seed": "node dev/seed.ts",
     "build": "tsc -b && npm run build -w @postern/web",
     "test": "vitest run",
-    "typecheck": "tsc -b && tsc -p web --noEmit && tsc -p dev",
+    "typecheck": "tsc -b && tsc -p jmap/tsconfig.test.json && tsc -p web --noEmit && tsc -p dev",
     "lint": "eslint .",
     "check": "npm run typecheck && npm run lint && npm run test"
   },

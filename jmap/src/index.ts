@@ -1,2 +1,107 @@
-/** Placeholder until brief 03 lands the client. */
-export const PACKAGE_NAME = "@postern/jmap";
+/**
+ * `@postern/jmap`: the only code in Postern that speaks JMAP. A typed client
+ * for Stalwart: session and URL rebasing, batched requests with
+ * back-references, the mail, submission, sieve, quota, push and contacts
+ * methods, blobs, a state cache, and a fetch-based push reader.
+ *
+ * Plain TypeScript: no React, no DOM.
+ *
+ * @packageDocumentation
+ */
+
+export { JmapClient, type JmapClientOptions } from "./client.js";
+export type { AuthProvider, FetchLike } from "./http.js";
+export { Session, DEFAULT_LIMITS, type DownloadParams, type EventSourceParams } from "./session.js";
+export { rebaseUrl, expandTemplate, templateVariables, normalizeBase } from "./url.js";
+export { Capability, capabilityOf, type CapabilityUrn } from "./capabilities.js";
+
+export {
+  RequestBuilder,
+  RequestResult,
+  CallHandle,
+  ResultRef,
+  type CallArgs,
+  type Refable,
+  type HashRefs,
+  type ResponseOf,
+  type RequestExecutor,
+} from "./request.js";
+
+export {
+  JmapError,
+  JmapNetworkError,
+  JmapHttpError,
+  JmapUnauthorizedError,
+  JmapRequestError,
+  JmapMethodError,
+  JmapCannotCalculateChangesError,
+  JmapSetError,
+  JmapLimitError,
+  JmapProtocolError,
+  JmapNoAccountError,
+  isAbortError,
+  type MethodErrorType,
+  type RequestErrorType,
+} from "./errors.js";
+
+export type { CallOptions, ChangesOptions, MethodCaller } from "./methods/caller.js";
+export { MailboxMethods, ThreadMethods, findByRole, mailboxPath } from "./methods/mailbox.js";
+export { EmailMethods, SearchSnippetMethods, escapePointer, type QueryAndGetResult } from "./methods/email.js";
+export { IdentityMethods, EmailSubmissionMethods, VacationResponseMethods } from "./methods/submission.js";
+export { SieveScriptMethods, QuotaMethods, type Uploader } from "./methods/sieve.js";
+export {
+  PushSubscriptionMethods,
+  isPushVerification,
+  type CreatedPushSubscription,
+} from "./methods/push-subscription.js";
+export { AddressBookMethods, ContactCardMethods } from "./methods/contacts.js";
+
+export {
+  BlobMethods,
+  fetchUploadTransport,
+  bodySize,
+  normalizeCid,
+  cidParts,
+  cidDownloads,
+  resolveCid,
+  type UploadBody,
+  type UploadProgress,
+  type UploadRequest,
+  type UploadResult,
+  type UploadTransport,
+  type UploadOptions,
+  type CidSource,
+} from "./blob.js";
+
+export {
+  StateCache,
+  ObjectStore,
+  QueryStore,
+  syncObjects,
+  syncQuery,
+  stableStringify,
+  type SyncResult,
+  type QuerySyncResult,
+  type SyncableType,
+  type SyncObjectsOptions,
+  type QueryMethod,
+  type QuerySyncArgs,
+} from "./cache.js";
+
+export {
+  PushReader,
+  DEFAULT_PUSH_TYPES,
+  type PushStatus,
+  type PushSource,
+  type PushReaderOptions,
+} from "./push/reader.js";
+export { EventStreamParser, type ServerSentEvent, type EventStreamHandlers } from "./push/event-stream.js";
+export { backoffDelay, DEFAULT_BACKOFF, type BackoffOptions } from "./push/backoff.js";
+
+export type * from "./types/core.js";
+export type * from "./types/mail.js";
+export type * from "./types/submission.js";
+export type * from "./types/sieve.js";
+export type * from "./types/contacts.js";
+export type * from "./types/push.js";
+export type * from "./types/methods.js";

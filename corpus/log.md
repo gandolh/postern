@@ -41,3 +41,13 @@ cannot search headers; both are now in
 [gmail-on-jmap.md](wiki/gmail-on-jmap.md). Verified: session 200, label counts
 match the manifest, IMAP and SMTP work, no secret in tracked files.
 [Brief](briefs/done/02-local-mail-server.md).
+
+## [2026-10-20] done | Brief 03: the JMAP client
+
+`@postern/jmap` has the session with URL rebasing, a batching request builder
+with back-references that splits to fit Stalwart's limits, typed wrappers for
+every object the briefs use, blobs, a state cache for `/changes` and
+`/queryChanges`, and a `fetch()`-based push reader with backoff and a polling
+fallback. The polling fallback in [architecture.md](wiki/architecture.md) was
+wrong (the session state never moves) and is corrected. 129 tests green,
+including 15 against `dev/`. [Brief](briefs/done/03-jmap-client.md).

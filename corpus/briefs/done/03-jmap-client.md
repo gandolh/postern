@@ -57,3 +57,16 @@ JMAP words (Mailbox, Thread, Email, keyword) are correct inside this package.
   - receive a `StateChange` over the fetch stream after a change made from a
     second client.
 - No DOM or React import anywhere in `jmap/`.
+
+## Outcome (2026-10-20)
+
+Built with no runtime dependencies. Auth is injected (`AuthProvider` with an
+`onUnauthorized` retry hook), so tests use Basic auth and brief 04 plugs in
+bearer tokens. Uploads take an injectable transport, because `fetch` reports
+no upload progress; brief 08 passes an XHR one. 114 unit tests and 15
+integration tests against `dev/`, all run. Integration tests undo what they
+change; the three small blobs they upload stay until Stalwart purges them.
+Findings: the session `state` never moves on mail changes, so the polling
+fallback polls the `Email`, `Mailbox` and `Thread` states instead; downloads
+need `Authorization`; Stalwart wants `accountId` as the first key in method
+arguments. Not checked client-side: `maxSizeRequest`.

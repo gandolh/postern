@@ -1,0 +1,165 @@
+{
+  "subject": "Photos from the offsite",
+  "bodyStructure": {
+    "partId": null,
+    "blobId": null,
+    "size": null,
+    "name": null,
+    "type": "multipart/mixed",
+    "charset": null,
+    "disposition": null,
+    "cid": null,
+    "language": null,
+    "location": null,
+    "subParts": [
+      {
+        "partId": null,
+        "blobId": null,
+        "size": null,
+        "name": null,
+        "type": "multipart/alternative",
+        "charset": null,
+        "disposition": null,
+        "cid": null,
+        "language": null,
+        "location": null,
+        "subParts": [
+          {
+            "partId": "2",
+            "blobId": "ckcx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiahpmaiwa",
+            "size": 85,
+            "name": null,
+            "type": "text/plain",
+            "charset": "utf-8",
+            "disposition": null,
+            "cid": null,
+            "language": null,
+            "location": null
+          },
+          {
+            "partId": null,
+            "blobId": null,
+            "size": null,
+            "name": null,
+            "type": "multipart/related",
+            "charset": null,
+            "disposition": null,
+            "cid": null,
+            "language": null,
+            "location": null,
+            "subParts": [
+              {
+                "partId": "4",
+                "blobId": "ckcx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiaho1apyqc",
+                "size": 330,
+                "name": null,
+                "type": "text/html",
+                "charset": "utf-8",
+                "disposition": null,
+                "cid": null,
+                "language": null,
+                "location": null
+              },
+              {
+                "partId": "5",
+                "blobId": "cocx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiahpsaxnas",
+                "size": 1720,
+                "name": "lake.png",
+                "type": "image/png",
+                "charset": null,
+                "disposition": "inline",
+                "cid": "offsite-1@postern.test",
+                "language": null,
+                "location": null
+              },
+              {
+                "partId": "6",
+                "blobId": "cocx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiahpub3yau",
+                "size": 1940,
+                "name": "boathouse.png",
+                "type": "image/png",
+                "charset": null,
+                "disposition": "inline",
+                "cid": "offsite-2@postern.test",
+                "language": null,
+                "location": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "partId": "7",
+        "blobId": "cocx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiaho1dnoay",
+        "size": 2284,
+        "name": "group-photo.png",
+        "type": "image/png",
+        "charset": null,
+        "disposition": "attachment",
+        "cid": null,
+        "language": null,
+        "location": null
+      }
+    ]
+  },
+  "attachments": [
+    {
+      "partId": "5",
+      "blobId": "cocx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiahpsaxnas",
+      "size": 1720,
+      "name": "lake.png",
+      "type": "image/png",
+      "charset": null,
+      "disposition": "inline",
+      "cid": "offsite-1@postern.test",
+      "language": null,
+      "location": null
+    },
+    {
+      "partId": "6",
+      "blobId": "cocx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiahpub3yau",
+      "size": 1940,
+      "name": "boathouse.png",
+      "type": "image/png",
+      "charset": null,
+      "disposition": "inline",
+      "cid": "offsite-2@postern.test",
+      "language": null,
+      "location": null
+    },
+    {
+      "partId": "7",
+      "blobId": "cocx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiaho1dnoay",
+      "size": 2284,
+      "name": "group-photo.png",
+      "type": "image/png",
+      "charset": null,
+      "disposition": "attachment",
+      "cid": null,
+      "language": null,
+      "location": null
+    }
+  ],
+  "htmlBody": [
+    {
+      "partId": "4",
+      "blobId": "ckcx29c9oe7gkuuhssiruf903f2f3zxmvnd0d39hwsritlucojmdwaiaho1apyqc",
+      "size": 330,
+      "name": null,
+      "type": "text/html",
+      "charset": "utf-8",
+      "disposition": null,
+      "cid": null,
+      "language": null,
+      "location": null
+    }
+  ],
+  "bodyValues": {
+    "4": {
+      "isEncodingProblem": false,
+      "isTruncated": false,
+      "value": "<html><body><div dir=\"ltr\"><p>Two favourites from the offsite:</p>\n<p><img src=\"cid:offsite-1@postern.test\" alt=\"The lake at dawn\" width=\"240\" height=\"160\"></p>\n<p><img src=\"cid:offsite-2@postern.test\" alt=\"The boathouse at sunset\" width=\"240\" height=\"160\"></p>\n<p>The group photo is attached.</p><p>Bob</p></div></body></html>"
+    }
+  },
+  "id": "hmaaaab9"
+}

@@ -13,7 +13,7 @@ does not exist yet (the owner creates it).
 **Wave 1: foundations**
 - [01](../briefs/done/01-scaffold-the-workspaces.md): npm workspaces, house stack, Vite base `/webmail/`, lint, test, typecheck. **Done 2026-10-20.**
 - [02](../briefs/done/02-local-mail-server.md): a Stalwart in Docker with test accounts and seeded mail, hostile mail included. After 01. **Done 2026-10-20.**
-- [03](../briefs/todo/03-jmap-client.md): the typed JMAP client: session and URL rebasing, batching, methods, blobs, changes. After 02.
+- [03](../briefs/done/03-jmap-client.md): the typed JMAP client: session and URL rebasing, batching, methods, blobs, changes. After 02. **Done 2026-10-20.**
 - [04](../briefs/todo/04-sign-in.md): sign-in through Stalwart (OAuth + PKCE + TOTP), tokens in memory, sign-out. After 03.
 
 **Wave 2: reading**

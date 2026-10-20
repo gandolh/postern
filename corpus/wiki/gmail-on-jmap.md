@@ -65,3 +65,9 @@ calendars, principals, mail:share, websocket, plus Web Push for
   changes the subject starts a new conversation.
 - **Session URLs name Stalwart's own host** (`https://mail.<host>/jmap/...`,
   https even without TLS), so the client always rebases them.
+- **Downloads need the token.** The download endpoint wants `Authorization`,
+  so a plain `<img src>` gets a 401. The app fetches the blob and shows it
+  through an object URL. Every download is sent as an attachment.
+- **The event stream** pings every 30 s at the shortest and sends nothing on
+  connect. A bad `sinceState` comes back as `invalidArguments`, which the
+  client treats like `cannotCalculateChanges`.

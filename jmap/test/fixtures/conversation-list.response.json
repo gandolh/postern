@@ -1,0 +1,132 @@
+{
+  "methodResponses": [
+    [
+      "Mailbox/query",
+      {
+        "accountId": "b",
+        "queryState": "srala",
+        "canCalculateChanges": true,
+        "position": 0,
+        "ids": [
+          "a"
+        ]
+      },
+      "0"
+    ],
+    [
+      "Email/query",
+      {
+        "accountId": "b",
+        "queryState": "srmla",
+        "canCalculateChanges": true,
+        "position": 0,
+        "ids": [
+          "h3yaaacaa",
+          "imaaaacd",
+          "hteaaab2z"
+        ],
+        "total": 2035,
+        "limit": 3
+      },
+      "1"
+    ],
+    [
+      "Email/get",
+      {
+        "accountId": "b",
+        "state": "srmla",
+        "list": [
+          {
+            "threadId": "b31",
+            "subject": "Re: Saturday plans",
+            "from": [
+              {
+                "name": "Olga Klein",
+                "email": "olga.klein@mail.example.com"
+              }
+            ],
+            "receivedAt": "2026-10-02T09:00:00Z",
+            "keywords": {
+              "$seen": true
+            },
+            "mailboxIds": {
+              "a": true
+            },
+            "preview": "Hello Alice,\n\nThe kids say hello. I found the book you mentioned in a second-hand shop.\n\nIt has been far too long. We should do this more often.\n\nI am still laughing about last time. Hope you are well. I found the book you mentioned in a second-hand sho...",
+            "id": "h3yaaacaa"
+          },
+          {
+            "threadId": "cd",
+            "subject": "Climbing on Thursday?",
+            "from": [
+              {
+                "name": "Sam Rivera",
+                "email": "sam.rivera@example.com"
+              }
+            ],
+            "receivedAt": "2026-10-01T08:10:00Z",
+            "keywords": {},
+            "mailboxIds": {
+              "a": true
+            },
+            "preview": "The wall has a new set of routes. Thursday at 7?\n\nSam\n",
+            "id": "imaaaacd"
+          },
+          {
+            "threadId": "b2z",
+            "subject": "Your bill for this month",
+            "from": [
+              {
+                "name": "Corner Shop",
+                "email": "orders@cornershop.example.com"
+              }
+            ],
+            "receivedAt": "2026-09-30T19:37:00Z",
+            "keywords": {},
+            "mailboxIds": {
+              "a": true,
+              "k": true
+            },
+            "preview": "Hello Alice,\n\nThe total includes VAT. The total includes VAT. Questions? Reply to this email. Keep this email for your records. Your items are on their way.\n\nDelivery usually takes two to three working days. The total includes VAT. Delivery usually take...",
+            "id": "hteaaab2z"
+          }
+        ],
+        "notFound": []
+      },
+      "2"
+    ],
+    [
+      "Thread/get",
+      {
+        "accountId": "b",
+        "state": "srala",
+        "list": [
+          {
+            "id": "b31",
+            "emailIds": [
+              "h3yaaab31",
+              "h3yaaab33",
+              "h3yaaacab",
+              "h3yaaacaa"
+            ]
+          },
+          {
+            "id": "cd",
+            "emailIds": [
+              "imaaaacd"
+            ]
+          },
+          {
+            "id": "b2z",
+            "emailIds": [
+              "hteaaab2z"
+            ]
+          }
+        ],
+        "notFound": []
+      },
+      "3"
+    ]
+  ],
+  "sessionState": "1af6e809"
+}

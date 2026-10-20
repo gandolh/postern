@@ -1,6 +1,6 @@
 ---
 summary: How Postern is put together, as designed on 2026-10-09 (nothing built yet). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in with OAuth and PKCE through Stalwart's own endpoints, live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy.
-updated: 2026-10-09
+updated: 2026-10-20
 ---
 
 # Architecture (designed, not built)
@@ -72,7 +72,9 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
 - **While it is closed:** Web Push. JMAP `PushSubscription` with the browser's
   push endpoint; Stalwart signs with VAPID. A service worker shows the
   notification (brief 16).
-- **Fallback:** poll the session `state` every 30-60 s.
+- **Fallback:** poll the `Email`, `Mailbox` and `Thread` states every 30 s
+  (`Foo/get` with `ids: []`). The session `state` does not move when mail
+  changes, so polling it would miss everything.
 
 ## Where state lives
 
