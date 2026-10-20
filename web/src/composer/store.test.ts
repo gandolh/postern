@@ -307,7 +307,7 @@ describe("drafts", () => {
   it("knows which messages of a conversation are drafts", async () => {
     server.add({ id: "R1", threadId: "TD", mailboxIds: { [MAILBOXES.inbox]: true }, keywords: {} });
     const { messages } = await store.threadDrafts("TD");
-    expect(messages).toEqual([
+    expect(messages).toMatchObject([
       { id: "D1", draft: true },
       { id: "R1", draft: false },
     ]);
@@ -355,5 +355,179 @@ describe("plain text and signatures", () => {
     await ready(s.key);
     expect(s.state.identityId).toBe("I2");
     expect(s.state.to.map((r) => r.email)).toEqual(["bob@postern.test"]);
+  });
+});
+
+describe("review fixes", () => {
+  async function savedDraft(subject = "Re: x"): Promise<string> {
+    const a = store.open({ to: [bob], subject });
+    await ready(a.key);
+    a.setText("hello");
+    await vi.waitFor(() => expect(a.state.save).toBe("saved"));
+    const id = a.draftId!;
+    await store.close(a.key);
+    return id;
+  }
+
+  it("keeps one composer per draft, however it is opened (no duplicate drafts)", async () => {
+    const d = await savedDraft();
+    const inline = store.open({ draftId: d, threadId: "T", display: "inline" });
+    await ready(inline.key);
+    // Reply pressed on the draft's card: the same composer, not a second one.
+    expect(store.open({ mode: "reply", emailId: d, threadId: "T" })).toBe(inline);
+    expect(store.getSnapshot()).toHaveLength(1);
+    inline.setSubject("edit A");
+    await vi.waitFor(() => expect(inline.state.save).toBe("saved"));
+    expect(drafts().map((e) => e["subject"])).toEqual(["edit A"]);
+  });
+
+  it("closes the second composer when two find the same draft while loading", async () => {
+    const d = await savedDraft();
+    const a = store.open({ mode: "reply", emailId: d, threadId: "T" });
+    const b = store.open({ mode: "replyAll", emailId: d, threadId: "T" });
+    expect(b).not.toBe(a);
+    await ready(a.key);
+    await vi.waitFor(() => expect(store.getSnapshot()).toHaveLength(1));
+    expect(store.get(a.key)?.draftId).toBe(d);
+    expect(b.disposed).toBe(true);
+  });
+
+  it("opens a reply whose original was deleted as a draft on its own, but not in Trash's view", async () => {
+    server.add({ id: "O1", threadId: "TX", mailboxIds: { [MAILBOXES.trash]: true }, keywords: { $seen: true } });
+    server.add({ id: "D9", threadId: "TX", mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $seen: true } });
+    expect(await store.draftOnlyConversation("TX", null)).toBe("D9");
+    expect(await store.draftOnlyConversation("TX", "trash")).toBeNull();
+    server.add({ id: "O2", threadId: "TX", mailboxIds: { [MAILBOXES.inbox]: true }, keywords: {} });
+    expect(await store.draftOnlyConversation("TX", null)).toBeNull();
+  });
+
+  it("waits for uploads before Save & close, then saves the draft with the file", async () => {
+    let finish: () => void = () => {};
+    store.dispose();
+    const client = await server.connect();
+    store = new ComposerStore({
+      client,
+      username: "alice@postern.test",
+      labels: { mailboxIdForRole: (role) => (MAILBOXES as Record<string, string>)[role], sync: async () => {} },
+      toast: { show: (o) => (toasts.push(o), { dismiss: () => {} }) },
+      recipients: { suggest: async () => [], remember: vi.fn() },
+      hasInlineSlot: () => false,
+      viewportWidth: () => 2000,
+      publish: () => {},
+      session: {
+        autosaveDelayMs: 20,
+        upload: async (_c, file) => {
+          await new Promise<void>((resolve) => (finish = resolve));
+          return { blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type), type: file.type, size: file.size };
+        },
+      },
+    });
+    const s = store.open({ to: [bob], subject: "With file" });
+    await ready(s.key);
+    s.setText("see file");
+    s.addFiles([new File(["abc"], "report.pdf", { type: "application/pdf" })]);
+    await store.close(s.key);
+    expect(s.state.closing).toBe(true);
+    expect(store.get(s.key)).toBe(s);
+    expect(s.disposed).toBe(false);
+    finish();
+    await vi.waitFor(() => expect(store.getSnapshot()).toHaveLength(0));
+    const [draft] = drafts();
+    expect(JSON.stringify(draft!["bodyStructure"])).toContain("report.pdf");
+  });
+
+  it("does not close when a file fails to upload while closing, and says why", async () => {
+    store.dispose();
+    let fail: () => void = () => {};
+    const client = await server.connect();
+    store = new ComposerStore({
+      client,
+      username: "alice@postern.test",
+      labels: { mailboxIdForRole: (role) => (MAILBOXES as Record<string, string>)[role], sync: async () => {} },
+      toast: { show: (o) => (toasts.push(o), { dismiss: () => {} }) },
+      recipients: { suggest: async () => [], remember: vi.fn() },
+      hasInlineSlot: () => false,
+      viewportWidth: () => 2000,
+      publish: () => {},
+      session: { autosaveDelayMs: 20, upload: () => new Promise((_resolve, reject) => (fail = () => reject(new Error("no")))) },
+    });
+    const s = store.open({ to: [bob], subject: "With file" });
+    await ready(s.key);
+    s.addFiles([new File(["abc"], "report.pdf", { type: "application/pdf" })]);
+    await store.close(s.key);
+    fail();
+    await vi.waitFor(() => expect(s.state.closing).toBe(false));
+    expect(s.state.sendError).toMatch(/report\.pdf.*didn't upload/);
+    expect(store.get(s.key)).toBe(s);
+  });
+
+  it("never writes a cid: image before its part is uploaded", async () => {
+    let finish: () => void = () => {};
+    store.dispose();
+    const client = await server.connect();
+    store = new ComposerStore({
+      client,
+      username: "alice@postern.test",
+      labels: { mailboxIdForRole: (role) => (MAILBOXES as Record<string, string>)[role], sync: async () => {} },
+      toast: { show: (o) => (toasts.push(o), { dismiss: () => {} }) },
+      recipients: { suggest: async () => [], remember: vi.fn() },
+      hasInlineSlot: () => false,
+      viewportWidth: () => 2000,
+      publish: () => {},
+      session: {
+        autosaveDelayMs: 20,
+        upload: async (_c, file) => {
+          await new Promise<void>((resolve) => (finish = resolve));
+          return { blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type), type: file.type, size: file.size };
+        },
+      },
+    });
+    const s = store.open({ to: [bob], subject: "Pic" });
+    await ready(s.key);
+    s.insertImageFile(new File([new Uint8Array([137, 80, 78, 71])], "pic.png", { type: "image/png" }));
+    expect(s.content()!.html).not.toContain("cid:");
+    await vi.waitFor(() => expect(s.state.save).toBe("saved"));
+    expect(JSON.stringify(drafts()[0]!["bodyValues"])).not.toContain("cid:");
+    finish();
+    await vi.waitFor(() => expect(s.state.inline[0]?.status).toBe("done"));
+    expect(s.content()!.html).toMatch(/<img src="cid:[^"]+@postern"/);
+    await vi.waitFor(() => expect(JSON.stringify(drafts()[0]!["bodyStructure"])).toContain("pic.png"));
+  });
+
+  it("does not discard a message held for Undo", async () => {
+    setUndoSendDelay(150);
+    const s = store.open({ to: [bob], subject: "Held" });
+    await ready(s.key);
+    s.setText("x");
+    await store.send(s.key);
+    await store.discard(s.key);
+    expect(drafts()).toHaveLength(1);
+    await vi.waitFor(() => expect(server.submissions).toHaveLength(1));
+  });
+
+  it("starts a new message from the default identity (brief 12), and a reply from the address it was sent to", async () => {
+    server.identities = [
+      { id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false },
+      { id: "I2", name: "Alice at work", email: "alice@work.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: true },
+    ];
+    store.dispose();
+    const client = await server.connect();
+    store = new ComposerStore({
+      client,
+      username: "alice@postern.test",
+      labels: { mailboxIdForRole: (role) => (MAILBOXES as Record<string, string>)[role], sync: async () => {} },
+      toast: { show: (o) => (toasts.push(o), { dismiss: () => {} }) },
+      recipients: { suggest: async () => [], remember: vi.fn() },
+      hasInlineSlot: () => false,
+      viewportWidth: () => 2000,
+      defaultIdentityId: () => "I2",
+    });
+    const fresh = store.open();
+    await ready(fresh.key);
+    expect(fresh.state.identityId).toBe("I2");
+    server.add({ id: "P1", threadId: "TP", from: [bob], to: [alice], cc: null, replyTo: null, subject: "Personal", messageId: ["p1@x"], receivedAt: "2026-10-20T10:00:00Z", textBody: [], htmlBody: [], bodyValues: {} });
+    const reply = store.open({ mode: "reply", emailId: "P1", threadId: "TP" });
+    await ready(reply.key);
+    expect(reply.state.identityId).toBe("I1");
   });
 });

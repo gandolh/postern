@@ -200,6 +200,14 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         </div>
       ) : null}
 
+      {state.closing ? (
+        <p className="compose-notice" role="status">
+          Uploading… The draft will be saved and closed when the files finish.
+          <button type="button" className="compose-link-btn" onClick={() => session.setClosing(false)}>
+            Keep editing
+          </button>
+        </p>
+      ) : null}
       {state.sendError ? (
         <p id={errorId} className="compose-error" role="alert">
           {state.sendError}
@@ -213,7 +221,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
             {afterText}
           </>
         ) : (
-          <Editor session={session} html={state.html} revision={state.revision} label="Message body" showToolbar={toolbar} toolbarId={toolbarId} onAttach={(files) => session.addFiles(files)}>
+          <Editor session={session} revision={state.revision} label="Message body" showToolbar={toolbar} toolbarId={toolbarId} onAttach={(files) => session.addFiles(files)}>
             {afterText}
           </Editor>
         )}

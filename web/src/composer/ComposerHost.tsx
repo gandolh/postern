@@ -9,11 +9,13 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { setInlineReplyRenderer } from "../conversation/inlineReply";
+import { useLabelsStore } from "../labels/useLabels";
 import { getRoute, isMailRoute, navigate, subscribeRoute, withoutConversation } from "../shell/router";
 import "./composer.css";
 import { useOptionalComposerStore } from "./compose";
 import { ComposerWindow } from "./ComposerWindow";
 import { InlineReplySlot } from "./InlineReply";
+import type { LabelsStore } from "../labels/labelsStore";
 import type { ComposerStore } from "./store";
 
 export function ComposerHost() {
@@ -26,9 +28,11 @@ function Host({ store }: { store: ComposerStore }) {
   const outbox = useSyncExternalStore(store.outbox.subscribe, store.outbox.getSnapshot, store.outbox.getSnapshot);
 
   useEffect(() => setInlineReplyRenderer((context) => <InlineReplySlot context={context} />), []);
-  useDraftConversations(store);
+  useDraftConversations(store, useLabelsStore());
 
-  const unsaved = sessions.some((s) => s.save === "dirty" || s.save === "saving" || s.save === "error");
+  const unsaved = sessions.some(
+    (s) => s.save === "dirty" || s.save === "saving" || s.save === "error" || [...s.files, ...s.inline].some((f) => f.status === "uploading"),
+  );
   const warn = outbox.length > 0 || unsaved;
   useEffect(() => {
     if (!warn) return;
@@ -51,7 +55,7 @@ function Host({ store }: { store: ComposerStore }) {
 }
 
 /** A conversation that is only drafts opens as a composer, not as a conversation. */
-function useDraftConversations(store: ComposerStore): void {
+function useDraftConversations(store: ComposerStore, labels: Pick<LabelsStore, "mailboxIdForRole" | "subscribe">): void {
   useEffect(() => {
     let checking: string | null = null;
     let ac: AbortController | null = null;
@@ -63,29 +67,31 @@ function useDraftConversations(store: ComposerStore): void {
         return;
       }
       if (id === checking) return;
+      // Which messages are drafts, and which are in Trash or Spam, needs the labels: wait for them.
+      if (!labels.mailboxIdForRole("drafts")) return;
       checking = id;
       ac?.abort();
       const controller = new AbortController();
       ac = controller;
+      const view = route.kind === "system" && (route.view === "trash" || route.view === "spam") ? route.view : null;
       store
-        .threadDrafts(id, controller.signal)
-        .then(({ messages }) => {
-          if (controller.signal.aborted) return;
+        .draftOnlyConversation(id, view, controller.signal)
+        .then((draftId) => {
+          if (controller.signal.aborted || !draftId) return;
           const now = getRoute();
           if (!isMailRoute(now) || now.conversationId !== id) return;
-          if (messages.length === 0 || !messages.every((m) => m.draft)) return;
-          const newest = messages[messages.length - 1];
-          if (!newest || store.isGone(newest.id)) return;
           navigate(withoutConversation(now), { replace: true });
-          store.open({ draftId: newest.id, threadId: id, display: "docked" });
+          store.open({ draftId, threadId: id, display: "docked" });
         })
         .catch(() => {});
     };
     check();
     const unsubscribe = subscribeRoute(check);
+    const unsubscribeLabels = labels.subscribe(check);
     return () => {
       unsubscribe();
+      unsubscribeLabels();
       ac?.abort();
     };
-  }, [store]);
+  }, [store, labels]);
 }

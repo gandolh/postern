@@ -15,6 +15,7 @@ import type { EmailAddress, Id } from "@postern/jmap";
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAccount, useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
+import { getDefaultIdentityId } from "../prefs";
 import { useToast } from "../shell/toast";
 import { recipientSource } from "./recipients";
 import { setActiveComposer } from "./registry";
@@ -69,6 +70,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         labels,
         toast,
         recipients: recipientSource(client),
+        defaultIdentityId: getDefaultIdentityId,
       }),
   );
   useEffect(() => {

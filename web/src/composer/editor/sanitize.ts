@@ -15,8 +15,10 @@
 // class but the quote and signature markers; remote images (an editor image
 // is either the user's own pasted bytes or a part of the draft).
 //
-//   mode "paste": data: raster images survive, marked for upload (they become cid: parts)
-//   mode "load":  cid: images map to object URLs through `cidUrls`; nothing else loads
+//   mode "paste": pasted or dropped HTML. data: raster images survive, marked for upload
+//                 (they become cid: parts); no class survives (no fake quote or signature)
+//   mode "load":  the composer's own HTML (a draft, a signature, a quote): cid: images map to
+//                 object URLs through `cidUrls`, the quote and signature classes stay
 
 import createDOMPurify, { type Config, type DOMPurify, type UponSanitizeAttributeHookEvent } from "dompurify";
 import { safeLinkUrl } from "../../render/urls";
@@ -108,6 +110,13 @@ function onAttribute(node: Element, data: UponSanitizeAttributeHookEvent): void 
     return;
   }
   if (name === "class") {
+    // Quote and signature markers are Postern's own, kept only on what the
+    // composer wrote (a draft, a signature, a quote): pasted or dropped HTML
+    // cannot pass its text off as a quote or a signature.
+    if (options.mode === "paste") {
+      data.keepAttr = false;
+      return;
+    }
     const kept = value.split(/\s+/).filter((c) => KEPT_CLASSES.has(c));
     if (kept.length) data.attrValue = kept.join(" ");
     else data.keepAttr = false;

@@ -27,6 +27,8 @@ export interface ComposerDeps {
   recipients: RecipientSource;
   publish?: (change: MailChange) => void;
   navigate?: (route: Route) => void;
+  /** Brief 12's per-device default identity, for new messages. */
+  defaultIdentityId?: () => Id | null;
   /** Whether the conversation `threadId` is on screen with its inline reply slot. */
   hasInlineSlot?: (threadId: Id) => boolean;
   /** The window's width, to fit docked composers side by side. */
@@ -41,8 +43,8 @@ export const DOCKED_WIDTH = 560;
 export const MINIMISED_WIDTH = 276;
 
 export interface ThreadDrafts {
-  /** Every message of the conversation, oldest first: id and whether it is a draft. */
-  messages: { id: Id; draft: boolean }[];
+  /** Every message of the conversation, oldest first: id, its labels, and whether it is a draft (`$draft` in Drafts). */
+  messages: { id: Id; draft: boolean; mailboxIds: Record<Id, true> }[];
 }
 
 export class ComposerStore {
@@ -131,12 +133,11 @@ export class ComposerStore {
   /** Open a composer (or bring back the one already holding that draft or reply). */
   open(options: ComposeOptions = {}): ComposeSession {
     const mode = options.mode ?? "new";
-    if (options.draftId) {
-      const existing = this.forDraft(options.draftId);
-      if (existing) {
-        this.#reveal(existing);
-        return existing;
-      }
+    // One composer per draft, whatever opens it: the draft itself, or Reply / Forward pressed on it.
+    const held = options.draftId ? this.forDraft(options.draftId) : options.emailId ? this.forDraft(options.emailId) : undefined;
+    if (held) {
+      this.#reveal(held);
+      return held;
     }
     if (mode !== "new" && options.threadId && !options.draftId) {
       const existing = this.#sessions.find((s) => s.state.threadId === options.threadId && s.state.mode === mode && s.state.sourceId === (options.emailId ?? null) && !s.state.sending);
@@ -213,6 +214,25 @@ export class ComposerStore {
       identities: () => this.identities(),
       draftsMailboxId: () => this.#deps.labels.mailboxIdForRole("drafts"),
       onFirstSave: () => void this.#deps.labels.sync(),
+      onUploadsSettled: (session) => {
+        if (!session.state.closing) return;
+        const failed = [...session.state.files, ...session.state.inline].find((f) => f.status === "error");
+        if (failed) {
+          session.setClosing(false);
+          session.setSendError(`“${failed.name}” didn't upload, so the draft was not closed. Remove it or attach it again.`);
+          return;
+        }
+        void this.close(session.key);
+      },
+      defaultIdentityId: () => this.#deps.defaultIdentityId?.() ?? null,
+      claimDraft: (session, draftId) => {
+        const other = this.#sessions.find((s) => s !== session && s.draftIds().includes(draftId));
+        if (!other) return true;
+        this.#remove(session);
+        session.dispose();
+        this.#reveal(other);
+        return false;
+      },
       ...this.#deps.session,
     };
   }
@@ -241,6 +261,12 @@ export class ComposerStore {
   async close(key: string): Promise<void> {
     const session = this.get(key);
     if (!session || session.state.sending) return;
+    if (session.uploading()) {
+      // Closing now would save the draft without the files (and stop their uploads):
+      // keep the window and close it, saved, once they are up.
+      session.setClosing(true);
+      return;
+    }
     session.captureBody();
     this.#remove(session);
     if (session.isEmpty() || session.state.status !== "ready") {
@@ -265,7 +291,8 @@ export class ComposerStore {
   /** Discard the draft (the window asks first). */
   async discard(key: string): Promise<void> {
     const session = this.get(key);
-    if (!session) return;
+    // A message held for Undo or being sent is not a draft to discard (Undo brings it back first).
+    if (!session || session.state.sending || this.outbox.has(key)) return;
     this.#remove(session);
     const ids = session.draftIds();
     for (const id of ids) this.#gone.add(id);
@@ -380,8 +407,31 @@ export class ComposerStore {
     const messages = order
       .map((id) => byId.get(id))
       .filter((e): e is NonNullable<typeof e> => e !== undefined)
-      .map((e) => ({ id: e.id, draft: e.keywords?.[DRAFT] === true && (!drafts || e.mailboxIds?.[drafts] === true) }));
+      .map((e) => ({ id: e.id, draft: e.keywords?.[DRAFT] === true && (!drafts || e.mailboxIds?.[drafts] === true), mailboxIds: e.mailboxIds ?? {} }));
     return { messages };
+  }
+
+  /**
+   * The draft to open in a window when a conversation opened from a list is
+   * nothing but drafts, as that list shows it: Trash and Spam show only their
+   * own messages, every other view leaves Trash and Spam out (a reply whose
+   * original was deleted is a draft on its own). Null when it is a real
+   * conversation.
+   */
+  async draftOnlyConversation(threadId: Id, view: "trash" | "spam" | null, signal?: AbortSignal): Promise<Id | null> {
+    const { messages } = await this.threadDrafts(threadId, signal);
+    const trash = this.#deps.labels.mailboxIdForRole("trash");
+    const junk = this.#deps.labels.mailboxIdForRole("junk");
+    const inView = messages.filter((m) => {
+      const inTrash = !!trash && m.mailboxIds[trash] === true;
+      const inJunk = !!junk && m.mailboxIds[junk] === true;
+      if (view === "trash") return inTrash;
+      if (view === "spam") return inJunk;
+      return !inTrash && !inJunk;
+    });
+    if (inView.length === 0 || !inView.every((m) => m.draft)) return null;
+    const newest = inView[inView.length - 1] as { id: Id };
+    return this.isGone(newest.id) ? null : newest.id;
   }
 
   /** Sign-out: stop every composer. Held messages are not sent (they stay in Drafts). */

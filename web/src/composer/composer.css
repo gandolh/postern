@@ -348,6 +348,25 @@
   background: var(--color-danger-soft);
 }
 
+.compose-notice {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) var(--space-4) 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  color: var(--color-on-warning-soft);
+  background: var(--color-warning-soft);
+}
+
+.compose-notice .compose-link-btn {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .compose-body {
   display: flex;
   flex: 1 1 auto;

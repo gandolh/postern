@@ -10,6 +10,7 @@
 
 import {
   buildDraftEmail,
+  escapeHtml,
   draftParts,
   forwardAttachments,
   forwardQuote,
@@ -103,6 +104,8 @@ export interface ComposeSnapshot {
   sendError: string | null;
   /** Held in the outbox or being submitted: the window is hidden. */
   sending: boolean;
+  /** Save & close was asked while files upload: the window closes (and saves) once they finish. */
+  closing: boolean;
   /** A request to move focus into the window (bumped `n` each time). */
   focus: { target: FocusTarget; n: number } | null;
 }
@@ -112,6 +115,8 @@ export type FocusTarget = "to" | "body" | "window";
 
 /** What the editor offers the session while it is mounted. */
 export interface EditorBridge {
+  /** The editor instance the bridge belongs to (a remounting window has two for a moment). */
+  readonly owner: object;
   read(): SerializedBody;
   /** Replace the signature block (null removes it). */
   setSignature(html: string | null): void;
@@ -130,6 +135,16 @@ export interface SessionDeps {
   draftsMailboxId(): Id | undefined;
   /** After the first save (the Drafts count changed). */
   onFirstSave(session: ComposeSession): void;
+  /** Every upload has finished (or failed): a pending close can go ahead. */
+  onUploadsSettled?(session: ComposeSession): void;
+  /**
+   * This session found that it is opening an existing draft (Reply pressed on
+   * a draft). False when another composer already holds that draft: the store
+   * has then closed this one and brought the other back.
+   */
+  claimDraft?(session: ComposeSession, draftId: Id): boolean;
+  /** The identity to start a new message from (brief 12's per-device default), if set. */
+  defaultIdentityId?(): Id | null;
   upload?: (client: JmapClient, file: Blob, options: UploadFileOptions) => Promise<{ blobId: Id; type: string; size: number }>;
   /** Unique strings (Message-ID, cids, keys). */
   unique?: () => string;
@@ -229,6 +244,7 @@ export class ComposeSession {
       saveError: null,
       sendError: null,
       sending: false,
+      closing: false,
       focus: null,
     };
     this.#saver = new Autosaver(() => this.#save(), {
@@ -282,7 +298,9 @@ export class ComposeSession {
   async load(options: ComposeOptions): Promise<void> {
     try {
       const identities = await this.#deps.identities();
-      this.#set({ identities, identityId: identities[0]?.id ?? null });
+      const preferred = this.#deps.defaultIdentityId?.();
+      const start = identities.find((i) => i.id === preferred) ?? identities[0];
+      this.#set({ identities, identityId: start?.id ?? null });
       const draftId = options.draftId ?? this.#state.draftId;
       if (draftId) await this.#loadDraft(draftId);
       else if (options.emailId && this.#state.mode !== "new") await this.#loadSource(options.emailId, this.#state.mode, options);
@@ -323,8 +341,10 @@ export class ComposeSession {
   async #loadSource(emailId: Id, mode: ComposeMode, options: ComposeOptions): Promise<void> {
     const original = await loadComposeSource(this.#deps.client, emailId, this.#abort.signal);
     if (!original) throw new Error("gone");
-    // Reply on one's own draft (the newest message of a conversation can be it): open the draft.
+    // Reply on one's own draft (the newest message of a conversation can be it): open the draft,
+    // unless another composer has it already (one composer per draft, or two would save over each other).
     if (original.keywords?.["$draft"]) {
+      if (this.#deps.claimDraft && !this.#deps.claimDraft(this, original.id)) return;
       this.#set({ draftId: original.id });
       await this.#loadDraft(original.id, original);
       return;
@@ -531,6 +551,8 @@ export class ComposeSession {
   }
 
   setPlacement(placement: Placement): void {
+    // The window may remount its editor somewhere else (inline <-> docked): keep what is typed.
+    if (placement !== this.#state.placement) this.captureBody();
     this.#set({ placement });
   }
 
@@ -554,6 +576,17 @@ export class ComposeSession {
 
   bindEditor(bridge: EditorBridge): void {
     this.#editor = bridge;
+  }
+
+  /**
+   * The body a (re)mounting editor should load. When another editor of this
+   * session is still bound (a window moving: inline to docked, a re-render
+   * that remounts it), its live content is the truth, not the stored HTML,
+   * which is only as new as the last save or capture.
+   */
+  bodyForEditor(owner: object): string {
+    if (this.#editor && this.#editor.owner !== owner && !this.#state.plain) this.captureBody();
+    return this.#state.html;
   }
 
   /** The editor is going away: keep what it holds. */
@@ -651,6 +684,16 @@ export class ComposeSession {
       if (this.#disposed) return;
       this.#patchFile(list, item.key, { status: "error", error: explainUploadError(err) });
     }
+    if (!this.#disposed && !this.uploading()) this.#deps.onUploadsSettled?.(this);
+  }
+
+  /** Files or inline images still uploading. */
+  uploading(): boolean {
+    return [...this.#state.files, ...this.#state.inline].some((f) => f.status === "uploading");
+  }
+
+  setClosing(closing: boolean): void {
+    this.#set({ closing });
   }
 
   removeFile(key: string): void {
@@ -685,6 +728,10 @@ export class ComposeSession {
     const valid = (list: readonly Recipient[]) => list.filter((r) => r.valid).map((r) => ({ name: r.name, email: r.email }));
     const quote = s.quote;
     const usedCids = new Set(body.cids);
+    // An image still uploading (or failed) has no part yet: never write a cid: without its part.
+    // It goes into the draft with the save its upload finishes.
+    const ready = new Set(s.inline.filter((f) => f.status === "done" && f.blobId && f.cid).map((f) => escapeHtml(f.cid as string)));
+    const html = body.html.replace(/<img src="cid:([^"]*)"[^>]*>/g, (tag, cid: string) => (ready.has(cid) ? tag : ""));
     return {
       from,
       to: valid(s.to),
@@ -692,7 +739,7 @@ export class ComposeSession {
       bcc: valid(s.bcc),
       replyTo: identity?.replyTo ?? null,
       subject: s.subject,
-      html: s.plain ? null : quote ? `${body.html}<br>${quote.html}` : body.html,
+      html: s.plain ? null : quote ? `${html}<br>${quote.html}` : html,
       text: quote ? `${body.text}\n\n${quote.text}` : body.text,
       attachments: s.files.filter((f) => f.status === "done" && f.blobId).map((f) => ({ blobId: f.blobId as Id, type: f.type, name: f.name, size: f.size })),
       inline: s.plain ? [] : s.inline.filter((f) => f.status === "done" && f.blobId && f.cid && usedCids.has(f.cid)).map((f) => ({ blobId: f.blobId as Id, type: f.type, name: f.name, cid: f.cid })),

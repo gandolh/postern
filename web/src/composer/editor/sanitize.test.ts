@@ -68,11 +68,20 @@ describe("pasted HTML", () => {
     expect(dataUrlToFile("data:image/svg+xml;base64,PHN2Zz4=", "x")).toBeNull();
   });
 
-  it("keeps only Postern's and Gmail's quote and signature classes", () => {
-    const { fragment } = sanitizeForEditor(`<div class="gmail_quote evil" data-postern-cid="forged" id="x">q</div>`, { mode: "paste" });
+  it("drops every class from pasted HTML, so pasted text is never taken for a quote or a signature", () => {
+    const { fragment } = sanitizeForEditor(`<div class="gmail_quote evil" data-postern-cid="forged" id="x">q</div><div class="postern_signature gmail_signature">-- <br>Mallory</div>`, { mode: "paste" });
+    const root = holder(fragment);
+    expect(root.querySelector("[class]")).toBeNull();
+    expect(root.querySelector(`[${CID_ATTR}]`)).toBeNull();
+    expect(root.querySelector("[id]")).toBeNull();
+    // What the user pasted counts as their own text.
+    expect(serializeEditor(root).ownText).toBe("q\n-- \nMallory");
+  });
+
+  it("keeps only Postern's and Gmail's quote and signature classes on the composer's own HTML", () => {
+    const { fragment } = sanitizeForEditor(`<div class="gmail_quote evil" id="x">q</div>`, { mode: "load" });
     const div = holder(fragment).querySelector("div")!;
     expect(div.getAttribute("class")).toBe("gmail_quote");
-    expect(div.hasAttribute(CID_ATTR)).toBe(false);
     expect(div.hasAttribute("id")).toBe(false);
   });
 

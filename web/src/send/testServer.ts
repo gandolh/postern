@@ -19,7 +19,7 @@ export interface StoredEmail {
   [property: string]: unknown;
 }
 
-export const MAILBOXES = { inbox: "a", drafts: "d", sent: "e" } as const;
+export const MAILBOXES = { inbox: "a", trash: "b", junk: "c", drafts: "d", sent: "e" } as const;
 
 const ACCOUNT = "A";
 

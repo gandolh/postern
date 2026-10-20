@@ -33,8 +33,7 @@ import { serializeEditor } from "./serialize";
 
 export interface EditorProps {
   session: ComposeSession;
-  /** The body to load (outgoing form); loaded on mount and whenever `revision` changes. */
-  html: string;
+  /** Bumped by the session when it replaces the body (a draft loaded, plain text turned rich): the editor reloads. */
   revision: number;
   label: string;
   showToolbar: boolean;
@@ -86,10 +85,12 @@ function textNodes(text: string): DocumentFragment {
   return fragment;
 }
 
-export function Editor({ session, html, revision, label, showToolbar, toolbarId, onAttach, children }: EditorProps) {
+export function Editor({ session, revision, label, showToolbar, toolbarId, onAttach, children }: EditorProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<EditorHistory | null>(null);
   const linkTextRef = useRef<HTMLInputElement>(null);
+  // This editor instance, as the session knows it (see session.bodyForEditor).
+  const [owner] = useState(() => ({}));
   const [formats, setFormats] = useState<ActiveFormats>(NO_FORMATS);
   const [link, setLink] = useState<LinkDraft | null>(null);
   const linkId = useId();
@@ -116,7 +117,9 @@ export function Editor({ session, html, revision, label, showToolbar, toolbarId,
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    root.replaceChildren(sanitizeForEditor(html, { mode: "load", cidUrls: session.cidUrls() }).fragment);
+    // On a remount the window's previous editor may still hold newer text than `html`.
+    const body = session.bodyForEditor(owner);
+    root.replaceChildren(sanitizeForEditor(body, { mode: "load", cidUrls: session.cidUrls() }).fragment);
     history()?.reset();
     // Only when the content is replaced, not on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,6 +130,7 @@ export function Editor({ session, html, revision, label, showToolbar, toolbarId,
     const root = rootRef.current;
     if (!root) return;
     const bridge = {
+      owner,
       read: () => serializeEditor(root),
       setSignature: (sig: string | null) => {
         history()?.record(`sig-${Date.now()}`);
@@ -153,7 +157,7 @@ export function Editor({ session, html, revision, label, showToolbar, toolbarId,
     };
     session.bindEditor(bridge);
     return () => session.unbindEditor(bridge);
-  }, [session, history]);
+  }, [session, history, owner]);
 
   // The browser's own undo and formatting inputs: Postern's history and formatting instead.
   useEffect(() => {
@@ -266,6 +270,27 @@ export function Editor({ session, html, revision, label, showToolbar, toolbarId,
     return img;
   }
 
+  /** Pasted or dropped HTML: sanitised (paste profile), its data: images uploaded as inline parts. */
+  function insertHtml(range: Range, html: string, images: readonly File[]): boolean {
+    const clean = sanitizeForEditor(html, { mode: "paste" });
+    const hasText = (clean.fragment.textContent ?? "").trim() !== "";
+    if (!hasText && images.length > 0) return false;
+    let n = 1;
+    for (const pending of clean.pending) {
+      const file = dataUrlToFile(pending.dataUrl, `pasted-image-${n++}`);
+      if (!file) {
+        pending.img.remove();
+        continue;
+      }
+      const { cid, url } = session.addInlineImage(file);
+      pending.img.setAttribute("src", url);
+      pending.img.setAttribute(CID_ATTR, cid);
+      if (!pending.img.getAttribute("alt")) pending.img.setAttribute("alt", file.name);
+    }
+    insertAt(range, clean.fragment);
+    return true;
+  }
+
   function onPaste(event: ClipboardEvent<HTMLDivElement>): void {
     event.preventDefault();
     const root = rootRef.current;
@@ -275,26 +300,7 @@ export function Editor({ session, html, revision, label, showToolbar, toolbarId,
     history()?.record(`paste-${Date.now()}`);
     const html = data.types.includes("text/html") ? data.getData("text/html") : "";
     const images = Array.from(data.files ?? []).filter((f) => RASTER.test(f.type));
-    if (html) {
-      const clean = sanitizeForEditor(html, { mode: "paste" });
-      const hasText = (clean.fragment.textContent ?? "").trim() !== "";
-      if (hasText || images.length === 0) {
-        let n = 1;
-        for (const pending of clean.pending) {
-          const file = dataUrlToFile(pending.dataUrl, `pasted-image-${n++}`);
-          if (!file) {
-            pending.img.remove();
-            continue;
-          }
-          const { cid, url } = session.addInlineImage(file);
-          pending.img.setAttribute("src", url);
-          pending.img.setAttribute(CID_ATTR, cid);
-          if (!pending.img.getAttribute("alt")) pending.img.setAttribute("alt", file.name);
-        }
-        insertAt(range, clean.fragment);
-        return;
-      }
-    }
+    if (html && insertHtml(range, html, images)) return;
     if (images.length) {
       const fragment = document.createDocumentFragment();
       for (const file of images) fragment.append(imageNode(file));
@@ -320,11 +326,9 @@ export function Editor({ session, html, revision, label, showToolbar, toolbarId,
     const at = range && root.contains(range.startContainer) ? range : (editorRange(root) ?? rangeAtEnd(root));
     history()?.record(`drop-${Date.now()}`);
     const html = data.getData("text/html");
-    if (html) insertAt(at, sanitizeForEditor(html, { mode: "load" }).fragment);
-    else {
-      const text = data.getData("text/plain");
-      if (text) insertAt(at, textNodes(text));
-    }
+    if (html && insertHtml(at, html, [])) return;
+    const text = data.getData("text/plain");
+    if (text) insertAt(at, textNodes(text));
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>): void {

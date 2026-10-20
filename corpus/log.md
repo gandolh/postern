@@ -177,3 +177,15 @@ autocomplete from contacts and from people alice has written to, sender
 hover cards, and a Contacts group in search suggestions. Checked over
 CardDAV. Stalwart's contact quirks are in
 [gmail-on-jmap.md](wiki/gmail-on-jmap.md). [Brief](briefs/done/15-contacts.md).
+
+## [2026-10-20] maintenance | Composer fixed after a review
+
+A review of brief 08 found the composer's sanitising sound and three
+Important bugs: popping out an inline reply lost recent typing, two
+composers could hold one draft and leave duplicates, and closing during an
+upload saved the draft without the file. All fixed with tests, along with
+three Minor ones (marker classes kept on pasted HTML, conversation actions
+touching a hidden reply draft, discard during undo send). New messages now
+start from the per-device default identity. Still open: deleting a
+conversation from the list moves its open reply draft to Trash, and the
+composer's next autosave puts it back (`web/src/actions/plans.ts`).

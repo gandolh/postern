@@ -169,14 +169,23 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   const roles = useMemo(() => JSON.parse(rolesKey) as MailboxRoles, [rolesKey]);
   const scope = useMemo<ConversationScope>(() => ({ kind: scopeKind(label), roles }), [label, roles]);
   const conversation = useMemo<Conversation<ConvMessage>>(() => ({ id: conversationId, messages: snapshot.messages }), [conversationId, snapshot.messages]);
-  // A reply draft sits in the conversation it answers. The composer opens it
-  // inline under the last message (brief 08), so it is not also a card here,
-  // unless the conversation is nothing but drafts.
+  // A reply draft sits in the conversation it answers. The composer opens the
+  // ones in Drafts inline under the last message (brief 08), so those are not
+  // also cards here, unless nothing else is left to show. Any draft shown as a
+  // card the composer leaves alone (it gets the ids through the inline slot).
   const inScope = useMemo(() => shownMessages(conversation, scope), [conversation, scope]);
   const shown = useMemo(() => {
-    const sent = inScope.filter((m) => m.keywords[DRAFT] !== true);
+    const drafts = roles.drafts;
+    const sent = inScope.filter((m) => !(m.keywords[DRAFT] === true && drafts !== undefined && m.mailboxIds[drafts] === true));
     return sent.length > 0 ? sent : inScope;
-  }, [inScope]);
+  }, [inScope, roles.drafts]);
+  // The conversation's own actions (archive, delete, spam, mark unread) leave
+  // the hidden reply draft alone: the inline composer holds it, and moving it
+  // would only have its next autosave bring it back.
+  const acted = useMemo<Conversation<ConvMessage>>(() => {
+    const hidden = new Set(inScope.filter((m) => !shown.includes(m)).map((m) => m.id));
+    return hidden.size === 0 ? conversation : { id: conversationId, messages: snapshot.messages.filter((m) => !hidden.has(m.id)) };
+  }, [conversation, conversationId, snapshot.messages, inScope, shown]);
   const last = shown[shown.length - 1];
   const hiddenCount = snapshot.messages.length - inScope.length;
   const backRoute = useMemo(() => withoutConversation(route), [route]);
@@ -240,32 +249,32 @@ function ConversationBody({ route, label, conversationId, snapshot, loadBodies, 
   const conversationActions = useMemo(
     () => ({
       archive: () => {
-        void actions.archive([conversation], scope);
+        void actions.archive([acted], scope);
         goBack();
       },
       trash: () => {
-        void actions.trash([conversation], scope);
+        void actions.trash([acted], scope);
         goBack();
       },
       reportSpam: () => {
-        void actions.reportSpam([conversation], scope);
+        void actions.reportSpam([acted], scope);
         goBack();
       },
       notSpam: () => {
-        void actions.notSpam([conversation], scope);
+        void actions.notSpam([acted], scope);
         goBack();
       },
       markUnread: () => {
-        void actions.markUnread([conversation], scope);
+        void actions.markUnread([acted], scope);
         goBack();
       },
       deleteForever: () => {
         setConfirmForever(false);
-        void actions.deleteForever([conversation], scope);
+        void actions.deleteForever([acted], scope);
         goBack();
       },
     }),
-    [actions, conversation, scope, goBack],
+    [actions, acted, scope, goBack],
   );
 
   const cardActions = (m: ConvMessage, index: number): MessageCardActions => ({
