@@ -5,10 +5,24 @@
 // (to Trash) reach existing mail; forwarding and "never send to Spam" are
 // about mail still to come.
 
-import { formatSearch, joinWords, type EmailFilter, type FilterActions, type FilterCriteria, type Id, type MethodCaller } from "@postern/jmap";
+import { formatSearch, type EmailFilter, type FilterActions, type FilterCriteria, type Id, type MethodCaller } from "@postern/jmap";
 import type { Conversation, ConversationMessage, ConversationScope } from "../actions/conversation";
 import { applyPatch, planEdits, type MessageEdit, type MessagePlan } from "../actions/patches";
 import { planArchive, planLabels, planRead, planStar, planTrash } from "../actions/plans";
+
+/**
+ * The filter's words as literal search words. The Sieve rule matches them as
+ * plain text, so the search must too: `OR`, `-foo` or `from:x` typed into
+ * "Has the words" would otherwise become operators and widen what the
+ * filter's actions reach.
+ */
+function literalWords(words: readonly string[]): string {
+  return words
+    .map((w) => w.replace(/"/g, "").trim())
+    .filter((w) => w !== "")
+    .map((w) => (/\s|^-|[:(){}]|^(?:OR|AND)$/.test(w) ? `"${w}"` : w))
+    .join(" ");
+}
 
 /** The criteria as a search string (Gmail's operators; the default scope leaves out Spam and Trash). */
 export function criteriaToSearch(c: FilterCriteria): string {
@@ -17,8 +31,8 @@ export function criteriaToSearch(c: FilterCriteria): string {
   if (c.from.length > 0) parts.push(c.from.map((v) => formatSearch({ from: v })).join(" OR "));
   if (c.to.length > 0) parts.push(c.to.map((v) => formatSearch({ to: v })).join(" OR "));
   if (c.subject) parts.push(formatSearch({ subject: c.subject }));
-  if (c.words.length > 0) parts.push(formatSearch({ words: joinWords(c.words) }));
-  if (c.notWords.length > 0) parts.push(formatSearch({ notWords: joinWords(c.notWords) }));
+  if (c.words.length > 0) parts.push(formatSearch({ words: literalWords(c.words) }));
+  if (c.notWords.length > 0) parts.push(formatSearch({ notWords: literalWords(c.notWords) }));
   if (c.hasAttachment) parts.push(formatSearch({ hasAttachment: true }));
   if (c.size) parts.push(formatSearch({ size: c.size }));
   return parts.filter(Boolean).join(" ");

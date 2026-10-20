@@ -21,6 +21,15 @@ describe("the criteria as a search", () => {
     ).toBe('to:"team list" subject:"q3 report" roadmap "big plan" -draft has:attachment larger:2M');
   });
 
+  it("keeps typed words literal, so OR, -word or from: can't widen the search", () => {
+    const search = criteriaToSearch(c({ words: ["invoice", "OR", "-paid", "from:boss"], notWords: ["OR"] }));
+    expect(search).toBe('invoice "OR" "-paid" "from:boss" -"OR"');
+    const parsed = parseSearch(search, { now: new Date(), labels: () => undefined, roles: ROLES });
+    const json = JSON.stringify(parsed.filter);
+    expect(json).not.toContain('"operator":"OR"');
+    expect(json).not.toContain('"from":"boss"');
+  });
+
   it("parses back into an Email/query filter with the default scope", () => {
     const parsed = parseSearch(criteriaToSearch(c({ from: ["bob@postern.test", "carol"], hasAttachment: true })), { now: new Date(), labels: () => undefined, roles: ROLES });
     expect(parsed.warnings).toEqual([]);
