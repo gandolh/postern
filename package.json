@@ -1,0 +1,32 @@
+{
+  "name": "postern",
+  "version": "0.1.0",
+  "description": "A webmail client for Stalwart, built on JMAP.",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "jmap",
+    "web"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsc -b jmap && npm run dev -w @postern/web",
+    "build": "tsc -b && npm run build -w @postern/web",
+    "test": "vitest run",
+    "typecheck": "tsc -b && tsc -p web --noEmit",
+    "lint": "eslint .",
+    "check": "npm run typecheck && npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.1",
+    "eslint": "10.9.1",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.69.0",
+    "vitest": "4.1.11"
+  },
+  "license": "MIT"
+}

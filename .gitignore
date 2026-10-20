@@ -21,3 +21,8 @@ dev/data/
 # Editors
 .vscode/
 .idea/
+
+# Browser test output
+web/e2e/screenshots/
+test-results/
+playwright-report/

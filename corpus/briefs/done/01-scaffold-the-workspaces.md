@@ -43,3 +43,13 @@ Postern starts empty. This brief lays down the house layout
   `/webmail/`.
 - `npm run dev` serves the page at `http://localhost:5173/webmail/`.
 - `bash corpus/lint.sh` is clean.
+
+## Outcome (2026-10-20)
+
+Built as specified. `@postern/jmap` builds with `tsc -b` to `jmap/dist` and the
+web app resolves it from there, as Satchel's `shared` package does, so `dev`,
+`build` and `typecheck` run `tsc -b` first. ESLint's `no-restricted-imports`
+keeps `react`, `react-dom` and `@postern/web` out of `jmap/`, and its tsconfig
+has no DOM lib. The Vite proxy reads `POSTERN_DEV_API` from the process
+environment only. The `.gitignore` from bootstrap gained the browser-test
+output folders.

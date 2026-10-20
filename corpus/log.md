@@ -20,3 +20,12 @@ Researched against the Stalwart 0.16 source the same day:
 Seeded the wiki (overview, architecture, decisions, security, gmail-on-jmap,
 design, glossary, status, open questions), filed briefs 01-18, and captured
 four later features as todos.
+
+## [2026-10-20] done | Brief 01: the workspaces
+
+npm workspaces `jmap` and `web` on Satchel's pinned versions, with `check`,
+`build`, `dev`, `lint`, `test` and `typecheck` scripts. Vite builds to
+`web/dist` with base `/webmail/` and proxies `/webmail-api` to
+`POSTERN_DEV_API` (default `http://127.0.0.1:18080`). Verified: `npm run
+check` green, built asset URLs start with `/webmail/`, corpus lint clean.
+[Brief](briefs/done/01-scaffold-the-workspaces.md).

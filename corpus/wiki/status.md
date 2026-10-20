@@ -11,7 +11,7 @@ does not exist yet (the owner creates it).
 ## Briefs, in the order they run
 
 **Wave 1: foundations**
-- [01](../briefs/todo/01-scaffold-the-workspaces.md): npm workspaces, house stack, Vite base `/webmail/`, lint, test, typecheck.
+- [01](../briefs/done/01-scaffold-the-workspaces.md): npm workspaces, house stack, Vite base `/webmail/`, lint, test, typecheck. **Done 2026-10-20.**
 - [02](../briefs/todo/02-local-mail-server.md): a Stalwart in Docker with test accounts and seeded mail, hostile mail included. After 01.
 - [03](../briefs/todo/03-jmap-client.md): the typed JMAP client: session and URL rebasing, batching, methods, blobs, changes. After 02.
 - [04](../briefs/todo/04-sign-in.md): sign-in through Stalwart (OAuth + PKCE + TOTP), tokens in memory, sign-out. After 03.
