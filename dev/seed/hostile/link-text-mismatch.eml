@@ -1,0 +1,19 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] link text does not match target
+Date: Sun, 20 Sep 2026 09:10:00 +0000
+Message-ID: <link-text-mismatch@hostile.postern.test>
+X-Postern-Fixture: hostile/link-text-mismatch
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>link-text-mismatch</b>. Each link shows one URL as its text and points somewhere else. Postern must flag the mismatch.</p>
+<ul>
+<li><a href="https://evil.test/login">https://accounts.example.com/login</a></li>
+<li><a href="https://evil.test/pay">Visit example.org to pay your invoice</a></li>
+<li><a href="https://evil.test/track">https://example.com</a> &mdash; text is a bare trusted-looking host</li>
+<li><a href="https://sub.evil.test/x">example.com/account/settings</a></li>
+</ul>
+</body></html>

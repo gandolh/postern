@@ -1,0 +1,45 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] SVG attachment with script
+Date: Sun, 20 Sep 2026 08:15:00 +0000
+Message-ID: <svg-attachment@hostile.postern.test>
+X-Postern-Fixture: hostile/svg-attachment
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_fixture_svg"
+
+--=_fixture_svg
+Content-Type: multipart/related; boundary="=_fixture_svg_rel"
+
+--=_fixture_svg_rel
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>svg-attachment</b>. The attached SVG carries a script; it must download, never render as a document.</p>
+<p>Inline reference: <img src="cid:chart-svg@hostile.postern.test" alt="chart" width="120" height="60"></p>
+<p>As an object: <object data="cid:chart-svg@hostile.postern.test" type="image/svg+xml"></object></p>
+</body></html>
+
+--=_fixture_svg_rel
+Content-Type: image/svg+xml; name="chart-inline.svg"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="chart-inline.svg"
+Content-ID: <chart-svg@hostile.postern.test>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60" onload="window.__POSTERN_PWNED = 'svg-attachment-inline'"><script>window.__POSTERN_PWNED = "svg-attachment-inline"; try { top.__POSTERN_PWNED = "svg-attachment-inline"; } catch (e) {}</script><rect width="120" height="60" fill="#93c5fd"/></svg>
+
+--=_fixture_svg_rel--
+
+--=_fixture_svg
+Content-Type: image/svg+xml; name="quarterly-chart.svg"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="quarterly-chart.svg"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150" onload="window.__POSTERN_PWNED = 'svg-attachment-onload'">
+  <script>window.__POSTERN_PWNED = "svg-attachment"; try { parent.__POSTERN_PWNED = "svg-attachment"; } catch (e) {} try { top.__POSTERN_PWNED = "svg-attachment"; } catch (e) {}</script>
+  <rect width="300" height="150" fill="#bbf7d0"/>
+  <text x="20" y="80">Postern fixture: svg-attachment</text>
+</svg>
+
+--=_fixture_svg--

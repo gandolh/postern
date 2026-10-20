@@ -1,0 +1,16 @@
+From: "Account Support" <attacker@evil.test>
+Reply-To: "Account Support" <attacker@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] forged display name
+Date: Sun, 20 Sep 2026 09:00:00 +0000
+Message-ID: <forged-sender@hostile.postern.test>
+X-Postern-Fixture: hostile/forged-sender
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>forged-sender</b>. The display name claims to be support; the real address is attacker@evil.test. Postern must always show the real address.</p>
+<p>A second trick: a display name that is itself a different email address.</p>
+<p>See the From header: the name reads like a trusted team, the address does not match.</p>
+</body></html>

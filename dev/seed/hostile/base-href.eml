@@ -1,0 +1,18 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] base href rewrites links
+Date: Sun, 20 Sep 2026 08:45:00 +0000
+Message-ID: <base-href@hostile.postern.test>
+X-Postern-Fixture: hostile/base-href
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><head>
+<base href="https://evil.test/" target="_blank">
+</head><body>
+<p>Postern hostile-mail fixture <b>base-href</b>. The base must not turn these relative links and images into requests to evil.test.</p>
+<p><a href="account/settings">This looks internal but resolves against the base</a></p>
+<p><img src="pixel.gif" width="1" height="1" alt=""></p>
+<form action="collect"><input name="q"><button>Search</button></form>
+</body></html>

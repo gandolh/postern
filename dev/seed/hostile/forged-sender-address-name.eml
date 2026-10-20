@@ -1,0 +1,15 @@
+From: "security@bank.example.com" <attacker@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] display name that is an email address
+Date: Sun, 20 Sep 2026 09:02:00 +0000
+Message-ID: <forged-sender-address-name@hostile.postern.test>
+X-Postern-Fixture: hostile/forged-sender-address-name
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Postern hostile-mail fixture: forged-sender-address-name.
+
+The display name is the string "security@bank.example.com", but the real
+sending address is attacker@evil.test. A client that shows only the display
+name would mislead the reader. Postern must show the real address.

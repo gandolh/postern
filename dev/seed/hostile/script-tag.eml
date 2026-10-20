@@ -1,0 +1,20 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] script tags
+Date: Sun, 20 Sep 2026 08:00:00 +0000
+Message-ID: <script-tag@hostile.postern.test>
+X-Postern-Fixture: hostile/script-tag
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><head>
+<script>window.__POSTERN_PWNED = "script-tag"; try { parent.__POSTERN_PWNED = "script-tag"; } catch (e) {} try { top.__POSTERN_PWNED = "script-tag"; } catch (e) {}</script>
+<script src="https://evil.test/payload.js"></script>
+</head><body>
+<p>Postern hostile-mail fixture <b>script-tag</b>. Nothing on this page may run.</p>
+<SCRIPT>window.__POSTERN_PWNED = "script-tag-upper";</SCRIPT>
+<script type="module">window.__POSTERN_PWNED = "script-tag-module";</script>
+<table><tr><td><script>window.__POSTERN_PWNED = "script-tag-table";</script>cell</td></tr></table>
+<noscript><p>noscript content</p></noscript>
+</body></html>

@@ -1,0 +1,12 @@
+{"@type":"reconcile","object":"NetworkListener","matchOn":["name"],"value":{"smtp":{"name":"smtp","protocol":"smtp","bind":{"0.0.0.0:25":true},"useTls":false},"imap":{"name":"imap","protocol":"imap","bind":{"0.0.0.0:143":true},"useTls":false},"http":{"name":"http","protocol":"http","bind":{"0.0.0.0:8080":true},"useTls":false}}}
+{"@type":"reconcile","object":"Tracer","matchOn":"*","value":{"console":{"@type":"Stdout","enable":true,"level":"info","ansi":false,"multiline":false,"buffered":false,"lossy":false,"events":{},"eventsPolicy":"exclude"}}}
+{"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"postern":{"name":"postern.test","certificateManagement":{"@type":"Manual"},"dkimManagement":{"@type":"Automatic"},"dnsManagement":{"@type":"Manual"},"subAddressing":{"@type":"Enabled"}}}}
+{"@type":"update","object":"SystemSettings","value":{"defaultHostname":"mail.postern.test","defaultDomainId":"#postern"}}
+{"@type":"update","object":"Security","value":{"authBanPeriod":60000,"loiterBanPeriod":60000,"abuseBanPeriod":60000,"scanBanPeriod":60000}}
+{"@type":"upsert","object":"AllowedIp","matchOn":["address"],"value":{"gateway":{"address":"10.89.40.1","reason":"Docker Desktop's gateway: every connection from this machine arrives from it, so it is never banned or rate limited"}}}
+{"@type":"update","object":"Imap","value":{"allowPlainTextAuth":true}}
+{"@type":"update","object":"Http","value":{"rateLimitAuthenticated":null,"rateLimitAnonymous":null}}
+{"@type":"update","object":"Jmap","value":{"maxUploadCount":100000,"uploadQuota":4000000000}}
+{"@type":"update","object":"SpamSettings","value":{"scoreSpam":100.0}}
+{"@type":"update","object":"Asn","value":{"@type":"Disabled"}}
+{"@type":"create","object":"Action","value":{"reload":{"@type":"ReloadSettings"}}}

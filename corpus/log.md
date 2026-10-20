@@ -29,3 +29,15 @@ npm workspaces `jmap` and `web` on Satchel's pinned versions, with `check`,
 `POSTERN_DEV_API` (default `http://127.0.0.1:18080`). Verified: `npm run
 check` green, built asset URLs start with `/webmail/`, corpus lint clean.
 [Brief](briefs/done/01-scaffold-the-workspaces.md).
+
+## [2026-10-20] done | Brief 02: a local Stalwart with seeded mail
+
+`dev/` runs Stalwart v0.16.25 and its CLI in Docker on loopback ports 18080
+(HTTP), 12525 (SMTP) and 11143 (IMAP). `npm run dev:mail` creates alice and
+bob with passwords in the git-ignored `dev/.env`, and `npm run dev:seed`
+imports about 2,800 messages for alice, including 17 hostile fixtures and the
+counts in `dev/seed/manifest.json`. Stalwart creates no All Mail mailbox and
+cannot search headers; both are now in
+[gmail-on-jmap.md](wiki/gmail-on-jmap.md). Verified: session 200, label counts
+match the manifest, IMAP and SMTP work, no secret in tracked files.
+[Brief](briefs/done/02-local-mail-server.md).

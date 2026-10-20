@@ -1,6 +1,6 @@
 ---
 summary: Which Gmail feature maps to which JMAP object or method on Stalwart 0.16, and whether it is native, client-side, needs checking, or impossible without server work. Conversations, labels and archive, stars and unread, search operators, drafts and sending, undo send, signatures, vacation, filters, spam, contacts, push, attachments, quota, and the Gmail features deferred to todos. Read before writing or working any feature brief.
-updated: 2026-10-09
+updated: 2026-10-20
 ---
 
 # Gmail on JMAP
@@ -49,3 +49,19 @@ calendars, principals, mail:share, websocket, plus Web Push for
 - **Postern has no server state of its own.** Anything that must survive the
   browser goes into a JMAP object. A preference that cannot (label colours,
   density) is per device unless brief 09 or 12 finds a home for it.
+
+## What Stalwart 0.16.25 actually does (found in brief 02, 2026-10-20)
+
+- **No All Mail by default.** A new account gets Inbox, Sent Items, Drafts,
+  Junk Mail and Deleted Items, but no archive-role mailbox. Postern must create
+  one ("Archive", role `archive`) the first time it needs it, on the owner's
+  real account too. Always find system labels by `role`, never by name.
+- **No header search.** `Email/query` with a `header` condition returns
+  nothing, for `Message-ID` and custom headers alike. `from`, `to`, `subject`,
+  `text`, `inMailbox` and the keyword conditions work. Gmail's `rfc822msgid:`
+  has no server side.
+- **Threading needs the subject too.** A reply joins a conversation only when
+  its references match and its normalised subject matches. A reply that
+  changes the subject starts a new conversation.
+- **Session URLs name Stalwart's own host** (`https://mail.<host>/jmap/...`,
+  https even without TLS), so the client always rebases them.

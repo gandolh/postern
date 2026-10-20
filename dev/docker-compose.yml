@@ -1,0 +1,76 @@
+# Postern's local mail server: a Stalwart to develop and test against, never
+# the real mailbox. Run it through `npm run dev:mail` (dev/setup.sh), which
+# writes dev/.env first; dev/README.md has the rest.
+#
+# The shape is production's (../vps-deploy/infrastructure/mail/): the same
+# image, `config.json` saying only where the database is, and every other
+# setting in `plan.ndjson`, applied with the CLI below. What dev leaves out: the
+# recursive resolver (no spam blocklists to query), PROXY-protocol trust (no
+# HAProxy in front), ACME and TLS (plain text on loopback only).
+#
+# Every port is published on 127.0.0.1. Docker here is Docker Desktop, so
+# `network_mode: host` would land in the Desktop VM, not on this machine.
+
+name: postern-dev
+
+services:
+  stalwart:
+    image: stalwartlabs/stalwart:v0.16.25
+    restart: unless-stopped
+    environment:
+      # The admin login for the web admin and the CLI. Random, from dev/.env.
+      STALWART_RECOVERY_ADMIN: "admin:${STALWART_ADMIN_PASSWORD:?STALWART_ADMIN_PASSWORD is not set; run npm run dev:mail}"
+      STALWART_HEALTHCHECK_URL: http://127.0.0.1:8080/healthz/live
+    ports:
+      - "127.0.0.1:18080:8080" # HTTP: JMAP, web admin, OAuth
+      - "127.0.0.1:12525:25"   # SMTP, plain text
+      - "127.0.0.1:11143:143"  # IMAP, plain text
+    volumes:
+      - ./config.json:/etc/stalwart/config.json:ro
+      - ./data/stalwart:/var/lib/stalwart
+    networks:
+      - mail
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+
+  # --- tools: run on demand by dev/setup.sh, never started by `up` -----------
+
+  # Applies plan.ndjson through Stalwart's management API.
+  cli:
+    image: stalwartlabs/cli:1.0.13
+    profiles: ["tools"]
+    environment:
+      STALWART_URL: http://stalwart:8080
+      STALWART_USER: admin
+      STALWART_PASSWORD: "${STALWART_ADMIN_PASSWORD:?STALWART_ADMIN_PASSWORD is not set}"
+    volumes:
+      - ./plan.ndjson:/plan/plan.ndjson:ro
+    networks:
+      - mail
+
+  # Creates the store directory and hands it to the uid Stalwart runs as (2000),
+  # as production's helper does. `dev:mail:reset` runs it with a `rm -rf`
+  # instead, because the store's files belong to 2000 and this machine's user
+  # cannot delete them.
+  data-owner:
+    image: stalwartlabs/stalwart:v0.16.25
+    profiles: ["tools"]
+    user: "0"
+    entrypoint: ["sh", "-c", "mkdir -p /mnt/data/stalwart && chown 2000:2000 /mnt/data/stalwart"]
+    network_mode: none
+    volumes:
+      - ./data:/mnt/data
+
+# A FIXED subnet, because plan.ndjson allow-lists its gateway: Docker Desktop
+# hands every connection from this machine to Stalwart from the gateway
+# address, so a few wrong passwords in a test would otherwise ban the whole
+# machine. Change the subnet, change the AllowedIp in plan.ndjson with it.
+networks:
+  mail:
+    ipam:
+      config:
+        - subnet: 10.89.40.0/24
+          gateway: 10.89.40.1

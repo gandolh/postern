@@ -1,0 +1,18 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] inline event handlers
+Date: Sun, 20 Sep 2026 08:05:00 +0000
+Message-ID: <event-handlers@hostile.postern.test>
+X-Postern-Fixture: hostile/event-handlers
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body onload="window.__POSTERN_PWNED = 'event-handlers-onload'">
+<p>Postern hostile-mail fixture <b>event-handlers</b>. No handler may fire.</p>
+<img src="https://evil.test/missing.png" onerror="window.__POSTERN_PWNED = 'event-handlers-onerror'; try { top.__POSTERN_PWNED = 'event-handlers-onerror'; } catch (e) {}" alt="broken image">
+<p><a href="https://example.com/" onclick="window.__POSTERN_PWNED = 'event-handlers-onclick'; return false;">A link with onclick</a></p>
+<div onmouseover="window.__POSTERN_PWNED = 'event-handlers-onmouseover'" style="padding:8px;border:1px solid #ccc">Hover me</div>
+<details open ontoggle="window.__POSTERN_PWNED = 'event-handlers-ontoggle'"><summary>details</summary>ontoggle fires on open</details>
+<input autofocus onfocus="window.__POSTERN_PWNED = 'event-handlers-onfocus'" value="autofocus + onfocus">
+</body></html>

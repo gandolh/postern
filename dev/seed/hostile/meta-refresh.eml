@@ -1,0 +1,16 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] meta refresh
+Date: Sun, 20 Sep 2026 08:30:00 +0000
+Message-ID: <meta-refresh@hostile.postern.test>
+X-Postern-Fixture: hostile/meta-refresh
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><head>
+<meta http-equiv="refresh" content="0; url=https://evil.test/phish">
+<meta http-equiv="Refresh" content="2;URL='https://evil.test/phish-quoted'">
+</head><body>
+<p>Postern hostile-mail fixture <b>meta-refresh</b>. The page must not navigate itself anywhere.</p>
+</body></html>

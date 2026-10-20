@@ -55,3 +55,21 @@ machine.
 - Alice's Inbox holds the seeded conversations. `Email/query` with
   `collapseThreads` counts the expected threads.
 - No password appears in any committed file.
+
+## Outcome (2026-10-20)
+
+Built, with IMAP published as well (`127.0.0.1:11143`, plain) so later briefs
+can check from an IMAP client. Departures and findings:
+
+- Stalwart 0.16 creates no archive-role mailbox, so `dev/accounts.ts` creates
+  "Archive" (Postern's All Mail) for each account. Its system mailbox names are
+  Inbox, Sent Items, Drafts, Junk Mail, Deleted Items: resolve by `role`.
+- The seed is TypeScript split across `dev/seed/*.ts`, generating most mail at
+  seed time; `dev/seed/manifest.json` holds the expected counts and the 17
+  hostile fixtures (`X-Postern-Fixture` header, `Hostile` label).
+- Docker Desktop's gateway, on a pinned subnet, is allow-listed in `dev/plan.ndjson`
+  so wrong-password tests never ban the host. The spam score threshold is
+  raised to 100, because unauthenticated loopback delivery scores 13-15.
+- `Email/query` cannot filter on `Message-ID` or custom headers in 0.16, so
+  seeding is idempotent by "the account already has mail".
+- The root `typecheck` script also checks `dev/` (`tsc -p dev`).

@@ -1,0 +1,22 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] javascript: links
+Date: Sun, 20 Sep 2026 08:20:00 +0000
+Message-ID: <javascript-link@hostile.postern.test>
+X-Postern-Fixture: hostile/javascript-link
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>javascript-link</b>. None of these links may run script when clicked.</p>
+<ul>
+<li><a href="javascript:window.__POSTERN_PWNED='javascript-link';void(0)">plain javascript: link</a></li>
+<li><a href="JaVaScRiPt:window.__POSTERN_PWNED='javascript-link-case';void(0)">mixed-case scheme</a></li>
+<li><a href="&#106;avascript:window.__POSTERN_PWNED='javascript-link-entity';void(0)">entity-encoded scheme</a></li>
+<li><a href="java&#x09;script:window.__POSTERN_PWNED='javascript-link-tab';void(0)">tab inside the scheme</a></li>
+<li><a href="  javascript:window.__POSTERN_PWNED='javascript-link-space';void(0)">leading spaces</a></li>
+</ul>
+<map name="m"><area shape="rect" coords="0,0,100,40" href="javascript:window.__POSTERN_PWNED='javascript-link-area'" alt="area"></map>
+<img src="https://evil.test/map.png" usemap="#m" width="100" height="40" alt="image map">
+</body></html>

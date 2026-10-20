@@ -1,0 +1,19 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] punycode and mixed-script links
+Date: Sun, 20 Sep 2026 09:15:00 +0000
+Message-ID: <punycode-domain@hostile.postern.test>
+X-Postern-Fixture: hostile/punycode-domain
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>punycode-domain</b>. These links use punycode and a Cyrillic look-alike domain. Postern must flag them.</p>
+<ul>
+<li><a href="https://xn--80ak6aa92e.test/login">apple.test look-alike (punycode xn--80ak6aa92e)</a></li>
+<li><a href="https://xn--pple-43d.test/">аpple.test with a Cyrillic a (xn--pple-43d)</a></li>
+<li><a href="https://раypal.test/signin">раypal.test (Cyrillic р and а, mixed script)</a></li>
+<li><a href="https://xn--80a1acny.test/">mixed-script IDN</a></li>
+</ul>
+</body></html>

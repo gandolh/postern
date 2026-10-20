@@ -1,0 +1,17 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] data:text/html links
+Date: Sun, 20 Sep 2026 08:25:00 +0000
+Message-ID: <data-html-link@hostile.postern.test>
+X-Postern-Fixture: hostile/data-html-link
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>data-html-link</b>. A data: document must never open from a message.</p>
+<p><a href="data:text/html;base64,PHNjcmlwdD53aW5kb3cuX19QT1NURVJOX1BXTkVEPSJkYXRhLWh0bWwtbGluayI7PC9zY3JpcHQ+">base64 data:text/html link</a></p>
+<p><a href="data:text/html,%3Cscript%3Ewindow.__POSTERN_PWNED%3D%22data-html-link-plain%22%3C%2Fscript%3E">percent-encoded data:text/html link</a></p>
+<p><a href="DATA:text/html,<script>window.__POSTERN_PWNED='data-html-link-upper'</script>">upper-case scheme</a></p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIG9ubG9hZD0id2luZG93Ll9fUE9TVEVSTl9QV05FRD0nZGF0YS1zdmcnIi8+" alt="data: SVG image"></p>
+</body></html>

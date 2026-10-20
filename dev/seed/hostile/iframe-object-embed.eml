@@ -1,0 +1,17 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] iframe, object and embed
+Date: Sun, 20 Sep 2026 08:50:00 +0000
+Message-ID: <iframe-object-embed@hostile.postern.test>
+X-Postern-Fixture: hostile/iframe-object-embed
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>iframe-object-embed</b>. None of these may load a sub-resource.</p>
+<iframe src="https://evil.test/frame" width="300" height="100"></iframe>
+<iframe srcdoc="<script>parent.__POSTERN_PWNED='iframe-srcdoc'</script>" width="300" height="100"></iframe>
+<object data="https://evil.test/object.pdf" type="application/pdf" width="300" height="100"></object>
+<embed src="https://evil.test/embed.swf" type="application/x-shockwave-flash" width="300" height="100">
+</body></html>

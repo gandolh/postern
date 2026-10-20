@@ -1,0 +1,28 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] double-extension attachment
+Date: Sun, 20 Sep 2026 09:05:00 +0000
+Message-ID: <double-extension@hostile.postern.test>
+X-Postern-Fixture: hostile/double-extension
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_fixture_dblext"
+
+--=_fixture_dblext
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Postern hostile-mail fixture: double-extension. The attachment is named
+invoice.pdf.html and is really text/html. It must download as an attachment,
+never render inline, and the reader should see the real .html extension.
+
+--=_fixture_dblext
+Content-Type: text/html; name="invoice.pdf.html"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="invoice.pdf.html"
+
+<html><body><script>window.__POSTERN_PWNED = "double-extension"; try { top.__POSTERN_PWNED = "double-extension"; } catch (e) {}</script>
+<h1>Not actually a PDF</h1>
+<p>This file pretends to be invoice.pdf but is HTML. Opening it inline would run the script above.</p>
+</body></html>
+
+--=_fixture_dblext--

@@ -1,0 +1,20 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] inline SVG with script
+Date: Sun, 20 Sep 2026 08:10:00 +0000
+Message-ID: <svg-inline-script@hostile.postern.test>
+X-Postern-Fixture: hostile/svg-inline-script
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body>
+<p>Postern hostile-mail fixture <b>svg-inline-script</b>. Nothing in the SVG may run.</p>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="80" onload="window.__POSTERN_PWNED = 'svg-inline-onload'">
+  <script>window.__POSTERN_PWNED = "svg-inline-script"; try { top.__POSTERN_PWNED = "svg-inline-script"; } catch (e) {}</script>
+  <rect width="200" height="80" fill="#fde68a"/>
+  <a xlink:href="javascript:window.__POSTERN_PWNED='svg-inline-xlink'"><text x="10" y="45">click me</text></a>
+  <animate attributeName="x" values="0" onbegin="window.__POSTERN_PWNED = 'svg-inline-onbegin'"/>
+  <foreignObject width="200" height="80"><iframe xmlns="http://www.w3.org/1999/xhtml" src="https://evil.test/foreign"></iframe></foreignObject>
+</svg>
+</body></html>

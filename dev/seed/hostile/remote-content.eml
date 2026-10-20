@@ -1,0 +1,27 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] remote tracking pixel, CSS url() and srcset
+Date: Sun, 20 Sep 2026 08:55:00 +0000
+Message-ID: <remote-content@hostile.postern.test>
+X-Postern-Fixture: hostile/remote-content
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><head><style>
+.bg { width: 200px; height: 80px; background-image: url('https://track.evil.test/css-bg.png?u=alice'); }
+.font-face { font-family: 'Leak'; }
+@font-face { font-family: 'Leak'; src: url('https://track.evil.test/leak.woff2'); }
+@import url('https://track.evil.test/imported.css');
+</style></head><body>
+<p>Postern hostile-mail fixture <b>remote-content</b>. Every remote URL below is a non-resolving example host and must stay blocked until the reader opts in.</p>
+<img src="https://track.evil.test/pixel.gif?u=alice&amp;c=open" width="1" height="1" alt="">
+<img src="https://track.evil.test/small.png" srcset="https://track.evil.test/1x.png 1x, https://track.evil.test/2x.png 2x" width="120" height="60" alt="responsive">
+<picture>
+  <source srcset="https://track.evil.test/wide.png" media="(min-width: 1px)">
+  <img src="https://track.evil.test/fallback.png" width="120" height="60" alt="picture">
+</picture>
+<div class="bg"></div>
+<p style="background: url('https://track.evil.test/inline-bg.png')">inline style background</p>
+<video poster="https://track.evil.test/poster.jpg" width="120" height="60"><source src="https://track.evil.test/clip.mp4"></video>
+</body></html>

@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "anchor": "2026-10-01T09:00:00.000Z",
+  "generatedFrom": "dev/seed.ts --write-manifest",
+  "hostile": {
+    "label": "Hostile",
+    "header": "X-Postern-Fixture",
+    "fixtures": [
+      {
+        "slug": "base-href",
+        "messageId": "base-href@hostile.postern.test",
+        "file": "hostile/base-href.eml"
+      },
+      {
+        "slug": "css-overlay",
+        "messageId": "css-overlay@hostile.postern.test",
+        "file": "hostile/css-overlay.eml"
+      },
+      {
+        "slug": "data-html-link",
+        "messageId": "data-html-link@hostile.postern.test",
+        "file": "hostile/data-html-link.eml"
+      },
+      {
+        "slug": "double-extension",
+        "messageId": "double-extension@hostile.postern.test",
+        "file": "hostile/double-extension.eml"
+      },
+      {
+        "slug": "event-handlers",
+        "messageId": "event-handlers@hostile.postern.test",
+        "file": "hostile/event-handlers.eml"
+      },
+      {
+        "slug": "forged-sender-address-name",
+        "messageId": "forged-sender-address-name@hostile.postern.test",
+        "file": "hostile/forged-sender-address-name.eml"
+      },
+      {
+        "slug": "forged-sender",
+        "messageId": "forged-sender@hostile.postern.test",
+        "file": "hostile/forged-sender.eml"
+      },
+      {
+        "slug": "form-post",
+        "messageId": "form-post@hostile.postern.test",
+        "file": "hostile/form-post.eml"
+      },
+      {
+        "slug": "iframe-object-embed",
+        "messageId": "iframe-object-embed@hostile.postern.test",
+        "file": "hostile/iframe-object-embed.eml"
+      },
+      {
+        "slug": "javascript-link",
+        "messageId": "javascript-link@hostile.postern.test",
+        "file": "hostile/javascript-link.eml"
+      },
+      {
+        "slug": "link-text-mismatch",
+        "messageId": "link-text-mismatch@hostile.postern.test",
+        "file": "hostile/link-text-mismatch.eml"
+      },
+      {
+        "slug": "meta-refresh",
+        "messageId": "meta-refresh@hostile.postern.test",
+        "file": "hostile/meta-refresh.eml"
+      },
+      {
+        "slug": "punycode-domain",
+        "messageId": "punycode-domain@hostile.postern.test",
+        "file": "hostile/punycode-domain.eml"
+      },
+      {
+        "slug": "remote-content",
+        "messageId": "remote-content@hostile.postern.test",
+        "file": "hostile/remote-content.eml"
+      },
+      {
+        "slug": "script-tag",
+        "messageId": "script-tag@hostile.postern.test",
+        "file": "hostile/script-tag.eml"
+      },
+      {
+        "slug": "svg-attachment",
+        "messageId": "svg-attachment@hostile.postern.test",
+        "file": "hostile/svg-attachment.eml"
+      },
+      {
+        "slug": "svg-inline-script",
+        "messageId": "svg-inline-script@hostile.postern.test",
+        "file": "hostile/svg-inline-script.eml"
+      }
+    ]
+  },
+  "accounts": {
+    "alice": {
+      "email": "alice@postern.test",
+      "totalMessages": 2816,
+      "totalThreads": 2456,
+      "labels": {
+        "inbox": {
+          "messages": 2144,
+          "threads": 2035,
+          "unreadMessages": 128,
+          "unreadThreads": 127,
+          "starredMessages": 49
+        },
+        "sent": {
+          "messages": 224,
+          "threads": 157,
+          "unreadMessages": 0,
+          "unreadThreads": 0,
+          "starredMessages": 0
+        },
+        "drafts": {
+          "messages": 2,
+          "threads": 2,
+          "unreadMessages": 0,
+          "unreadThreads": 0,
+          "starredMessages": 0
+        },
+        "junk": {
+          "messages": 4,
+          "threads": 4,
+          "unreadMessages": 3,
+          "unreadThreads": 3,
+          "starredMessages": 0
+        },
+        "trash": {
+          "messages": 3,
+          "threads": 3,
+          "unreadMessages": 1,
+          "unreadThreads": 1,
+          "starredMessages": 0
+        },
+        "archive": {
+          "messages": 437,
+          "threads": 403,
+          "unreadMessages": 19,
+          "unreadThreads": 19,
+          "starredMessages": 10
+        },
+        "Work": {
+          "messages": 245,
+          "threads": 225,
+          "unreadMessages": 15,
+          "unreadThreads": 14,
+          "starredMessages": 5
+        },
+        "Work/Clients": {
+          "messages": 2,
+          "threads": 2,
+          "unreadMessages": 1,
+          "unreadThreads": 1,
+          "starredMessages": 1
+        },
+        "Receipts": {
+          "messages": 240,
+          "threads": 240,
+          "unreadMessages": 15,
+          "unreadThreads": 15,
+          "starredMessages": 6
+        },
+        "Travel": {
+          "messages": 147,
+          "threads": 138,
+          "unreadMessages": 5,
+          "unreadThreads": 5,
+          "starredMessages": 1
+        },
+        "Hostile": {
+          "messages": 17,
+          "threads": 17,
+          "unreadMessages": 5,
+          "unreadThreads": 5,
+          "starredMessages": 0
+        }
+      }
+    },
+    "bob": {
+      "email": "bob@postern.test",
+      "totalMessages": 26,
+      "totalThreads": 12,
+      "labels": {
+        "inbox": {
+          "messages": 15,
+          "threads": 5,
+          "unreadMessages": 1,
+          "unreadThreads": 1,
+          "starredMessages": 0
+        },
+        "sent": {
+          "messages": 7,
+          "threads": 5,
+          "unreadMessages": 0,
+          "unreadThreads": 0,
+          "starredMessages": 0
+        },
+        "drafts": {
+          "messages": 1,
+          "threads": 1,
+          "unreadMessages": 0,
+          "unreadThreads": 0,
+          "starredMessages": 0
+        },
+        "junk": {
+          "messages": 1,
+          "threads": 1,
+          "unreadMessages": 1,
+          "unreadThreads": 1,
+          "starredMessages": 0
+        },
+        "trash": {
+          "messages": 1,
+          "threads": 1,
+          "unreadMessages": 0,
+          "unreadThreads": 0,
+          "starredMessages": 0
+        },
+        "archive": {
+          "messages": 1,
+          "threads": 1,
+          "unreadMessages": 0,
+          "unreadThreads": 0,
+          "starredMessages": 0
+        }
+      }
+    }
+  }
+}
