@@ -1,5 +1,5 @@
 ---
-summary: Snapshot as of 2026-10-21. Briefs 01-18 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-21. Briefs 01-18 are done and 19 (the root of postern.<domain>) is queued (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
 updated: 2026-10-21
 ---
 
@@ -41,6 +41,9 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [16](../briefs/done/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11. **Done 2026-10-20.**
 - [17](../briefs/done/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04. **Done 2026-10-20.**
 - [18](../briefs/done/18-deploy.md): deploy at /webmail through `../vps-deploy`. Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
+
+**Wave 6: its own origin**
+- [19](../briefs/todo/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`../vps-deploy` brief 14). Revisits "Served at /webmail". Must land before the first deploy. Filed 2026-10-21.
 
 ## Parked (todos)
 

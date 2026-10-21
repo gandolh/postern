@@ -277,3 +277,7 @@ storage, and the service worker refuses planted files. The entry now names
 what such a script can still do (preferences, notifications, the worker's
 registration, and a look-alike sign-in form the password manager may fill).
 The decision itself stands.
+
+## 2026-10-21: brief 19 filed, Postern gets its own origin
+
+The owner asked for Postern on its own subdomain, `postern.<domain>`. `../vps-deploy` brief 14 routes it, with Stalwart's API on the same host at `/webmail-api`, so Postern stays same-origin with its API and the CORS objection in "Served at /webmail, sharing the estate's origin" no longer applies. [Brief 19](briefs/todo/19-served-at-the-root-of-postern-domain.md) moves the base from `/webmail/` to `/` and revisits that decision. Nothing was deployed at `/webmail`, so no install or push subscription is lost. Whether a session should now survive a reload is left as an open question for the owner.
