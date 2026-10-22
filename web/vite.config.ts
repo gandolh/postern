@@ -34,8 +34,12 @@ function devProxy(): Record<string, ProxyOptions> {
   };
 }
 
-/** Where Postern is served. Scope, start URL and the navigation fallback all hang off it. */
-const BASE = "/webmail/";
+/**
+ * Where Postern is served: the root of its own host, postern.<domain>, since
+ * 2026-10-22 (brief 19). Scope, start URL and the navigation fallback all hang
+ * off it.
+ */
+const BASE = "/";
 
 /** build.outDir, where the shell files are read back to hash them. */
 const DIST = resolve(dirname(fileURLToPath(import.meta.url)), "dist");
@@ -43,7 +47,7 @@ const DIST = resolve(dirname(fileURLToPath(import.meta.url)), "dist");
 /**
  * Finding F1: bake a SHA-256 of every shell file into sw.js. The worker checks
  * each cached body against it before serving, because any script on the
- * shared origin can rewrite Cache Storage (src/sw/shell.ts).
+ * origin can rewrite Cache Storage (src/sw/shell.ts).
  */
 interface ShellEntry {
   url: string;

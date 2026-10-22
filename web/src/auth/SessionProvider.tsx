@@ -40,7 +40,7 @@ type View =
 
 /**
  * Nothing of the session that just ended may reach the next one in this tab.
- * The address bar goes back to /webmail/ with no hash: a `#search/<query>/<id>`
+ * The address bar goes back to the base (`/`) with no hash: a `#search/<query>/<id>`
  * left there would be the next person's first screen, and their search box
  * would show the query. replaceState swaps the current entry instead of
  * adding one. The page cannot erase the earlier history entries, so Back can

@@ -3,8 +3,8 @@
 //
 // 1. The app shell: the files the build lists, each with a SHA-256 baked into
 //    this script, cached at install and checked on every read (shell.ts;
-//    finding F1: Cache Storage is the whole origin's, so any estate app's
-//    script can rewrite it). Navigations inside /webmail/ get index.html, so
+//    finding F1: Cache Storage is the whole origin's, so any script on the
+//    origin can rewrite it). Navigations inside the scope get index.html, so
 //    the installed app opens offline (to the sign-in page: tokens die with
 //    the tab). Nothing is cached at runtime. Never mail, never a /webmail-api
 //    response (owner decision 2026-10-20: no offline mail).
@@ -22,7 +22,7 @@ import { cacheNameFor, cleanupCaches, installShell, pick, serve, shellFiles, typ
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | ManifestEntry)[] };
 
-/** `/webmail/`: the build's base, which is also the registration's scope. */
+/** `/`: the build's base, which is also the registration's scope. */
 const SCOPE = scopePath(import.meta.env.BASE_URL);
 const ORIGIN = self.location.origin;
 const ICON = `${SCOPE}pwa-192x192.png`;
@@ -60,9 +60,9 @@ self.addEventListener("fetch", (event) => {
 
 // A new worker waits. A Postern page asks it to take over only while nobody
 // is signed in there (push/register.ts), and no signed-in page reloads when it
-// does (push/install.ts). Finding F7: only a top-level window under /webmail/
-// may ask; with frame-ancestors 'none' and COOP same-origin, no other estate
-// app can run script in such a window.
+// does (push/install.ts). Finding F7: only a top-level window under the scope
+// may ask; with frame-ancestors 'none' and COOP same-origin, no other page can
+// run script in such a window.
 self.addEventListener("message", (event) => {
   if ((event.data as { type?: unknown } | null)?.type !== SKIP_WAITING) return;
   if (mayRequestUpdate(event.source, ORIGIN, SCOPE)) void self.skipWaiting();

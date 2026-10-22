@@ -25,7 +25,7 @@ export const CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
-/** On every response under /webmail/. */
+/** On every response under the scope (the whole host). */
 export const APP_HEADERS: Readonly<Record<string, string>> = {
   "content-security-policy": CSP,
   "cross-origin-opener-policy": "same-origin",

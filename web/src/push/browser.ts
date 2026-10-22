@@ -3,7 +3,7 @@
 import { withDeadline } from "./deadline";
 import type { BrowserPush, PushManagerLike } from "./webPush";
 
-/** The worker's scope: the build's base, `/webmail/`. */
+/** The worker's scope: the build's base, `/`. */
 const SCOPE = import.meta.env.BASE_URL;
 
 export const browserPush: BrowserPush = {

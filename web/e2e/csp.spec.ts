@@ -32,9 +32,9 @@ async function noViolations(page: Page, consoleLines: string[], where: string): 
 
 test.describe("headers", () => {
   test("the app's responses carry the production header set", async ({ request }) => {
-    const asset = (await (await request.get(APP_URL)).text()).match(/\/webmail\/assets\/[^"]+\.js/)?.[0];
+    const asset = (await (await request.get(APP_URL)).text()).match(/"(\/assets\/[^"]+\.js)"/)?.[1];
     expect(asset).toBeTruthy();
-    for (const path of ["/webmail/", "/webmail/index.html", "/webmail/sw.js", "/webmail/manifest.webmanifest", asset!, "/webmail/#inbox", "/webmail/no-such-page"]) {
+    for (const path of ["/", "/index.html", "/sw.js", "/manifest.webmanifest", asset!, "/#inbox", "/no-such-page", "/webmail-apix"]) {
       const res = await request.get(`${ORIGIN}${path}`);
       expect(res.status(), path).toBe(200);
       const headers = res.headers();
@@ -42,8 +42,8 @@ test.describe("headers", () => {
       expect(headers["service-worker-allowed"], path).toBeUndefined();
       expect(headers["server"], path).toBeUndefined();
     }
-    expect((await request.get(`${ORIGIN}/webmail/sw.js`)).headers()["cache-control"]).toBe("no-cache");
-    expect((await request.get(`${ORIGIN}/webmail/manifest.webmanifest`)).headers()["content-type"]).toBe("application/manifest+json");
+    expect((await request.get(`${ORIGIN}/sw.js`)).headers()["cache-control"]).toBe("no-cache");
+    expect((await request.get(`${ORIGIN}/manifest.webmanifest`)).headers()["content-type"]).toBe("application/manifest+json");
     expect((await request.get(`${ORIGIN}${asset}`)).headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
   });
 
@@ -51,8 +51,9 @@ test.describe("headers", () => {
     const session = await request.get(`${ORIGIN}/webmail-api/jmap/session`);
     expect(session.status()).toBe(200);
     for (const [name, value] of Object.entries(API_HEADERS)) expect(session.headers()[name], name).toBe(value);
-    // Stalwart's admin UI, account pages, OAuth login page, management API and discovery stay off the shared origin.
-    for (const path of ["/webmail-api/admin/", "/webmail-api/account/", "/webmail-api/login", "/webmail-api/api/principal", "/webmail-api/.well-known/openid-configuration", "/webmail-api/healthz/live"]) {
+    // Stalwart's admin UI, account pages, OAuth login page, management API and discovery stay off Postern's origin,
+    // and the rest of the prefix is refused rather than given the app's fallback.
+    for (const path of ["/webmail-api", "/webmail-api/", "/webmail-api/admin/", "/webmail-api/account/", "/webmail-api/login", "/webmail-api/api/principal", "/webmail-api/.well-known/openid-configuration", "/webmail-api/healthz/live"]) {
       expect((await request.get(`${ORIGIN}${path}`)).status(), path).toBe(404);
     }
   });
@@ -79,7 +80,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
   const consoleLines = watchConsole(page);
   await signIn(page);
 
-  await test.step("the service worker registers under /webmail/", async () => {
+  await test.step("the service worker registers at the root", async () => {
     const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
     expect(scope).toBe(APP_URL);
   });

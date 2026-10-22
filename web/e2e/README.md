@@ -27,13 +27,14 @@ npx playwright test -c web/e2e hostile -g script-tag
 ## What the run does to the machine
 
 - **Caddy.** The global setup ([global-setup.ts](global-setup.ts)) starts
-  `caddy:2.11.7` as the container `postern-e2e-caddy`, published on
-  `127.0.0.1:5193`, with `web/dist` mounted read-only at `/srv/webmail` and
+  `caddy:2.11.7` as the container `postern-e2e-caddy`, publishing Postern on
+  `127.0.0.1:5193` and a stand-in for another estate app on `127.0.0.1:5194`,
+  with `web/dist` mounted read-only at `/srv/webmail` and
   [Caddyfile](Caddyfile) as its config. It reaches Stalwart through
   `host.docker.internal:18080`. The container is removed when the run ends,
   failed or not; a leftover one is removed at the next start. Nothing in
   the `postern-dev` compose project is touched. Set `POSTERN_E2E_PORT` for
-  another port.
+  another port, and `POSTERN_E2E_PROBE_PORT` for the stand-in's.
 - **alice's mailbox.** Opening a conversation marks it read, and the
   signature preview writes alice's identity for a moment. The setup notes
   the unread messages and identities first; the teardown marks unread again
@@ -49,7 +50,7 @@ npx playwright test -c web/e2e hostile -g script-tag
 | [hostile.spec.ts](hostile.spec.ts) | One test per hostile fixture: no script, no early request, no navigation, the exact sandbox, no message markup in the app's DOM; then spoofed senders, link warnings, attachments. |
 | [dns.spec.ts](dns.spec.ts) | Chrome's net log: no host a message names is looked up before "Display images". |
 | [csp.spec.ts](csp.spec.ts) | The served headers against [lib/headers.ts](lib/headers.ts), the `/webmail-api` path allowlist, and every screen under the CSP with zero violations. |
-| [tokens.spec.ts](tokens.spec.ts) | No secret in storage, cookies, caches, URLs, the DOM or the console; what another app's page on the origin can and cannot reach; the idle timeout; sign-out. |
+| [tokens.spec.ts](tokens.spec.ts) | No secret in storage, cookies, caches, URLs, the DOM or the console; what another estate app's page (same site, another origin) can and cannot reach; cache entries rewritten on the origin are never served; the idle timeout; sign-out. |
 
 Three tests are controls, there to show a green run means something: an
 unsandboxed frame does set the canary, an injected inline script is caught by

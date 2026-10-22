@@ -3,8 +3,9 @@
 // verifier, the access, refresh and ID tokens) as it crosses the network, then
 // look for it everywhere else: storage, cookies, IndexedDB, Cache Storage,
 // URLs, the DOM, console lines and errors, from Postern's page and from
-// another app's page on the same origin. Secrets are only ever compared,
-// never printed: a failure names the place, not the value.
+// another estate app's page (the same site, another origin, as the apex is to
+// postern.<domain>). Secrets are only ever compared, never printed: a failure
+// names the place, not the value.
 
 import { expect, test, type BrowserContext, type Page, type Request } from "@playwright/test";
 import { goTo, openConversation, signIn, stubOutsideWorld } from "./lib/app.ts";
@@ -155,7 +156,7 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
   expect(places["Postern's Cache Storage"]?.includes("/webmail-api/"), "no Stalwart response in Cache Storage").toBe(false);
 });
 
-test("another app's page on the origin cannot reach Postern's window or tokens", async ({ page, context }) => {
+test("another estate app's page cannot reach Postern's window, worker or tokens", async ({ page, context }) => {
   await stubOutsideWorld(context);
   await signIn(page);
   const probe = await context.newPage();
@@ -177,7 +178,7 @@ test("another app's page on the origin cannot reach Postern's window or tokens",
   });
   expect(heard).toEqual([]);
 
-  await test.step("framing /webmail/ is refused (frame-ancestors 'none')", async () => {
+  await test.step("framing Postern is refused (frame-ancestors 'none')", async () => {
     const framed = await probe.evaluate(async (url) => {
       const frame = document.createElement("iframe");
       frame.src = url;
@@ -190,10 +191,10 @@ test("another app's page on the origin cannot reach Postern's window or tokens",
       }
     }, APP_URL);
     expect(framed).not.toContain('id="root"');
-    test.info().annotations.push({ type: "framing /webmail/", description: framed.slice(0, 120) });
+    test.info().annotations.push({ type: "framing Postern", description: framed.slice(0, 120) });
   });
 
-  await test.step("a window it opens on /webmail/ is cut off from it (COOP same-origin)", async () => {
+  await test.step("a window it opens on Postern is cut off from it (COOP same-origin)", async () => {
     const opened = await probe.evaluate(async (url) => {
       const w = window.open(url, "_blank");
       await new Promise((r) => setTimeout(r, 1_500));
@@ -205,19 +206,20 @@ test("another app's page on the origin cannot reach Postern's window or tokens",
       }
     }, APP_URL);
     expect(opened).toMatch(/^(null|closed|blocked)/);
-    test.info().annotations.push({ type: "window.open('/webmail/')", description: opened });
+    test.info().annotations.push({ type: "window.open(Postern)", description: opened });
     for (const p of context.pages()) if (p !== page && p !== probe) await p.close();
   });
 
-  await test.step("what it can see: the worker's registration, prefs, the shell cache; no cookie", async () => {
+  await test.step("what it can see of Postern: no worker, no prefs, no shell cache, no cookie", async () => {
     const seen = await probe.evaluate(async () => ({
       cookie: document.cookie,
       registrations: (await navigator.serviceWorker.getRegistrations()).map((r) => r.scope),
       localStorageKeys: Object.keys(localStorage).sort(),
+      caches: await caches.keys(),
     }));
-    expect(seen.cookie).toBe("");
-    // Recorded in corpus/wiki/security.md as the shared-origin exposure that remains.
-    test.info().annotations.push({ type: "same-origin view", description: JSON.stringify({ registrations: seen.registrations, localStorageKeys: seen.localStorageKeys }) });
+    // Before 2026-10-22, on the shared origin, it saw the first three
+    // (corpus/wiki/security.md). On its own origin it sees none of them.
+    expect(seen).toEqual({ cookie: "", registrations: [], localStorageKeys: [], caches: [] });
   });
 });
 
@@ -287,11 +289,17 @@ test("sign-out forgets the session; Stalwart 0.16 cannot revoke the token", asyn
 });
 
 // ---- Finding F1 (corpus/wiki/security-findings.md), fixed ---------------------
-// Cache Storage belongs to the whole origin: a script in any estate app can
+// Cache Storage belongs to the whole origin: any script that runs on it can
 // rewrite the worker's cache. The worker checks every cached body against a
 // SHA-256 baked into sw.js and builds the response itself with production's
 // headers (web/src/sw/shell.ts), so a rewritten entry is never served and a
 // stripped one cannot drop the CSP.
+//
+// Since 2026-10-22 the origin is Postern's alone, so no other estate app can
+// reach the cache. The writer here is a Postern page, standing in for any
+// script that gets to run on the origin. (Caddy's 404 for a refused API path
+// would be a page that is not the app, but its body is empty, and Chrome
+// shows its own error page instead.)
 
 /** Open Postern once so its worker installs (and fills its cache), then close it. */
 async function installWorker(context: BrowserContext): Promise<void> {
@@ -302,9 +310,17 @@ async function installWorker(context: BrowserContext): Promise<void> {
   await app.close();
 }
 
-/** From another app's page: replace every cached copy of a Postern path, in every cache on the origin. */
-function poison(probe: Page, path: RegExp, body: string, headers: Record<string, string>): Promise<number> {
-  return probe.evaluate(
+/** Open a page on Postern's origin to write to its caches from. */
+async function writerPage(context: BrowserContext): Promise<Page> {
+  const writer = await context.newPage();
+  await writer.goto(APP_URL);
+  expect(new URL(writer.url()).origin).toBe(ORIGIN);
+  return writer;
+}
+
+/** From the writer page: replace every cached copy of a Postern path, in every cache on the origin. */
+function poison(writer: Page, path: RegExp, body: string, headers: Record<string, string>): Promise<number> {
+  return writer.evaluate(
     async ({ source, flags, body, headers }) => {
       const re = new RegExp(source, flags);
       let n = 0;
@@ -325,11 +341,10 @@ function poison(probe: Page, path: RegExp, body: string, headers: Record<string,
 const FORGED_PAGE = "<!doctype html><title>Postern</title><script>window.__POSTERN_POISONED = true</script>";
 const poisoned = (p: Page) => p.evaluate(() => (window as unknown as { __POSTERN_POISONED?: boolean }).__POSTERN_POISONED).catch(() => undefined);
 
-test("another app's page cannot replace what the service worker serves as Postern", async ({ context }) => {
+test("a script on the origin cannot replace what the service worker serves as Postern", async ({ context }) => {
   await installWorker(context);
-  const probe = await context.newPage();
-  await probe.goto(PROBE_URL);
-  expect(await poison(probe, /\/webmail\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" }), "cached copies replaced").toBeGreaterThan(0);
+  const writer = await writerPage(context);
+  expect(await poison(writer, /^\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" }), "cached copies replaced").toBeGreaterThan(0);
 
   const next = await context.newPage();
   await next.goto(APP_URL);
@@ -340,12 +355,11 @@ test("another app's page cannot replace what the service worker serves as Poster
 
 test("a cached file with the right bytes but stripped headers is served with production's headers; a forged script never runs", async ({ context }) => {
   await installWorker(context);
-  const probe = await context.newPage();
-  await probe.goto(PROBE_URL);
+  const writer = await writerPage(context);
   // The genuine page with no headers at all (no CSP), and a forged app script.
-  const genuine = await probe.evaluate(async () => (await fetch("/webmail/index.html")).text());
-  expect(await poison(probe, /\/webmail\/index\.html$/, genuine, {})).toBeGreaterThan(0);
-  expect(await poison(probe, /\/webmail\/assets\/index-[^/]+\.js$/, "window.__POSTERN_POISONED = true", { "content-type": "text/javascript" })).toBeGreaterThan(0);
+  const genuine = await writer.evaluate(async () => (await fetch("/index.html")).text());
+  expect(await poison(writer, /^\/index\.html$/, genuine, {})).toBeGreaterThan(0);
+  expect(await poison(writer, /^\/assets\/index-[^/]+\.js$/, "window.__POSTERN_POISONED = true", { "content-type": "text/javascript" })).toBeGreaterThan(0);
 
   const next = await context.newPage();
   const response = await next.goto(APP_URL);
@@ -358,8 +372,7 @@ test("a cached file with the right bytes but stripped headers is served with pro
 
 test("offline, the installed app opens to the sign-in page from the verified cache; a forged copy never runs", async ({ context }) => {
   await installWorker(context);
-  const probe = await context.newPage();
-  await probe.goto(PROBE_URL);
+  const writer = await writerPage(context);
   await context.setOffline(true);
   try {
     const offline = await context.newPage();
@@ -371,7 +384,7 @@ test("offline, the installed app opens to the sign-in page from the verified cac
     await offline.close();
 
     // Rewritten while offline: the worker drops it, the network is down, so the page does not open at all.
-    expect(await poison(probe, /\/webmail\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" })).toBeGreaterThan(0);
+    expect(await poison(writer, /^\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" })).toBeGreaterThan(0);
     const next = await context.newPage();
     const failed = await next.goto(APP_URL).then(
       () => null,

@@ -280,4 +280,29 @@ The decision itself stands.
 
 ## 2026-10-21: brief 19 filed, Postern gets its own origin
 
-The owner asked for Postern on its own subdomain, `postern.<domain>`. `../vps-deploy` brief 14 routes it, with Stalwart's API on the same host at `/webmail-api`, so Postern stays same-origin with its API and the CORS objection in "Served at /webmail, sharing the estate's origin" no longer applies. [Brief 19](briefs/todo/19-served-at-the-root-of-postern-domain.md) moves the base from `/webmail/` to `/` and revisits that decision. Nothing was deployed at `/webmail`, so no install or push subscription is lost. Whether a session should now survive a reload is left as an open question for the owner.
+The owner asked for Postern on its own subdomain, `postern.<domain>`. `../vps-deploy` brief 14 routes it, with Stalwart's API on the same host at `/webmail-api`, so Postern stays same-origin with its API and the CORS objection in "Served at /webmail, sharing the estate's origin" no longer applies. [Brief 19](briefs/done/19-served-at-the-root-of-postern-domain.md) moves the base from `/webmail/` to `/` and revisits that decision. Nothing was deployed at `/webmail`, so no install or push subscription is lost. Whether a session should now survive a reload is left as an open question for the owner.
+
+## 2026-10-22: brief 19 done, Postern at the root of postern.<domain>
+
+The base moved from `/webmail/` to `/`, with `../vps-deploy` brief 14 routing
+`postern.<domain>` and Stalwart's API on the same host. The e2e harness now
+puts the stand-in for another estate app on a second origin (same site,
+`localhost:5194`), which is what the apex apps are to Postern now, and
+`tokens.spec.ts` asserts that it sees nothing of Postern's: no cookie, no
+worker registration, no preferences, no cache. The three cache-poisoning tests
+write from a Postern page, because no other app can reach Postern's Cache
+Storage any more; the hash check (F1) still refuses every rewritten file. A
+first attempt wrote from Caddy's 404 for a refused API path, but Chrome
+replaces an empty 404 with its own error page.
+
+[decisions.md](wiki/decisions.md) records the revisit: the CORS objection held
+only with the API on another origin. [security.md](wiki/security.md) drops the
+list of what another app could do on the shared origin and keeps what a
+script on Postern's own origin could. "No staying signed in across a reload"
+named its own origin as the revisit condition; it is met, nothing changed, and
+the question is in [open-questions.md](wiki/open-questions.md) for the owner.
+
+Checked: typecheck, lint, 1135 unit tests, and all 34 browser tests against
+the local Stalwart (started with `npm run dev:mail`, not reset). A production
+build's `index.html`, manifest and worker use `/`. brief-board is down
+(since 2026-10-13), so the brief's progress is recorded here only.

@@ -91,7 +91,9 @@ means a script running in any estate app on the shared origin
 - **F8 · Low · The page took worker messages from any worker.** Fixed: a
   message counts only from the `/webmail/` registration's active worker
   running `/webmail/sw.js` (`acceptsSource` in `web/src/push/register.ts`). Tests in
-  `web/src/push/register.test.ts`.
+  `web/src/push/register.test.ts`. Since 2026-10-22 (brief 19) the base is
+  `/`, so the window must be under `/` and the worker is `/sw.js`; both
+  checks derive from the base and are unchanged.
 
 ### F9 · Low · "Also apply to matching conversations" can search for something else
 

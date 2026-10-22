@@ -12,7 +12,7 @@ npm workspaces, the estate's house layout:
 | Workspace | Package | What it is |
 |---|---|---|
 | `jmap/` | `@postern/jmap` | A typed JMAP client: session, batched requests with back-references, the mail/submission/sieve/contacts methods, blobs, changes, push. No React, no DOM beyond `fetch`. Brief 03. |
-| `web/` | `@postern/web` | The React app, built by Vite with base `/webmail/`. Briefs 05 onward. |
+| `web/` | `@postern/web` | The React app, built by Vite with base `/` (`/webmail/` until 2026-10-22, brief 19). Briefs 05 onward. |
 | `dev/` | (not a package) | A local Stalwart in Docker with test accounts and seeded mail. Brief 02. |
 
 The JMAP layer is its own package so it can be tested against a real Stalwart
@@ -21,15 +21,16 @@ without a browser. The UI then depends on a contract, not on raw JMAP.
 ## Request path
 
 ```
-browser ── https://example.com/webmail/…      → Caddy static files (SPA fallback)
-        └─ https://example.com/webmail-api/…  → Caddy handle_path (prefix stripped)
-                                                → Stalwart HTTP listener (loopback)
+browser ── https://postern.example.com/…              → Caddy static files (SPA fallback)
+        └─ https://postern.example.com/webmail-api/…  → Caddy, allowlisted paths, prefix stripped
+                                                        → Stalwart HTTP listener (loopback)
 ```
 
-`/webmail` and `/webmail-api` are disjoint for Caddy (a literal `/webmail/*`
-match needs `/` next), the same pattern as `/ward` and `/ward-api`. Same origin
-means no CORS. Stalwart's only CORS switch allows every origin, which is why a
-separate origin was not attractive.
+Postern has the whole host, and Caddy writes the `/webmail-api` block above
+the app's, so the API is matched first and the rest of the host is the app.
+Any other `/webmail-api` path is a 404, not the app's fallback. Same origin
+means no CORS. Stalwart's only CORS switch allows every origin, which is why
+an API on another origin was not attractive.
 
 The `/webmail-api` route is declared in the mail stack (`../vps-deploy`), not in
 Postern's. The route claims Stalwart's loopback port, and the mail stack already
@@ -97,7 +98,7 @@ token for up to 30 days. [security.md](security.md) has the mitigation.
 **Client registration: none.** `requireClientRegistration` is false by
 default and production does not change it, so Stalwart accepts any
 `client_id` without looking it up. Postern uses the constant `postern`,
-with `redirectUri` = `${origin}/webmail/`. See
+with `redirectUri` = `${origin}/` (the base). See
 [decisions.md](decisions.md).
 
 **Stalwart's account page** (password, TOTP, app passwords) is its own web
@@ -157,30 +158,31 @@ machine is Docker Desktop, so the proxy targets a port published on
 Built on 2026-10-20 in `../vps-deploy`, the estate's deploy tool. Deploying
 is the owner's step; the commands are in [status.md](status.md), Owner steps.
 
-- **`/webmail`** is `../vps-deploy/stacks/postern.ts`, a static site. The
+- **`postern.<domain>`** is `../vps-deploy/stacks/postern.ts`, a static site
+  on a host of its own (`../vps-deploy` brief 14, 2026-10-22). The
   deploy runs `npm ci` and `npm run build` in this checkout (Node 24, as
   `engines` says), checks that `web/dist/index.html` loads from
-  `/webmail/assets/`, and uploads `web/dist` as a new release; a symlink swap
+  `/assets/`, and uploads `web/dist` as a new release; a symlink swap
   makes it live, and five releases are kept. `VITE_STALWART_ACCOUNT_URL` is
   the mail host's `/account/`. Deep links fall back to `index.html`.
 - **Its headers** are the set in [security-headers.md](security-headers.md),
   on every response. `Cache-Control` is `no-cache` wherever a path sets none,
   so `index.html`, `sw.js`, the manifest and every deep-link fallback
-  revalidate; `/webmail/assets/*` is immutable; the manifest is served as
+  revalidate; `/assets/*` is immutable; the manifest is served as
   `application/manifest+json`. The stack copies the text, so a header change
   touches `web/src/sw/headers.ts`, the e2e Caddyfile, security-headers.md and
   that stack.
-- **`/webmail-api`** is a route of the mail stack (`../vps-deploy/stacks/mail.ts`).
-  It claims Stalwart's loopback port, which the mail stack owns, and a second
-  stack claiming it fails synth. Only the allowlisted paths in
-  [security-headers.md](security-headers.md) reach Stalwart, with the prefix
-  stripped and the event stream flushed; any other `/webmail-api` path is
-  the estate's 404. No `encode`, no caching, no CORS, and Caddy's own
+- **`/webmail-api`** is a route of the mail stack (`../vps-deploy/stacks/mail.ts`),
+  on Postern's host. It claims Stalwart's loopback port, which the mail stack
+  owns, and a second stack claiming it fails synth. Only the allowlisted paths
+  in [security-headers.md](security-headers.md) reach Stalwart, with the
+  prefix stripped and the event stream flushed; any other `/webmail-api` path
+  is a 404. No `encode`, no caching, no CORS, and Caddy's own
   `X-Forwarded-For`.
 - **The Caddy renderer** gained per-route headers and path allowlists for
-  this. Its synth refuses any route on the shared origin that sends
-  `Service-Worker-Allowed`, one of the two estate rules the service worker
-  depends on ([security.md](security.md)).
+  this, and hosts of their own with allowlists (brief 14). Its synth refuses
+  any route on the shared origin that sends `Service-Worker-Allowed`; since
+  Postern left that origin, the rule protects the other apps.
 - **Stalwart.** The mail plan sets `webPushContact`, the VAPID `sub` that
   Apple requires, to the domain's postmaster address. The VAPID key is the one
   Stalwart generated in its store on first start. Nothing is registered for

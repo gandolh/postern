@@ -1,9 +1,9 @@
 ---
-summary: Snapshot as of 2026-10-21. Briefs 01-18 are done and 19 (the root of postern.<domain>) is queued (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
-updated: 2026-10-21
+summary: Snapshot as of 2026-10-22. Briefs 01-19 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+updated: 2026-10-22
 ---
 
-# Status (2026-10-21)
+# Status (2026-10-22)
 
 Postern is built: all 18 briefs are done, with 1,165 unit and integration
 tests and a 34-test browser suite (`npm run test:e2e`) that runs the
@@ -40,10 +40,10 @@ are the owner steps at the end of this page. Neither repo is pushed.
 **Wave 5: hardening and deploy**
 - [16](../briefs/done/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11. **Done 2026-10-20.**
 - [17](../briefs/done/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04. **Done 2026-10-20.**
-- [18](../briefs/done/18-deploy.md): deploy at /webmail through `../vps-deploy`. Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
+- [18](../briefs/done/18-deploy.md): deploy through `../vps-deploy` (at /webmail when written; on `postern.<domain>` since 19). Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
 
 **Wave 6: its own origin**
-- [19](../briefs/todo/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`../vps-deploy` brief 14). Revisits "Served at /webmail". Must land before the first deploy. Filed 2026-10-21.
+- [19](../briefs/done/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`../vps-deploy` brief 14). Revisits "Served at /webmail". **Done 2026-10-22**: base `/`, the e2e harness at the root with another estate app on a second origin, all 34 browser tests and 1135 unit tests passing.
 
 ## Parked (todos)
 
@@ -59,54 +59,60 @@ Each needs server work, or a check against Stalwart, before it can be a brief:
 
 Things only the owner can do, collected from the briefs as they finished.
 
-- **Deploy** (brief 18). From a clean, committed checkout of this repo (the
-  build runs in it, and `npm ci` replaces its `node_modules`), in
-  `../vps-deploy`:
+- **Deploy** (brief 18, on its own host since brief 19). After
+  `../vps-deploy` brief 14 (code done 2026-10-22). DNS is already in place: a
+  wildcard record answers for `postern.<domain>`. From a clean, committed
+  checkout of this repo (the build runs in it, and `npm ci` replaces its
+  `node_modules`), in `../vps-deploy`:
 
   ```
   node cli.ts --check              # the committed Caddyfile matches the stacks
   node cli.ts postern pre-deploy   # /var/www/postern, then the whole Caddyfile:
-                                   # validated on the box, Caddy reloaded (sudo)
+                                   # validated on the box, Caddy reloaded (sudo);
+                                   # Caddy gets postern.<domain>'s certificate
   node cli.ts postern deploy       # npm ci + npm run build here, upload web/dist
   node cli.ts mail server          # applies the mail plan (webPushContact) and
                                    # restarts Stalwart: a few seconds without mail
   ```
 
   `postern deploy` warns that postern depends on mail; mail is live, so that
-  is expected. The Caddyfile carries both new routes, `/webmail` and
-  `/webmail-api`, so the mail stack's own pre-deploy is not needed. If the
-  box's `caddy validate` refuses the file, Caddy keeps serving the old
+  is expected. The Caddyfile carries the new host block with both routes,
+  `/` and `/webmail-api`, so the mail stack's own pre-deploy is not needed.
+  If the box's `caddy validate` refuses the file, Caddy keeps serving the old
   config; do not restart Caddy until the file is fixed.
 
   Smoke test, with `<domain>` the production domain:
 
-  - `curl -sI https://<domain>/webmail/` and a deep link such as
-    `https://<domain>/webmail/inbox`: 200, `text/html`, every `/webmail/`
-    header in [security-headers.md](security-headers.md),
+  - `curl -sI https://postern.<domain>/` and a deep link such as
+    `https://postern.<domain>/inbox`: 200, `text/html`, a valid certificate,
+    every Postern header in [security-headers.md](security-headers.md),
     `Cache-Control: no-cache`, no `Server`.
-  - `curl -sI https://<domain>/webmail/manifest.webmanifest`:
-    `application/manifest+json`. One file under `/webmail/assets/` (a name
-    from `index.html`): `Cache-Control: public, max-age=31536000, immutable`.
-  - `curl -s -D - -o /dev/null https://<domain>/webmail-api/jmap/session`
+  - `curl -sI https://postern.<domain>/manifest.webmanifest`:
+    `application/manifest+json`. One file under `/assets/` (a name from
+    `index.html`): `Cache-Control: public, max-age=31536000, immutable`.
+  - `curl -s -D - -o /dev/null https://postern.<domain>/webmail-api/jmap/session`
     (a GET; Stalwart may answer a HEAD oddly): its answer to a request with
     no token, carrying the four `/webmail-api/` headers and no `Server`.
-  - `curl -s -o /dev/null -w '%{http_code}\n' https://<domain>/webmail-api/admin/`
-    prints 404. So do `/webmail-api/api/principal` and
-    `/webmail-api/healthz/ready`.
-  - No `Service-Worker-Allowed` on any response from the apex.
-  - In the browser at `/webmail/`: sign in as your own mailbox (the real
-    account, TOTP included), then open and read a conversation.
+  - `curl -s -o /dev/null -w '%{http_code}\n' https://postern.<domain>/webmail-api/admin/`
+    prints 404. So do `/webmail-api/api/principal`, `/webmail-api/healthz/ready`
+    and `/webmail-api` itself.
+  - `curl -s -o /dev/null -w '%{http_code}\n' https://<domain>/webmail-api/jmap/session`
+    and `https://<domain>/webmail/` print 404: nothing of Postern's is on the apex.
+  - No `Service-Worker-Allowed` on any response.
+  - In the browser at `https://postern.<domain>/`: sign in as your own
+    mailbox (the real account, TOTP included), then open and read a
+    conversation.
   - Send a message to another address on the domain: the postmaster alias
     lands in your own Inbox. With Postern open, it appears with no reload
     (live update).
   - DevTools, Network panel with "Preserve log" on, through sign-in, reading
-    and sending: every request goes to `/webmail/` or `/webmail-api/` on the
-    apex, none to the mail host. The Application panel shows the worker
-    active with scope `/webmail/`.
+    and sending: every request goes to `postern.<domain>`, none to the mail
+    host or the apex. The Application panel shows the worker active with
+    scope `/`.
   - Then the Android install and the real push below.
 - **Screen reader by ear** (brief 14): the checklist is at the end of
   [brief 14](../briefs/done/14-keyboard-and-accessibility.md).
-- **Install on Android** (brief 16, after the deploy): open `/webmail/` in
+- **Install on Android** (brief 16, after the deploy): open `https://postern.<domain>/` in
   Chrome, menu, "Install app", launch from the home screen; in airplane mode
   it opens to the sign-in page and says it is offline.
 - **Real push** (brief 16): Settings, General, "Notifications for new mail

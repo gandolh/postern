@@ -98,9 +98,10 @@ updated: <YYYY-MM-DD>
   blocked by default. No code path may insert message HTML into the app's own
   DOM. See [wiki/security.md](wiki/security.md).
 - **Tokens live in memory only.** Never `localStorage`, `sessionStorage`,
-  IndexedDB or a cookie the app's script can read. Postern shares the
-  production origin with every other estate app; see
-  [wiki/decisions.md](wiki/decisions.md).
+  IndexedDB or a cookie the app's script can read. Postern has had its own
+  host since 2026-10-22, which meets the decision's revisit condition, but the
+  rule stands until the owner decides; see [wiki/decisions.md](wiki/decisions.md)
+  and [wiki/open-questions.md](wiki/open-questions.md).
 - **No backend of our own.** Postern is static files plus Stalwart. A feature
   that seems to need a server is a decision to bring to the owner first.
 - **No CI.** Don't add GitHub Actions, runners or other GitHub-specific

@@ -62,3 +62,21 @@ What has the base baked in (checked 2026-10-21):
   session, and every API call goes to `/webmail-api` on the same origin.
 - The decision entry carries the revisit, and the open question about keeping
   a session across reloads is filed.
+
+## Outcome (2026-10-22)
+
+Done. The base is `/` (`web/vite.config.ts`); the worker's scope, the
+manifest's `id`, `scope` and `start_url`, and the sign-in redirect all follow
+it. `isApiPath` and the navigation denylist keep `/webmail-api` out of the
+worker now that the scope covers the whole host, and `routing.test.ts` tests
+the root scope. The e2e harness serves Postern at the root of `:80` and moves
+the stand-in for another estate app to its own origin on `:81` (5194), as the
+apex apps are to `postern.<domain>`. From there it sees no cookie, worker,
+preferences or cache of Postern's. The cache-poisoning tests write from a
+Postern page instead, since no other app can reach the cache now, and the
+hash check still refuses every rewritten file. The typecheck, lint, 1135 unit
+tests and all 34 browser tests pass against the local Stalwart, and
+`web/dist` names `/webmail/` nowhere. The decision carries the revisit, the
+security pages lost the shared-origin list, and keeping a session across
+reloads is filed as an open question. brief-board is down, so nothing was
+posted there.

@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { labelCounts, manifestCounts, restoreMail, snapshotMail, type LabelCounts } from "./lib/devmail.ts";
-import { APP_URL, CADDY_CONTAINER, CADDY_IMAGE, DIST_DIR, E2E_DIR, E2E_PORT } from "./lib/env.ts";
+import { APP_URL, CADDY_CONTAINER, CADDY_IMAGE, DIST_DIR, E2E_DIR, E2E_PORT, PROBE_PORT } from "./lib/env.ts";
 
 const STALWART = process.env.POSTERN_DEV_API ?? "http://127.0.0.1:18080";
 
@@ -72,6 +72,8 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     CADDY_CONTAINER,
     "--publish",
     `127.0.0.1:${E2E_PORT}:80`,
+    "--publish",
+    `127.0.0.1:${PROBE_PORT}:81`,
     "--add-host",
     "host.docker.internal:host-gateway",
     "--volume",

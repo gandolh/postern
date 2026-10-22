@@ -1,6 +1,6 @@
 ---
-summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), the shared production origin and what a script elsewhere on it can still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
-updated: 2026-10-21
+summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), its own host since 2026-10-22 (another estate app can no longer reach it) and what a script on Postern's own origin could still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
+updated: 2026-10-22
 ---
 
 # Security
@@ -11,8 +11,10 @@ updated: 2026-10-21
    CSS that disguises a phishing form, tracking pixels, `javascript:` and
    look-alike links, a forged `From:` display name, and attachments named to
    deceive (`invoice.pdf.html`).
-2. **The shared origin.** Any script on the production origin, in any estate app, runs
-   with Postern's origin ([decisions.md](decisions.md)).
+2. **Script on Postern's origin.** Until 2026-10-22 that was any script in any
+   estate app, because they shared one origin. Postern now has a host of its
+   own, `postern.<domain>` ([decisions.md](decisions.md)), so it is only a
+   script that gets to run on that host.
 3. **Stolen tokens.** A bearer token is the mailbox.
 4. **Framing.** Another site embedding Postern to trick clicks.
 
@@ -26,7 +28,7 @@ updated: 2026-10-21
 - **Remote content.** Blocked by default. The sanitiser moves `src`, `srcset`,
   `background` and CSS `url()` aside. "Display images" restores them for one
   message, and "Always display images from <sender>" adds a per-sender
-  allowance. A `srcdoc` frame inherits the embedder's CSP, so `/webmail`'s CSP
+  allowance. A `srcdoc` frame inherits the embedder's CSP, so Postern's CSP
   must allow `img-src https:` for display-images to work. The blocking is the
   sanitiser's job, not the CSP's.
 - **Senders and links.**
@@ -66,7 +68,7 @@ updated: 2026-10-21
   already saw "Message sent"), and this device's Web Push subscription is
   destroyed. The hooks' requests share the client, so in that window
   `authorization()` answers any caller. Then the address bar goes back to
-  `/webmail/` with no hash (replaced, not pushed; the page cannot erase the
+  `/` with no hash (replaced, not pushed; the page cannot erase the
   earlier history entries) and the undo list empties, so the next person on
   the tab inherits neither the route nor an undo.
 - **Failed passwords and the ban.** Stalwart counts failed sign-ins per IP and
@@ -79,7 +81,7 @@ updated: 2026-10-21
   and a refresh never uses the password. Dev bans for 1 minute and
   allow-lists Docker's gateway, so tests never ban the machine.
 - **No third-party scripts, fonts or analytics.** Everything is self-hosted
-  from `/webmail`.
+  from Postern's own host.
 
 ## Message rendering as built (brief 07, 2026-10-20)
 
@@ -128,14 +130,10 @@ updated: 2026-10-21
 
 ## The service worker (brief 16)
 
-- Scope `/webmail/`. It precaches the app shell only, routes nothing under
-  `/webmail-api`, holds no token and makes no JMAP call.
-- **Estate rules it depends on:** Caddy must never send
-  `Service-Worker-Allowed`, and no estate app may register a worker with
-  scope `/`. On a first load, before Postern's own worker controls the page,
-  a root-scope worker would see Postern's `/webmail-api` requests, the
-  `Authorization` header included. Another app cannot claim `/webmail/`
-  without serving a script under `/webmail/`.
+- Scope `/`, the whole host, since 2026-10-22 (`/webmail/` before). It
+  precaches the app shell only, routes nothing under `/webmail-api` (inside
+  the scope, kept out by `web/src/sw/routing.ts`), holds no token and makes
+  no JMAP call. No other app can register a worker on Postern's host.
 - **Notifications are readable.** While one is on screen, any script on the
   origin can read its sender and subject through
   `registration.getNotifications()` ([decisions.md](decisions.md)).
@@ -147,26 +145,29 @@ and the Caddy shape, are in [security-headers.md](security-headers.md).
 `style-src 'unsafe-inline'` stays, and only for the message frames: a
 `srcdoc` frame inherits the app's policy and cannot loosen it, and message
 markup needs inline styles. `frame-ancestors 'none'` and COOP `same-origin`
-mean no other app on the origin can frame Postern or script a Postern window
-it opened.
+mean no other page can frame Postern or script a Postern window it opened.
 
-## What a script elsewhere on the origin can still do
+## What another estate app can reach, and what a script on the origin could
 
-Checked from a stand-in estate page (`tokens.spec.ts`, 2026-10-20). It
-**cannot** read a token: none is in storage, cookies, IndexedDB, Cache
-Storage, a URL, the DOM or a console line, and nothing is sent on a
-BroadcastChannel. It cannot frame Postern, and a window it opens on
-`/webmail/` comes back closed. It **can**:
+From a stand-in estate page on another origin of the same site
+(`tokens.spec.ts`, 2026-10-22), as the apex apps are to `postern.<domain>`:
+no cookie, worker registration, preferences or cache of Postern's, nothing on
+a BroadcastChannel, no frame, and a window it opens comes back closed. On the
+shared origin, until 2026-10-22, it could reach the preferences, the worker
+and notifications.
 
-- read and write Postern's per-device preferences, including ones that load
-  remote images or turn Web Push on (F6), and read the last username;
-- see the worker's registration, read a notification on screen, show its own,
-  and unregister the worker;
+What is left is a script on Postern's own origin, which none should be (no
+third-party scripts, message HTML only in the sandbox). It could not read a
+token (none is in storage, cookies, IndexedDB, Cache Storage, a URL, the DOM
+or a console line), but it **could**:
+
+- read and write the per-device preferences, including ones that load remote
+  images or turn Web Push on (F6), and read the last username;
+- read a notification on screen, show its own, and unregister the worker;
 - write to Cache Storage, but not have it served: the worker checks every
-  cached file against a hash baked into `sw.js` and rebuilds its headers
-  (F1, fixed 2026-10-20);
-- show a sign-in form of its own, which the browser's password manager may
-  fill, because saved passwords belong to the origin, not to `/webmail/`.
+  cached file against a hash baked into `sw.js` (F1, fixed 2026-10-20, still
+  tested);
+- show a sign-in form the browser's password manager may fill.
 
 ## The malicious-mail corpus and the browser tests
 

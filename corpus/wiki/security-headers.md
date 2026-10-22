@@ -1,6 +1,6 @@
 ---
-summary: The HTTP headers production sends for /webmail and /webmail-api, final since brief 17 (2026-10-20). The exact CSP and why each directive is there (style-src 'unsafe-inline' exists only for the message frames, and why it cannot go), COOP, CORP, Permissions-Policy, nosniff, no-referrer, X-Frame-Options, the /webmail-api path allowlist, which screens were proven under them, and the Caddy route shape brief 18 deploys. Read before changing a header or the Caddy route.
-updated: 2026-10-20
+summary: The HTTP headers production sends for Postern and /webmail-api on postern.<domain>, final since brief 17 (2026-10-20), on its own host since brief 19 (2026-10-22). The exact CSP and why each directive is there (style-src 'unsafe-inline' exists only for the message frames, and why it cannot go), COOP, CORP, Permissions-Policy, nosniff, no-referrer, X-Frame-Options, the /webmail-api path allowlist, which screens were proven under them, and the Caddy route shape ../vps-deploy renders. Read before changing a header or the Caddy route.
+updated: 2026-10-22
 ---
 
 # Security headers
@@ -13,7 +13,7 @@ CSP violations. The same text lives in
 the served headers against. Change the three together. Why the headers
 matter: [security.md](security.md).
 
-## /webmail/ (every response: HTML, JS, CSS, sw.js, the manifest)
+## Postern (every response on the host but /webmail-api: HTML, JS, CSS, sw.js, the manifest)
 
 ```
 Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'
@@ -29,7 +29,7 @@ X-DNS-Prefetch-Control: off
 Also: `Cache-Control: no-cache` by default (`?Cache-Control` in Caddy, so
 `index.html`, `sw.js`, the manifest and deep-link fallbacks all revalidate; a
 path list would miss the fallbacks, since Caddy's matchers run before
-`try_files`); `public, max-age=31536000, immutable` on `/webmail/assets/*`;
+`try_files`); `public, max-age=31536000, immutable` on `/assets/*`;
 `Content-Type: application/manifest+json` on the manifest; no `Server`
 header; never `Service-Worker-Allowed` (brief 16's estate rule).
 
@@ -39,7 +39,7 @@ Only the paths Postern calls pass: `/webmail-api/jmap/*` (session, API,
 upload, download, event source), `/webmail-api/api/auth`,
 `/webmail-api/auth/token` and `/webmail-api/auth/userinfo`. Everything else is
 404, so Stalwart's admin UI, account pages, OAuth login page, management API
-(`/api/*`), discovery and health endpoints stay off the shared origin. The
+(`/api/*`), discovery and health endpoints stay off Postern's origin. The
 responses gain:
 
 ```
@@ -82,15 +82,15 @@ event source needs `flush_interval -1`, so each event is written as it comes.
   carrying `<base>` logs one refused `base-uri` violation before DOMPurify
   drops the element (the base-href fixture).
 - **`frame-ancestors 'none'` and `X-Frame-Options: DENY`.** Nothing frames
-  Postern, not even another estate app on the origin. That closes the
-  "same-origin frame" route to Postern's memory named in
-  [decisions.md](decisions.md); `tokens.spec.ts` checks it.
+  Postern, not even another estate app. On the shared origin this closed the
+  "same-origin frame" route to Postern's memory ([decisions.md](decisions.md));
+  `tokens.spec.ts` checks it from another origin now.
 - **`Cross-Origin-Opener-Policy: same-origin`.** A window another estate app
-  opens on `/webmail/` comes back closed to it (tested), so it cannot script a
+  opens on Postern comes back closed to it (tested), so it cannot script a
   Postern tab it opened. The PDF preview tab and Web Push are unaffected
-  (tested). Caveat: this holds only while the opener's own document does not
-  send COOP `same-origin` too. `noopener-allow-popups` removes that dependency
-  and works in Chrome; check Firefox and Safari before switching.
+  (tested). On the shared origin this held only while the opener did not send
+  COOP `same-origin` too; an opener on another origin is always cut off, so
+  that caveat ended on 2026-10-22.
 - **`Cross-Origin-Resource-Policy: same-origin`.** No other origin loads
   Postern's files or Stalwart's answers as images or scripts.
 - **`Permissions-Policy`.** Features Postern never uses, closed for the app
@@ -117,32 +117,36 @@ Web Push opt-in), Accounts, Labels, Filters; the HTML signature preview in its
 `sandbox=""` frame; a conversation with inline `cid:` images; the image
 preview; the PDF preview tab; "Display images" on the remote-content fixture;
 the composer with a formatted paste and a pasted inline image; the service
-worker registering at `/webmail/`; the phone layout at 390 px. A control test
+worker registering at `/webmail/` (at `/` since 2026-10-22, re-run then); the phone layout at 390 px. A control test
 injects an inline script and sees the watch catch it.
 
-## The Caddy shape brief 18 deploys
+## The Caddy shape on postern.<domain>
 
-The estate's route generator (`../vps-deploy/lib/constructs/caddy.ts`,
-`renderRoute`) writes `handle_path` blocks with no headers and no path
-matchers today, so brief 18 extends the construct rather than pasting this in.
-What [the e2e Caddyfile](../../web/e2e/Caddyfile) proves:
+`../vps-deploy` renders Postern's site block from its stacks
+(`../vps-deploy/stacks/postern.ts`, and the `/webmail-api` route in
+`../vps-deploy/stacks/mail.ts`). What
+[the e2e Caddyfile](../../web/e2e/Caddyfile) proves, in the order Caddy tries
+the blocks:
 
 ```
-redir /webmail /webmail/ 308
-handle_path /webmail/* {
-	root * <web/dist on the server>
-	header { <the /webmail/ set above> ; ?Cache-Control "no-cache" ; -Server }
-	header /assets/* Cache-Control "public, max-age=31536000, immutable"
-	header /manifest.webmanifest Content-Type "application/manifest+json"
-	encode gzip zstd
-	try_files {path} {path}/ /index.html
-	file_server
-}
 @api path /webmail-api/jmap/* /webmail-api/api/auth /webmail-api/auth/token /webmail-api/auth/userinfo
 handle @api {
 	uri strip_prefix /webmail-api
 	header { <the /webmail-api/ set above> ; -Server }
 	reverse_proxy <stalwart> { flush_interval -1 }
+}
+@api_refused path /webmail-api /webmail-api/*
+handle @api_refused {
+	respond 404
+}
+handle {
+	root * <web/dist on the server>
+	header { <the Postern set above> ; ?Cache-Control "no-cache" ; -Server }
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+	header /manifest.webmanifest Content-Type "application/manifest+json"
+	encode gzip zstd
+	try_files {path} {path}/ /index.html
+	file_server
 }
 ```
 

@@ -1,6 +1,6 @@
 ---
-summary: What Postern is in a paragraph. A Gmail-like webmail for the owner's own mail on the production domain, a static web app at /webmail that talks JMAP to the estate's Stalwart server, with no backend of its own. Who uses it, what it copies from Gmail, what it leaves out, and where the other pieces live.
-updated: 2026-10-09
+summary: What Postern is in a paragraph. A Gmail-like webmail for the owner's own mail on the production domain, a static web app at the root of its own host, postern.<domain>, that talks JMAP to the estate's Stalwart server, with no backend of its own. Who uses it, what it copies from Gmail, what it leaves out, and where the other pieces live.
+updated: 2026-10-22
 ---
 
 # Overview
@@ -11,12 +11,13 @@ loose messages, labels instead of folders, a search box that understands
 `from:` and `has:attachment`, a composer that floats bottom-right, keyboard
 shortcuts, and live updates.
 
-It is a static web app, served at `/webmail`. Everything it
+It is a static web app, served at the root of its own host,
+`postern.<domain>` (at `/webmail` on the shared origin until 2026-10-22). Everything it
 knows comes from the estate's mail server, Stalwart, over JMAP (RFC 8620 and
 8621), a JSON-over-HTTPS mail protocol. Stalwart parses MIME, threads
 conversations, runs the search and pushes changes, so Postern needs no server
 of its own. It reaches Stalwart at `/webmail-api`, on the same
-origin, so the browser needs no CORS.
+host, so the browser needs no CORS.
 
 **Users:** the owner first, plus anyone the owner gives a mailbox on
 the production domain. Phones and desktop mail apps keep working over IMAP. Postern is in

@@ -1,8 +1,9 @@
 // The app shell the worker serves offline, checked on every read (finding F1,
 // corpus/wiki/security-findings.md).
 //
-// Cache Storage belongs to the whole origin, so any script in any estate app
-// can rewrite what is in it. The worker therefore trusts nothing it reads
+// Cache Storage belongs to the whole origin, so any script that runs on it can
+// rewrite what is in it. Since 2026-10-22 the origin is Postern's alone, but a
+// cache is still the browser's to keep, not the build's. The worker therefore trusts nothing it reads
 // back: the build bakes a SHA-256 for every shell file into sw.js (the
 // browser fetches the worker script itself from the network and keeps it
 // where no page script can write), and every cached body is hashed and
@@ -14,7 +15,7 @@
 // refilled only with a body that matches its hash.
 //
 // Never cached or answered: anything under /webmail-api, anything outside
-// /webmail/, any file the build did not list with a hash, any method but GET.
+// the scope, any file the build did not list with a hash, any method but GET.
 //
 // Pure apart from what comes in through ShellDeps, so it is tested with a fake
 // CacheStorage (shell.test.ts). sw.ts wires it to the worker's events.
@@ -42,7 +43,7 @@ export interface ShellFile {
 export interface ShellDeps {
   caches: Pick<CacheStorage, "open" | "keys" | "delete">;
   fetch: (input: Request | string, init?: RequestInit) => Promise<Response>;
-  /** The registration's scope URL, e.g. https://example.org/webmail/ */
+  /** The registration's scope URL, e.g. https://postern.example.org/ */
   scopeUrl: string;
 }
 

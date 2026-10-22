@@ -1,6 +1,6 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at /webmail with Stalwart at /webmail-api on the shared estate origin (and what that costs); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack. Read before proposing to change any of these.
-updated: 2026-10-21
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack. Read before proposing to change any of these.
+updated: 2026-10-22
 ---
 
 # Decisions
@@ -32,42 +32,40 @@ tokens from page scripts, but a script on the same origin could still drive it.
 That is the threat the next entry is about. It would also be one more service
 to run. Revisit if a feature truly needs one.
 
-## Served at /webmail, sharing the estate's origin
-_2026-10-09, owner_. Postern lives at `/webmail`, and Stalwart
-is reachable at `/webmail-api`. Rejected:
+## Served at the root of its own host, `postern.<domain>`
+_2026-10-21, owner; built 2026-10-22 (brief 19)_. Postern lives at the root of
+`postern.<domain>`, and Stalwart's API at `/webmail-api` on that same host,
+routed by `../vps-deploy` (its brief 14). Postern was never deployed, so
+nobody had a `/webmail` install, bookmark or push subscription to lose.
 
-- `mail.<domain>/webmail`: its own origin, shared only with Stalwart's admin
-  UI.
-- `webmail.<domain>`: fully isolated, but it needs CORS, and Stalwart's only
-  CORS option allows every origin.
+**This revisits "Served at /webmail, sharing the estate's origin"**
+(2026-10-09, owner). That call put Postern at `/webmail` and Stalwart at
+`/webmail-api` on the production origin every estate app shares. It rejected
+`mail.<domain>/webmail` (an origin shared with Stalwart's admin UI) and
+`webmail.<domain>`, because the API would sit on another origin and need
+CORS, and Stalwart's only CORS option allows every origin. That objection
+held only with the API elsewhere. With the API on Postern's own host there is
+no CORS, and `connect-src 'self'` keeps working.
 
-**What it costs:** a browser origin is scheme + host + port, so every app on
-the production origin (atrium, prm, ward's UI, the presentation sites, and every
-dependency they load) runs in the same origin as Postern. When this was decided,
-a script injected into any of them could have framed Postern, read its memory
-and called `/webmail-api` with its tokens. As built (revisited 2026-10-21),
-`frame-ancestors 'none'` and COOP close the frame and opener routes, and the
-tokens are in no storage, so that script cannot reach a token (proved by
-`web/e2e/tokens.spec.ts`). What it still can do is everything that rides on
-origin-wide storage: rewrite Postern's preferences, read a notification on
-screen, unregister the service worker, and show a sign-in form of its own that
-the browser's password manager may fill, since saved passwords belong to the
-origin. Its attempt to plant a page in the service worker's cache is refused
-(the worker checks every file's hash). The list is in
-[security.md](security.md). Ward and the other apps already share that origin,
-so this adds no new kind of risk to the estate. It puts much more value behind
-the existing one.
+**What the shared origin cost, and why the owner moved it.** Every app on the
+apex (atrium, prm, the presentation sites, and every dependency they load) ran
+in Postern's origin. As built, `frame-ancestors 'none'`, COOP and in-memory
+tokens kept a script in any of them from reaching a token, but it could still
+rewrite Postern's preferences, read a notification on screen, unregister the
+worker and show a sign-in form the password manager might fill. On its own
+host none of that reaches Postern from another app; what is left is a script
+that runs on Postern's own origin ([security.md](security.md)). The estate's
+rule since 2026-10-21: an app that holds a shell or a mailbox gets a host of
+its own.
 
-**Mitigations, all required:**
+**Mitigations, all kept:**
 
-- tokens in memory only;
+- tokens in memory only, until the owner decides otherwise
+  ([open-questions.md](open-questions.md));
 - message HTML only in the sandbox;
-- a strict CSP on `/webmail`, with `frame-ancestors 'none'` and COOP;
+- a strict CSP, with `frame-ancestors 'none'` and COOP;
 - a service worker that serves only files whose hash it knows;
 - no third-party scripts.
-
-Revisit if an app with untrusted content (user uploads rendered as HTML, a
-forum) ever joins the apex.
 
 ## Labels are JMAP mailboxes; archive means leaving the Inbox
 _2026-10-09_. Each Gmail-style label is a JMAP `Mailbox`. A message can sit in
@@ -82,8 +80,8 @@ lose the labels.
 _2026-10-09_. Every body is sanitised, then shown through `srcdoc` in an
 `<iframe sandbox>` without `allow-scripts` or `allow-same-origin`. Remote images
 stay blocked until asked for. Rejected: sanitising and inserting the HTML into
-the app's DOM. One sanitiser bug would then be script execution on the production origin,
-which, per the entry above, is every app's problem. See
+the app's DOM. One sanitiser bug would then be script execution on Postern's
+origin, with the mailbox in reach. See
 [security.md](security.md).
 
 ## Tokens in memory only
@@ -91,7 +89,8 @@ _2026-10-09_. Access and refresh tokens never touch `localStorage`,
 `sessionStorage`, IndexedDB or a script-readable cookie. All of those are
 readable by any script on the origin. The cost is that a reload or a new tab
 means signing in again, which Gmail users do not expect. The owner kept that
-cost on 2026-10-20; see the next entry.
+cost on 2026-10-20; see the next entry. The origin has been Postern's alone
+since 2026-10-22, and the rule stands until the owner revisits it.
 
 ## No staying signed in across a reload
 _2026-10-20, owner_. A reload or a new tab signs in again; the tokens die with
@@ -113,9 +112,15 @@ in again is a fill and a click. Rejected:
 Reason: every way to survive a reload stores a secret somewhere another
 estate app's script can reach. Revisit only if Postern gets its own origin.
 
+**2026-10-22:** it has one (brief 19), so the condition for a revisit is met.
+Nothing changed: the tokens still die with the tab. Whether to keep a session
+across reloads now is the owner's call, filed in
+[open-questions.md](open-questions.md).
+
 ## Postern is not registered as an OAuth client
 _2026-10-20_. Postern signs in with the constant client ID `postern` and the
-redirect URI `${origin}/webmail/`, and registers nothing. Stalwart 0.16.25
+redirect URI `${origin}/` (`${origin}/webmail/` until 2026-10-22), and
+registers nothing. Stalwart 0.16.25
 checks a client ID against its registry only when `requireClientRegistration`
 is on; it is off by default, and neither dev's nor production's plan turns it
 on. Stalwart only checks that the token request repeats the sign-in's

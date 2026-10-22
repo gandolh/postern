@@ -4,7 +4,7 @@
 //
 //   - no script runs: the canary stays unset in the app and in the frame, and
 //     nothing in the frame was even left for the sandbox to block;
-//   - nothing is fetched outside /webmail and /webmail-api until "Display
+//   - nothing is fetched outside Postern's origin until "Display
 //     images", and after it only the message's own image hosts, with no
 //     Referer;
 //   - the app never navigates: same URL, no top-frame navigation, and a link
@@ -252,7 +252,7 @@ for (const [slug, expectation] of Object.entries(EXPECTED)) {
       }
     });
 
-    await test.step("nothing fetched outside /webmail before Display images", async () => {
+    await test.step("nothing fetched outside Postern's origin before Display images", async () => {
       expect(rec.foreignRequests()).toEqual([]);
       expect(rec.cspConsole().filter((line) => !(expectation.expectedCsp ?? []).some((re) => re.test(line)))).toEqual([]);
     });
@@ -267,7 +267,7 @@ for (const [slug, expectation] of Object.entries(EXPECTED)) {
         await bar.getByRole("button", { name: "Display images below" }).click();
         await expect(bar).toHaveCount(0);
         await page.waitForTimeout(1_500);
-        const after = rec.requests.slice(before).filter((r) => !r.url().startsWith(`${ORIGIN}/webmail`) && !r.url().startsWith("data:"));
+        const after = rec.requests.slice(before).filter((r) => !r.url().startsWith(`${ORIGIN}/`) && !r.url().startsWith("data:"));
         expect(after.length, "remote images were requested").toBeGreaterThan(0);
         for (const request of after) {
           const url = new URL(request.url());

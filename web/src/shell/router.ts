@@ -1,4 +1,4 @@
-// Hash routes under /webmail/, as Gmail has them. Every brief navigates
+// Hash routes under the base (`/`), as Gmail has them. Every brief navigates
 // through this module and never edits it.
 //
 //   #inbox  #starred  #sent  #drafts  #spam  #trash  #all     system labels

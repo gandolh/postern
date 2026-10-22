@@ -65,9 +65,9 @@ export interface MessageSourceLike {
  * May this sender make a waiting worker take over (finding F7)? Only a
  * top-level window of Postern's own: same origin, under the scope. A waiting
  * worker controls no client yet, so "one of its own clients" cannot be asked;
- * the path is what tells Postern's windows from another estate app's, since
- * frame-ancestors 'none' and COOP same-origin keep other apps' script out of
- * any /webmail/ window.
+ * the path is what tells Postern's windows from any other page on the origin,
+ * since frame-ancestors 'none' and COOP same-origin keep other pages' script
+ * out of any window under the scope.
  */
 export function mayRequestUpdate(source: unknown, origin: string, scope: string): boolean {
   if (typeof source !== "object" || source === null) return false;

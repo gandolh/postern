@@ -1,12 +1,15 @@
 # Postern served the way production serves it, for the browser tests
-# (brief 17). global-setup.ts runs it in Docker (caddy:2.11.7) on
-# 127.0.0.1:5193, with web/dist mounted at /srv/webmail and the dev Stalwart
-# reached through Docker Desktop's host.docker.internal.
+# (brief 17; at the root of its own origin since brief 19). global-setup.ts
+# runs it in Docker (caddy:2.11.7): Postern on 127.0.0.1:5193, with web/dist
+# mounted at /srv/webmail, and a stand-in for another estate app on
+# 127.0.0.1:5194. Both are localhost, so the same site on two origins, as the
+# apps on the apex are to postern.<domain>. The dev Stalwart is reached through
+# Docker Desktop's host.docker.internal.
 #
-# The /webmail and /webmail-api blocks are the shape brief 18 gives the
-# estate's Caddy; corpus/wiki/security-headers.md has the header set and why
-# each one is there. Only three things here are test scaffolding: plain HTTP on
-# :80, the /probe/ stand-in for another estate app, and the env defaults.
+# The :80 block is the shape ../vps-deploy renders for postern.<domain>;
+# corpus/wiki/security-headers.md has the header set and why each one is
+# there. Only three things here are test scaffolding: plain HTTP, the :81
+# stand-in, and the env defaults.
 #
 # POSTERN_CSP overrides the policy for one run (used once, to check whether the
 # app itself needs style-src 'unsafe-inline'). Leave it unset otherwise.
@@ -16,45 +19,24 @@
 	persist_config off
 }
 
-:80 {
-	# Another estate app on the same origin, with no headers of its own.
-	# tokens.spec.ts probes Postern's storage, caches and windows from here.
+# Another estate app, on an origin of its own, with no headers of its own.
+# tokens.spec.ts looks for Postern's secrets and windows from here.
+:81 {
 	handle_path /probe/* {
 		header Content-Type "text/html; charset=utf-8"
-		respond `<!doctype html><html lang="en"><meta charset="utf-8"><title>Another estate app</title><p>Another app on the same origin.</p></html>` 200
+		respond `<!doctype html><html lang="en"><meta charset="utf-8"><title>Another estate app</title><p>Another app, another origin.</p></html>` 200
 	}
 
-	redir /webmail /webmail/ 308
-
-	handle_path /webmail/* {
-		root * /srv/webmail
-		header {
-			Content-Security-Policy "{$POSTERN_CSP:default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'}"
-			Cross-Origin-Opener-Policy "same-origin"
-			Cross-Origin-Resource-Policy "same-origin"
-			Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=(), display-capture=(), publickey-credentials-get=(), browsing-topics=()"
-			Referrer-Policy "no-referrer"
-			X-Content-Type-Options "nosniff"
-			X-Frame-Options "DENY"
-			X-DNS-Prefetch-Control "off"
-			# no-cache unless a path sets its own: index.html, sw.js, the
-			# manifest and deep-link fallbacks revalidate. A path matcher here
-			# would miss the fallbacks, because it runs before try_files.
-			?Cache-Control "no-cache"
-			-Server
-		}
-		# handle_path has stripped /webmail: these paths are inside it.
-		header /assets/* Cache-Control "public, max-age=31536000, immutable"
-		header /manifest.webmanifest Content-Type "application/manifest+json"
-		encode gzip zstd
-		try_files {path} {path}/ /index.html
-		file_server
+	handle {
+		respond 404
 	}
+}
 
+:80 {
 	# Stalwart, prefix stripped, and only the paths Postern calls: JMAP
 	# (session, API, upload, download, event source) and the three sign-in
 	# endpoints. Stalwart's admin UI, account pages, OAuth login page and
-	# management API stay off the shared origin.
+	# management API stay off Postern's origin.
 	@api path /webmail-api/jmap/* /webmail-api/api/auth /webmail-api/auth/token /webmail-api/auth/userinfo
 	handle @api {
 		uri strip_prefix /webmail-api
@@ -72,8 +54,33 @@
 			flush_interval -1
 		}
 	}
+	# The rest of /webmail-api, refused rather than given the app's fallback.
+	@api_refused path /webmail-api /webmail-api/*
+	handle @api_refused {
+		respond 404
+	}
 
 	handle {
-		respond 404
+		root * /srv/webmail
+		header {
+			Content-Security-Policy "{$POSTERN_CSP:default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'}"
+			Cross-Origin-Opener-Policy "same-origin"
+			Cross-Origin-Resource-Policy "same-origin"
+			Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=(), display-capture=(), publickey-credentials-get=(), browsing-topics=()"
+			Referrer-Policy "no-referrer"
+			X-Content-Type-Options "nosniff"
+			X-Frame-Options "DENY"
+			X-DNS-Prefetch-Control "off"
+			# no-cache unless a path sets its own: index.html, sw.js, the
+			# manifest and deep-link fallbacks revalidate. A path matcher here
+			# would miss the fallbacks, because it runs before try_files.
+			?Cache-Control "no-cache"
+			-Server
+		}
+		header /assets/* Cache-Control "public, max-age=31536000, immutable"
+		header /manifest.webmanifest Content-Type "application/manifest+json"
+		encode gzip zstd
+		try_files {path} {path}/ /index.html
+		file_server
 	}
 }

@@ -13,9 +13,9 @@
 //
 // Messages from the worker (sw/protocol.ts):
 // Finding F8: a message counts only when it comes from Postern's own worker,
-// the active worker of the /webmail/ registration running /webmail/sw.js
-// (acceptsSource); a worker another estate app registers at its own scope can
-// reach this page too.
+// the active worker of the registration at the base running <base>sw.js
+// (acceptsSource). Kept since Postern moved to its own host (2026-10-22): no
+// other app's worker can reach the page there, but the check costs nothing.
 //
 //   PUSH_VERIFICATION   Stalwart's code for a new subscription -> verificationInbox
 //   OPEN                a notification was clicked -> show that route here
@@ -108,7 +108,7 @@ export function acceptsSource(source: unknown, trusted: readonly (WorkerLike | n
   return trusted.some((worker) => worker !== null && worker !== undefined && worker === source);
 }
 
-/** The worker's script and scope: `/webmail/sw.js`, `/webmail/`. */
+/** The worker's script and scope: `/sw.js`, `/`. */
 function workerUrls(): { scope: string; scriptUrl: string } {
   const scope = import.meta.env.BASE_URL;
   return { scope, scriptUrl: new URL(`${scope}sw.js`, window.location.origin).href };
