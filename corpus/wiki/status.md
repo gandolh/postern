@@ -60,8 +60,8 @@ Each needs server work, or a check against Stalwart, before it can be a brief:
 Things only the owner can do, collected from the briefs as they finished.
 
 - **Deploy** (brief 18, on its own host since brief 19). After
-  `../vps-deploy` brief 14 (code done 2026-10-22). DNS is already in place: a
-  wildcard record answers for `postern.<domain>`. From a clean, committed
+  `../vps-deploy` brief 14 (code done 2026-10-22). DNS is already in place: `postern.<domain>`
+  has its A record. Deploy Ward first, in `../vps-deploy` brief 16's order. From a clean, committed
   checkout of this repo (the build runs in it, and `npm ci` replaces its
   `node_modules`), in `../vps-deploy`:
 
