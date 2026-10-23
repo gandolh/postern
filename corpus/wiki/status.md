@@ -52,12 +52,12 @@ are the owner steps at the end of this page. Neither repo is pushed.
 **Wave 8: Gmail parity, from the parked todos (filed 2026-10-23)**
 - [22](../briefs/todo/22-conversation-view-off.md): conversation view off, one row per message; a row is a one-message conversation, so the planners stay as they are.
 - [23](../briefs/todo/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded.
+- [24](../briefs/todo/24-snooze.md): snooze, run by the browser (the owner's call, 2026-10-23): a hidden Snoozed label plus a keyword holding the time; it wakes while Postern is open.
 
 ## Parked (todos)
 
 Each needs server work, or a check against Stalwart, before it can be a brief:
 
-- [snooze](../todos/snooze.md)
 - [inbox category tabs](../todos/inbox-category-tabs.md)
 - [calendar invites](../todos/calendar-invites.md)
 

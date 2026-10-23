@@ -349,3 +349,11 @@ against the dev Stalwart, including cancel and restart; if Stalwart doesn't hold
 message the brief stops and moves to `superseded/` with the finding, since undo send is
 client-held and there is no server-side precedent to lean on. Snooze, inbox category tabs
 and calendar invites stay parked for the owner's call.
+
+## [2026-10-23] decision | Snooze runs in the browser; brief 24
+
+Asked what snooze does without a server-side mechanism, the owner chose the
+browser-only version over a scheduler service or dropping it. Recorded in
+[decisions.md](wiki/decisions.md). [Brief 24](briefs/todo/24-snooze.md) keeps the wake-up
+time on the server as a keyword beside a hidden Snoozed label, so every device agrees,
+and wakes conversations once a minute while Postern is open.

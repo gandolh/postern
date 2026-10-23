@@ -2,3 +2,4 @@
 # remove a line when its directory lands. All planned roots now exist
 # (brief 01 created jmap and web, brief 02 created dev), so this file holds
 # only this note.
+web/src/snooze

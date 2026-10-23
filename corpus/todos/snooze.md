@@ -1,9 +1,11 @@
 ---
 title: Snooze a conversation until a chosen time
 created: 2026-10-09
-status: open
+status: promoted
 tags: [gmail-parity, needs-server]
 ---
+
+Promoted 2026-10-23 into [brief 24](../briefs/todo/24-snooze.md); the owner chose the browser-only version.
 
 # Snooze a conversation until a chosen time
 

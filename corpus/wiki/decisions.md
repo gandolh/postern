@@ -198,3 +198,11 @@ confirmation also stays: it is an inline box in a table cell, not an overlay.
 The two comboboxes (recipients, search) stay hand-built, and so does the sender
 card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
 card holds actions that keyboard users reach by Tab.
+
+## Snooze runs in the browser
+_2026-10-23_, the owner's call. Snoozed mail waits in a hidden Snoozed label with
+its wake-up time in a keyword, and an open Postern moves it back to the Inbox when
+the time comes. A laptop left shut skips the wake-up until Postern is opened again.
+Rejected: a small scheduler service on the VPS, which would wake mail on time but
+breaks "No backend of our own"; and dropping snooze. Brief 24 first checks that
+Stalwart has no server-side way, and brings one back to the owner if it does.
