@@ -1,8 +1,11 @@
-// A menu button: the toolbar's select menu and "More". Arrow keys move,
-// Escape closes and returns focus, a click outside closes.
+// A menu button: the toolbar's select menu and "More", on Base UI's Menu.
+// Arrow keys and a typed letter move, Escape closes and returns focus, a
+// click outside closes (and still lands where it was aimed). A chosen item
+// runs once focus is back on the button, so one that opens a dialog keeps it.
 
+import { Menu } from "@base-ui/react/menu";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useRef } from "react";
 import { IconButton } from "../shell/IconButton";
 
 export interface MenuItem {
@@ -22,87 +25,43 @@ export interface MenuButtonProps {
 }
 
 export function MenuButton({ label, icon, items, align = "start", className }: MenuButtonProps) {
-  const [open, setOpen] = useState(false);
-  const id = useId();
-  const buttonRef = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    menuRef.current?.querySelector<HTMLButtonElement>("[role=menuitem]:not(:disabled)")?.focus();
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-      if (!menuRef.current?.contains(target) && !buttonRef.current?.contains(target)) setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  const close = (refocus: boolean) => {
-    setOpen(false);
-    if (refocus) buttonRef.current?.focus();
-  };
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const entries = [...(menuRef.current?.querySelectorAll<HTMLButtonElement>("[role=menuitem]:not(:disabled)") ?? [])];
-    const at = entries.indexOf(document.activeElement as HTMLButtonElement);
-    const move = (to: number) => entries[(to + entries.length) % entries.length]?.focus();
-    switch (event.key) {
-      case "ArrowDown":
-        move(at + 1);
-        break;
-      case "ArrowUp":
-        move(at - 1);
-        break;
-      case "Home":
-        move(0);
-        break;
-      case "End":
-        move(entries.length - 1);
-        break;
-      case "Escape":
-        close(true);
-        break;
-      case "Tab":
-        close(false);
-        return;
-      default:
-        return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-  };
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const chosen = useRef<MenuItem | null>(null);
 
   return (
     <div className={className ? `list-menu ${className}` : "list-menu"}>
-      <IconButton
-        ref={buttonRef}
-        label={label}
-        icon={icon}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={open ? id : undefined}
-        onClick={() => setOpen((o) => !o)}
-      />
-      {open ? (
-        <div ref={menuRef} id={id} role="menu" aria-label={label} className="list-menu-popup" data-align={align} onKeyDown={onKeyDown}>
-          {items.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              role="menuitem"
-              className="list-menu-item"
-              disabled={item.disabled}
-              onClick={() => {
-                close(true);
+      <Menu.Root modal={false}>
+        <Menu.Trigger ref={buttonRef} render={<IconButton label={label} icon={icon} />} />
+        <Menu.Portal>
+          <Menu.Positioner className="list-menu-positioner" side="bottom" align={align} sideOffset={4} collisionPadding={8}>
+            <Menu.Popup
+              className="list-menu-popup"
+              aria-label={label}
+              finalFocus={() => {
+                const item = chosen.current;
+                if (!item) return true;
+                chosen.current = null;
+                buttonRef.current?.focus();
                 item.onSelect();
+                return false;
               }}
             >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+              {items.map((item) => (
+                <Menu.Item
+                  key={item.label}
+                  className="list-menu-item"
+                  disabled={item.disabled}
+                  onClick={() => {
+                    chosen.current = item;
+                  }}
+                >
+                  {item.label}
+                </Menu.Item>
+              ))}
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
     </div>
   );
 }

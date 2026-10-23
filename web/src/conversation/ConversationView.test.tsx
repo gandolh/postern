@@ -192,7 +192,7 @@ describe("the conversation view", () => {
     await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
     const open = document.getElementById("conv-message-e3")!;
     await user.click(within(open).getByRole("button", { name: "More" }));
-    await user.click(screen.getByRole("menuitem", { name: "Mark unread from here" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Mark unread from here" }));
     await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBeUndefined());
     expect(mail.emails.get("e1")!.keywords["$seen"]).toBe(true);
     expect(peekUndo()?.label).toBe("Marked as unread from here.");

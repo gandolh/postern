@@ -7,12 +7,17 @@
 //   <LabelMenuPanel ... onClose />                                just the menu's content
 //   <LabelMenuPopover open onClose ... />                         the panel in a floating box (keyboard)
 //
+// Both boxes are Base UI popovers: the placement, Escape, a press outside and
+// focus back on the button are Base UI's; the panel keeps its own search box,
+// list and arrow keys.
+//
 // Choices apply at once (optimistic, with the toast and Undo of brief 06's
 // actions) and the Labels menu stays open, so several labels can be set in a
 // row; Move to closes. A label carried by only some of the selected
 // conversations shows as indeterminate; clicking it puts it on all of them.
 
 import type { Id } from "@postern/jmap";
+import { Popover } from "@base-ui/react/popover";
 import { ArrowRightToLine, Plus, Search, Tag } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { filterLabels, labelChecks, validateLabelName, type LabelCheck } from "../actions/labels";
@@ -43,41 +48,41 @@ export interface LabelMenuProps {
 
 export function LabelMenu({ conversationIds, emailIds, current, mode = "label", onDone }: LabelMenuProps) {
   const [open, setOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const id = useId();
+  // Move to closes on its choice and leaves focus where the list puts it; anything else hands it back to the button.
+  const refocus = useRef(true);
 
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  const close = (refocus: boolean) => {
+  const close = (back: boolean) => {
+    refocus.current = back;
     setOpen(false);
-    if (refocus) buttonRef.current?.focus();
   };
 
   return (
-    <div ref={wrapRef} className="list-menu">
-      <IconButton
-        ref={buttonRef}
-        label={mode === "move" ? "Move to" : "Labels"}
-        icon={mode === "move" ? ArrowRightToLine : Tag}
-        disabled={conversationIds.length === 0}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={open ? id : undefined}
-        onClick={() => setOpen((o) => !o)}
-      />
-      {open ? (
-        <div id={id} className="labels-popup">
-          <LabelMenuPanel conversationIds={conversationIds} emailIds={emailIds} current={current} mode={mode} onDone={onDone} onClose={close} />
-        </div>
-      ) : null}
+    <div className="list-menu">
+      <Popover.Root
+        open={open}
+        onOpenChange={(next) => {
+          refocus.current = true;
+          setOpen(next);
+        }}
+      >
+        <Popover.Trigger
+          disabled={conversationIds.length === 0}
+          render={<IconButton label={mode === "move" ? "Move to" : "Labels"} icon={mode === "move" ? ArrowRightToLine : Tag} />}
+        />
+        <Popover.Portal>
+          <Popover.Positioner className="labels-positioner" side="bottom" align="start" sideOffset={4} collisionPadding={8}>
+            <Popover.Popup
+              className="labels-popup"
+              aria-label={mode === "move" ? "Move to" : "Labels"}
+              // The panel puts focus in its search box.
+              initialFocus={false}
+              finalFocus={() => refocus.current}
+            >
+              <LabelMenuPanel conversationIds={conversationIds} emailIds={emailIds} current={current} mode={mode} onDone={onDone} onClose={close} />
+            </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
+      </Popover.Root>
     </div>
   );
 }
@@ -88,22 +93,44 @@ export interface LabelMenuPopoverProps extends LabelMenuProps {
   onClose: () => void;
 }
 
-/** The menu floating over the page, for the keyboard (`l`, `v`): centred near the top, closes on Escape or a click outside. */
+/** Where the keyboard's menu goes when no row has focus (in a conversation): centred, a fifth of the way down. */
+const TOP_CENTRE = { getBoundingClientRect: () => new DOMRect(window.innerWidth / 2, window.innerHeight * 0.2, 0, 0) };
+
+/**
+ * The menu for the keyboard (`l`, `v`), with no button: beside the focused
+ * conversation row in a list, else centred near the top. Its opener puts focus
+ * back where it was.
+ */
 export function LabelMenuPopover({ open, onClose, ...props }: LabelMenuPopoverProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!ref.current?.contains(event.target as Node)) onClose();
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open, onClose]);
-  if (!open) return null;
+  const [anchor] = useState(() => document.activeElement?.closest("[role=row]") ?? TOP_CENTRE);
+  const row = anchor !== TOP_CENTRE;
   return (
-    <div ref={ref} className="labels-popup labels-popup-floating" role="dialog" aria-label={props.mode === "move" ? "Move to" : "Labels"}>
-      <LabelMenuPanel {...props} onClose={() => onClose()} />
-    </div>
+    <Popover.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <Popover.Portal>
+        <Popover.Positioner
+          className="labels-positioner labels-positioner-floating"
+          anchor={anchor}
+          side="bottom"
+          align={row ? "start" : "center"}
+          sideOffset={row ? 4 : 0}
+          collisionPadding={8}
+        >
+          <Popover.Popup
+            className="labels-popup"
+            aria-label={props.mode === "move" ? "Move to" : "Labels"}
+            initialFocus={false}
+            finalFocus={false}
+          >
+            <LabelMenuPanel {...props} onClose={() => onClose()} />
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
@@ -180,12 +207,6 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      onClose(true);
-      return;
-    }
     const items = [...(listRef.current?.querySelectorAll<HTMLElement>("[data-label-option]") ?? [])];
     const focusables = [searchRef.current, ...items].filter((el): el is HTMLElement => el !== null);
     const at = focusables.indexOf(document.activeElement as HTMLElement);

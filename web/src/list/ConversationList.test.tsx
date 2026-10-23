@@ -118,10 +118,10 @@ describe("selection and the toolbar", () => {
       fakeEmail({ id: "2", threadId: "T2", receivedAt: "2026-10-02T00:00:00Z", keywords: { $seen: true, $flagged: true } }),
     ]);
     await user.click(screen.getByRole("button", { name: "Select" }));
-    await user.click(screen.getByRole("menuitem", { name: "Starred" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Starred" }));
     expect(rowsOf(grid).map((r) => r.getAttribute("aria-selected"))).toEqual(["false", "true"]);
     await user.click(screen.getByRole("button", { name: "Select" }));
-    await user.click(screen.getByRole("menuitem", { name: "Unread" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Unread" }));
     expect(rowsOf(grid).map((r) => r.getAttribute("aria-selected"))).toEqual(["true", "false"]);
   });
 

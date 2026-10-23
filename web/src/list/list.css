@@ -99,11 +99,12 @@
   position: relative;
 }
 
-.list-menu-popup {
-  position: absolute;
-  top: calc(100% + var(--space-1));
-  left: 0;
+/* Base UI places the positioner under the button; the popup is the white list. */
+.list-menu-positioner {
   z-index: 60;
+}
+
+.list-menu-popup {
   display: flex;
   flex-direction: column;
   min-width: 12rem;
@@ -112,11 +113,6 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-md);
-}
-
-.list-menu-popup[data-align="end"] {
-  left: auto;
-  right: 0;
 }
 
 .list-menu-item {
@@ -130,10 +126,10 @@
   color: var(--color-text);
   background: transparent;
   cursor: pointer;
+  user-select: none;
 }
 
-.list-menu-item:hover,
-.list-menu-item:focus-visible {
+.list-menu-item[data-highlighted] {
   background: var(--color-hover);
 }
 
@@ -142,7 +138,7 @@
   outline-offset: -2px;
 }
 
-.list-menu-item:disabled {
+.list-menu-item[data-disabled] {
   color: var(--color-text-subtle);
   cursor: not-allowed;
 }

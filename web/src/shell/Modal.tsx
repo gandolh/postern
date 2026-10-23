@@ -30,6 +30,23 @@ export function layerFor(from: Element): HTMLElement {
   return Array.from(document.querySelectorAll("dialog")).filter(isModal).at(-1) ?? document.body;
 }
 
+/**
+ * Where a popup opened here goes: render `anchor` as a ref on an element in
+ * place, and pass `container` to the Portal. It is `null` (the portal waits)
+ * until the anchor has said where it is, and worked out again each time
+ * `open` turns true (a new callback is a new ref to React).
+ */
+export function useLayer(open: boolean): { anchor: (element: HTMLElement | null) => void; container: HTMLElement | null } {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const anchor = useCallback(
+    (element: HTMLElement | null) => {
+      if (element && open) setContainer(layerFor(element));
+    },
+    [open],
+  );
+  return { anchor, container };
+}
+
 export interface ModalProps {
   /** A confirmation: Base UI's AlertDialog (`role="alertdialog"`), which a press outside never closes. */
   alert?: boolean;
@@ -64,15 +81,7 @@ export function Modal({
   children,
 }: ModalProps) {
   const popupRef = useRef<HTMLDivElement>(null);
-  // `null` until the anchor below has said where it is: the portal waits for it.
-  // Worked out again each time it opens (a new callback is a new ref to React).
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-  const anchor = useCallback(
-    (element: HTMLSpanElement | null) => {
-      if (element && open) setContainer(layerFor(element));
-    },
-    [open],
-  );
+  const { anchor, container } = useLayer(open);
 
   const onOpenChange = (next: boolean, details: { reason: string; event: Event }) => {
     // An Escape a control inside already used (a field's own list) isn't the dialog's.

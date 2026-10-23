@@ -6,6 +6,7 @@
 //   Escape           close the list; then clear the box; then leave it
 //   focusSearch()    from ./focus: brief 14's `/`
 
+import { Popover } from "@base-ui/react/popover";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import { navigate } from "../shell/router";
@@ -135,6 +136,15 @@ export function SearchBox({ query }: SearchBoxProps) {
 
   return (
     <div className="search-root" ref={rootRef} onFocus={() => setFocused(true)} onBlur={onBlur}>
+      <Popover.Root
+        open={advanced}
+        onOpenChange={(next, details) => {
+          // A press in the search box itself leaves the form open, as before; anywhere else closes it.
+          const target = details.event.target;
+          if (!next && details.reason === "outside-press" && target instanceof Node && rootRef.current?.contains(target)) return;
+          setAdvanced(next);
+        }}
+      >
       <div className="search-box" role="search">
         <button type="button" className="icon-btn search-box-submit" aria-label="Search" onClick={() => search(value)}>
           <Search aria-hidden="true" />
@@ -175,19 +185,9 @@ export function SearchBox({ query }: SearchBoxProps) {
             <X aria-hidden="true" />
           </button>
         )}
-        <button
-          type="button"
-          className="icon-btn search-box-options"
-          aria-label="Search options"
-          aria-expanded={advanced}
-          aria-haspopup="dialog"
-          onClick={() => {
-            setAdvanced((a) => !a);
-            setDismissed(true);
-          }}
-        >
+        <Popover.Trigger className="icon-btn search-box-options" aria-label="Search options" onClick={() => setDismissed(true)}>
           <SlidersHorizontal aria-hidden="true" />
-        </button>
+        </Popover.Trigger>
       </div>
       <ul id={listId} role="listbox" aria-label="Search suggestions" className="search-suggestions" hidden={!open}>
         {open &&
@@ -220,26 +220,15 @@ export function SearchBox({ query }: SearchBoxProps) {
             </li>
           ))}
       </ul>
-      {advanced && (
-        <div
-          className="search-advanced-wrap"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              e.preventDefault();
-              setAdvanced(false);
-              inputRef.current?.focus();
-            }
-          }}
-        >
-          <AdvancedSearch
-            onSearch={search}
-            onClose={() => {
-              setAdvanced(false);
-              inputRef.current?.focus();
-            }}
-          />
-        </div>
-      )}
+      {/* Portalled into the search root, so focus in the form still counts as in the search. */}
+      <Popover.Portal container={rootRef}>
+        <Popover.Positioner className="search-advanced-positioner" anchor={rootRef} side="bottom" align="start" sideOffset={4}>
+          <Popover.Popup className="search-advanced" aria-label="Advanced search" finalFocus={inputRef}>
+            <AdvancedSearch onSearch={search} onClose={() => setAdvanced(false)} />
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+      </Popover.Root>
     </div>
   );
 }

@@ -53,25 +53,22 @@
 
 /* ---- The menu -------------------------------------------------------------- */
 
-.labels-popup {
-  position: absolute;
-  top: calc(100% + var(--space-1));
-  left: 0;
+/* Base UI places the positioner: under the button, or for the keyboard beside the row. */
+.labels-positioner {
   z-index: 60;
+}
+
+.labels-positioner-floating {
+  z-index: 80;
+}
+
+.labels-popup {
   width: 18rem;
   max-width: calc(100vw - var(--space-4));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-md);
-}
-
-.labels-popup-floating {
-  position: fixed;
-  top: 20%;
-  left: 50%;
-  translate: -50% 0;
-  z-index: 80;
 }
 
 .labels-panel {

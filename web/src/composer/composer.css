@@ -655,11 +655,12 @@
   display: inline-flex;
 }
 
-.compose-menu {
-  position: absolute;
-  bottom: calc(100% + var(--space-1));
-  left: 0;
+/* Base UI places the positioner above the button; the popup is the list. */
+.compose-menu-positioner {
   z-index: 10;
+}
+
+.compose-menu {
   display: flex;
   flex-direction: column;
   min-width: 12rem;
@@ -693,8 +694,7 @@
   width: var(--space-3);
 }
 
-.compose-menu-item:hover,
-.compose-menu-item:focus-visible {
+.compose-menu-item[data-highlighted] {
   background: var(--color-hover);
   outline: none;
 }

@@ -58,13 +58,22 @@
 
 /* ---- Suggestions ---------------------------------------------------------- */
 
-.search-suggestions,
-.search-advanced {
+.search-suggestions {
   position: absolute;
   top: calc(100% + var(--space-1));
   left: 0;
   right: 0;
   z-index: 70;
+}
+
+/* The advanced form is a Base UI popover under the search box, as wide as it. */
+.search-advanced-positioner {
+  z-index: 70;
+  width: var(--anchor-width);
+}
+
+.search-suggestions,
+.search-advanced {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
@@ -140,10 +149,6 @@
 
 .search-advanced {
   padding: var(--space-4);
-}
-
-.search-advanced-wrap {
-  display: contents;
 }
 
 .search-advanced-grid {

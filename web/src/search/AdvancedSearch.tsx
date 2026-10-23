@@ -81,7 +81,7 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
   const field = (name: string) => `${id}-${name}`;
 
   return (
-    <form className="search-advanced" role="dialog" aria-label="Advanced search" onSubmit={submit}>
+    <form className="search-advanced-form" onSubmit={submit}>
       <div className="search-advanced-grid">
         <label htmlFor={field("from")}>From</label>
         <input id={field("from")} className="input" value={from} onChange={(e) => setFrom(e.target.value)} autoFocus />

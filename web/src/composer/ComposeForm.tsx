@@ -6,7 +6,9 @@
 import { mentionsAttachment } from "@postern/jmap";
 import { Ellipsis, ExternalLink, Image as ImageIcon, MoreVertical, Paperclip, Trash2, Type } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
+import { Menu } from "@base-ui/react/menu";
 import { IconButton } from "../shell/IconButton";
+import { useLayer } from "../shell/Modal";
 import { useComposerStore } from "./compose";
 import { Editor } from "./editor/Editor";
 import { AttachmentTray } from "./AttachmentTray";
@@ -47,6 +49,10 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   const imageRef = useRef<HTMLInputElement>(null);
   const [toolbar, setToolbar] = useState(true);
   const [menu, setMenu] = useState(false);
+  // "More options" goes into the composer window when that is full screen (modal, in the top layer).
+  const { anchor: menuAnchor, container: menuContainer } = useLayer(menu);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menuChoice = useRef<(() => void) | null>(null);
   const [question, setQuestion] = useState<Ask | null>(null);
 
   // Focus requests from the store (opened, undo send, a failed send).
@@ -236,34 +242,47 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         ) : null}
         <IconButton label="Attach files" icon={Paperclip} onClick={() => fileRef.current?.click()} />
         {!state.plain ? <IconButton label="Insert photo" icon={ImageIcon} onClick={() => imageRef.current?.click()} /> : null}
-        <span className="compose-menu-wrap">
-          <IconButton label="More options" icon={MoreVertical} aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)} />
-          {menu ? (
-            <span
-              className="compose-menu"
-              role="menu"
-              onKeyDown={(e) => {
-                if (e.key !== "Escape") return;
-                e.stopPropagation();
-                setMenu(false);
-              }}
-            >
-              <button
-                type="button"
-                role="menuitemcheckbox"
-                aria-checked={state.plain}
-                className="compose-menu-item"
-                autoFocus
-                onClick={() => {
-                  setMenu(false);
-                  if (state.plain) session.setPlain(false);
-                  else setQuestion("plain");
-                }}
-              >
-                Plain text mode
-              </button>
-            </span>
-          ) : null}
+        <span className="compose-menu-wrap" ref={menuAnchor}>
+          <Menu.Root modal={false} open={menu} onOpenChange={setMenu}>
+            <Menu.Trigger ref={menuButton} render={<IconButton label="More options" icon={MoreVertical} />} />
+            <Menu.Portal container={menuContainer}>
+              <Menu.Positioner className="compose-menu-positioner" side="top" align="start" sideOffset={4} collisionPadding={8}>
+                <Menu.Popup
+                  className="compose-menu"
+                  onKeyDown={(e) => {
+                    // Escape is the menu's: not the composer's, nor the browser's close request for its window.
+                    if (e.key !== "Escape") return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setMenu(false);
+                  }}
+                  // The choice runs once focus is back on the button, so the question it may ask keeps focus.
+                  finalFocus={() => {
+                    const choice = menuChoice.current;
+                    if (!choice) return true;
+                    menuChoice.current = null;
+                    menuButton.current?.focus();
+                    choice();
+                    return false;
+                  }}
+                >
+                  <Menu.CheckboxItem
+                    className="compose-menu-item"
+                    checked={state.plain}
+                    closeOnClick
+                    onClick={() => {
+                      menuChoice.current = () => {
+                        if (state.plain) session.setPlain(false);
+                        else setQuestion("plain");
+                      };
+                    }}
+                  >
+                    Plain text mode
+                  </Menu.CheckboxItem>
+                </Menu.Popup>
+              </Menu.Positioner>
+            </Menu.Portal>
+          </Menu.Root>
         </span>
         {variant === "inline" && onPopOut ? <IconButton label="Pop out reply" icon={ExternalLink} onClick={onPopOut} /> : null}
         <span className="compose-save" role="status" aria-live="polite">
