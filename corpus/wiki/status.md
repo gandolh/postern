@@ -46,7 +46,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [19](../briefs/done/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`../vps-deploy` brief 14). Revisits "Served at /webmail". **Done 2026-10-22**: base `/`, the e2e harness at the root with another estate app on a second origin, all 34 browser tests and 1135 unit tests passing.
 
 **Wave 7: Base UI**
-- [20](../briefs/todo/20-base-ui-dialogs.md): the modal dialogs on Base UI `Dialog`/`AlertDialog`; the composer window stays native. Filed 2026-10-23.
+- [20](../briefs/done/20-base-ui-dialogs.md): the modal dialogs on Base UI `Dialog`/`AlertDialog` through `web/src/shell/Modal.tsx`; the composer window stays native. **Done 2026-10-23**: 1166 unit and 34 browser tests.
 - [21](../briefs/todo/21-base-ui-menus-and-popovers.md): the menus, popovers and sender card on Base UI; the two comboboxes stay hand-built. After 20. Filed 2026-10-23.
 
 ## Parked (todos)

@@ -91,3 +91,71 @@ corpus/wiki/{decisions,status}.md
   Take before/after screenshots. They should match.
 - No `showModal` call is left in the seven files.
 - `bash corpus/lint.sh` passes.
+
+## Outcome (2026-10-23)
+
+Done, in `1218df5`. `@base-ui/react` 1.9.0 is pinned in `web/package.json`.
+Six of the seven dialogs go through one wrapper, `web/src/shell/Modal.tsx`:
+
+- `ConfirmDialog` and `Question` are `AlertDialog`s;
+- `SessionExpiredDialog`, `ShowOriginal`, `ImageViewer` and `HelpSheet` are
+  `Dialog`s.
+
+The wrapper does four things:
+
+- **Picks the layer.** The composer window stays a native `<dialog>`, and
+  full screen it is modal in the top layer, with everything outside it inert.
+  So a popup goes into its own closest `dialog:modal`, else the last one open
+  (a session expiring under a full-screen composer), else `<body>`. `:modal`
+  sits behind a try/catch, because jsdom doesn't know it.
+- **Ignores an Escape a field inside already used.**
+- **Gives initial focus** to `[data-autofocus]`, or a selector.
+- **Styles the layer.** `shell/modal.css` gives the popups what the browser
+  gave a modal `<dialog>` (fixed, centred by margin, `z-index: 200` over the
+  docked composer at 55 and the toasts at 60) and one `.modal-backdrop`.
+
+No `showModal`, `::backdrop` or `[open]` rule is left for the six.
+
+Per dialog:
+
+- **`Question`** keeps its own Escape handler (`preventDefault` +
+  `stopPropagation`), so the composer around it stays open.
+- **`SessionExpiredDialog`** can't be dismissed: Escape and the backdrop are
+  ignored, so `closedby="none"` and the reopen-on-close workaround are gone.
+- **`HelpSheet`** stays mounted, with `open` from its store. Every way out
+  clears the search.
+- **`ShowOriginal` and `ImageViewer`** start on Close through `data-autofocus`.
+  Before, the native `showModal` beat `autoFocus` and focus started on
+  Download.
+
+**LabelManager's delete confirmation was not moved.** It is an inline box in a
+table cell, with no trap, Escape or backdrop to hand over, and Base UI has no
+inline alert part. A modal would change the settings page.
+
+**Tests.**
+
+- The confirmations are queried as `alertdialog` (`ConversationList`,
+  `ContactsRoute`, `Composer`).
+- The session test checks Escape and the backdrop instead of native
+  cancel/close events. Base UI hides the app behind a modal from assistive
+  tech, so its "still mounted" query passes `hidden: true`.
+- `HelpSheet.test` checks `data-open`.
+- `csp.spec.ts` finds the viewer by `[role=dialog]`.
+
+Checked: `npm run check` (1166 tests with the dev Stalwart up) and `npm run
+test:e2e` (34 passed, `csp.spec.ts` included, so Base UI runs under the
+production CSP). In Chromium against the dev Stalwart, at 1440 and 390 px, for
+Delete forever (from Spam), Discard draft (docked; and full screen, where the
+question renders inside the modal composer and on top), the shortcut sheet
+(`?`) and the image preview:
+
+- focus moves in;
+- Tab stays inside;
+- Escape closes;
+- focus returns to the trigger. The native dialogs often dropped it to
+  `<body>`.
+
+`j` doesn't move the list underneath. Before/after screenshots match, except
+for the viewer's first focus. Nothing was deleted from the dev mailbox. The
+e2e teardown restored the read marks. brief-board is down, so nothing was
+posted there.

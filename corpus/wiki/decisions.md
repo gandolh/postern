@@ -1,6 +1,6 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack. Read before proposing to change any of these.
-updated: 2026-10-22
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack; Base UI under the overlays, with the composer window left native. Read before proposing to change any of these.
+updated: 2026-10-23
 ---
 
 # Decisions
@@ -179,3 +179,20 @@ _2026-10-09_. TypeScript, React 19 and Vite 8, with Vitest and ESLint, in npm
 workspaces. Versions are pinned exactly, matching Satchel's at bootstrap.
 Rejected: a different framework for this one app. Every other estate app uses
 this stack, and so does the owner's muscle memory.
+
+## Base UI under the overlays; the composer window stays native
+_2026-10-23_, the owner's call, to match their other apps (atrium,
+imbatranimOS, sports-app, trips and others). The modal dialogs are Base UI
+`Dialog`/`AlertDialog` through one wrapper, `web/src/shell/Modal.tsx`
+([brief 20](../briefs/done/20-base-ui-dialogs.md)). The menus and popovers
+follow in brief 21. Base UI owns the focus trap, Escape, the inert page and
+focus return, and Postern keeps its CSS. Rejected: keeping native `<dialog>`
+with hand-built wiring, and shadcn, which brings Tailwind.
+
+The composer window stays a native `<dialog>`. It switches between docked
+(non-modal) and full screen (modal) while the editor keeps its state, and
+`show()`/`showModal()` on one element does that without remounting. Because
+it is modal in the top layer when full screen, `Modal` portals any dialog
+opened inside it, or while it is up, into it. LabelManager's delete
+confirmation also stays: it is an inline box in a table cell, not an overlay.
+The two comboboxes (recipients, search) stay hand-built (brief 21).

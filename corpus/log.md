@@ -311,8 +311,19 @@ build's `index.html`, manifest and worker use `/`. brief-board is down
 
 The owner asked for Base UI in the apps that still hand-build their widgets.
 Postern has the most, so the work is split in two.
-[Brief 20](briefs/todo/20-base-ui-dialogs.md) moves seven modal dialogs to Base
+[Brief 20](briefs/done/20-base-ui-dialogs.md) moves seven modal dialogs to Base
 UI `Dialog`/`AlertDialog`, leaving the composer window native.
 [Brief 21](briefs/todo/21-base-ui-menus-and-popovers.md) moves the menus,
 popovers and sender card, leaving the two comboboxes hand-built.
 brief-board is down (since 2026-10-13), so this is recorded here only.
+
+## [2026-10-23] done | Brief 20: Base UI for the modal dialogs
+
+[Brief 20](briefs/done/20-base-ui-dialogs.md) is built. Six dialogs are Base UI
+`Dialog`/`AlertDialog` through `shell/Modal`. The wrapper portals a dialog into
+the full-screen composer (still a native modal `<dialog>`) when it is opened
+from there or while it is up. `Question` keeps its Escape guard for the
+composer, and `SessionExpiredDialog` loses its browser workarounds. LabelManager's
+inline confirmation stays. 1166 unit and 34 browser tests pass. Focus now
+returns to the trigger, where the native dialogs dropped it. The decision is in
+[decisions.md](wiki/decisions.md).
