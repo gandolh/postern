@@ -49,15 +49,17 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [20](../briefs/done/20-base-ui-dialogs.md): the modal dialogs on Base UI `Dialog`/`AlertDialog` through `web/src/shell/Modal.tsx`; the composer window stays native. **Done 2026-10-23**: 1166 unit and 34 browser tests.
 - [21](../briefs/done/21-base-ui-menus-and-popovers.md): the menus and popovers on Base UI `Menu`/`Popover`; the comboboxes and the sender card stay hand-built. **Done 2026-10-23**: 1166 unit and 34 browser tests.
 
+**Wave 8: Gmail parity, from the parked todos (filed 2026-10-23)**
+- [22](../briefs/todo/22-conversation-view-off.md): conversation view off, one row per message; a row is a one-message conversation, so the planners stay as they are.
+- [23](../briefs/todo/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded.
+
 ## Parked (todos)
 
 Each needs server work, or a check against Stalwart, before it can be a brief:
 
 - [snooze](../todos/snooze.md)
-- [scheduled send](../todos/scheduled-send.md)
 - [inbox category tabs](../todos/inbox-category-tabs.md)
 - [calendar invites](../todos/calendar-invites.md)
-- [conversation view off](../todos/conversation-view-off.md) (a list mode, not server work)
 
 ## Owner steps
 

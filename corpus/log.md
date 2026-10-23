@@ -338,3 +338,14 @@ composer and keeps Escape to itself. Advanced search portals into the search
 root. The keyboard's label popover now opens under the focused row. The sender
 card stays hand-built, because PreviewCard isn't keyboard navigable and the
 card has actions. 1166 unit and 34 browser tests pass.
+
+## [2026-10-23] todo | Briefs 22 and 23 from the parked todos
+
+[22](briefs/todo/22-conversation-view-off.md): conversation view off. A message row is a
+`Conversation` holding one message, so the planners, selection and undo should work
+unchanged; the list queries without `collapseThreads` and keys its cache on the mode.
+[23](briefs/todo/23-schedule-send.md): schedule send. Step one tests a future `sendAt`
+against the dev Stalwart, including cancel and restart; if Stalwart doesn't hold the
+message the brief stops and moves to `superseded/` with the finding, since undo send is
+client-held and there is no server-side precedent to lean on. Snooze, inbox category tabs
+and calendar invites stay parked for the owner's call.

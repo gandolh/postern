@@ -1,9 +1,11 @@
 ---
 title: Conversation view off (one row per message)
 created: 2026-10-20
-status: open
+status: promoted
 tags: [list, settings]
 ---
+
+Promoted 2026-10-23 into [brief 22](../briefs/todo/22-conversation-view-off.md).
 
 # Conversation view off (one row per message)
 

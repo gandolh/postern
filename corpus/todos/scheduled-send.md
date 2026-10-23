@@ -1,9 +1,11 @@
 ---
 title: Schedule a message to send later
 created: 2026-10-09
-status: open
+status: promoted
 tags: [gmail-parity, to-check]
 ---
+
+Promoted 2026-10-23 into [brief 23](../briefs/todo/23-schedule-send.md).
 
 # Schedule a message to send later
 
