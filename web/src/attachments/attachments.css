@@ -119,15 +119,8 @@
   color: var(--color-text);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-lg);
-}
-
-.att-viewer[open] {
   display: flex;
   flex-direction: column;
-}
-
-.att-viewer::backdrop {
-  background: var(--color-scrim);
 }
 
 .att-viewer-bar {

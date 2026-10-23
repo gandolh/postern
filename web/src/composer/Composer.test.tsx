@@ -92,7 +92,7 @@ describe("the composer window", () => {
     expect(within(window).getByRole("alert").textContent).toMatch(/“nope” isn't a valid email address/);
     await user.click(within(window).getByRole("button", { name: "Remove nope" }));
     await user.click(within(window).getByRole("button", { name: "Send" }));
-    const question = await screen.findByRole("dialog", { name: "Did you mean to attach files?" });
+    const question = await screen.findByRole("alertdialog", { name: "Did you mean to attach files?" });
     await user.click(within(question).getByRole("button", { name: "Cancel" }));
     expect(server.submissions).toHaveLength(0);
     expect(screen.getByRole("dialog", { name: "New Message" })).toBeTruthy();

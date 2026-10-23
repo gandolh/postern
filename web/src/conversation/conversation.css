@@ -572,15 +572,8 @@
   color: var(--color-text);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-lg);
-}
-
-.conv-original[open] {
   display: flex;
   flex-direction: column;
-}
-
-.conv-original::backdrop {
-  background: var(--color-scrim);
 }
 
 .conv-original-bar {

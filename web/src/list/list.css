@@ -481,10 +481,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.list-confirm::backdrop {
-  background: var(--color-scrim);
-}
-
 .list-confirm-title {
   font-size: var(--text-xl);
 }

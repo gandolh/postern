@@ -1,7 +1,8 @@
-// "Delete forever?": a modal <dialog>, the only confirmation the list asks
-// for (Gmail asks before deleting from Trash or Spam for good).
+// "Delete forever?": a modal confirmation (Base UI's AlertDialog, through
+// shell/Modal), the only confirmation the list asks for (Gmail asks before
+// deleting from Trash or Spam for good). Cancel takes focus first.
 
-import { useEffect, useRef } from "react";
+import { Modal } from "../shell/Modal";
 
 export interface ConfirmDialogProps {
   title: string;
@@ -12,27 +13,8 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({ title, body, confirmLabel, onConfirm, onCancel }: ConfirmDialogProps) {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog || dialog.open) return;
-    if (typeof dialog.showModal === "function") dialog.showModal();
-    else dialog.setAttribute("open", "");
-    dialog.querySelector<HTMLButtonElement>("[data-autofocus]")?.focus();
-  }, []);
-
   return (
-    <dialog
-      ref={ref}
-      className="list-confirm"
-      aria-labelledby="list-confirm-title"
-      aria-describedby="list-confirm-body"
-      onCancel={(event) => {
-        event.preventDefault();
-        onCancel();
-      }}
-    >
+    <Modal alert className="list-confirm" labelledBy="list-confirm-title" describedBy="list-confirm-body" onClose={onCancel}>
       <h2 id="list-confirm-title" className="list-confirm-title">
         {title}
       </h2>
@@ -47,6 +29,6 @@ export function ConfirmDialog({ title, body, confirmLabel, onConfirm, onCancel }
           {confirmLabel}
         </button>
       </div>
-    </dialog>
+    </Modal>
   );
 }

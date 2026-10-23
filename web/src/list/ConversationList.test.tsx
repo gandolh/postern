@@ -147,7 +147,7 @@ describe("row actions", () => {
   it("asks before deleting forever in Trash", async () => {
     const { mail, user, grid } = await renderList([fakeEmail({ id: "1", threadId: "T1", mailboxIds: { b: true } })], { kind: "system", view: "trash" });
     await user.click(within(rowsOf(grid)[0]!).getByRole("button", { name: "Delete forever" }));
-    const dialog = screen.getByRole("dialog", { name: "Delete forever?" });
+    const dialog = screen.getByRole("alertdialog", { name: "Delete forever?" });
     expect(dialog.textContent).toContain("This conversation will be deleted forever.");
     await user.click(within(dialog).getByRole("button", { name: "Delete forever" }));
     expect(await screen.findByText("Conversation deleted forever.")).toBeTruthy();

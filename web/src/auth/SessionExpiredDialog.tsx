@@ -3,13 +3,13 @@
 // again picks up where the user was.
 //
 // It cannot be dismissed: the only ways out are signing in again as the same
-// account, or signing out. Escape is cancelled, `closedby="none"` stops the
-// browser's own close requests where it is supported, and if the dialog closes
-// anyway (Chrome lets a second Escape through as a non-cancelable cancel) it
-// opens again at once. It is only mounted while the session is expired.
+// account, or signing out. A Base UI dialog (shell/Modal) that ignores Escape
+// and a press on the backdrop, so there is no browser close request to fight.
+// It is only mounted while the session is expired, and it opens over the
+// composer if that is full screen.
 
 import type { SignInOutcome } from "@postern/jmap";
-import { useEffect, useRef } from "react";
+import { Modal } from "../shell/Modal";
 import { SignInForm } from "./SignInForm";
 
 export interface SessionExpiredDialogProps {
@@ -18,38 +18,9 @@ export interface SessionExpiredDialogProps {
   onSignOut: () => void;
 }
 
-function open(dialog: HTMLDialogElement): void {
-  if (dialog.open || !dialog.isConnected) return;
-  if (typeof dialog.showModal === "function") dialog.showModal();
-  else dialog.setAttribute("open", "");
-}
-
 export function SessionExpiredDialog({ username, onSignIn, onSignOut }: SessionExpiredDialogProps) {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    // Not in React's attribute list yet; the browser's close requests (Escape, back gesture) are refused.
-    dialog.setAttribute("closedby", "none");
-    open(dialog);
-    return () => {
-      if (typeof dialog.close === "function") dialog.close();
-      else dialog.removeAttribute("open");
-    };
-  }, []);
-
   return (
-    <dialog
-      ref={ref}
-      className="auth-dialog"
-      aria-label="Session expired"
-      onCancel={(e) => e.preventDefault()}
-      onClose={() => {
-        // Still mounted means still expired: open again rather than leave a live-looking app.
-        if (ref.current) open(ref.current);
-      }}
-    >
+    <Modal className="auth-dialog" label="Session expired" dismissible={false} onClose={() => {}} initialFocus="input[name=password]">
       <SignInForm
         onSignIn={onSignIn}
         username={username}
@@ -62,6 +33,6 @@ export function SessionExpiredDialog({ username, onSignIn, onSignOut }: SessionE
           </button>
         }
       />
-    </dialog>
+    </Modal>
   );
 }

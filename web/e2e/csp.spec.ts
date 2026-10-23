@@ -126,7 +126,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
     await expect(page.locator(".conv-page h1#conv-subject")).toHaveText("Photos from the offsite");
     await expect.poll(async () => ((await page.locator(".conv-page iframe").first().getAttribute("srcdoc")) ?? "").includes('src="data:image/png;base64,')).toBe(true);
     await page.getByRole("button", { name: "Preview group-photo.png" }).first().click();
-    const viewer = page.locator("dialog[open] iframe.att-viewer-frame");
+    const viewer = page.locator("[role=dialog] iframe.att-viewer-frame");
     await expect(viewer).toHaveAttribute("sandbox", "");
     await page.waitForTimeout(500);
     await page.keyboard.press("Escape");

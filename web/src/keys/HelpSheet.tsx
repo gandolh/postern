@@ -1,8 +1,9 @@
-// The keyboard-shortcut sheet (brief 14): a modal <dialog>, grouped as in
+// The keyboard-shortcut sheet (brief 14): a modal Base UI dialog (shell/Modal), grouped as in
 // Gmail, with a search box. The shell renders it once; useHelpSheet().open() shows it.
 
-import { Fragment, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useId, useState, useSyncExternalStore } from "react";
 import { X } from "lucide-react";
+import { Modal } from "../shell/Modal";
 import { getShortcutsEnabled, subscribeShortcutsEnabled } from "../prefs";
 import { useHelpSheet } from "./helpSheet";
 import { displayKeys, filterShortcuts } from "./shortcuts";
@@ -14,36 +15,23 @@ function useShortcutsEnabled(): boolean {
 
 export function HelpSheet() {
   const { isOpen, close } = useHelpSheet();
-  const ref = useRef<HTMLDialogElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const enabled = useShortcutsEnabled();
   const searchId = useId();
 
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (isOpen && !dialog.open) {
-      if (typeof dialog.showModal === "function") dialog.showModal();
-      else dialog.setAttribute("open", "");
-      searchRef.current?.focus();
-    } else if (!isOpen && dialog.open) {
-      if (typeof dialog.close === "function") dialog.close();
-      else dialog.removeAttribute("open");
-    }
-  }, [isOpen]);
+  // Every way out clears the search, so the sheet opens fresh next time.
+  const dismiss = () => {
+    setQuery("");
+    close();
+  };
 
   const groups = filterShortcuts(query);
 
   return (
-    <dialog ref={ref} className="keys-sheet" aria-labelledby="keys-sheet-title" onClose={() => {
-        setQuery("");
-        close();
-      }}
-    >
+    <Modal open={isOpen} className="keys-sheet" labelledBy="keys-sheet-title" onClose={dismiss}>
       <div className="keys-sheet-head">
         <h2 id="keys-sheet-title">Keyboard shortcuts</h2>
-        <button type="button" className="icon-btn" aria-label="Close keyboard shortcuts" onClick={close}>
+        <button type="button" className="icon-btn" aria-label="Close keyboard shortcuts" onClick={dismiss}>
           <X aria-hidden="true" />
         </button>
       </div>
@@ -52,8 +40,8 @@ export function HelpSheet() {
           Search shortcuts
         </label>
         <input
-          ref={searchRef}
           id={searchId}
+          data-autofocus
           type="text"
           className="input"
           placeholder="Search shortcuts"
@@ -98,6 +86,6 @@ export function HelpSheet() {
           </section>
         ))}
       </div>
-    </dialog>
+    </Modal>
   );
 }

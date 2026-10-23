@@ -1,7 +1,10 @@
 // A question the composer asks before going on ("Did you mean to attach
-// files?", "Discard this draft?"): a modal <dialog> with Cancel focused first.
+// files?", "Discard this draft?"): a modal confirmation (Base UI's
+// AlertDialog, through shell/Modal) with Cancel focused first. It opens inside
+// the composer window when that is full screen (shell/Modal's layer).
 
-import { useEffect, useId, useRef } from "react";
+import { useId } from "react";
+import { Modal } from "../shell/Modal";
 
 export interface QuestionProps {
   title: string;
@@ -14,27 +17,15 @@ export interface QuestionProps {
 }
 
 export function Question({ title, body, confirmLabel, tone = "primary", onConfirm, onCancel }: QuestionProps) {
-  const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
 
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog || dialog.open) return;
-    if (typeof dialog.showModal === "function") dialog.showModal();
-    else dialog.setAttribute("open", "");
-    dialog.querySelector<HTMLButtonElement>("[data-autofocus]")?.focus();
-  }, []);
-
   return (
-    <dialog
-      ref={ref}
+    <Modal
+      alert
       className="compose-question"
-      aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-body`}
-      onCancel={(event) => {
-        event.preventDefault();
-        onCancel();
-      }}
+      labelledBy={`${id}-title`}
+      describedBy={`${id}-body`}
+      onClose={onCancel}
       onKeyDown={(event) => {
         // Keep Escape here: the composer window around it would close too.
         if (event.key === "Escape") {
@@ -58,6 +49,6 @@ export function Question({ title, body, confirmLabel, tone = "primary", onConfir
           {confirmLabel}
         </button>
       </div>
-    </dialog>
+    </Modal>
   );
 }

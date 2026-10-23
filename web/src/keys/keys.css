@@ -10,10 +10,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.keys-sheet::backdrop {
-  background: var(--color-scrim);
-}
-
 .keys-sheet-head {
   display: flex;
   align-items: center;
@@ -32,7 +28,7 @@
   overflow: hidden;
 }
 
-.keys-sheet[open] {
+.keys-sheet {
   display: flex;
   flex-direction: column;
 }

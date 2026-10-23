@@ -252,24 +252,15 @@ describe("the signed-in session", () => {
     const dialog = await screen.findByRole("dialog");
     expect(dialog.textContent).toContain("Your session expired");
     expect(dialog.textContent).toContain("alice@postern.test");
-    expect(screen.getByRole("button", { name: "Clicked 2" })).toBeTruthy();
+    // Still mounted underneath, hidden from assistive tech while the dialog is up.
+    expect(screen.getByRole("button", { name: "Clicked 2", hidden: true })).toBeTruthy();
 
-    // It cannot be dismissed: Escape is cancelled, the browser's close requests are refused,
-    // and a close that gets through anyway (Chrome's second Escape) reopens it.
-    const modal = dialog as HTMLDialogElement;
-    expect(modal.getAttribute("closedby")).toBe("none");
-    const escape = new Event("cancel", { cancelable: true });
-    act(() => {
-      modal.dispatchEvent(escape);
-    });
-    expect(escape.defaultPrevented).toBe(true);
-    act(() => {
-      if (typeof modal.close === "function") modal.close();
-      else modal.removeAttribute("open");
-      modal.dispatchEvent(new Event("close"));
-    });
-    await waitFor(() => expect(modal.hasAttribute("open")).toBe(true));
-    expect(screen.getByRole("dialog")).toBe(modal);
+    // It cannot be dismissed: neither Escape nor a press on the backdrop closes it.
+    await user.keyboard("{Escape}");
+    const backdrop = document.querySelector(".modal-backdrop");
+    expect(backdrop).toBeTruthy();
+    await user.click(backdrop!);
+    expect(screen.getByRole("dialog")).toBe(dialog);
 
     await user.type(screen.getByLabelText("Password"), PASSWORD);
     await user.click(screen.getByRole("button", { name: "Next" }));

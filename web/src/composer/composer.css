@@ -711,10 +711,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.compose-question::backdrop {
-  background: var(--color-scrim);
-}
-
 .compose-question-title {
   font-size: var(--text-xl);
 }

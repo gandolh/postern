@@ -1,0 +1,24 @@
+/* shell/Modal: what the browser gave a modal <dialog> before Base UI. The
+   popup is fixed in the middle of the window at its own size, over the whole
+   app (the docked composer, the toasts and the menus included). Each dialog's
+   own class sets its look and wins over these, since :where() weighs nothing. */
+
+:where(.modal) {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  width: fit-content;
+  height: fit-content;
+  max-width: calc(100% - 6px - 2em);
+  max-height: calc(100% - 6px - 2em);
+  margin: auto;
+  overflow: auto;
+  outline: none;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--color-scrim);
+}

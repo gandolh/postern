@@ -31,10 +31,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.auth-dialog::backdrop {
-  background: var(--color-scrim);
-}
-
 /* The wordmark, with the mark drawn from the accent: a wall with a small gate in it. */
 .auth-wordmark {
   display: flex;

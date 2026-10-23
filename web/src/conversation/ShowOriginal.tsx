@@ -4,10 +4,11 @@
 
 import { isAbortError, type JmapClient } from "@postern/jmap";
 import { Download, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useJmap } from "../auth";
 import { saveAttachment } from "../attachments/files";
 import { IconButton } from "../shell/IconButton";
+import { Modal } from "../shell/Modal";
 import type { ConvMessage } from "./conversationStore";
 import { readAuthenticationResults } from "./people";
 
@@ -21,17 +22,8 @@ async function fetchOriginal(client: JmapClient, message: ConvMessage, signal: A
 
 export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClose: () => void }) {
   const client = useJmap();
-  const ref = useRef<HTMLDialogElement>(null);
   const [state, setState] = useState<{ text: string | null; error: boolean }>({ text: null, error: false });
   const auth = readAuthenticationResults(message.authResults);
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (dialog && !dialog.open) {
-      if (typeof dialog.showModal === "function") dialog.showModal();
-      else dialog.setAttribute("open", "");
-    }
-  }, []);
 
   useEffect(() => {
     const abort = new AbortController();
@@ -48,15 +40,7 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
   const cut = state.text !== null && state.text.length > ORIGINAL_SHOWN_CHARS;
 
   return (
-    <dialog
-      ref={ref}
-      className="conv-original"
-      aria-labelledby="conv-original-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-    >
+    <Modal className="conv-original" labelledBy="conv-original-title" onClose={onClose}>
       <header className="conv-original-bar">
         <h2 id="conv-original-title" className="conv-original-title">
           Original message
@@ -66,7 +50,7 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
           icon={Download}
           onClick={() => void saveAttachment(client, { blobId: message.blobId, name: `${subject.slice(0, 60).replace(/[\\/:*?"<>|]+/g, "_")}.eml`, type: "message/rfc822" }).catch(() => {})}
         />
-        <IconButton label="Close" icon={X} onClick={onClose} tooltip="end" autoFocus />
+        <IconButton label="Close" icon={X} onClick={onClose} tooltip="end" data-autofocus />
       </header>
       <dl className="conv-original-facts">
         <dt>Subject</dt>
@@ -105,6 +89,6 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
         </p>
       )}
       {cut ? <p className="conv-note">Only the start is shown. Download the original for all of it.</p> : null}
-    </dialog>
+    </Modal>
   );
 }

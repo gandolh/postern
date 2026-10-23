@@ -6,9 +6,10 @@
 
 import { useJmap } from "../auth";
 import { Download, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { isAbortError } from "@postern/jmap";
 import { IconButton } from "../shell/IconButton";
+import { Modal } from "../shell/Modal";
 import { VIEWER_FRAME_SANDBOX } from "../render/srcdoc";
 import { fileName, imageDataUrl, saveAttachment, type AttachmentRef } from "./files";
 
@@ -23,17 +24,8 @@ export function viewerSrcdoc(dataUrl: string): string {
 
 export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: () => void }) {
   const client = useJmap();
-  const ref = useRef<HTMLDialogElement>(null);
   const [state, setState] = useState<{ srcdoc: string | null; error: string | null }>({ srcdoc: null, error: null });
   const name = fileName(part);
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (dialog && !dialog.open) {
-      if (typeof dialog.showModal === "function") dialog.showModal();
-      else dialog.setAttribute("open", "");
-    }
-  }, []);
 
   useEffect(() => {
     const abort = new AbortController();
@@ -50,19 +42,11 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
   }, [client, part]);
 
   return (
-    <dialog
-      ref={ref}
-      className="att-viewer"
-      aria-label={`Preview of ${name}`}
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-    >
+    <Modal className="att-viewer" label={`Preview of ${name}`} onClose={onClose}>
       <header className="att-viewer-bar">
         <h2 className="att-viewer-title">{name}</h2>
         <IconButton label={`Download ${name}`} icon={Download} onClick={() => void saveAttachment(client, part).catch(() => {})} />
-        <IconButton label="Close preview" icon={X} onClick={onClose} tooltip="end" autoFocus />
+        <IconButton label="Close preview" icon={X} onClick={onClose} tooltip="end" data-autofocus />
       </header>
       <div className="att-viewer-stage">
         {state.srcdoc ? (
@@ -75,6 +59,6 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
           </p>
         )}
       </div>
-    </dialog>
+    </Modal>
   );
 }

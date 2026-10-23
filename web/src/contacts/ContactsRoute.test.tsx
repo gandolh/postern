@@ -71,7 +71,7 @@ describe("Contacts page", () => {
 
     await user.click(await screen.findByText("Bob Baker"));
     await user.click(screen.getByRole("button", { name: "Delete" }));
-    const dialog = await screen.findByRole("dialog", { hidden: true });
+    const dialog = await screen.findByRole("alertdialog", { hidden: true });
     expect(dialog.textContent).toContain("Bob Baker will be removed");
     await user.click(within(dialog).getByRole("button", { name: "Delete", hidden: true }));
     await waitFor(() => expect(fake.cards.map((c) => c.id)).toEqual(["1"]));

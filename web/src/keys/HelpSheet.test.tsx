@@ -35,7 +35,7 @@ describe("HelpSheet", () => {
     setup();
     await user.click(screen.getByRole("button", { name: "open help" }));
     const dialog = screen.getByRole("dialog", { name: "Keyboard shortcuts", hidden: true });
-    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(dialog.hasAttribute("data-open")).toBe(true);
     expect(within(dialog).getAllByRole("heading", { level: 3, hidden: true }).map((h) => h.textContent)).toEqual(["Navigation", "Application", "Conversations", "Composing"]);
 
     await user.type(within(dialog).getByRole("textbox", { name: "Search shortcuts", hidden: true }), "archive");
