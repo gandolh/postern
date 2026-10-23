@@ -306,3 +306,13 @@ Checked: typecheck, lint, 1135 unit tests, and all 34 browser tests against
 the local Stalwart (started with `npm run dev:mail`, not reset). A production
 build's `index.html`, manifest and worker use `/`. brief-board is down
 (since 2026-10-13), so the brief's progress is recorded here only.
+
+## [2026-10-23] todo | Briefs 20 and 21 filed: Base UI
+
+The owner asked for Base UI in the apps that still hand-build their widgets.
+Postern has the most, so the work is split in two.
+[Brief 20](briefs/todo/20-base-ui-dialogs.md) moves seven modal dialogs to Base
+UI `Dialog`/`AlertDialog`, leaving the composer window native.
+[Brief 21](briefs/todo/21-base-ui-menus-and-popovers.md) moves the menus,
+popovers and sender card, leaving the two comboboxes hand-built.
+brief-board is down (since 2026-10-13), so this is recorded here only.
