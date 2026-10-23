@@ -371,3 +371,11 @@ architecture and security stay in [decisions.md](wiki/decisions.md). Links in
 The owner dropped the inbox category tabs: with no classifier in Stalwart, header rules
 would misfile too much. Recorded in [decisions-mail.md](wiki/decisions-mail.md); the todo
 is marked dropped.
+
+## [2026-10-23] todo | Brief 25: a calendar invite's card and reply
+
+The owner chose a card and a reply only, over adding an "Add to Almanac" button or a
+calendar inside Postern. [Brief 25](briefs/todo/25-calendar-invite-card.md) first checks
+what Stalwart 0.16 does with an iMIP REQUEST and whether it can send the REPLY, then
+parses the VEVENT fields the card needs and shows them as inert text. No todos are parked
+now.

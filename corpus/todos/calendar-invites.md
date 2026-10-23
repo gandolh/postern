@@ -1,9 +1,11 @@
 ---
 title: Show calendar invites and answer them from the message
 created: 2026-10-09
-status: open
+status: promoted
 tags: [gmail-parity, to-check]
 ---
+
+Promoted 2026-10-23 into [brief 25](../briefs/todo/25-calendar-invite-card.md); the owner chose a card and a reply only, no calendar in Postern.
 
 # Show calendar invites and answer them from the message
 

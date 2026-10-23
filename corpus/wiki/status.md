@@ -53,12 +53,11 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [22](../briefs/todo/22-conversation-view-off.md): conversation view off, one row per message; a row is a one-message conversation, so the planners stay as they are.
 - [23](../briefs/todo/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded.
 - [24](../briefs/todo/24-snooze.md): snooze, run by the browser (the owner's call, 2026-10-23): a hidden Snoozed label plus a keyword holding the time; it wakes while Postern is open.
+- [25](../briefs/todo/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite.
 
 ## Parked (todos)
 
-Each needs server work, or a check against Stalwart, before it can be a brief:
-
-- [calendar invites](../todos/calendar-invites.md)
+None. The last five became briefs 22–25 or were dropped (inbox category tabs) on 2026-10-23.
 
 ## Owner steps
 
