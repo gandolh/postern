@@ -365,3 +365,9 @@ behaves (labels and archive, per-device settings, no offline mail, closed-app
 notifications, snooze) moved verbatim to [decisions-mail.md](wiki/decisions-mail.md);
 architecture and security stay in [decisions.md](wiki/decisions.md). Links in
 `security.md`, the conversation-view todo and two code comments now point at the new page.
+
+## [2026-10-23] decision | No inbox category tabs
+
+The owner dropped the inbox category tabs: with no classifier in Stalwart, header rules
+would misfile too much. Recorded in [decisions-mail.md](wiki/decisions-mail.md); the todo
+is marked dropped.

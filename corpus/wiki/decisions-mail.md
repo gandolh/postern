@@ -1,5 +1,5 @@
 ---
-summary: Locked calls about how mail behaves in Postern, each with date, rejected alternatives and reason. Labels are JMAP mailboxes and archive means leaving the Inbox; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; snooze runs in the browser and wakes mail only while Postern is open (owner, 2026-10-23). The architecture and security calls are in decisions.md.
+summary: Locked calls about how mail behaves in Postern, each with date, rejected alternatives and reason. Labels are JMAP mailboxes and archive means leaving the Inbox; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; snooze runs in the browser and wakes mail only while Postern is open (owner, 2026-10-23); no inbox category tabs (owner, 2026-10-23). The architecture and security calls are in decisions.md.
 updated: 2026-10-23
 ---
 
@@ -63,3 +63,11 @@ the time comes. A laptop left shut skips the wake-up until Postern is opened aga
 Rejected: a small scheduler service on the VPS, which would wake mail on time but
 breaks "No backend of our own"; and dropping snooze. Brief 24 first checks that
 Stalwart has no server-side way, and brings one back to the owner if it does.
+
+## No inbox category tabs
+_2026-10-23_, the owner's call. The Inbox has no Primary / Social / Promotions /
+Updates tabs. Stalwart has no classifier like Gmail's, and the only approximation is
+Sieve rules on headers (`List-Unsubscribe`, `Precedence: bulk`, a list of social
+senders), which misfile enough mail to cost more than they save. Rejected: the four
+header-rule tabs, and a single Promotions tab for bulk mail. Labels and filters
+cover the need.

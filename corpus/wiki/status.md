@@ -58,7 +58,6 @@ are the owner steps at the end of this page. Neither repo is pushed.
 
 Each needs server work, or a check against Stalwart, before it can be a brief:
 
-- [inbox category tabs](../todos/inbox-category-tabs.md)
 - [calendar invites](../todos/calendar-invites.md)
 
 ## Owner steps
