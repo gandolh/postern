@@ -313,7 +313,7 @@ The owner asked for Base UI in the apps that still hand-build their widgets.
 Postern has the most, so the work is split in two.
 [Brief 20](briefs/done/20-base-ui-dialogs.md) moves seven modal dialogs to Base
 UI `Dialog`/`AlertDialog`, leaving the composer window native.
-[Brief 21](briefs/todo/21-base-ui-menus-and-popovers.md) moves the menus,
+[Brief 21](briefs/done/21-base-ui-menus-and-popovers.md) moves the menus,
 popovers and sender card, leaving the two comboboxes hand-built.
 brief-board is down (since 2026-10-13), so this is recorded here only.
 
@@ -327,3 +327,14 @@ composer, and `SessionExpiredDialog` loses its browser workarounds. LabelManager
 inline confirmation stays. 1166 unit and 34 browser tests pass. Focus now
 returns to the trigger, where the native dialogs dropped it. The decision is in
 [decisions.md](wiki/decisions.md).
+
+## [2026-10-23] done | Brief 21: Base UI for the menus and popovers
+
+[Brief 21](briefs/done/21-base-ui-menus-and-popovers.md) is built. The menus,
+including the composer's More options, are Base UI `Menu`s. The account card,
+the label panel (button and keyboard) and advanced search are `Popover`s. Menu
+items run from `finalFocus`. The composer's menu portals into the full-screen
+composer and keeps Escape to itself. Advanced search portals into the search
+root. The keyboard's label popover now opens under the focused row. The sender
+card stays hand-built, because PreviewCard isn't keyboard navigable and the
+card has actions. 1166 unit and 34 browser tests pass.

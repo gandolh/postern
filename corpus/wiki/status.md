@@ -47,7 +47,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 
 **Wave 7: Base UI**
 - [20](../briefs/done/20-base-ui-dialogs.md): the modal dialogs on Base UI `Dialog`/`AlertDialog` through `web/src/shell/Modal.tsx`; the composer window stays native. **Done 2026-10-23**: 1166 unit and 34 browser tests.
-- [21](../briefs/todo/21-base-ui-menus-and-popovers.md): the menus, popovers and sender card on Base UI; the two comboboxes stay hand-built. After 20. Filed 2026-10-23.
+- [21](../briefs/done/21-base-ui-menus-and-popovers.md): the menus and popovers on Base UI `Menu`/`Popover`; the comboboxes and the sender card stay hand-built. **Done 2026-10-23**: 1166 unit and 34 browser tests.
 
 ## Parked (todos)
 

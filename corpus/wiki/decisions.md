@@ -184,8 +184,8 @@ this stack, and so does the owner's muscle memory.
 _2026-10-23_, the owner's call, to match their other apps (atrium,
 imbatranimOS, sports-app, trips and others). The modal dialogs are Base UI
 `Dialog`/`AlertDialog` through one wrapper, `web/src/shell/Modal.tsx`
-([brief 20](../briefs/done/20-base-ui-dialogs.md)). The menus and popovers
-follow in brief 21. Base UI owns the focus trap, Escape, the inert page and
+([brief 20](../briefs/done/20-base-ui-dialogs.md)), and the menus and popovers
+are Base UI `Menu`/`Popover` ([brief 21](../briefs/done/21-base-ui-menus-and-popovers.md)). Base UI owns the focus trap, Escape, the inert page and
 focus return, and Postern keeps its CSS. Rejected: keeping native `<dialog>`
 with hand-built wiring, and shadcn, which brings Tailwind.
 
@@ -195,4 +195,6 @@ The composer window stays a native `<dialog>`. It switches between docked
 it is modal in the top layer when full screen, `Modal` portals any dialog
 opened inside it, or while it is up, into it. LabelManager's delete
 confirmation also stays: it is an inline box in a table cell, not an overlay.
-The two comboboxes (recipients, search) stay hand-built (brief 21).
+The two comboboxes (recipients, search) stay hand-built, and so does the sender
+card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
+card holds actions that keyboard users reach by Tab.

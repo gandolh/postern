@@ -91,3 +91,75 @@ corpus/wiki/status.md
   - shortcuts don't fire while a menu is open.
   Take before/after screenshots. They should match.
 - `bash corpus/lint.sh` passes.
+
+## Outcome (2026-10-23)
+
+Done, in `3f61d26`. On Base UI now:
+
+- `MenuButton` (`web/src/list/Menu.tsx`, the toolbar's Select and More, and
+  the message card's More) is a `Menu`, with the `IconButton` as the trigger
+  through `render`;
+- the composer's More options is an inline `Menu` with a `CheckboxItem`;
+- `AccountMenu` is a `Popover`, with `Popover.Title` holding the name;
+- `LabelMenu` and `LabelMenuPopover` are `Popover`s around the unchanged
+  `LabelMenuPanel`, which keeps its search box, list and arrow keys and only
+  loses its Escape branch (the create form's inner Escape stays);
+- `AdvancedSearch` is a `Popover`, its trigger the Search options button. The
+  form lost its own `role="dialog"`, since the popup carries it.
+
+The CSS points at Base UI's positioners and its `data-highlighted` and
+`data-disabled`. `web/src/keys/shortcuts.ts` needed no change: menus are
+still `role="menu"`, and the popovers are `role="dialog"`.
+
+What needed code:
+
+- **Menu items that open something.** A chosen item runs from `finalFocus`,
+  after focus is back on the button, so the question Plain text mode asks keeps
+  focus.
+- **The composer's menu.** It portals through `useLayer`, now exported from
+  `shell/Modal.tsx`, into the composer window when that is full screen (modal).
+  It stops Escape itself (`preventDefault` + `stopPropagation`), so neither the
+  composer nor the browser's close request for its window reacts.
+- **Advanced search** is portalled into the search root, so focus in the form
+  still counts as in the search, and a press inside the search box leaves it
+  open, as before.
+- **The account card** keeps its close-when-focus-leaves handler.
+
+Changes:
+
+- **`LabelMenuPopover` opens under the focused row**, as this brief asked,
+  where before it floated centred near the top. With no row (`l` inside a
+  conversation) it keeps the old place through a virtual anchor. ShortcutsHost
+  still returns focus to the row, so the popover passes `finalFocus={false}`.
+- **More's longest item ("Filter messages like these") no longer wraps.** The
+  old popup was sized inside a 40 px wrapper.
+- **Focus now returns** to the button or the search box after Escape from the
+  composer's menu and after an advanced search. Before, it dropped to
+  `<body>`.
+
+**Not moved: `SenderHoverCard`.** Base UI's PreviewCard is documented as "not
+touch, keyboard or screen reader navigable", but this card holds actions (Add
+to contacts, Email, Search mail from) that keyboard users reach by Tab. Moving
+it would take those away. It stays hand-built, and so do the two comboboxes, as
+the brief said.
+
+Tests: three menu-item lookups wait (`findByRole`), because Base UI opens a
+menu a tick after the click.
+
+Checked: `npm run check` (1166 tests) and `npm run test:e2e` (34). In Chromium
+against the dev Stalwart, at 1440 and 390 px:
+
+- More: ↓ moves, and Escape returns to the button. `j` doesn't move the
+  selection while it is open.
+- Labels: two labels ticked in a row and the menu stays open; both unticked
+  afterwards. Indeterminate states and Move to closing on a choice are covered
+  by `LabelMenu.test`, so nothing was moved in the dev mailbox.
+- `l` on a row: the popover sits under it, and Escape returns to the row.
+- The account card: Escape returns to the avatar, and Tab out closes it.
+- Advanced search runs `from:bob@postern.test`.
+- More options works docked, and inside the full-screen composer, where it
+  renders inside the modal `<dialog>`.
+
+The before/after screenshots match apart from the two changes above. The
+sender card is unchanged code. brief-board is down, so nothing was posted
+there.
