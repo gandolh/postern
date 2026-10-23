@@ -2,7 +2,7 @@
 // anything is sent. Pure: brief 06's list and brief 07's conversation view
 // plan the same way, and brief 09's label menu uses planLabels / planMove.
 //
-// Gmail's meanings (corpus/wiki/gmail-on-jmap.md, decisions.md):
+// Gmail's meanings (corpus/wiki/gmail-on-jmap.md, decisions-mail.md):
 //   archive   take the conversation out of the Inbox; a message left in no
 //             label goes to All Mail (the archive-role mailbox)
 //   trash     the conversation's messages move to Trash, out of every label

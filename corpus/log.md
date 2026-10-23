@@ -354,6 +354,14 @@ and calendar invites stay parked for the owner's call.
 
 Asked what snooze does without a server-side mechanism, the owner chose the
 browser-only version over a scheduler service or dropping it. Recorded in
-[decisions.md](wiki/decisions.md). [Brief 24](briefs/todo/24-snooze.md) keeps the wake-up
+[decisions-mail.md](wiki/decisions-mail.md). [Brief 24](briefs/todo/24-snooze.md) keeps the wake-up
 time on the server as a keyword beside a hidden Snoozed label, so every device agrees,
 and wakes conversations once a minute while Postern is open.
+
+## [2026-10-23] maintenance | decisions.md split in two
+
+Adding the snooze entry took `decisions.md` past 200 lines. The calls about how mail
+behaves (labels and archive, per-device settings, no offline mail, closed-app
+notifications, snooze) moved verbatim to [decisions-mail.md](wiki/decisions-mail.md);
+architecture and security stay in [decisions.md](wiki/decisions.md). Links in
+`security.md`, the conversation-view todo and two code comments now point at the new page.

@@ -136,7 +136,7 @@ updated: 2026-10-22
   no JMAP call. No other app can register a worker on Postern's host.
 - **Notifications are readable.** While one is on screen, any script on the
   origin can read its sender and subject through
-  `registration.getNotifications()` ([decisions.md](decisions.md)).
+  `registration.getNotifications()` ([decisions-mail.md](decisions-mail.md)).
 
 ## Headers (final since brief 17)
 

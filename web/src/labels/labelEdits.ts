@@ -2,7 +2,7 @@
 // mailboxes). Framework-free so it is testable; useLabelEdits wires it to the
 // session and the labels store. Every change ends in a labels `sync()`.
 //
-// Deleting a label never loses mail (corpus/wiki/decisions.md: a message is
+// Deleting a label never loses mail (corpus/wiki/decisions-mail.md: a message is
 // always in at least one mailbox). The messages in it are first taken out of
 // it; those that would be left in no label go to All Mail (the archive-role
 // mailbox, made if the account has none) in the same patch. Only then is the

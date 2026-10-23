@@ -1,5 +1,5 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); labels are JMAP mailboxes and archive means leaving the Inbox; message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; display settings and label colours kept per device (owner, 2026-10-20); no offline mail (owner); closed-app notifications show sender and subject; the house stack; Base UI under the overlays, with the composer window left native. Read before proposing to change any of these.
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native. How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
 updated: 2026-10-23
 ---
 
@@ -7,6 +7,10 @@ updated: 2026-10-23
 
 Each entry passed three tests: hard to reverse, surprising without context, a
 real trade-off. Changing one needs an explicit revisit and a `log.md` entry.
+How mail behaves (labels and archive, per-device settings, offline, notifications,
+snooze) is in [decisions-mail.md](decisions-mail.md).
+
+
 
 ## Our own webmail, shaped like Gmail
 _2026-10-09, owner_. Rejected:
@@ -66,15 +70,6 @@ its own.
 - a strict CSP, with `frame-ancestors 'none'` and COOP;
 - a service worker that serves only files whose hash it knows;
 - no third-party scripts.
-
-## Labels are JMAP mailboxes; archive means leaving the Inbox
-_2026-10-09_. Each Gmail-style label is a JMAP `Mailbox`. A message can sit in
-several at once (`mailboxIds` is a set), which is exactly Gmail's model.
-Archiving removes the Inbox mailbox. JMAP requires every message to be in at
-least one mailbox, so a message with no other label moves to the Archive-role
-mailbox, which plays Gmail's "All Mail". Rejected: labels as JMAP keywords.
-IMAP clients show keywords as flags, not folders, and the owner's phone would
-lose the labels.
 
 ## Message HTML renders only in a sandboxed iframe
 _2026-10-09_. Every body is sanitised, then shown through `srcdoc` in an
@@ -136,44 +131,6 @@ on. Stalwart only checks that the token request repeats the sign-in's
 Revisit if production ever turns `requireClientRegistration` on: Postern then
 needs an `OAuthClient` with its redirect URI in `../vps-deploy`'s mail plan.
 
-## Display settings and label colours live in this browser
-_2026-10-20, owner_. Density, theme, reading pane, undo-send delay, label
-colours and "show if unread" are kept per device in `localStorage`, and
-every read and write falls back to memory when storage is blocked. Theme,
-density and reading pane are device-wide (they apply before sign-in); the
-rest is keyed by account. A new device starts from defaults. None of it is secret, so the
-shared origin does not matter here. Show and hide in the navigation is the
-mailbox's `isSubscribed`, which lives on the server and which IMAP clients
-honour too. Rejected:
-
-- **A JSON file in Stalwart through JMAP FileNode.** It syncs devices, but it
-  rests on Stalwart's draft FileNode support, one more thing to break on an
-  upgrade, for settings the owner rarely changes.
-- **A hidden settings message in its own label.** It syncs everywhere, but
-  the label shows up as a folder in the phone's mail app.
-
-## No offline mail
-_2026-10-20, owner_. The installed app caches only its shell (HTML, JS, CSS,
-fonts, icons). No mail, no `/webmail-api` response, no IndexedDB and no
-offline outbox. Offline, it opens to the sign-in page (tokens die with the
-tab) and says it cannot reach the mail server. Rejected: caching the
-conversation list, and caching recent mail with an outbox. Either would sit
-in storage that any script on the shared origin can read, even with Postern
-closed, and encrypting it with an in-memory key protects nothing while the
-app is open.
-
-## Closed-app notifications show sender and subject
-_2026-10-20, controller; the owner may flip it_. When Web Push is on, Stalwart
-pushes the new message's sender and subject (JMAP `emailpush`, encrypted to
-the subscription's keys) and the service worker shows them, without any
-token. Rejected: a generic "New mail" only, which hides nothing a script
-could not learn by other means while Postern is open, but shows less than the
-brief asked for. Cost: while a notification is on screen, any script on the
-origin can read its sender and subject through
-`registration.getNotifications()`, even with Postern closed. Web Push is off
-until the user turns it on. To go generic, `emailPushConfig()` in
-`web/src/push/PushHost.tsx` returns null.
-
 ## The house stack
 _2026-10-09_. TypeScript, React 19 and Vite 8, with Vitest and ESLint, in npm
 workspaces. Versions are pinned exactly, matching Satchel's at bootstrap.
@@ -198,11 +155,3 @@ confirmation also stays: it is an inline box in a table cell, not an overlay.
 The two comboboxes (recipients, search) stay hand-built, and so does the sender
 card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
 card holds actions that keyboard users reach by Tab.
-
-## Snooze runs in the browser
-_2026-10-23_, the owner's call. Snoozed mail waits in a hidden Snoozed label with
-its wake-up time in a keyword, and an open Postern moves it back to the Inbox when
-the time comes. A laptop left shut skips the wake-up until Postern is opened again.
-Rejected: a small scheduler service on the VPS, which would wake mail on time but
-breaks "No backend of our own"; and dropping snooze. Brief 24 first checks that
-Stalwart has no server-side way, and brings one back to the owner if it does.

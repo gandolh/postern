@@ -19,4 +19,4 @@ actions and undo all work on a thread's messages.
 On JMAP this is `Email/query` without `collapseThreads`. The list store and
 the planners in `web/src/actions/` would need a mode where a row is a single
 message, and the setting would live in the per-device prefs
-(`web/src/prefs/`, see [decisions.md](../wiki/decisions.md)).
+(`web/src/prefs/`, see [decisions-mail.md](../wiki/decisions-mail.md)).
