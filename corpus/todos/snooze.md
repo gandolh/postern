@@ -5,7 +5,7 @@ status: promoted
 tags: [gmail-parity, needs-server]
 ---
 
-Promoted 2026-10-23 into [brief 24](../briefs/todo/24-snooze.md); the owner chose the browser-only version.
+Promoted 2026-10-23 into [brief 24](../briefs/done/24-snooze.md); the owner chose the browser-only version.
 
 # Snooze a conversation until a chosen time
 

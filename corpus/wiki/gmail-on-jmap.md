@@ -38,7 +38,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 | Notifications while closed | `PushSubscription` + Web Push | native | 16 |
 | Storage meter | `Quota/get` | native | 12 |
 | Keyboard shortcuts | the app | client-side | 14 |
-| Snooze | nothing schedules a message's return | needs server work | todo |
+| Snooze | a hidden "Snoozed" mailbox and a `$snoozed-<time>` keyword; an open Postern moves it back; the Inbox sorts `hasKeyword $woken` first | client-side | 24 |
 | Schedule send | `EmailSubmission` held with FUTURERELEASE `HOLDUNTIL` in the envelope; the draft waits marked `$scheduled`; the client files it in Sent once the submission is final | native, client-filed | 23 |
 | Category tabs (Primary, Social, Promotions) | no classifier; Sieve on headers at best | needs server work | todo |
 | Calendar invites, RSVP | calendars capability; Stalwart has `/calendar/rsvp` | to check | todo |
@@ -101,7 +101,14 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `cannotUnsend`. On release `undoStatus` reads "final", but no state changes
   and no push comes, so the client has to look. `onSuccessUpdateEmail` works
   on create, not on update. `EmailSubmission/query` filters by `undoStatus`
-  and `emailIds` but cannot sort by `sendAt`.
+  and `emailIds` but cannot sort by `sendAt`. Destroying a pending submission
+  does not stop it: two held messages whose submissions were destroyed were
+  delivered at their time anyway. Only `undoStatus: "canceled"` cancels.
+- **Snooze** (brief 24, 2026-10-27): nothing moves or flags a message at a
+  time. The Sieve extensions are the stock set, `urn:stalwart:jmap` is empty,
+  and JMAP has no timer. Keywords keep their case, and a 309-character one was
+  accepted. `Email/query` sorts by `hasKeyword` (with `collapseThreads`) and
+  `queryChanges` works with that sort.
 - **Settings** (brief 12): `VacationResponse` works as the RFC says (null
   dates mean always on) and has no "contacts only" switch. `Quota/get`
   returns nothing until a quota is set, then one account-wide octets quota.

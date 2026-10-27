@@ -354,7 +354,7 @@ and calendar invites stay parked for the owner's call.
 
 Asked what snooze does without a server-side mechanism, the owner chose the
 browser-only version over a scheduler service or dropping it. Recorded in
-[decisions-mail.md](wiki/decisions-mail.md). [Brief 24](briefs/todo/24-snooze.md) keeps the wake-up
+[decisions-mail.md](wiki/decisions-mail.md). [Brief 24](briefs/done/24-snooze.md) keeps the wake-up
 time on the server as a keyword beside a hidden Snoozed label, so every device agrees,
 and wakes conversations once a minute while Postern is open.
 
@@ -411,4 +411,22 @@ leave `$scheduled` messages alone. The composer's menus had opened behind the do
 window since brief 21 (z-index 10 under the layer's 55); they are at 80 now. 1211 unit and
 34 browser tests pass, and a live run through the UI covered the acceptance. Findings are
 in [gmail-on-jmap.md](wiki/gmail-on-jmap.md); the glossary has "scheduled message".
+brief-board is down (since 2026-10-13), so this is recorded here only.
+
+## [2026-10-27] done | Brief 24: snooze
+
+[Brief 24](briefs/done/24-snooze.md) is built. Step one found nothing in Stalwart 0.16.25 that
+moves or flags a message at a time, so it runs in the browser as the owner chose; the
+outcome names one indirect route (a held self-addressed message) for the owner to weigh.
+Snoozed mail waits in a "Snoozed" mailbox, made on first use and found by name, with a
+`$snoozed-<time>` keyword, and Snoozed sits between Starred and Sent. The toolbar's Snooze
+menu has Gmail's choices and Unsnooze, and Undo works. A `SnoozeHost` in the shell wakes
+conversations on time, on opening and on a reply. `receivedAt` can't move, so a woken
+conversation gets `$woken` and the Inbox sorts that first until it is read; Inbox sort
+changed for that. Two faults found live and fixed: the first look ran before the labels
+loaded, and a reply right after a snooze fell inside the throttle. 1228 unit and 34 browser
+tests pass, and a live run covered all four acceptance lines. While tidying, two brief-23
+probe messages turned out to have been delivered after their submissions were destroyed:
+only `undoStatus: "canceled"` stops a held message. That is now in
+[gmail-on-jmap.md](wiki/gmail-on-jmap.md), and the probe mail is gone from bob's Inbox.
 brief-board is down (since 2026-10-13), so this is recorded here only.
