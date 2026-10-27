@@ -1,6 +1,6 @@
 ---
 summary: Which Gmail feature maps to which JMAP object or method on Stalwart 0.16, and whether it is native, client-side, needs checking, or impossible without server work. Conversations, labels and archive, stars and unread, search operators, drafts and sending, undo send, signatures, vacation, filters, spam, contacts, push, attachments, quota, and the Gmail features deferred to todos. Read before writing or working any feature brief.
-updated: 2026-10-20
+updated: 2026-10-27
 ---
 
 # Gmail on JMAP
@@ -13,6 +13,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 | Gmail | JMAP on Stalwart | Kind | Brief |
 |---|---|---|---|
 | Conversations | `Thread`; `Email/query` with `collapseThreads: true` | native | 06, 07 |
+| Conversation view off | `Email/query` without `collapseThreads`; each row a one-message conversation, opening its whole `Thread` | native | 22 |
 | Labels | `Mailbox`; a message's `mailboxIds` is a set | native | 09 |
 | Inbox, Sent, Drafts, Spam, Trash | mailboxes with `role` inbox, sent, drafts, junk, trash | native | 05 |
 | All Mail | the list: everything outside Spam and Trash (`inMailboxOtherThan`); archived mail with no label goes to the archive-role mailbox | native | 05, 06 |

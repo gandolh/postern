@@ -1,6 +1,6 @@
 ---
 summary: How Postern looks and behaves. Gmail's familiar layout (top bar with search, left navigation with Compose, conversation list, reading pane, floating composer) in Postern's own visual identity, never Google's colours, logo or wordmark. The chosen visual system (brief 05) - patina-on-limestone palette with light and dark hex values and contrast ratios, Atkinson Hyperlegible Next and Mono, lucide icons, the three density metrics, the mark - plus the settings it supports and the motion and accessibility targets. Read before any UI brief; impeccable works within it.
-updated: 2026-10-20
+updated: 2026-10-27
 ---
 
 # Design
@@ -117,7 +117,9 @@ over the page; under 600 px it is hidden until the menu opens it.
 
 Theme, density and reading pane live in one per-device store
 ([displaySettings.ts](../../web/src/theme/displaySettings.ts)); brief 12
-persists them.
+persists them. Conversation view is a per-account pref in
+[prefs.ts](../../web/src/prefs/prefs.ts) (brief 22); with it off a row is one
+message, and opening it opens the whole conversation at that message.
 
 ## Quality bar
 

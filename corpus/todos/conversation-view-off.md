@@ -5,7 +5,7 @@ status: promoted
 tags: [list, settings]
 ---
 
-Promoted 2026-10-23 into [brief 22](../briefs/todo/22-conversation-view-off.md).
+Promoted 2026-10-23 into [brief 22](../briefs/done/22-conversation-view-off.md).
 
 # Conversation view off (one row per message)
 

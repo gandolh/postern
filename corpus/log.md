@@ -341,7 +341,7 @@ card has actions. 1166 unit and 34 browser tests pass.
 
 ## [2026-10-23] todo | Briefs 22 and 23 from the parked todos
 
-[22](briefs/todo/22-conversation-view-off.md): conversation view off. A message row is a
+[22](briefs/done/22-conversation-view-off.md): conversation view off. A message row is a
 `Conversation` holding one message, so the planners, selection and undo should work
 unchanged; the list queries without `collapseThreads` and keys its cache on the mode.
 [23](briefs/todo/23-schedule-send.md): schedule send. Step one tests a future `sendAt`
@@ -379,3 +379,19 @@ calendar inside Postern. [Brief 25](briefs/todo/25-calendar-invite-card.md) firs
 what Stalwart 0.16 does with an iMIP REQUEST and whether it can send the REPLY, then
 parses the VEVENT fields the card needs and shows them as inert text. No todos are parked
 now.
+
+## [2026-10-27] done | Brief 22: conversation view off
+
+[Brief 22](briefs/done/22-conversation-view-off.md) is built. A per-device pref,
+`conversationView`, with a switch in General settings; with it off the list queries
+without `collapseThreads` and every row is a conversation holding one message, so the
+planners, undo, selection and label menus work unchanged. The row's `id` is the
+message's and a new `conversationId` names the Thread it opens. Opening a message row
+opens the whole conversation at that message through the conversation's controller,
+leaving `web/src/conversation/` as it was; a reply draft's focus no longer scrolls it
+away. The copy still says "conversation" in the toasts and the selection count, and
+opening marks the whole conversation read; both are in the outcome for the owner.
+1186 unit and 34 browser tests pass, and a live check in Chromium against the dev
+Stalwart covered the acceptance. [gmail-on-jmap.md](wiki/gmail-on-jmap.md),
+[design.md](wiki/design.md) and the [glossary](wiki/glossary.md) (conversation view)
+are updated. brief-board is down (since 2026-10-13), so this is recorded here only.
