@@ -3,8 +3,11 @@
 //
 // It does what drafts and sending need: Identity/get, Email/get, Email/set
 // (create, update by patch, destroy), EmailSubmission/set (with
-// onSuccessUpdateEmail), Thread/get, Mailbox/query by role, Email/query by
-// mailbox, blob upload and download. `calls` records every method call.
+// onSuccessUpdateEmail on create, as Stalwart; an update cancels), Thread/get,
+// Mailbox/query by role, Email/query by mailbox or keyword,
+// EmailSubmission/query and /get, blob upload and download. `calls` records
+// every method call. With `maxDelayedSend` it advertises FUTURERELEASE and
+// holds a submission with HOLDUNTIL until `release(id)` (brief 23).
 
 import { JmapClient, type Id, type SessionObject } from "@postern/jmap";
 
@@ -23,7 +26,8 @@ export const MAILBOXES = { inbox: "a", trash: "b", junk: "c", drafts: "d", sent:
 
 const ACCOUNT = "A";
 
-function session(): SessionObject {
+function session(maxDelayedSend: number): SessionObject {
+  const submission = maxDelayedSend > 0 ? { maxDelayedSend, submissionExtensions: { FUTURERELEASE: [] } } : {};
   return {
     capabilities: {
       "urn:ietf:params:jmap:core": {
@@ -39,7 +43,7 @@ function session(): SessionObject {
       "urn:ietf:params:jmap:mail": {},
       "urn:ietf:params:jmap:submission": {},
     },
-    accounts: { [ACCOUNT]: { name: "alice@postern.test", isPersonal: true, isReadOnly: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {}, "urn:ietf:params:jmap:submission": {} } } },
+    accounts: { [ACCOUNT]: { name: "alice@postern.test", isPersonal: true, isReadOnly: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {}, "urn:ietf:params:jmap:submission": submission } } },
     primaryAccounts: { "urn:ietf:params:jmap:mail": ACCOUNT, "urn:ietf:params:jmap:core": ACCOUNT, "urn:ietf:params:jmap:submission": ACCOUNT },
     username: "alice@postern.test",
     apiUrl: "http://fake/jmap/",
@@ -64,11 +68,33 @@ function applyPatch(target: StoredEmail, patch: Record<string, unknown>): void {
   }
 }
 
+/** A submission as the server keeps it. */
+export interface StoredSubmission {
+  id: Id;
+  emailId: Id;
+  threadId: Id;
+  sendAt: string;
+  undoStatus: "pending" | "final" | "canceled";
+}
+
 export class ComposeTestServer {
   readonly emails = new Map<Id, StoredEmail>();
   readonly blobs = new Map<Id, { type: string; bytes: Uint8Array }>();
   readonly calls: Invocation[] = [];
   readonly submissions: Args[] = [];
+  /** Every submission, by id. One without HOLDUNTIL is final at once. */
+  readonly held = new Map<Id, StoredSubmission>();
+  readonly #maxDelayedSend: number;
+
+  constructor(options: { maxDelayedSend?: number } = {}) {
+    this.#maxDelayedSend = options.maxDelayedSend ?? 0;
+  }
+
+  /** The held message goes out: its submission is final. */
+  release(id: Id): void {
+    const sub = this.held.get(id);
+    if (sub?.undoStatus === "pending") sub.undoStatus = "final";
+  }
   identities: Args[] = [{ id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false }];
   /** Make a call answer this instead (a method error or a refusal). */
   failWith: ((name: string, args: Args) => [string, Args] | "network" | undefined) | null = null;
@@ -90,7 +116,7 @@ export class ComposeTestServer {
 
   readonly fetch = async (input: unknown, init: { method?: string; body?: unknown } = {}): Promise<Response> => {
     const url = String(input);
-    if (url.endsWith("/jmap/session")) return Response.json(session());
+    if (url.endsWith("/jmap/session")) return Response.json(session(this.#maxDelayedSend));
     if (url.startsWith("http://fake/download/")) {
       const blobId = decodeURIComponent(url.split("/")[5] ?? "");
       const blob = this.blobs.get(blobId);
@@ -167,8 +193,12 @@ export class ComposeTestServer {
         return [[name, { accountId: ACCOUNT, ids: role && MAILBOXES[role] ? [MAILBOXES[role]] : [], position: 0, queryState: "q", canCalculateChanges: false }]];
       }
       case "Email/query": {
-        const mailbox = (args["filter"] as { inMailbox?: Id } | undefined)?.inMailbox;
-        const ids = [...this.emails.values()].filter((e) => !mailbox || e.mailboxIds[mailbox]).map((e) => e.id);
+        const filter = args["filter"] as { inMailbox?: Id; hasKeyword?: string; notKeyword?: string } | undefined;
+        const ids = [...this.emails.values()]
+          .filter((e) => !filter?.inMailbox || e.mailboxIds[filter.inMailbox])
+          .filter((e) => !filter?.hasKeyword || e.keywords[filter.hasKeyword])
+          .filter((e) => !filter?.notKeyword || !e.keywords[filter.notKeyword])
+          .map((e) => e.id);
         return [[name, { accountId: ACCOUNT, ids, position: 0, queryState: "q", canCalculateChanges: false }]];
       }
       case "Email/get": {
@@ -195,14 +225,60 @@ export class ComposeTestServer {
             notCreated[key] = { type: "invalidProperties", properties: ["emailId"] };
             continue;
           }
+          if ("sendAt" in sub) {
+            notCreated[key] = { type: "invalidProperties", description: "Field could not be set.", properties: ["sendAt"] };
+            continue;
+          }
+          const hold = (sub["envelope"] as { mailFrom?: { parameters?: Record<string, string> | null } } | undefined)?.mailFrom?.parameters?.["HOLDUNTIL"];
+          if (hold && this.#maxDelayedSend === 0) {
+            notCreated[key] = { type: "invalidEmail", description: "FUTURERELEASE is not supported" };
+            continue;
+          }
           this.submissions.push(sub);
-          created[key] = { id: `S${this.#next++}`, undoStatus: "pending" };
+          const id = `S${this.#next++}`;
+          const sendAt = hold ?? "2026-10-27T12:00:00Z";
+          this.held.set(id, { id, emailId: email.id, threadId: email.threadId, sendAt, undoStatus: hold ? "pending" : "final" });
+          created[key] = { id, sendAt, undoStatus: "pending" };
           const patch = (args["onSuccessUpdateEmail"] as Record<string, Record<string, unknown>> | undefined)?.[`#${key}`];
           if (patch) updates[email.id] = patch;
         }
-        out.push([name, { accountId: ACCOUNT, oldState: "s0", newState: "s1", created: Object.keys(created).length ? created : null, notCreated: Object.keys(notCreated).length ? notCreated : null }]);
+        const updated: Record<Id, null> = {};
+        const notUpdated: Record<Id, Args> = {};
+        for (const [id, patch] of Object.entries((args["update"] as Record<Id, Args>) ?? {})) {
+          const sub = this.held.get(id);
+          if (!sub) notUpdated[id] = { type: "notFound" };
+          else if (patch["undoStatus"] === "canceled" && sub.undoStatus === "pending") {
+            sub.undoStatus = "canceled";
+            updated[id] = null;
+          } else notUpdated[id] = { type: "cannotUnsend", description: "The requested message is no longer in the queue." };
+        }
+        out.push([
+          name,
+          {
+            accountId: ACCOUNT,
+            oldState: "s0",
+            newState: "s1",
+            created: Object.keys(created).length ? created : null,
+            notCreated: Object.keys(notCreated).length ? notCreated : null,
+            updated: Object.keys(updated).length ? updated : null,
+            notUpdated: Object.keys(notUpdated).length ? notUpdated : null,
+          },
+        ]);
         if (Object.keys(updates).length) out.push(["Email/set", this.#emailSet({ update: updates })]);
         return out;
+      }
+      case "EmailSubmission/query": {
+        const filter = args["filter"] as { emailIds?: Id[]; undoStatus?: string } | undefined;
+        const ids = [...this.held.values()]
+          .filter((s) => !filter?.emailIds || filter.emailIds.includes(s.emailId))
+          .filter((s) => !filter?.undoStatus || s.undoStatus === filter.undoStatus)
+          .map((s) => s.id);
+        return [[name, { accountId: ACCOUNT, ids, position: 0, queryState: "sq", canCalculateChanges: false }]];
+      }
+      case "EmailSubmission/get": {
+        const ids = (args["ids"] as Id[] | null) ?? [...this.held.keys()];
+        const list = ids.map((id) => this.held.get(id)).filter((s): s is StoredSubmission => !!s).map((s) => ({ ...s }));
+        return [[name, { accountId: ACCOUNT, state: "s1", list, notFound: ids.filter((id) => !this.held.has(id)) }]];
       }
       default:
         return [["error", { type: "unknownMethod" }]];

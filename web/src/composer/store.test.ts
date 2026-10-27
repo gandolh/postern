@@ -191,6 +191,73 @@ describe("sending", () => {
   });
 });
 
+describe("schedule send (brief 23)", () => {
+  beforeEach(async () => {
+    store.dispose();
+    server = new ComposeTestServer({ maxDelayedSend: 2_592_000 });
+    store = await makeStore();
+    store.activate();
+  });
+
+  async function written() {
+    const s = store.open();
+    await ready(s.key);
+    s.addRecipientText("to", "bob@postern.test");
+    s.setSubject("Lunch");
+    return s;
+  }
+
+  it("is offered only when the server can hold a message", async () => {
+    expect(store.canSchedule).toBe(true);
+    server = new ComposeTestServer();
+    expect((await makeStore()).canSchedule).toBe(false);
+  });
+
+  it("saves, submits with HOLDUNTIL, closes the window and keeps the message in Drafts marked $scheduled", async () => {
+    const s = await written();
+    await store.schedule(s.key, new Date("2026-10-28T08:00:00Z"));
+    expect(server.submissions).toHaveLength(1);
+    expect(server.submissions[0]).toMatchObject({ emailId: s.draftId, envelope: { mailFrom: { parameters: { HOLDUNTIL: "2026-10-28T08:00:00Z" } }, rcptTo: [{ email: "bob@postern.test" }] } });
+    const email = server.emails.get(s.draftId!)!;
+    expect(email.mailboxIds).toEqual({ [MAILBOXES.drafts]: true });
+    expect(email.keywords).toMatchObject({ $draft: true, $scheduled: true });
+    expect(store.getSnapshot()).toHaveLength(0);
+    expect(toasts.at(-1)?.message).toMatch(/^Send scheduled for .+\.$/);
+    expect(published).toContainEqual({ kind: "settled" });
+  });
+
+  it("Undo cancels the send and leaves the draft", async () => {
+    const s = await written();
+    await store.schedule(s.key, new Date("2026-10-28T08:00:00Z"));
+    const id = s.draftId!;
+    toasts.at(-1)!.action!.onClick();
+    await vi.waitFor(() => expect(toasts.at(-1)?.message).toBe("Send canceled. The message is in Drafts."));
+    expect([...server.held.values()][0]!.undoStatus).toBe("canceled");
+    expect(server.emails.get(id)!.keywords).toEqual(expect.not.objectContaining({ $scheduled: true }));
+  });
+
+  it("keeps the window and explains when the server refuses", async () => {
+    server.failWith = (name) => (name === "EmailSubmission/set" ? ["EmailSubmission/set", { accountId: "A", notCreated: { send: { type: "forbiddenFrom" } } }] : undefined);
+    const s = await written();
+    await store.schedule(s.key, new Date("2026-10-28T08:00:00Z"));
+    expect(s.state.sending).toBe(false);
+    expect(s.state.sendError).toMatch(/won't send from this address/);
+    expect(store.get(s.key)).toBe(s);
+    expect(toasts.at(-1)?.message).toBe("Couldn't schedule the message. It's saved in Drafts.");
+  });
+
+  it("never opens a scheduled message as a draft to edit", async () => {
+    server.add({ id: "O1", threadId: "T1", mailboxIds: { [MAILBOXES.inbox]: true } });
+    server.add({ id: "R1", threadId: "T1", mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $scheduled: true } });
+    server.add({ id: "N1", threadId: "T2", mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $scheduled: true } });
+    expect((await store.threadDrafts("T1")).messages.map((m) => [m.id, m.draft])).toEqual([
+      ["O1", false],
+      ["R1", false],
+    ]);
+    expect(await store.draftOnlyConversation("T2", null)).toBeNull();
+  });
+});
+
 describe("reply, reply all and forward", () => {
   beforeEach(() => {
     server.add({

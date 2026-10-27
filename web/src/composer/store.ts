@@ -1,7 +1,12 @@
 // The composer windows: which drafts are open, where (docked, minimised, full
 // screen, inline under a conversation), and the actions on them: open, close
-// (keeps the draft), discard, send with Undo. One store per signed-in session,
-// made by ComposerProvider; brief 14's keys reach it through getComposer().
+// (keeps the draft), discard, send with Undo, schedule send (brief 23). One
+// store per signed-in session, made by ComposerProvider; brief 14's keys reach
+// it through getComposer().
+//
+// A scheduled message is a draft marked `$scheduled` (send/schedule.ts): it is
+// never opened in a composer, inline or in a window, so an edit cannot make a
+// second message while the server still holds the first.
 
 import { type Id, type Identity, type JmapClient } from "@postern/jmap";
 import { publishMailChange, type MailChange } from "../actions/bus";
@@ -15,6 +20,7 @@ import type { ToastApi } from "../shell/toast";
 import { destroyDrafts } from "../send/drafts";
 import { explainSaveError, explainSendError } from "../send/errors";
 import { Outbox } from "../send/outbox";
+import { cancelScheduled, formatSendTime, maxDelayedSendMs, SCHEDULED, scheduleDraft, ScheduledSync } from "../send/schedule";
 import { submitDraft, type Submitted } from "../send/submit";
 import { getUndoSendDelay } from "../send/undoDelay";
 import type { ComposeOptions } from "./compose";
@@ -51,6 +57,8 @@ export interface ThreadDrafts {
 
 export class ComposerStore {
   readonly outbox = new Outbox();
+  /** Files scheduled messages in Sent once they have gone (brief 23). */
+  readonly scheduled: ScheduledSync;
   readonly #deps: ComposerDeps;
   readonly #listeners = new Set<() => void>();
   readonly #unsubscribe = new Map<string, () => void>();
@@ -70,6 +78,21 @@ export class ComposerStore {
 
   constructor(deps: ComposerDeps) {
     this.#deps = deps;
+    this.scheduled = new ScheduledSync(
+      deps.client,
+      () => ({ drafts: deps.labels.mailboxIdForRole("drafts"), sent: deps.labels.mailboxIdForRole("sent") }),
+      () => this.#settled(),
+    );
+  }
+
+  /** The account can schedule: the server holds submissions (FUTURERELEASE). */
+  get canSchedule(): boolean {
+    return maxDelayedSendMs(this.#deps.client) > 0;
+  }
+
+  /** How far ahead it can schedule, in ms (0: not at all). */
+  get maxScheduleMs(): number {
+    return maxDelayedSendMs(this.#deps.client);
   }
 
   // ---- React ----------------------------------------------------------------------------
@@ -424,6 +447,80 @@ export class ComposerStore {
     return true;
   }
 
+  /**
+   * Schedule send (the window has checked, as for Send): save the draft, hand
+   * it to the server to send at `at`, close the window. Undo on the toast
+   * cancels it, leaving the draft in Drafts.
+   */
+  async schedule(key: string, at: Date): Promise<void> {
+    const session = this.get(key);
+    if (!session || session.state.sending || this.outbox.has(key)) return;
+    session.setSendError(null);
+    session.captureBody();
+    session.setSending(true);
+    try {
+      await session.flushForSend();
+    } catch (err) {
+      session.setSending(false);
+      session.setSendError(`The draft couldn't be saved, so it wasn't scheduled. ${explainSaveError(err)}`.trim());
+      return;
+    }
+    const identity = session.identity;
+    const emailId = session.draftId;
+    if (!identity?.id || !identity.email || !emailId) {
+      session.setSending(false);
+      session.setSendError("No From address to send as. Reload Postern and try again.");
+      return;
+    }
+    const recipients = session.content();
+    let scheduled: Awaited<ReturnType<typeof scheduleDraft>>;
+    try {
+      scheduled = await scheduleDraft(this.#deps.client, { emailId, identityId: identity.id, from: identity.email, at });
+    } catch (err) {
+      if (session.disposed || this.#disposed) return;
+      session.setSending(false);
+      session.setSendError(explainSendError(err));
+      if (session.state.placement === "minimised") session.setPlacement("docked");
+      session.requestFocus("window");
+      if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't schedule the message. It's saved in Drafts." });
+      return;
+    }
+    this.#remove(session);
+    session.dispose();
+    if (recipients) this.#deps.recipients.remember([...recipients.to, ...recipients.cc, ...recipients.bcc]);
+    this.scheduled.expect(scheduled.sendAt);
+    this.#settled();
+    const entry: UndoEntry = {
+      label: "Send scheduled.",
+      undo: async () => {
+        await this.cancelScheduled(scheduled.submissionId, scheduled.emailId);
+      },
+    };
+    setUndo(entry);
+    this.#deps.toast.show({
+      message: `Send scheduled for ${formatSendTime(scheduled.sendAt)}.`,
+      action: { label: "Undo", onClick: () => void runUndo(entry) },
+    });
+  }
+
+  /** Cancel send: the message stays a draft in Drafts. Says so, or that it had already gone. */
+  async cancelScheduled(submissionId: Id, emailId: Id): Promise<"canceled" | "sent" | "failed"> {
+    try {
+      const outcome = await cancelScheduled(this.#deps.client, submissionId, emailId);
+      if (outcome === "sent") {
+        void this.scheduled.run();
+        this.#deps.toast.show({ message: "The message was already sent." });
+      } else {
+        this.#settled();
+        this.#deps.toast.show({ message: "Send canceled. The message is in Drafts." });
+      }
+      return outcome;
+    } catch (err) {
+      if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't cancel the send. Try again in a moment." });
+      return "failed";
+    }
+  }
+
   /** The held message went out or came back: its Undo is gone from `z` and the toast. */
   #dropUndo(key: string): void {
     const entry = this.#undo.get(key);
@@ -446,7 +543,12 @@ export class ComposerStore {
     const messages = order
       .map((id) => byId.get(id))
       .filter((e): e is NonNullable<typeof e> => e !== undefined)
-      .map((e) => ({ id: e.id, draft: e.keywords?.[DRAFT] === true && (!drafts || e.mailboxIds?.[drafts] === true), mailboxIds: e.mailboxIds ?? {} }));
+      // A scheduled message is the server's to send now, not a draft to edit (brief 23).
+      .map((e) => ({
+        id: e.id,
+        draft: e.keywords?.[DRAFT] === true && e.keywords?.[SCHEDULED] !== true && (!drafts || e.mailboxIds?.[drafts] === true),
+        mailboxIds: e.mailboxIds ?? {},
+      }));
     return { messages };
   }
 
@@ -500,6 +602,7 @@ export class ComposerStore {
   /** The session ended: stop every composer. A sign-out sent the held messages first (flushForSignOut); any still held here stay in Drafts. */
   dispose(): void {
     this.#disposed = true;
+    this.scheduled.stop();
     for (const key of [...this.#undo.keys()]) this.#dropUndo(key);
     this.outbox.dispose();
     for (const s of this.#sessions) s.dispose();
@@ -513,5 +616,6 @@ export class ComposerStore {
   activate(): void {
     this.#disposed = false;
     this.#signingOut = false;
+    if (this.canSchedule) this.scheduled.start();
   }
 }

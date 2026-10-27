@@ -7,6 +7,7 @@
 //   #<any of the above>/<conversationId>                      a conversation opened from there
 //   #settings/<section>                                       settings (#settings alone is general)
 //   #contacts                                                 contacts
+//   #scheduled                                                messages waiting to be sent (brief 23)
 //
 // Anything else is the Inbox. Navigating pushes a history entry (the browser's
 // own hash history), so back and forward work as in Gmail; `replace` swaps the
@@ -64,7 +65,12 @@ export interface ContactsRoute {
   kind: "contacts";
 }
 
-export type Route = MailRoute | SettingsRoute | ContactsRoute;
+/** `#scheduled`: the messages Schedule send is holding (brief 23). Not a label: a list of submissions. */
+export interface ScheduledRoute {
+  kind: "scheduled";
+}
+
+export type Route = MailRoute | SettingsRoute | ContactsRoute | ScheduledRoute;
 
 export const INBOX: SystemLabelRoute = Object.freeze({ kind: "system", view: "inbox" }) as SystemLabelRoute;
 export const DEFAULT_SETTINGS_SECTION = "general";
@@ -136,6 +142,8 @@ export function parseRoute(hash: string): Route {
     }
     case "contacts":
       return rest.length === 0 ? { kind: "contacts" } : INBOX;
+    case "scheduled":
+      return rest.length === 0 ? { kind: "scheduled" } : INBOX;
     default:
       return INBOX;
   }
@@ -158,6 +166,8 @@ export function formatRoute(route: Route): string {
       return `#settings/${encode(route.section || DEFAULT_SETTINGS_SECTION)}`;
     case "contacts":
       return "#contacts";
+    case "scheduled":
+      return "#scheduled";
   }
   return route.conversationId ? `#${path}/${encode(route.conversationId)}` : `#${path}`;
 }

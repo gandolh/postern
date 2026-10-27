@@ -1,0 +1,93 @@
+/* The Scheduled page (brief 23): rows like the list's, a send time where the
+   list has its date, and an open row's panel with Cancel send. */
+
+.scheduled-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.scheduled-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scheduled-item {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-row-read);
+}
+
+.scheduled-item[data-open] {
+  background: var(--color-row);
+}
+
+.scheduled-summary {
+  display: grid;
+  grid-template-columns: minmax(8rem, 13rem) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-3);
+  width: 100%;
+  min-height: var(--row-height);
+  padding: 0 var(--space-3) 0 var(--space-4);
+  border: 0;
+  font: inherit;
+  font-size: var(--text-md);
+  line-height: var(--leading-tight);
+  text-align: left;
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+}
+
+.scheduled-summary:hover {
+  background: var(--color-row-hover);
+}
+
+.scheduled-to,
+.scheduled-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scheduled-preview {
+  color: var(--color-text-muted);
+}
+
+.scheduled-when {
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.scheduled-panel {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.scheduled-panel-line {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.scheduled-panel-preview {
+  max-width: 70ch;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 599px) {
+  .scheduled-summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .scheduled-text {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

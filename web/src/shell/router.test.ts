@@ -37,6 +37,7 @@ const ROUTES: Route[] = [
   { kind: "settings", section: "general" },
   { kind: "settings", section: "filters" },
   { kind: "contacts" },
+  { kind: "scheduled" },
 ];
 
 describe("parseRoute and formatRoute", () => {
@@ -56,6 +57,7 @@ describe("parseRoute and formatRoute", () => {
     expect(formatRoute({ kind: "search", query: "a b/c" })).toBe("#search/a%20b%2Fc");
     expect(formatRoute({ kind: "settings", section: "general" })).toBe("#settings/general");
     expect(formatRoute({ kind: "contacts" })).toBe("#contacts");
+    expect(formatRoute({ kind: "scheduled" })).toBe("#scheduled");
   });
 
   it("parses without the leading #", () => {
@@ -86,6 +88,7 @@ describe("parseRoute and formatRoute", () => {
     "#inbox/%E0%A4%A",
     "#settings/a/b",
     "#contacts/x",
+    "#scheduled/x",
     "#main",
   ])("sends %j to the Inbox", (hash) => {
     expect(parseRoute(hash)).toEqual(INBOX);

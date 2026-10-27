@@ -10,6 +10,7 @@ import { useLabels } from "../labels/useLabels";
 import { ListRoute } from "../list/ListRoute";
 import { SearchConversation } from "../search/SearchConversation";
 import { SearchRoute } from "../search/SearchRoute";
+import { ScheduledRoute } from "../send/ScheduledRoute";
 import { SettingsRoutes } from "../settings/SettingsRoutes";
 import { useDisplaySettings, type ReadingPane } from "../theme";
 import { PHONE_QUERY } from "./breakpoints";
@@ -28,6 +29,8 @@ export function MainArea({ route }: { route: Route }) {
       return <SettingsRoutes section={route.section} />;
     case "contacts":
       return <ContactsRoute />;
+    case "scheduled":
+      return <ScheduledRoute />;
     case "search":
       return (
         <MailSplit

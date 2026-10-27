@@ -58,8 +58,17 @@ export interface EmailSubmissionCreate {
   identityId: Id;
   /** An Email id, or `#creationId` of an Email created earlier in the request. */
   emailId: Id;
+  /**
+   * To send later (FUTURERELEASE, RFC 4865): `mailFrom.parameters` `HOLDUNTIL`
+   * (an RFC 3339 time) or `HOLDFOR` (seconds), up to the account's
+   * `maxDelayedSend`. With an envelope, `rcptTo` must list every recipient.
+   */
   envelope?: Envelope | null;
-  /** Stalwart advertises FUTURERELEASE; see the scheduled-send todo. */
+  /**
+   * Server-set in RFC 8621 §7. Stalwart 0.16.25 refuses it on create
+   * (`invalidProperties`, checked 2026-10-27); hold the message with the
+   * envelope's HOLDUNTIL instead, and `sendAt` then reads as that time.
+   */
   sendAt?: UTCDate;
 }
 

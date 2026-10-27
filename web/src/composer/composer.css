@@ -635,6 +635,35 @@
   font-weight: var(--weight-semibold);
 }
 
+/* Send with the schedule menu beside it (brief 23): one pill, split. */
+.compose-send-group {
+  display: inline-flex;
+  flex: none;
+  margin-right: var(--space-2);
+}
+
+.compose-send-group .btn.compose-send {
+  margin-right: 0;
+}
+
+.compose-send-group[data-split] .btn.compose-send {
+  padding-right: var(--space-4);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.btn.compose-send-more {
+  min-height: 2.5rem;
+  padding: 0 var(--space-2) 0 var(--space-1);
+  border-left: 1px solid color-mix(in srgb, var(--color-on-accent) 35%, transparent);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+}
+
+.btn.compose-send-more svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
 .compose-footer .icon-btn[data-tooltip]::after {
   top: auto;
   bottom: calc(100% + var(--space-1));
@@ -656,8 +685,10 @@
 }
 
 /* Base UI places the positioner above the button; the popup is the list. */
+/* Above the docked composer's layer (shell.css, 55) and a phone's full-screen composer (70): with 10
+   the menus beside Send and under More options opened behind the window (found in brief 23). */
 .compose-menu-positioner {
-  z-index: 10;
+  z-index: 80;
 }
 
 .compose-menu {
@@ -697,6 +728,10 @@
 .compose-menu-item[data-highlighted] {
   background: var(--color-hover);
   outline: none;
+}
+
+.compose-menu-item.compose-menu-plain {
+  padding-left: var(--space-3);
 }
 
 /* ---- Questions -------------------------------------------------------------------------------- */
@@ -786,4 +821,66 @@
   .compose-window {
     animation: none;
   }
+}
+
+/* ---- Schedule send (brief 23) ------------------------------------------------------------------ */
+
+.compose-schedule {
+  width: min(24rem, calc(100vw - 2 * var(--space-4)));
+}
+
+.compose-schedule-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-4) calc(-1 * var(--space-2)) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compose-schedule-choice {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+}
+
+.compose-schedule-choice:hover,
+.compose-schedule-choice:focus-visible {
+  background: var(--color-hover);
+}
+
+.compose-schedule-time {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.compose-schedule-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.compose-schedule-field {
+  display: grid;
+  flex: 1 1 9rem;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.compose-schedule-error {
+  margin-top: var(--space-3);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
 }

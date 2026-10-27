@@ -1,11 +1,14 @@
-// The left navigation: Compose, the system labels with their counts, the user
-// labels nested and collapsible with "More" for the hidden ones, and Contacts.
+// The left navigation: Compose, the system labels with their counts (and
+// Scheduled after Drafts, when the server can hold a message: brief 23), the
+// user labels nested and collapsible with "More" for the hidden ones, and
+// Contacts.
 // In rail mode only the icons show; the names stay for screen readers.
 
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, ChevronRight, ChevronUp, File, Inbox, Mails, Pencil, Send, ShieldAlert, Star, Tag, Trash2, Users } from "lucide-react";
-import { useMemo, useState, type CSSProperties, type MouseEvent } from "react";
+import { ChevronDown, ChevronRight, ChevronUp, Clock, File, Inbox, Mails, Pencil, Send, ShieldAlert, Star, Tag, Trash2, Users } from "lucide-react";
+import { Fragment, useMemo, useState, type CSSProperties, type MouseEvent } from "react";
 import { useCompose } from "../composer";
+import { useOptionalComposerStore } from "../composer/compose";
 import type { LabelNode, SystemEntry } from "../labels/labelsStore";
 import { useLabelColor, useLabelPrefs } from "../labels/useLabelPrefs";
 import { useLabelDropTarget } from "../labels/useLabelDropTarget";
@@ -61,6 +64,7 @@ export interface NavProps {
 export function Nav({ route, mode, onNavigate }: NavProps) {
   const labels = useLabels();
   const compose = useCompose();
+  const canSchedule = useOptionalComposerStore()?.canSchedule ?? false;
   const rail = mode === "rail";
 
   function onClick(event: MouseEvent<HTMLElement>): void {
@@ -81,7 +85,22 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
 
       <ul className="shell-nav-list">
         {SYSTEM_VIEWS.map((view) => (
-          <SystemItem key={view} entry={labels.system[view]} current={isCurrentSystem(route, view)} rail={rail} />
+          <Fragment key={view}>
+            <SystemItem entry={labels.system[view]} current={isCurrentSystem(route, view)} rail={rail} />
+            {view === "drafts" && canSchedule ? (
+              <li>
+                <a
+                  className="shell-nav-item"
+                  href={formatRoute({ kind: "scheduled" })}
+                  aria-current={route.kind === "scheduled" ? "page" : undefined}
+                  title={rail ? "Scheduled" : undefined}
+                >
+                  <Clock aria-hidden="true" />
+                  <span className="shell-nav-text">Scheduled</span>
+                </a>
+              </li>
+            ) : null}
+          </Fragment>
         ))}
       </ul>
 

@@ -2,7 +2,9 @@
 // same test on the client (so a row can leave at once when it no longer
 // belongs), and how the view presents them. Pure.
 //
-//   Inbox, Sent, Drafts, Spam, Trash   inMailbox: the role's mailbox
+//   Inbox, Sent, Spam, Trash           inMailbox: the role's mailbox
+//   Drafts                             inMailbox, less messages waiting to be sent
+//                                      ($scheduled, brief 23: they are in Scheduled)
 //   Starred                            $flagged, outside Spam and Trash
 //   All Mail                           everything outside Spam and Trash (Gmail's meaning,
 //                                      not just the archive-role mailbox)
@@ -12,6 +14,9 @@ import type { EmailFilter, EmailFilterCondition, Id } from "@postern/jmap";
 import { FLAGGED, type ConversationScope, type MailboxRoles } from "../actions/conversation";
 import type { ResolvedLabel } from "../labels/labelsStore";
 import type { ListPresentation, ListQuery, RowMessage } from "./types";
+
+/** A draft the server is holding to send later (send/schedule.ts SCHEDULED; not imported, to keep this module pure). */
+const SCHEDULED = "$scheduled";
 
 export interface LabelListView {
   query: ListQuery;
@@ -56,5 +61,15 @@ export function labelListView(label: Pick<ResolvedLabel, "view" | "mailboxId">, 
 
   const mailboxId = label.mailboxId;
   if (mailboxId === undefined) return null;
+  if (view === "drafts") {
+    return {
+      query: {
+        filter: { operator: "AND", conditions: [{ inMailbox: mailboxId }, { notKeyword: SCHEDULED }] },
+        scope,
+        matches: (m) => m.mailboxIds[mailboxId] === true && m.keywords[SCHEDULED] !== true,
+      },
+      presentation,
+    };
+  }
   return { query: { filter: { inMailbox: mailboxId }, scope, matches: (m) => m.mailboxIds[mailboxId] === true }, presentation };
 }

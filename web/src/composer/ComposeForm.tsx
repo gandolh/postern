@@ -1,10 +1,12 @@
 // What every composer shows, docked, full screen or inline: From, To / Cc /
 // Bcc, Subject (not inline), the body, the attachment tray and the footer with
 // Send. Send checks first (recipients, uploads, the "attached" warning, an
-// empty message) and asks before going on, as Gmail does.
+// empty message) and asks before going on, as Gmail does. Beside Send, when
+// the server can hold a message, a menu offers Schedule send (brief 23), which
+// makes the same checks.
 
 import { mentionsAttachment } from "@postern/jmap";
-import { Ellipsis, ExternalLink, Image as ImageIcon, MoreVertical, Paperclip, Trash2, Type } from "lucide-react";
+import { ChevronDown, Ellipsis, ExternalLink, Image as ImageIcon, MoreVertical, Paperclip, Trash2, Type } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { IconButton } from "../shell/IconButton";
@@ -14,6 +16,7 @@ import { Editor } from "./editor/Editor";
 import { AttachmentTray } from "./AttachmentTray";
 import { Question } from "./Question";
 import { RecipientInput, type RecipientInputHandle } from "./RecipientInput";
+import { ScheduleDialog } from "./ScheduleDialog";
 import type { ComposeSession, ComposeSnapshot } from "./session";
 
 type Ask = "attachment" | "empty" | "discard" | "plain";
@@ -54,6 +57,14 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuChoice = useRef<(() => void) | null>(null);
   const [question, setQuestion] = useState<Ask | null>(null);
+  // Schedule send (brief 23): the menu beside Send, the time dialog, and the time a question is holding.
+  const canSchedule = store.canSchedule;
+  const [sendMenu, setSendMenu] = useState(false);
+  const { anchor: sendMenuAnchor, container: sendMenuContainer } = useLayer(sendMenu);
+  const sendMenuButton = useRef<HTMLButtonElement>(null);
+  const sendMenuChoice = useRef<(() => void) | null>(null);
+  const [picking, setPicking] = useState(false);
+  const [askedAt, setAskedAt] = useState<Date | null>(null);
 
   // Focus requests from the store (opened, undo send, a failed send).
   const focus = state.focus;
@@ -82,7 +93,8 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
     return null;
   }
 
-  function send(skip: Ask[] = []): void {
+  /** Send now, or at `at` (Schedule send): the same checks and questions either way. */
+  function send(skip: Ask[] = [], at: Date | null = null): void {
     const state = session.state;
     if (state.status !== "ready" || state.sending) return;
     const problem = check();
@@ -92,14 +104,17 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
     }
     session.setSendError(null);
     if (!skip.includes("attachment") && state.files.length === 0 && mentionsAttachment(session.ownText())) {
+      setAskedAt(at);
       setQuestion("attachment");
       return;
     }
     if (!skip.includes("empty") && state.subject.trim() === "" && session.bodyIsBlank()) {
+      setAskedAt(at);
       setQuestion("empty");
       return;
     }
-    void store.send(session.key);
+    if (at) void store.schedule(session.key, at);
+    else void store.send(session.key);
   }
 
   // Ctrl+Enter from outside the window (brief 14's global key).
@@ -234,9 +249,50 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       </div>
 
       <div className="compose-footer">
-        <button type="button" className="btn btn-primary compose-send" onClick={() => send()} aria-describedby={state.sendError ? errorId : undefined} title="Send (Ctrl+Enter)">
-          Send
-        </button>
+        <span className="compose-send-group" data-split={canSchedule || undefined} ref={sendMenuAnchor}>
+          <button type="button" className="btn btn-primary compose-send" onClick={() => send()} aria-describedby={state.sendError ? errorId : undefined} title="Send (Ctrl+Enter)">
+            Send
+          </button>
+          {canSchedule ? (
+            <Menu.Root modal={false} open={sendMenu} onOpenChange={setSendMenu}>
+              <Menu.Trigger ref={sendMenuButton} className="btn btn-primary compose-send-more" aria-label="More send options" title="More send options">
+                <ChevronDown aria-hidden="true" />
+              </Menu.Trigger>
+              <Menu.Portal container={sendMenuContainer}>
+                <Menu.Positioner className="compose-menu-positioner" side="top" align="start" sideOffset={4} collisionPadding={8}>
+                  <Menu.Popup
+                    className="compose-menu"
+                    onKeyDown={(e) => {
+                      // Escape is the menu's: not the composer's, nor the browser's close request for its window.
+                      if (e.key !== "Escape") return;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSendMenu(false);
+                    }}
+                    // The dialog opens once focus is back on the button, so it returns there when it closes.
+                    finalFocus={() => {
+                      const choice = sendMenuChoice.current;
+                      if (!choice) return true;
+                      sendMenuChoice.current = null;
+                      sendMenuButton.current?.focus();
+                      choice();
+                      return false;
+                    }}
+                  >
+                    <Menu.Item
+                      className="compose-menu-item compose-menu-plain"
+                      onClick={() => {
+                        sendMenuChoice.current = () => setPicking(true);
+                      }}
+                    >
+                      Schedule send
+                    </Menu.Item>
+                  </Menu.Popup>
+                </Menu.Positioner>
+              </Menu.Portal>
+            </Menu.Root>
+          ) : null}
+        </span>
         {!state.plain ? (
           <IconButton label="Formatting options" icon={Type} aria-pressed={toolbar} aria-controls={toolbarId} onClick={() => setToolbar((t) => !t)} />
         ) : null}
@@ -296,25 +352,35 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       {question === "attachment" ? (
         <Question
           title="Did you mean to attach files?"
-          body="You wrote that something is attached, but there are no files attached. Send anyway?"
-          confirmLabel="Send"
+          body={`You wrote that something is attached, but there are no files attached. ${askedAt ? "Schedule it anyway?" : "Send anyway?"}`}
+          confirmLabel={askedAt ? "Schedule" : "Send"}
           onConfirm={() => {
             setQuestion(null);
-            send(["attachment"]);
+            send(["attachment"], askedAt);
           }}
           onCancel={() => setQuestion(null)}
         />
       ) : null}
       {question === "empty" ? (
         <Question
-          title="Send without a subject or text?"
+          title={askedAt ? "Schedule without a subject or text?" : "Send without a subject or text?"}
           body="This message has no subject and nothing in the body."
-          confirmLabel="Send"
+          confirmLabel={askedAt ? "Schedule" : "Send"}
           onConfirm={() => {
             setQuestion(null);
-            send(["attachment", "empty"]);
+            send(["attachment", "empty"], askedAt);
           }}
           onCancel={() => setQuestion(null)}
+        />
+      ) : null}
+      {picking ? (
+        <ScheduleDialog
+          maxMs={store.maxScheduleMs}
+          onSchedule={(at) => {
+            setPicking(false);
+            send([], at);
+          }}
+          onCancel={() => setPicking(false)}
         />
       ) : null}
       {question === "discard" ? (
