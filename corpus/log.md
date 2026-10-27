@@ -344,7 +344,7 @@ card has actions. 1166 unit and 34 browser tests pass.
 [22](briefs/done/22-conversation-view-off.md): conversation view off. A message row is a
 `Conversation` holding one message, so the planners, selection and undo should work
 unchanged; the list queries without `collapseThreads` and keys its cache on the mode.
-[23](briefs/todo/23-schedule-send.md): schedule send. Step one tests a future `sendAt`
+[23](briefs/done/23-schedule-send.md): schedule send. Step one tests a future `sendAt`
 against the dev Stalwart, including cancel and restart; if Stalwart doesn't hold the
 message the brief stops and moves to `superseded/` with the finding, since undo send is
 client-held and there is no server-side precedent to lean on. Snooze, inbox category tabs
@@ -395,3 +395,20 @@ opening marks the whole conversation read; both are in the outcome for the owner
 Stalwart covered the acceptance. [gmail-on-jmap.md](wiki/gmail-on-jmap.md),
 [design.md](wiki/design.md) and the [glossary](wiki/glossary.md) (conversation view)
 are updated. brief-board is down (since 2026-10-13), so this is recorded here only.
+
+## [2026-10-27] done | Brief 23: schedule send
+
+[Brief 23](briefs/done/23-schedule-send.md) is built. Step one found that Stalwart 0.16.25
+refuses a client `sendAt` but holds a message given FUTURERELEASE `HOLDUNTIL` in the
+envelope: it arrived seconds after its time, never before, survived a restart, and
+`undoStatus: "canceled"` stopped it. Nothing changes state when a held message goes, so
+the brief's "via the live updates" became a reconciler the composer store runs at start-up,
+on focus, after each send time and from the Scheduled page; a message that goes while
+Postern is closed is filed in Sent at the next open. The Send button has a menu with
+Schedule send (three presets and a picked time, in the browser's time zone), `#scheduled`
+lists what waits with Cancel send, and Drafts, the inline reply and the drafts-only opener
+leave `$scheduled` messages alone. The composer's menus had opened behind the docked
+window since brief 21 (z-index 10 under the layer's 55); they are at 80 now. 1211 unit and
+34 browser tests pass, and a live run through the UI covered the acceptance. Findings are
+in [gmail-on-jmap.md](wiki/gmail-on-jmap.md); the glossary has "scheduled message".
+brief-board is down (since 2026-10-13), so this is recorded here only.

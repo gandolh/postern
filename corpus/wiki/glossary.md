@@ -1,5 +1,5 @@
 ---
-summary: Postern's vocabulary, one canonical word per concept with the synonyms it replaces, mapping Gmail's words (what the UI says) to JMAP's (what the jmap package says). Conversation, message, label, system label, Inbox, archive, All Mail, star, Spam, draft, composer, identity, snippet, reading pane, conversation view, keyword, mailbox. Use these words in code, UI copy and briefs.
+summary: Postern's vocabulary, one canonical word per concept with the synonyms it replaces, mapping Gmail's words (what the UI says) to JMAP's (what the jmap package says). Conversation, message, label, system label, Inbox, archive, All Mail, star, Spam, draft, scheduled message, composer, identity, snippet, reading pane, conversation view, keyword, mailbox. Use these words in code, UI copy and briefs.
 updated: 2026-10-27
 ---
 
@@ -26,6 +26,12 @@ _Avoid_: preview, excerpt.
 **Draft**:
 A message being written. It sits in the Drafts label with the `$draft` keyword.
 _Avoid_: unsent message.
+
+**Scheduled message**:
+A message handed to the server to send at a chosen time (Schedule send). It
+waits as a draft marked `$scheduled`, is listed under Scheduled, not Drafts,
+and is filed in Sent once it has gone (brief 23).
+_Avoid_: delayed send, send later, queued message.
 
 ## Organising
 

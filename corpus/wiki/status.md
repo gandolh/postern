@@ -1,5 +1,5 @@
 ---
-summary: Snapshot as of 2026-10-27. Briefs 01-22 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off), 23-25 are queued, nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-27. Briefs 01-23 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send), 24-25 are queued, nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
 updated: 2026-10-27
 ---
 
@@ -51,7 +51,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 
 **Wave 8: Gmail parity, from the parked todos (filed 2026-10-23)**
 - [22](../briefs/done/22-conversation-view-off.md): conversation view off, one row per message; a row is a one-message conversation, so the planners stay as they are. **Done 2026-10-27**: a per-device pref and switch, the list without `collapseThreads`, a message row opening its conversation at that message; 1186 unit and 34 browser tests.
-- [23](../briefs/todo/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded.
+- [23](../briefs/done/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded. **Done 2026-10-27**: Stalwart holds a message with FUTURERELEASE `HOLDUNTIL` (not `sendAt`); the Send menu, a Scheduled page with Cancel send, and the client filing sent ones in Sent; 1211 unit and 34 browser tests.
 - [24](../briefs/todo/24-snooze.md): snooze, run by the browser (the owner's call, 2026-10-23): a hidden Snoozed label plus a keyword holding the time; it wakes while Postern is open.
 - [25](../briefs/todo/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite.
 

@@ -39,7 +39,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 | Storage meter | `Quota/get` | native | 12 |
 | Keyboard shortcuts | the app | client-side | 14 |
 | Snooze | nothing schedules a message's return | needs server work | todo |
-| Scheduled send | `EmailSubmission` `sendAt` if Stalwart honours FUTURERELEASE | to check | todo |
+| Schedule send | `EmailSubmission` held with FUTURERELEASE `HOLDUNTIL` in the envelope; the draft waits marked `$scheduled`; the client files it in Sent once the submission is final | native, client-filed | 23 |
 | Category tabs (Primary, Social, Promotions) | no classifier; Sieve on headers at best | needs server work | todo |
 | Calendar invites, RSVP | calendars capability; Stalwart has `/calendar/rsvp` | to check | todo |
 
@@ -90,8 +90,18 @@ calendars, principals, mail:share, websocket, plus Web Push for
 - **A failed delivery is not a send error.** `EmailSubmission/set` to an
   unreachable domain succeeds and the message moves to Sent; the failure
   arrives later as a bounce in the Inbox. Submission advertises
-  `maxDelayedSend` 2592000 and FUTURERELEASE, which the scheduled-send todo
-  needs.
+  `maxDelayedSend` 2592000 and FUTURERELEASE, which schedule send uses.
+- **Schedule send** (brief 23, 2026-10-27): a client-set `sendAt` is refused
+  (`invalidProperties`); `HOLDUNTIL` (or `HOLDFOR`) in the envelope's
+  `mailFrom.parameters` holds the message, and a client envelope must list
+  every recipient, Bcc included. Until then the submission reads
+  `undoStatus: "pending"` with `sendAt` the hold time. Held messages arrived
+  3 to 19 s after their time, never before, and survived a restart.
+  `undoStatus: "canceled"` stops one; after release that answers
+  `cannotUnsend`. On release `undoStatus` reads "final", but no state changes
+  and no push comes, so the client has to look. `onSuccessUpdateEmail` works
+  on create, not on update. `EmailSubmission/query` filters by `undoStatus`
+  and `emailIds` but cannot sort by `sendAt`.
 - **Settings** (brief 12): `VacationResponse` works as the RFC says (null
   dates mean always on) and has no "contacts only" switch. `Quota/get`
   returns nothing until a quota is set, then one account-wide octets quota.
