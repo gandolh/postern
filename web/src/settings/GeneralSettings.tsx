@@ -25,6 +25,10 @@ export function GeneralSettings() {
       <Choice legend="Theme" name="theme" options={THEMES} titles={THEME_TITLES} value={theme} onChange={setTheme} />
       <Choice legend="Density" name="density" options={DENSITIES} titles={DENSITY_TITLES} value={density} onChange={setDensity} />
       <Choice legend="Reading pane" name="reading-pane" options={READING_PANES} titles={PANE_TITLES} value={readingPane} onChange={setReadingPane} />
+      <label className="settings-check">
+        <input type="checkbox" checked={prefs.conversationView} onChange={(e) => setPrefs({ conversationView: e.target.checked })} />
+        Conversation view: group replies into one row
+      </label>
       <UndoSendChoice value={prefs.undoSendSeconds} onChange={(undoSendSeconds) => setPrefs({ undoSendSeconds })} />
       <Choice
         legend="Images"

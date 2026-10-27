@@ -5,6 +5,7 @@ import { fakeEmail, FakeMail, inboxThreads, MAILBOXES, ROLES, type FakeEmail } f
 import { planArchive } from "../actions/plans";
 import { ListStore } from "./listStore";
 import type { ListQuery } from "./types";
+import { queryKey } from "./useListStore";
 import { labelListView } from "./view";
 
 const scope: ConversationScope = { kind: "normal", roles: { ...ROLES } };
@@ -12,10 +13,11 @@ const inbox = labelListView({ view: "inbox", mailboxId: "a" }, ROLES)!.query;
 
 const stores: ListStore[] = [];
 
-async function setup(emails: FakeEmail[], query: ListQuery = inbox, options: { maxObjectsInGet?: number } = {}) {
-  const mail = new FakeMail({ mailboxes: MAILBOXES, emails, ...options });
+async function setup(emails: FakeEmail[], query: ListQuery = inbox, options: { maxObjectsInGet?: number; conversationView?: boolean } = {}) {
+  const { conversationView, ...server } = options;
+  const mail = new FakeMail({ mailboxes: MAILBOXES, emails, ...server });
   const client = await mail.connect();
-  const store = new ListStore(client, query, { accountId: () => "A" });
+  const store = new ListStore(client, query, { accountId: () => "A", ...(conversationView === undefined ? {} : { conversationView }) });
   stores.push(store);
   return { mail, client, store };
 }
@@ -229,5 +231,90 @@ describe("select all", () => {
     const all = await store.allConversations();
     expect(all).toHaveLength(120);
     expect(all.find((c) => c.id === "t5")!.messages.map((m) => m.id).sort()).toEqual(["m5", "x"]);
+  });
+});
+
+describe("conversation view off (brief 22)", () => {
+  /** One conversation of three messages in the Inbox, and one of a single message between them. */
+  const threeAndOne = () => [
+    fakeEmail({ id: "1", threadId: "T", receivedAt: "2026-10-01T09:00:00Z", subject: "Plans", preview: "first" }),
+    fakeEmail({ id: "2", threadId: "T", receivedAt: "2026-10-02T09:00:00Z", subject: "Re: Plans", preview: "second", keywords: { $seen: true } }),
+    fakeEmail({ id: "3", threadId: "T", receivedAt: "2026-10-04T09:00:00Z", subject: "Re: Plans", preview: "third" }),
+    fakeEmail({ id: "s", threadId: "S", receivedAt: "2026-10-03T09:00:00Z", subject: "Single" }),
+  ];
+
+  it("lists every message as a row of its own, newest first, in one request of two calls", async () => {
+    const { mail, store } = await setup(threeAndOne(), inbox, { conversationView: false });
+    store.start();
+    await vi.waitFor(() => expect(store.getSnapshot().status).toBe("ready"));
+    expect(mail.calls()).toEqual([["Email/query", "Email/get"]]);
+    const [q, g] = mail.posts[0]!;
+    expect(q![1]).toMatchObject({ filter: { inMailbox: "a" }, collapseThreads: false, position: 0, limit: 50 });
+    expect(g![1]["properties"]).toEqual(expect.arrayContaining(["threadId", "from", "to", "subject", "preview", "receivedAt", "keywords", "mailboxIds", "hasAttachment"]));
+    const snap = store.getSnapshot();
+    expect(snap.total).toBe(4);
+    expect(snap.rows.map((r) => [r.id, r.conversationId, r.emailId])).toEqual([
+      ["3", "T", "3"],
+      ["s", "S", "s"],
+      ["2", "T", "2"],
+      ["1", "T", "1"],
+    ]);
+    expect(snap.rows.map((r) => r.messages.map((m) => m.id))).toEqual([["3"], ["s"], ["2"], ["1"]]);
+    expect(snap.rows.map((r) => r.preview)).toEqual(["third", "Preview of s", "second", "first"]);
+    expect(snap.rows[2]!.receivedAt).toBe("2026-10-02T09:00:00Z");
+  });
+
+  it("archives one message row alone, and undo brings it back in place", async () => {
+    const { mail, client, store } = await setup(threeAndOne(), inbox, { conversationView: false });
+    store.start();
+    await settled(store);
+    const plan = planArchive([store.getSnapshot().rows[2]!], scope);
+    expect(Object.keys(plan.update)).toEqual(["2"]);
+
+    publishMailChange({ kind: "patch", update: plan.update });
+    expect(store.getSnapshot().rows.map((r) => r.id)).toEqual(["3", "s", "1"]);
+    await client.call("Email/set", { update: plan.update });
+    publishMailChange({ kind: "settled" });
+    await settled(store);
+    expect(store.getSnapshot().rows.map((r) => r.id)).toEqual(["3", "s", "1"]);
+    expect(mail.emails.get("1")!.mailboxIds).toEqual({ a: true });
+    expect(mail.emails.get("3")!.mailboxIds).toEqual({ a: true });
+
+    publishMailChange({ kind: "patch", update: plan.inverse });
+    await client.call("Email/set", { update: plan.inverse });
+    publishMailChange({ kind: "settled" });
+    await settled(store);
+    expect(store.getSnapshot().rows.map((r) => r.id)).toEqual(["3", "s", "2", "1"]);
+  });
+
+  it("adds a reply to a listed conversation as a new row, without Thread/get", async () => {
+    const { mail, store } = await setup(threeAndOne(), inbox, { conversationView: false });
+    store.start();
+    await settled(store);
+    mail.mutate((emails) => {
+      emails.set("4", fakeEmail({ id: "4", threadId: "T", receivedAt: "2026-10-05T09:00:00Z" }));
+      return { created: ["4"] };
+    });
+    const sent = mail.posts.length;
+    await store.refresh();
+    expect(store.getSnapshot().rows.map((r) => r.id)).toEqual(["4", "3", "s", "2", "1"]);
+    expect(store.getSnapshot().rows[0]!.messages.map((m) => m.id)).toEqual(["4"]);
+    expect(mail.calls().slice(sent)).toEqual([["Email/changes"], ["Email/get"], ["Email/queryChanges"], ["Email/get"]]);
+  });
+
+  it("selects all: every message, each a row", async () => {
+    const { store } = await setup(threeAndOne(), inbox, { conversationView: false });
+    const all = await store.allConversations();
+    expect(all.map((r) => [r.id, r.conversationId, r.messages.length])).toEqual([
+      ["3", "T", 1],
+      ["s", "S", 1],
+      ["2", "T", 1],
+      ["1", "T", 1],
+    ]);
+  });
+
+  it("is a different list from the same query with conversation view on", () => {
+    expect(queryKey(inbox, false)).not.toBe(queryKey(inbox, true));
+    expect(queryKey(inbox)).toBe(queryKey(inbox, true));
   });
 });

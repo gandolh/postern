@@ -9,11 +9,17 @@ import type { SenderMode } from "./format";
 /** A message as the list holds it (fetched with MESSAGE_PROPERTIES). */
 export type RowMessage = ConversationMessage;
 
-/** One row: a conversation, with the message the query returned for it. */
+/**
+ * One row: a conversation, with the message the query returned for it. With
+ * conversation view off (brief 22) a row is one message, a conversation
+ * holding only that message, so every action acts on it alone.
+ */
 export interface ConversationRow extends Conversation<RowMessage> {
-  /** The conversation: a JMAP Thread id. Row key, selection key, `withConversation(route, id)`. */
+  /** Row key and selection key: the conversation's JMAP Thread id, or the message's id with conversation view off. */
   id: Id;
-  /** The message the query returned for it (the newest that matches the list). */
+  /** The conversation the row opens, `withConversation(route, conversationId)`. Equals `id` with conversation view on. */
+  conversationId: Id;
+  /** The message the query returned for it (the newest that matches the list), or the row's message. */
   emailId: Id;
   subject: string;
   preview: string;

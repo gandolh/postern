@@ -110,6 +110,15 @@ describe("General", () => {
     expect(getPrefs().undoSendSeconds).toBe(20);
   });
 
+  it("conversation view is on by default and turns off (brief 22)", async () => {
+    renderSettings("general");
+    const box = screen.getByRole("checkbox", { name: "Conversation view: group replies into one row" });
+    expect(box).toHaveProperty("checked", true);
+    await userEvent.setup().click(box);
+    expect(getPrefs().conversationView).toBe(false);
+    expect(JSON.parse(localStorage.getItem(`postern.prefs.${ME}`)!)).toMatchObject({ conversationView: false });
+  });
+
   it("images and shortcuts are saved", async () => {
     renderSettings("general");
     const user = userEvent.setup();

@@ -7,6 +7,9 @@
 // with one tab stop), virtualised to the rows in view, paged 50 at a time as
 // you scroll. While mounted it is the active list for keyboard shortcuts
 // (registry.getActiveList()).
+//
+// With conversation view off (brief 22, a per-device pref) every row is one
+// message. Switching remounts the list, so a selection never carries over.
 
 import { JmapNetworkError, type Id } from "@postern/jmap";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
@@ -17,6 +20,7 @@ import { useMailActions } from "../actions/useMailActions";
 import { useAccount, useJmap } from "../auth";
 import { useLabels } from "../labels/useLabels";
 import { useListGestures } from "../mobile/useListGestures";
+import { usePrefs } from "../prefs/usePrefs";
 import { navigate, withConversation, type LabelRoute, type MailRoute } from "../shell/router";
 import { ConnectionLost, EmptyState, ListSkeleton } from "../shell/states";
 import { useMinuteClock } from "./clock";
@@ -24,6 +28,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import type { ListController, SelectKind } from "./controller";
 import type { ChipLabel } from "./format";
 import type { ListStore } from "./listStore";
+import { revealMessageOnOpen } from "./openMessage";
 import { setActiveList } from "./registry";
 import { rememberOpened, takeReturnFocus } from "./returnFocus";
 import { ConversationRowView, PlaceholderRow, type RowContext, type RowHandlers } from "./Row";
@@ -42,7 +47,7 @@ export interface ConversationListProps {
   heading?: string;
   /** How "Select all N conversations …" ends: "in Inbox" by default, "that match this search" for brief 10. */
   allLabel?: string;
-  /** Rows open with withConversation(route, id); route.conversationId is highlighted. */
+  /** Rows open with withConversation(route, row.conversationId); the open conversation's row is highlighted. */
   route: MailRoute;
   /** The label route, for the label menus' `current` (null in search results). */
   labelRoute: LabelRoute | null;
@@ -82,6 +87,8 @@ interface Setters {
   setSelection: (update: Selection | ((s: Selection) => Selection)) => void;
   setFocusId: (id: Id | null) => void;
   setConfirming: (rows: readonly ConversationRow[] | null) => void;
+  /** The row last opened: which of a conversation's message rows to highlight. */
+  setOpenedId: (id: Id) => void;
 }
 
 /** The list's behaviour beyond the keyboard controller: the toolbar's. */
@@ -172,9 +179,16 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
   const open = (id: Id | null | undefined) => {
     const target = id ?? get().focusId;
     if (!target) return;
+    const { rows, route } = get();
+    const index = rows.findIndex((r) => r.id === target);
+    const row = rows[index];
     set.setFocusId(target);
-    rememberOpened(target, Math.max(0, get().rows.findIndex((r) => r.id === target)));
-    navigate(withConversation(get().route, target));
+    set.setOpenedId(target);
+    rememberOpened(target, Math.max(0, index));
+    const conversationId = row?.conversationId ?? target;
+    // A message row (conversation view off) opens its conversation at that message.
+    if (row && row.id !== conversationId) revealMessageOnOpen(conversationId, row.emailId);
+    navigate(withConversation(route, conversationId));
   };
 
   const archive = (only?: readonly ConversationRow[]) => {
@@ -325,14 +339,21 @@ class ListBehaviour {
 }
 
 export function ConversationList(props: ConversationListProps) {
-  const { query, presentation, title, route, emptyMessage } = props;
+  const { conversationView } = usePrefs().prefs;
+  // A new list when the mode changes: row ids mean conversations in one and messages in the other.
+  return <ListBody key={conversationView ? "conversations" : "messages"} {...props} conversationView={conversationView} />;
+}
+
+function ListBody(props: ConversationListProps & { conversationView: boolean }) {
+  const { query, presentation, title, route, emptyMessage, conversationView } = props;
   const client = useJmap();
   const { username } = useAccount();
   const labels = useLabels();
   const actions = useMailActions();
-  const { store, snapshot } = useListStore(client, query);
+  const { store, snapshot } = useListStore(client, query, { conversationView });
   const [selection, setSelection] = useState<Selection>(NO_SELECTION);
   const [focusId, setFocusId] = useState<Id | null>(null);
+  const [openedId, setOpenedId] = useState<Id | null>(null);
   const [confirming, setConfirming] = useState<readonly ConversationRow[] | null>(null);
   const now = useMinuteClock();
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -345,7 +366,7 @@ export function ConversationList(props: ConversationListProps) {
   const { scrollToIndex } = virtual;
   const scope = query.scope;
 
-  const [behaviour] = useState(() => new ListBehaviour({ setSelection, setFocusId, setConfirming }));
+  const [behaviour] = useState(() => new ListBehaviour({ setSelection, setFocusId, setConfirming, setOpenedId }));
   const { api, handlers } = behaviour;
   useLayoutEffect(() => {
     behaviour.update({ rows, selection, focusId, presentation, scope, route, store, actions, scrollToIndex });
@@ -409,6 +430,14 @@ export function ConversationList(props: ConversationListProps) {
     [scope, username, presentation, query.matches, chipLabels, now, props.renderSubject],
   );
 
+  // The open conversation's row: the one opened from here, else its newest (a conversation can be several message rows).
+  const openRowId = useMemo(() => {
+    const open = route.conversationId;
+    if (!open) return null;
+    const opened = openedId === null ? undefined : rows.find((r) => r.id === openedId && r.conversationId === open);
+    return (opened ?? rows.find((r) => r.conversationId === open))?.id ?? null;
+  }, [route.conversationId, openedId, rows]);
+
   const focusIndex = focusId === null ? -1 : rows.findIndex((r) => r.id === focusId);
   const tabStop = focusIndex >= virtual.start && focusIndex < Math.min(virtual.end, rows.length) ? focusIndex : Math.min(virtual.start, rows.length - 1);
 
@@ -471,7 +500,7 @@ export function ConversationList(props: ConversationListProps) {
             row={row}
             index={i}
             selected={selectedIds.has(row.id)}
-            open={route.conversationId === row.id}
+            open={row.id === openRowId}
             tabbable={i === tabStop}
             context={context}
             handlers={handlers}

@@ -9,7 +9,9 @@ import { fakeEmail, FakeMail, inboxThreads, MAILBOXES, type FakeEmail } from "..
 import { clearUndo } from "../actions/undo";
 import { SessionContext } from "../auth/context";
 import { LabelsStore, resolveLabelRoute } from "../labels/labelsStore";
+import { resolveConversations } from "../labels/conversations";
 import { LabelsStoreProvider, useLabels } from "../labels/useLabels";
+import { resetPrefs, setPrefs } from "../prefs/prefs";
 import type { LabelRoute } from "../shell/router";
 import { ToastProvider } from "../shell/toast";
 import { ListRoute } from "./ListRoute";
@@ -180,5 +182,86 @@ describe("keyboard and the controller", () => {
     expect(await list.undoLast()).toBe(true);
     await waitFor(() => expect(mail.emails.get("m1")!.mailboxIds).toEqual({ a: true }));
     vi.restoreAllMocks();
+  });
+});
+
+describe("conversation view off (brief 22)", () => {
+  /** A conversation of three messages in the Inbox (one read, one from me in Sent), and a single message. */
+  const mail3 = () => [
+    fakeEmail({ id: "1", threadId: "T1", receivedAt: "2026-10-01T09:00:00Z", subject: "Plans", preview: "first" }),
+    fakeEmail({ id: "2", threadId: "T1", receivedAt: "2026-10-02T09:00:00Z", subject: "Re: Plans", preview: "second", keywords: { $seen: true } }),
+    fakeEmail({ id: "3", threadId: "T1", receivedAt: "2026-10-04T09:00:00Z", subject: "Re: Plans", preview: "third" }),
+    fakeEmail({ id: "4", threadId: "T1", receivedAt: "2026-10-03T09:00:00Z", mailboxIds: { e: true }, from: [{ name: "Alice Archer", email: "alice@postern.test" }] }),
+    fakeEmail({ id: "s", threadId: "T2", receivedAt: "2026-09-30T09:00:00Z", subject: "Single" }),
+  ];
+
+  beforeEach(() => setPrefs({ conversationView: false }));
+  afterEach(() => resetPrefs());
+
+  it("shows each message as its own row, newest first, with no message count", async () => {
+    const { grid } = await renderList(mail3());
+    expect(grid.getAttribute("aria-rowcount")).toBe("4");
+    const rows = rowsOf(grid);
+    expect(rows.map((r) => r.getAttribute("data-row-id"))).toEqual(["3", "2", "1", "s"]);
+    expect(rows[0]!.textContent).toContain("third");
+    expect(rows[1]!.textContent).toContain("second");
+    expect(rows.map((r) => r.textContent).some((t) => /\(\d\)/.test(t ?? ""))).toBe(false);
+    expect(rows.map((r) => r.hasAttribute("data-unread"))).toEqual([true, false, true, true]);
+  });
+
+  it("archives one message and leaves the others; Undo brings it back", async () => {
+    const { mail, user, grid } = await renderList(mail3());
+    await user.click(within(rowsOf(grid)[1]!).getByRole("button", { name: "Archive" }));
+    expect(rowsOf(grid).map((r) => r.getAttribute("data-row-id"))).toEqual(["3", "1", "s"]);
+    expect(await screen.findByText("Conversation archived.")).toBeTruthy();
+    await waitFor(() => expect(mail.emails.get("2")!.mailboxIds).toEqual({ h: true }));
+    expect(mail.emails.get("1")!.mailboxIds).toEqual({ a: true });
+    expect(mail.emails.get("3")!.mailboxIds).toEqual({ a: true });
+    expect(mail.emails.get("4")!.mailboxIds).toEqual({ e: true });
+
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["3", "2", "1", "s"]));
+    expect(mail.emails.get("2")!.mailboxIds).toEqual({ a: true });
+  });
+
+  it("selects, stars, marks read and deletes one message of a conversation", async () => {
+    const { mail, user, grid } = await renderList(mail3());
+    await user.click(within(rowsOf(grid)[2]!).getByRole("checkbox", { name: "Select" }));
+    expect(getActiveList()!.selectedIds).toEqual(new Set(["1"]));
+    expect(screen.getByText("1 conversation selected")).toBeTruthy();
+    await user.click(within(toolbar()).getByRole("button", { name: "Mark as read" }));
+    await waitFor(() => expect(mail.emails.get("1")!.keywords).toEqual({ $seen: true }));
+    expect(mail.emails.get("3")!.keywords).toEqual({});
+
+    await user.click(within(rowsOf(grid)[0]!).getByRole("button", { name: "Not starred" }));
+    await waitFor(() => expect(mail.emails.get("3")!.keywords).toEqual({ $flagged: true }));
+    expect(mail.emails.get("4")!.keywords).toEqual({});
+
+    await user.click(within(rowsOf(grid)[0]!).getByRole("button", { name: "Delete" }));
+    await waitFor(() => expect(mail.emails.get("3")!.mailboxIds).toEqual({ b: true }));
+    expect(mail.emails.get("2")!.mailboxIds).toEqual({ a: true });
+  });
+
+  it("hands the label menus the selected message alone", async () => {
+    const { client, user, grid } = await renderList(mail3());
+    await user.click(within(rowsOf(grid)[1]!).getByRole("checkbox", { name: "Select" }));
+    const picked = await resolveConversations(client, [...getActiveList()!.selectedIds]);
+    expect(picked.map((c) => c.messages.map((m) => m.id))).toEqual([["2"]]);
+  });
+
+  it("opens a message row's conversation", async () => {
+    const { user, grid } = await renderList(mail3());
+    await user.click(within(rowsOf(grid)[2]!).getByText("first"));
+    expect(window.location.hash).toBe("#inbox/T1");
+  });
+
+  it("shows one row per conversation again when switched back on, without a reload", async () => {
+    const { grid } = await renderList(mail3());
+    expect(rowsOf(grid)).toHaveLength(4);
+    act(() => setPrefs({ conversationView: true }));
+    await waitFor(() => expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["T1", "T2"]));
+    expect(rowsOf(screen.getByRole("grid"))[0]!.textContent).toContain("(4)");
+    act(() => setPrefs({ conversationView: false }));
+    await waitFor(() => expect(rowsOf(screen.getByRole("grid"))).toHaveLength(4));
   });
 });

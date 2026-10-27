@@ -18,6 +18,13 @@
 // messages held at once, and a row whose messages no longer match the list
 // (archived out of the Inbox) leaves until the server confirms or undo
 // brings it back.
+//
+// Conversation view off (brief 22, `conversationView: false`): one row per
+// message. Email/query runs without collapseThreads and a page is two calls,
+// Email/query → Email/get of the row messages with every property a row and
+// the actions need. Each row is a conversation holding that one message, so
+// the planners, selection and undo act on it alone; its `id` is the message's
+// and its `conversationId` the Thread it opens.
 
 import {
   ObjectStore,
@@ -48,6 +55,9 @@ export const ROW_PROPERTIES = ["threadId", "from", "subject", "preview", "receiv
 
 /** Every message of a conversation: enough for senders, unread, stars, labels and actions. */
 export const MESSAGE_PROPERTIES = ["threadId", "from", "to", "keywords", "mailboxIds", "receivedAt"] as const satisfies readonly EmailProperty[];
+
+/** A message row (conversation view off): the row's own data and what the actions need, in one get. */
+export const MESSAGE_ROW_PROPERTIES = [...new Set([...ROW_PROPERTIES, ...MESSAGE_PROPERTIES])] as EmailProperty[];
 
 export const NEWEST_FIRST: EmailComparator[] = [{ property: "receivedAt", isAscending: false }];
 
@@ -87,6 +97,8 @@ export interface ListStoreOptions {
   /** The mail account, for push StateChanges. */
   accountId?: () => Id | undefined;
   pageSize?: number;
+  /** Brief 22: false lists one row per message instead of one per conversation. Default true. */
+  conversationView?: boolean;
 }
 
 export class ListStore {
@@ -94,14 +106,16 @@ export class ListStore {
   readonly #caller: MethodCaller;
   readonly #accountId: () => Id | undefined;
   readonly #pageSize: number;
+  /** One row per conversation (true) or per message. */
+  readonly #byConversation: boolean;
   readonly #ids: QueryStore;
   readonly #messages = new ObjectStore<RowMessage>("Email");
   /** Row message id → the row's own data. */
   readonly #bases = new Map<Id, RowBase>();
-  /** Conversation id → its message ids, oldest first. */
+  /** Conversation id → its message ids, oldest first. Empty with conversation view off. */
   readonly #threads = new Map<Id, Id[]>();
   #rows = new Map<Id, ConversationRow>();
-  /** Conversations changed locally since the server last confirmed. */
+  /** Rows changed locally since the server last confirmed: conversation ids, or message ids with conversation view off. */
   readonly #pending = new Set<Id>();
   #localVersion = 0;
   #snapshot: ListSnapshot = INITIAL;
@@ -121,6 +135,7 @@ export class ListStore {
     this.query = query;
     this.#accountId = options.accountId ?? (() => undefined);
     this.#pageSize = options.pageSize ?? PAGE_SIZE;
+    this.#byConversation = options.conversationView ?? true;
     this.#ids = new QueryStore(QueryStore.keyOf(this.#queryArgs()));
   }
 
@@ -135,6 +150,11 @@ export class ListStore {
 
   get pageSize(): number {
     return this.#pageSize;
+  }
+
+  /** One row per conversation (true), or one per message (conversation view off). */
+  get conversationView(): boolean {
+    return this.#byConversation;
   }
 
   /** The Email state the held messages are at (null before the first page). */
@@ -189,18 +209,26 @@ export class ListStore {
   /**
    * Every conversation in the list, with its messages: what "Select all N
    * conversations" acts on. Fetched in chunks (the client splits /get by
-   * maxObjectsInGet).
+   * maxObjectsInGet). With conversation view off, every message, each a row.
    */
   async allConversations(): Promise<ConversationRow[]> {
-    const { filter, sort } = this.#queryArgs();
+    const { filter, sort, collapseThreads } = this.#queryArgs();
     const repIds: Id[] = [];
     for (let position = 0; ; ) {
-      const res = await this.#caller.call("Email/query", { filter, sort, collapseThreads: true, position, limit: 1000 });
+      const res = await this.#caller.call("Email/query", { filter, sort, collapseThreads, position, limit: 1000 });
       repIds.push(...res.ids);
       position += res.ids.length;
       if (res.ids.length === 0 || res.ids.length < (res.limit ?? 1000) || (res.total !== undefined && position >= res.total)) break;
     }
     if (repIds.length === 0) return [];
+    if (!this.#byConversation) {
+      const got = (await this.#caller.call("Email/get", { ids: repIds, properties: [...MESSAGE_ROW_PROPERTIES] })).list as (RowEmail & RowMessage)[];
+      const byId = new Map(got.map((e) => [e.id, e]));
+      return repIds.flatMap((id) => {
+        const e = byId.get(id);
+        return e ? [messageRow(e)] : [];
+      });
+    }
     const reps = await this.#caller.call("Email/get", { ids: repIds, properties: [...ROW_PROPERTIES] });
     const threadIds = [...new Set(reps.list.map((e) => e.threadId))];
     const threads = await this.#caller.call("Thread/get", { ids: threadIds });
@@ -217,6 +245,7 @@ export class ListStore {
       const list = (emailsOf.get(rep.threadId) ?? []).flatMap((m) => (byId.has(m) ? [byId.get(m) as RowMessage] : []));
       out.push({
         id: rep.threadId,
+        conversationId: rep.threadId,
         emailId: rep.id,
         subject: rep.subject ?? "",
         preview: rep.preview ?? "",
@@ -257,7 +286,7 @@ export class ListStore {
     return {
       filter: this.query.filter,
       sort: this.query.sort ?? NEWEST_FIRST,
-      collapseThreads: true,
+      collapseThreads: this.#byConversation,
       calculateTotal: true,
     };
   }
@@ -312,6 +341,7 @@ export class ListStore {
   }
 
   async #fetchPage(position: number): Promise<Page> {
+    if (!this.#byConversation) return this.#fetchMessagePage(position);
     const r = this.#caller.request();
     const args = this.#queryArgs();
     const q = r.call("Email/query", { ...args, position, limit: this.#pageSize });
@@ -329,12 +359,31 @@ export class ListStore {
     return { query, rows, threads, messages, snippets };
   }
 
+  /** Conversation view off: the query and its messages, each a row of its own. One request, two calls. */
+  async #fetchMessagePage(position: number): Promise<Page> {
+    const r = this.#caller.request();
+    const args = this.#queryArgs();
+    const q = r.call("Email/query", { ...args, position, limit: this.#pageSize });
+    const g = r.call("Email/get", { ids: q.ref("/ids"), properties: [...MESSAGE_ROW_PROPERTIES] });
+    const s = this.query.searchSnippets ? r.call("SearchSnippet/get", { filter: args.filter, emailIds: q.ref("/ids") }) : null;
+    const res = await r.send();
+    const got = res.get(g);
+    return {
+      query: res.get(q),
+      rows: got.list,
+      threads: [],
+      messages: got as unknown as GetResponse<RowMessage>,
+      snippets: s && !res.error(s) ? res.get(s).list : [],
+    };
+  }
+
   async #getMessages(ids: Id[]): Promise<GetResponse<RowMessage>> {
     return (await this.#caller.call("Email/get", { ids, properties: [...MESSAGE_PROPERTIES] })) as unknown as GetResponse<RowMessage>;
   }
 
   /** Fetch rows that came into the list, and conversations that gained a message. One request. */
   async #fetchRows(repIds: readonly Id[], threadIds: readonly Id[]): Promise<void> {
+    if (!this.#byConversation) return this.#fetchMessageRows(repIds);
     for (let i = 0; i < Math.max(repIds.length, threadIds.length ? 1 : 0); i += this.#pageSize) {
       const chunk = repIds.slice(i, i + this.#pageSize);
       const r = this.#caller.request();
@@ -360,6 +409,20 @@ export class ListStore {
         this.#messages.put(messages);
         for (const thread of list) this.#threads.set(thread.id, thread.emailIds);
       }
+    }
+  }
+
+  /** Conversation view off: rows that came into the list, each one message. */
+  async #fetchMessageRows(ids: readonly Id[]): Promise<void> {
+    for (let i = 0; i < ids.length; i += this.#pageSize) {
+      const chunk = ids.slice(i, i + this.#pageSize);
+      const r = this.#caller.request();
+      const g = r.call("Email/get", { ids: [...chunk], properties: [...MESSAGE_ROW_PROPERTIES] });
+      const s = this.query.searchSnippets ? r.call("SearchSnippet/get", { filter: this.query.filter, emailIds: [...chunk] }) : null;
+      const res = await r.send();
+      const got = res.get(g);
+      this.#messages.put(got as unknown as GetResponse<RowMessage>);
+      this.#addRows(got.list, [], s && !res.error(s) ? res.get(s).list : []);
     }
   }
 
@@ -451,7 +514,7 @@ export class ListStore {
       const next = applyPatch(message, patch);
       if (next === message) continue;
       this.#messages.put({ state, list: [next], notFound: [] });
-      this.#pending.add(message.threadId);
+      this.#pending.add(this.#byConversation ? message.threadId : message.id);
       touched = true;
     }
     if (!touched) return;
@@ -471,11 +534,15 @@ export class ListStore {
     const next = new Map<Id, ConversationRow>();
     const seen = new Set<Id>();
     let hidden = 0;
+    const byConversation = this.#byConversation;
     for (const repId of this.#ids.ids) {
       const base = this.#bases.get(repId);
-      if (!base || seen.has(base.threadId)) continue;
-      seen.add(base.threadId);
-      const ids = this.#threads.get(base.threadId) ?? [repId];
+      if (!base) continue;
+      // A conversation shows once; with conversation view off every message is a row of its own.
+      const key = byConversation ? base.threadId : repId;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const ids = (byConversation && this.#threads.get(base.threadId)) || [repId];
       const messages = ids.flatMap((id) => {
         const m = this.#messages.get(id);
         return m ? [m] : [];
@@ -487,7 +554,8 @@ export class ListStore {
       let row = this.#rows.get(repId);
       if (!row || row.snippet !== base.snippet || !sameItems(row.messages, messages)) {
         row = {
-          id: base.threadId,
+          id: key,
+          conversationId: base.threadId,
           emailId: repId,
           subject: base.subject,
           preview: base.preview,
@@ -499,7 +567,7 @@ export class ListStore {
       }
       next.set(repId, row);
       const matches = this.query.matches;
-      if (matches && this.#pending.has(base.threadId) && !messages.some(matches)) {
+      if (matches && this.#pending.has(key) && !messages.some(matches)) {
         hidden++;
         continue;
       }
@@ -521,4 +589,18 @@ export class ListStore {
     this.#snapshot = snapshot ?? this.#build();
     for (const listener of [...this.#listeners]) listener();
   }
+}
+
+/** A message as its own row (conversation view off). */
+function messageRow(e: RowEmail & RowMessage): ConversationRow {
+  return {
+    id: e.id,
+    conversationId: e.threadId,
+    emailId: e.id,
+    subject: e.subject ?? "",
+    preview: e.preview ?? "",
+    receivedAt: e.receivedAt ?? "",
+    hasAttachment: e.hasAttachment ?? false,
+    messages: [e],
+  };
 }

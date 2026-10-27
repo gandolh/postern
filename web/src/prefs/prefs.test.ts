@@ -26,7 +26,7 @@ describe("normalise", () => {
     expect(normalise({ version: 99, undoSendSeconds: 30 }).undoSendSeconds).toBe(5);
     expect(normalise("x").images).toBe("ask");
     const n = normalise({ version: PREFS_VERSION, undoSendSeconds: 7, images: "sometimes", shortcuts: "yes", defaultIdentityId: 4 });
-    expect(n).toEqual({ undoSendSeconds: 5, images: "ask", shortcuts: true, defaultIdentityId: null, swipeLeft: "archive", swipeRight: "archive" });
+    expect(n).toEqual({ undoSendSeconds: 5, images: "ask", shortcuts: true, defaultIdentityId: null, swipeLeft: "archive", swipeRight: "archive", conversationView: true });
   });
   it("keeps valid fields", () => {
     expect(normalise({ version: 1, undoSendSeconds: 20, images: "always", shortcuts: false, defaultIdentityId: "I2" })).toEqual({
@@ -36,7 +36,25 @@ describe("normalise", () => {
       defaultIdentityId: "I2",
       swipeLeft: "archive",
       swipeRight: "archive",
+      conversationView: true,
     });
+  });
+});
+
+describe("conversation view (brief 22)", () => {
+  it("is on by default, and prefs saved before it existed read as on", () => {
+    expect(getPrefs().conversationView).toBe(true);
+    expect(normalise({ version: PREFS_VERSION, undoSendSeconds: 10 }).conversationView).toBe(true);
+    expect(normalise({ version: PREFS_VERSION, conversationView: "no" }).conversationView).toBe(true);
+  });
+  it("is saved per account", () => {
+    setPrefsAccount("alice@postern.test");
+    setPrefs({ conversationView: false });
+    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({ version: PREFS_VERSION, conversationView: false });
+    setPrefsAccount("bob@postern.test");
+    expect(getPrefs().conversationView).toBe(true);
+    setPrefsAccount("alice@postern.test");
+    expect(getPrefs().conversationView).toBe(false);
   });
 });
 

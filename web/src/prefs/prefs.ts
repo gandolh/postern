@@ -8,9 +8,10 @@
 //   desktop notifications          notify/settings.ts
 //   allowed image senders          render/allowance.ts
 //
-// To add a preference (brief 16 added swipeLeft / swipeRight): add a field to
-// AccountPrefs, its default to DEFAULT_PREFS, a validator line in
-// normalise(), and a getter/setter pair at the bottom. Bump PREFS_VERSION only
+// To add a preference (brief 16 added swipeLeft / swipeRight, brief 22
+// conversationView): add a field to AccountPrefs, its default to
+// DEFAULT_PREFS, a validator line in normalise(), and a getter/setter pair at
+// the bottom (or read it with usePrefs()). Bump PREFS_VERSION only
 // for a change that cannot be read by the old normalise().
 
 import { setAlwaysDisplayImages } from "../render/allowance";
@@ -37,6 +38,8 @@ export interface AccountPrefs {
   /** Swiping a row to the left / to the right on a touch screen (brief 16). Gmail's default: both archive. */
   swipeLeft: SwipeAction;
   swipeRight: SwipeAction;
+  /** Brief 22: one row per conversation (Gmail's default), or one per message when off. */
+  conversationView: boolean;
 }
 
 export const DEFAULT_PREFS: Readonly<AccountPrefs> = Object.freeze({
@@ -46,6 +49,7 @@ export const DEFAULT_PREFS: Readonly<AccountPrefs> = Object.freeze({
   defaultIdentityId: null,
   swipeLeft: "archive",
   swipeRight: "archive",
+  conversationView: true,
 });
 
 function swipeAction(value: unknown, fallback: SwipeAction): SwipeAction {
@@ -70,6 +74,7 @@ export function normalise(raw: unknown): AccountPrefs {
   const images = raw["images"];
   const shortcuts = raw["shortcuts"];
   const identity = raw["defaultIdentityId"];
+  const conversationView = raw["conversationView"];
   return {
     undoSendSeconds: UNDO_SEND_SECONDS.find((s) => s === undo) ?? DEFAULT_PREFS.undoSendSeconds,
     images: images === "ask" || images === "always" ? images : DEFAULT_PREFS.images,
@@ -77,6 +82,7 @@ export function normalise(raw: unknown): AccountPrefs {
     defaultIdentityId: typeof identity === "string" && identity !== "" ? identity : null,
     swipeLeft: swipeAction(raw["swipeLeft"], DEFAULT_PREFS.swipeLeft),
     swipeRight: swipeAction(raw["swipeRight"], DEFAULT_PREFS.swipeRight),
+    conversationView: typeof conversationView === "boolean" ? conversationView : DEFAULT_PREFS.conversationView,
   };
 }
 
