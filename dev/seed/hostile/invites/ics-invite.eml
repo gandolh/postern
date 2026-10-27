@@ -1,0 +1,35 @@
+From: Fixture Sender <fixtures@evil.test>
+To: Alice Archer <alice@postern.test>
+Subject: [hostile] a calendar invite with script in its fields
+Date: Mon, 21 Sep 2026 08:00:00 +0000
+Message-ID: <ics-invite@hostile.postern.test>
+X-Postern-Fixture: hostile/ics-invite
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="=_hostile_ics"
+
+--=_hostile_ics
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><body><p>Postern hostile-mail fixture <b>ics-invite</b>. The invite's card must show its summary, place and organiser as inert text.</p></body></html>
+--=_hostile_ics
+Content-Type: text/calendar; charset=utf-8; method=REQUEST
+Content-Transfer-Encoding: 7bit
+
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Postern//hostile fixture//EN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:ics-invite@hostile.postern.test
+DTSTAMP:20260921T080000Z
+DTSTART:20261112T090000Z
+DTEND:20261112T100000Z
+SUMMARY:<script>window["__POSTERN_"+"PWNED"]="ics-invite"</script><img src="https://evil.test/ics-summary.png" onerror="window['__POSTERN_'+'PWNED']=1">
+LOCATION:javascript:window["__POSTERN_"+"PWNED"]="ics-location"
+ORGANIZER;CN="<b onmouseover=alert(1)>Boss</b>":mailto:boss@evil.test
+ATTENDEE;CN=Alice Archer;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:alice@postern.test
+END:VEVENT
+END:VCALENDAR
+
+--=_hostile_ics--

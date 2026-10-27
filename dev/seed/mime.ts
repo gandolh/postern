@@ -332,6 +332,11 @@ export interface CalendarEvent {
   organizer: Address;
   attendees: Address[];
   stamp: Date;
+  /** Brief 25: wall times in an IANA zone instead of UTC, e.g. { tzid: "Europe/Lisbon", start: "20261105T100000", end: ... }. */
+  zone?: { tzid: string; start: string; end: string };
+  sequence?: number;
+  /** CANCELLED on a cancellation. */
+  status?: string;
 }
 
 export function ics(method: string, e: CalendarEvent): string {
@@ -350,8 +355,10 @@ export function ics(method: string, e: CalendarEvent): string {
       "BEGIN:VEVENT",
       `UID:${e.uid}`,
       `DTSTAMP:${icsDate(e.stamp)}`,
-      `DTSTART:${icsDate(e.start)}`,
-      `DTEND:${icsDate(e.end)}`,
+      e.zone ? `DTSTART;TZID=${e.zone.tzid}:${e.zone.start}` : `DTSTART:${icsDate(e.start)}`,
+      e.zone ? `DTEND;TZID=${e.zone.tzid}:${e.zone.end}` : `DTEND:${icsDate(e.end)}`,
+      ...(e.sequence !== undefined ? [`SEQUENCE:${e.sequence}`] : []),
+      ...(e.status ? [`STATUS:${e.status}`] : []),
       `SUMMARY:${text(e.summary)}`,
       `LOCATION:${text(e.location)}`,
       `DESCRIPTION:${text(e.description)}`,

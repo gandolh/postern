@@ -40,8 +40,8 @@ npx playwright test -c web/e2e hostile -g script-tag
   the unread messages and identities first; the teardown marks unread again
   what the run read, destroys any draft it saved, and puts the identities
   back. It then compares the Inbox and Hostile counts with the start and with
-  `dev/seed/manifest.json` (Inbox 2144 messages, 2035 conversations, 127
-  unread; Hostile 17, 17, 5) and fails the run if the start and end differ.
+  `dev/seed/manifest.json` (Inbox 2147 messages, 2038 conversations, 129
+  unread; Hostile 18, 18, 5) and fails the run if the start and end differ.
 
 ## The specs
 

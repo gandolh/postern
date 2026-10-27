@@ -46,7 +46,7 @@ describe.skipIf(!live)("against the dev Stalwart: reading", () => {
         threads: counts?.threads,
       });
     }
-    expect(findByRole(mailboxes, "inbox")?.totalThreads).toBe(2035);
+    expect(findByRole(mailboxes, "inbox")?.totalThreads).toBe(manifest.accounts.alice.labels["inbox"]!.threads);
   });
 
   it("lists alice's user labels, Work/Clients nested under Work", () => {
@@ -79,7 +79,7 @@ describe.skipIf(!live)("against the dev Stalwart: reading", () => {
     const g = r.call("Email/get", { ids: q.ref("/ids"), properties: ["threadId"] });
     const t = r.call("Thread/get", { ids: g.ref("/list/*/threadId") });
     const res = await r.send();
-    expect(res.get(q).total).toBe(2035);
+    expect(res.get(q).total).toBe(manifest.accounts.alice.labels["inbox"]!.threads);
     expect(res.get(q).ids).toHaveLength(100);
     const threads = res.get(t).list;
     expect(threads).toHaveLength(100);

@@ -7,6 +7,7 @@ import { useId, useState } from "react";
 import { FLAGGED, SEEN } from "../actions/conversation";
 import { AttachmentList } from "../attachments/AttachmentList";
 import { SenderHoverCard } from "../contacts/SenderHoverCard";
+import { InviteCard } from "../invites/InviteCard";
 import { formatFullDate } from "../list/format";
 import { MenuButton } from "../list/Menu";
 import { IconButton } from "../shell/IconButton";
@@ -211,6 +212,8 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
           <MenuButton label="More" icon={MoreVertical} items={moreItems} align="end" />
         </div>
       </header>
+      {/* Brief 25: a calendar invite's card, from parsed text only; the body below is untouched. */}
+      <InviteCard messageId={message.id} messageIdHeader={message.messageId} keywords={message.keywords} attachments={message.attachments} />
       <MessageBody
         state={body}
         senderAddress={from?.email ?? null}

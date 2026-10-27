@@ -1,0 +1,79 @@
+/* A calendar invite's card (brief 25), above the message body. */
+
+.invite-card {
+  display: flex;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+
+.invite-icon {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-accent);
+}
+
+.invite-main {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.invite-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.invite-card[data-method="cancel"] .invite-title {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.invite-cancelled {
+  color: var(--color-danger);
+  font-weight: var(--weight-semibold);
+}
+
+.invite-facts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.invite-facts > div {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.invite-facts dt {
+  color: var(--color-text-muted);
+}
+
+.invite-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.invite-answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.invite-answer-label {
+  margin-right: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.btn.invite-answer-btn[aria-pressed="true"] {
+  border-color: transparent;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}

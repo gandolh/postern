@@ -60,6 +60,9 @@ const EXPECTED: Record<string, Expectation> = {
   "forged-sender-address-name": { frames: 0 },
   "forged-sender": { frames: 1 },
   "form-post": { frames: 1, markers: ["evil.test/collect", "evil.test/get-collect", "evil.test/detached"] },
+  // Brief 25: the card is built from parsed text, so the .ics markup shows only escaped
+  // (a bare "<script" would match Postern's own script tag in the head).
+  "ics-invite": { frames: 1, markers: ["<script>window[", '<img src="https://evil.test/ics-summary.png"', "<b onmouseover"] },
   "iframe-object-embed": { frames: 1, markers: ["evil.test/frame", "object.pdf", "embed.swf", "iframe-srcdoc"] },
   "javascript-link": { frames: 1, markers: ["javascript:window", "JaVaScRiPt:"], remoteHosts: ["evil.test"] },
   "link-text-mismatch": { frames: 1, markers: ['href="https://evil.test/login"'], linkWarning: true },
@@ -350,4 +353,16 @@ test("an attachment named to deceive downloads under its real name and never ope
   expect(srcdoc.includes("data:image/svg")).toBe(false);
   expect(rec.foreignRequests()).toEqual([]);
   rec.stop();
+});
+
+test("a hostile calendar invite's card shows its fields as inert text, and its javascript: place is no link (brief 25)", async ({ page, context }) => {
+  await stubOutsideWorld(context);
+  await signIn(page);
+  await openConversation(page, labelId, fixtures.get("ics-invite")!.threadId);
+  const card = page.locator(".invite-card");
+  await expect(card).toContainText('window["__POSTERN_"+"PWNED"]="ics-location"');
+  await expect(card).toContainText("<script>");
+  await expect(card.locator("a, script, img, b")).toHaveCount(0);
+  await expect(card.getByRole("group", { name: "Going?" })).toBeVisible();
+  expect(await canary(page)).toBeUndefined();
 });

@@ -90,20 +90,25 @@
         "slug": "svg-inline-script",
         "messageId": "svg-inline-script@hostile.postern.test",
         "file": "hostile/svg-inline-script.eml"
+      },
+      {
+        "slug": "ics-invite",
+        "messageId": "ics-invite@hostile.postern.test",
+        "file": "hostile/invites/ics-invite.eml"
       }
     ]
   },
   "accounts": {
     "alice": {
       "email": "alice@postern.test",
-      "totalMessages": 2816,
-      "totalThreads": 2456,
+      "totalMessages": 2819,
+      "totalThreads": 2459,
       "labels": {
         "inbox": {
-          "messages": 2144,
-          "threads": 2035,
-          "unreadMessages": 128,
-          "unreadThreads": 127,
+          "messages": 2147,
+          "threads": 2038,
+          "unreadMessages": 130,
+          "unreadThreads": 129,
           "starredMessages": 49
         },
         "sent": {
@@ -170,8 +175,8 @@
           "starredMessages": 1
         },
         "Hostile": {
-          "messages": 17,
-          "threads": 17,
+          "messages": 18,
+          "threads": 18,
           "unreadMessages": 5,
           "unreadThreads": 5,
           "starredMessages": 0

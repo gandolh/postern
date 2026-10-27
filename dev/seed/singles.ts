@@ -96,6 +96,66 @@ function attachments(): SeedEmail[] {
     ),
   );
 
+  // Brief 25: an iMIP REQUEST and a CANCEL between the two dev accounts, so a
+  // REPLY reaches an organiser's mailbox the tests can read. The REQUEST's
+  // times are in Lisbon's zone (10:00 there is 10:00 UTC in November).
+  const planning = ics("REQUEST", {
+    uid: "q1-planning-2026-11-05@postern.test",
+    summary: "Q1 planning",
+    location: "Room 2, third floor",
+    description: "Bring the numbers for the first quarter.",
+    start: at("2026-11-05T10:00:00Z"),
+    end: at("2026-11-05T11:30:00Z"),
+    zone: { tzid: "Europe/Lisbon", start: "20261105T100000", end: "20261105T113000" },
+    organizer: P.bob,
+    attendees: [P.alice],
+    stamp: daysBefore(1, 16, 40),
+    sequence: 0,
+  });
+  out.push(
+    seed(
+      {
+        key: "alice/planning-invite",
+        from: P.bob,
+        to: [P.alice],
+        subject: "Invitation: Q1 planning, Thu 5 Nov 2026 10:00 (Lisbon)",
+        date: daysBefore(1, 16, 40),
+        messageId: "q1-planning-invite@postern.test",
+        text: "Q1 planning\nThursday 5 November 2026, 10:00 to 11:30 (Lisbon)\nRoom 2, third floor\n\nBring the numbers for the first quarter.",
+        calendar: { method: "REQUEST", ics: planning },
+      },
+      { account: "alice", mailboxes: ["inbox"], keywords: [] },
+    ),
+  );
+  const retro = ics("CANCEL", {
+    uid: "retro-2026-10-30@postern.test",
+    summary: "Sprint retro",
+    location: "Room 4",
+    description: "Cancelled: we'll fold it into Q1 planning.",
+    start: at("2026-10-30T14:00:00Z"),
+    end: at("2026-10-30T15:00:00Z"),
+    organizer: P.bob,
+    attendees: [P.alice],
+    stamp: daysBefore(1, 16, 45),
+    sequence: 1,
+    status: "CANCELLED",
+  });
+  out.push(
+    seed(
+      {
+        key: "alice/retro-cancelled",
+        from: P.bob,
+        to: [P.alice],
+        subject: "Cancelled: Sprint retro, Fri 30 Oct 2026 14:00 (UTC)",
+        date: daysBefore(1, 16, 45),
+        messageId: "retro-cancelled@postern.test",
+        text: "Sprint retro on Friday 30 October is cancelled: we'll fold it into Q1 planning.",
+        calendar: { method: "CANCEL", ics: retro },
+      },
+      { account: "alice", mailboxes: ["inbox"], keywords: [] },
+    ),
+  );
+
   // The large one, for `larger:` searches and download progress. Built only
   // when imported.
   out.push(

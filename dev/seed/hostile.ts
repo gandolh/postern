@@ -1,6 +1,9 @@
 // The hostile set: each .eml under dev/seed/hostile/ is filed in alice's
 // Inbox and in her "Hostile" label, so brief 17 can find them by label or by
-// the X-Postern-Fixture header. The files are read as-is (they are the exact
+// the X-Postern-Fixture header. Calendar invites (brief 25) sit in
+// hostile/invites/ and come after the rest: their danger is in the .ics the
+// invite card reads, not in an HTML body for the sanitiser's own fixture test
+// (web/src/render/), which reads hostile/*.eml only. The files are read as-is (they are the exact
 // bytes under test); this module only attaches the mailboxes, keywords and a
 // deterministic receivedAt, and reads back the slug and Message-ID.
 
@@ -31,11 +34,14 @@ export interface HostileFixture {
   messageId: string;
 }
 
-/** The fixtures, sorted by slug for a stable order. */
+/** The fixtures, sorted by file for a stable order; the invites after the rest, so the others keep their place. */
 export function hostileFixtures(): HostileFixture[] {
-  return readdirSync(HOSTILE_DIR)
-    .filter((f) => f.endsWith(".eml"))
-    .sort()
+  const emls = (dir: string, prefix: string) =>
+    readdirSync(join(HOSTILE_DIR, dir))
+      .filter((f) => f.endsWith(".eml"))
+      .sort()
+      .map((f) => `${prefix}${f}`);
+  return [...emls("", ""), ...emls("invites", "invites/")]
     .map((file) => {
       const raw = readFileSync(join(HOSTILE_DIR, file), "latin1");
       const marker = headerValue(raw, HOSTILE_HEADER);
