@@ -104,6 +104,17 @@ describe("buildLabels", () => {
     expect(fresh.system.all.title).toBe("All Mail");
   });
 
+  it("finds Snoozed by name, a system label outside the user labels (brief 24)", () => {
+    const b = buildLabels([...ALICE, mailbox({ id: "s", name: "Snoozed", isSubscribed: false }), mailbox({ id: "t", name: "Snoozed", parentId: "i" })]);
+    expect(b.system.snoozed.label?.id).toBe("s");
+    expect(b.system.snoozed.title).toBe("Snoozed");
+    expect(b.labels.find((l) => l.id === "s")?.system).toBe("snoozed");
+    expect([...b.tree, ...b.hidden].map((n) => n.label.id)).not.toContain("s");
+    // A sublabel called Snoozed is an ordinary label.
+    expect(b.byId.get("t")?.system).toBeNull();
+    expect(buildLabels(ALICE).system.snoozed.label).toBeUndefined();
+  });
+
   it("puts unsubscribed top-level labels under More, with their sublabels", () => {
     const b = buildLabels([
       mailbox({ id: "x", name: "Old", isSubscribed: false }),

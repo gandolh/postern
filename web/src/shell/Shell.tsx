@@ -14,6 +14,7 @@ import { LabelsProvider, useLabels } from "../labels/useLabels";
 import { LiveHost } from "../live/LiveHost";
 import { PrefsHost } from "../prefs";
 import { PushHost } from "../push/PushHost";
+import { SnoozeHost } from "../snooze/SnoozeHost";
 import { PhoneComposeButton } from "../mobile";
 import { PHONE_QUERY, WIDE_QUERY } from "./breakpoints";
 import { MainArea } from "./MainArea";
@@ -39,6 +40,7 @@ export function Shell() {
               <ShellLayout />
               <LiveHost />
               <PushHost />
+              <SnoozeHost />
             </StatusSlotProvider>
           </KeysProvider>
         </ComposerProvider>

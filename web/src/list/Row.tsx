@@ -10,6 +10,9 @@ import { writeDrag } from "../labels/dragData";
 import { useLabelColor } from "../labels/useLabelPrefs";
 import { IconButton } from "../shell/IconButton";
 import { chipLabels, formatFullDate, formatListDate, parseHighlights, summarizeSenders, type ChipLabel, type SenderMode, type SenderSummary } from "./format";
+import { snoozedUntil } from "../snooze/keyword";
+import { formatSnoozeTime } from "../snooze/times";
+import "../snooze/snooze.css";
 import { getActiveList } from "./registry";
 import type { ConversationRow, RowMessage } from "./types";
 
@@ -139,6 +142,8 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
       important: isImportant(row, scope),
       senders: summarizeSenders(inList.length ? inList : shown, me, senderMode),
       chips: chipLabels(labelIdsOf(row, scope), labels, currentLabelId),
+      // Brief 24: a snoozed conversation says when it comes back.
+      snoozed: snoozedUntil(shown),
     };
   }, [row, scope, me, senderMode, matches, labels, currentLabelId]);
   const date = useMemo(() => ({ text: formatListDate(row.receivedAt, now), full: formatFullDate(row.receivedAt) }), [row.receivedAt, now]);
@@ -209,8 +214,13 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
         <Senders summary={view.senders} />
       </div>
       <div role="gridcell" className="list-cell list-main">
-        {view.chips.length ? (
+        {view.chips.length || view.snoozed ? (
           <span className="list-chips">
+            {view.snoozed ? (
+              <span className="chip list-chip list-snoozed" title={formatFullDate(view.snoozed.toISOString())}>
+                Snoozed until {formatSnoozeTime(view.snoozed, now)}
+              </span>
+            ) : null}
             {view.chips.map((chip) => (
               <Chip key={chip.id} chip={chip} />
             ))}

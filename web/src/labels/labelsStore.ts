@@ -6,7 +6,9 @@
 // "Junk Mail" and "Deleted Items", the UI always says Gmail's words. Starred
 // is not a mailbox (it is the $flagged keyword). Stalwart creates no
 // archive-role mailbox, so All Mail may have no mailbox behind it; brief 06
-// creates it the first time something is archived. Nothing here creates one.
+// creates it the first time something is archived. Snoozed (brief 24) is the
+// one system label found by name: a top-level "Snoozed" with no role
+// (snooze/label.ts makes it on first snooze). Nothing here creates one.
 
 import {
   isAbortError,
@@ -24,6 +26,7 @@ import {
   type SyncResult,
 } from "@postern/jmap";
 import { SYSTEM_VIEWS, type LabelRoute, type SystemView } from "../shell/router";
+import { isSnoozedMailbox } from "../snooze/label";
 
 // ---- What each system label is -------------------------------------------
 
@@ -34,7 +37,7 @@ export interface SystemLabelInfo {
   view: SystemView;
   /** Gmail's word, always. */
   title: string;
-  /** The JMAP role behind it; null for Starred (the $flagged keyword). */
+  /** The JMAP role behind it; null for Starred (the $flagged keyword) and Snoozed (found by name). */
   role: MailboxRole | null;
   /** Inbox and Spam show unread conversations; Drafts shows how many drafts there are. */
   count: SystemCount;
@@ -43,6 +46,7 @@ export interface SystemLabelInfo {
 export const SYSTEM_LABELS: Readonly<Record<SystemView, SystemLabelInfo>> = {
   inbox: { view: "inbox", title: "Inbox", role: "inbox", count: "unread" },
   starred: { view: "starred", title: "Starred", role: null, count: "none" },
+  snoozed: { view: "snoozed", title: "Snoozed", role: null, count: "none" },
   sent: { view: "sent", title: "Sent", role: "sent", count: "none" },
   drafts: { view: "drafts", title: "Drafts", role: "drafts", count: "total" },
   spam: { view: "spam", title: "Spam", role: "junk", count: "unread" },
@@ -157,7 +161,7 @@ export function buildLabels(mailboxes: readonly Mailbox[]): Pick<LabelsSnapshot,
   const all: Label[] = [];
   const sorted = [...mailboxes].sort((a, b) => a.sortOrder - b.sortOrder || (a.id < b.id ? -1 : 1));
   for (const m of sorted) {
-    let system = viewForRole(m.role) ?? null;
+    let system = viewForRole(m.role) ?? (isSnoozedMailbox(m) ? "snoozed" : null);
     if (system && systemByView.has(system)) system = null;
     const label: Label = {
       id: m.id,
@@ -312,6 +316,11 @@ export class LabelsStore {
   /** The Mailbox state the store is at (null before the first load). */
   get state(): string | null {
     return this.#mailboxes.state;
+  }
+
+  /** The Snoozed label's mailbox (brief 24), if the account has one yet. */
+  snoozedId(): Id | undefined {
+    return this.#snapshot.system.snoozed.label?.id;
   }
 
   /** The mailbox id with a role (`inbox`, `junk`, `archive`...), if the account has one. */

@@ -5,6 +5,9 @@
 //   Inbox, Sent, Spam, Trash           inMailbox: the role's mailbox
 //   Drafts                             inMailbox, less messages waiting to be sent
 //                                      ($scheduled, brief 23: they are in Scheduled)
+//   Inbox                              woken conversations first ($woken, brief 24),
+//                                      then newest first
+//   Snoozed                            inMailbox: the Snoozed label (brief 24)
 //   Starred                            $flagged, outside Spam and Trash
 //   All Mail                           everything outside Spam and Trash (Gmail's meaning,
 //                                      not just the archive-role mailbox)
@@ -12,6 +15,7 @@
 
 import type { EmailFilter, EmailFilterCondition, Id } from "@postern/jmap";
 import { FLAGGED, type ConversationScope, type MailboxRoles } from "../actions/conversation";
+import { WOKEN } from "../snooze/keyword";
 import type { ResolvedLabel } from "../labels/labelsStore";
 import type { ListPresentation, ListQuery, RowMessage } from "./types";
 
@@ -36,7 +40,8 @@ export function labelListView(label: Pick<ResolvedLabel, "view" | "mailboxId">, 
   const presentation: ListPresentation = {
     currentLabelId: label.mailboxId,
     senderMode: view === "sent" || view === "drafts" ? "to" : "from",
-    canArchive: view !== "trash" && view !== "spam",
+    // Nothing in Snoozed is in the Inbox to archive (Unsnooze is in the snooze menu).
+    canArchive: view !== "trash" && view !== "spam" && view !== "snoozed",
     deleteForever: view === "trash" || view === "spam",
     notSpam: view === "spam",
   };
@@ -61,6 +66,21 @@ export function labelListView(label: Pick<ResolvedLabel, "view" | "mailboxId">, 
 
   const mailboxId = label.mailboxId;
   if (mailboxId === undefined) return null;
+  if (view === "inbox") {
+    // A woken conversation comes back on top, as Gmail's does: receivedAt can't move, so $woken sorts first.
+    return {
+      query: {
+        filter: { inMailbox: mailboxId },
+        sort: [
+          { property: "hasKeyword", keyword: WOKEN, isAscending: false },
+          { property: "receivedAt", isAscending: false },
+        ],
+        scope,
+        matches: (m) => m.mailboxIds[mailboxId] === true,
+      },
+      presentation,
+    };
+  }
   if (view === "drafts") {
     return {
       query: {

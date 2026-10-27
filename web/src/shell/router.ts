@@ -1,7 +1,7 @@
 // Hash routes under the base (`/`), as Gmail has them. Every brief navigates
 // through this module and never edits it.
 //
-//   #inbox  #starred  #sent  #drafts  #spam  #trash  #all     system labels
+//   #inbox  #starred  #snoozed  #sent  #drafts  #spam  #trash  #all   system labels
 //   #label/<labelId>                                          a user label (by mailbox id)
 //   #search/<query>                                           search results (query URI-encoded)
 //   #<any of the above>/<conversationId>                      a conversation opened from there
@@ -19,10 +19,13 @@
 
 import { useSyncExternalStore } from "react";
 
-/** The system labels, by the word in the URL. Spam is role `junk`; All Mail is role `archive`. */
-export type SystemView = "inbox" | "starred" | "sent" | "drafts" | "spam" | "trash" | "all";
+/**
+ * The system labels, by the word in the URL. Spam is role `junk`; All Mail is
+ * role `archive`; Snoozed (brief 24) has no role and is found by its name.
+ */
+export type SystemView = "inbox" | "starred" | "snoozed" | "sent" | "drafts" | "spam" | "trash" | "all";
 
-export const SYSTEM_VIEWS: readonly SystemView[] = ["inbox", "starred", "sent", "drafts", "spam", "trash", "all"];
+export const SYSTEM_VIEWS: readonly SystemView[] = ["inbox", "starred", "snoozed", "sent", "drafts", "spam", "trash", "all"];
 
 /** A system label's list, or a conversation opened from it: `#inbox`, `#inbox/<id>`. */
 export interface SystemLabelRoute {

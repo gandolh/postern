@@ -9,6 +9,7 @@ import { useJmap } from "../auth";
 import type { LabelsStore } from "../labels/labelsStore";
 import { useLabelsStore } from "../labels/useLabels";
 import { useToast } from "../shell/toast";
+import { ensureSnoozedLabel } from "../snooze/label";
 import { ensureAllMail } from "./allMail";
 import { ROLE_NAMES, type MailboxRoles } from "./conversation";
 import { createMailActions, type MailActions } from "./runner";
@@ -33,6 +34,8 @@ export function useMailActions(): MailActions {
         caller: client,
         roles: () => rolesFrom(labels),
         ensureAllMail: () => ensureAllMail(client, labels),
+        ensureSnoozed: () => ensureSnoozedLabel(client, labels),
+        snoozedId: () => labels.snoozedId(),
         syncLabels: () => void labels.sync(),
         toast,
       }),

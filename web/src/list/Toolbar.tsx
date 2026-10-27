@@ -1,11 +1,11 @@
 // The list's toolbar, as Gmail's: the select checkbox and menu; with nothing
 // selected, refresh and where you are ("1–17 of 2,035"); with a selection,
-// archive, report spam, delete, mark read or unread, snooze (not yet), move
+// archive, report spam, delete, mark read or unread, snooze (brief 24), move
 // to, labels and more ("Filter messages like these", brief 13). In Spam and
 // Trash with nothing selected: "Delete all spam messages now" / "Empty Trash now".
 
 import type { Id } from "@postern/jmap";
-import { Archive, ChevronDown, Clock, EllipsisVertical, Mail, MailOpen, OctagonAlert, RefreshCw, Trash2 } from "lucide-react";
+import { Archive, ChevronDown, EllipsisVertical, Mail, MailOpen, OctagonAlert, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useAccount } from "../auth";
 import { EmptyLabelButton } from "../filters/EmptyLabelButton";
@@ -13,6 +13,7 @@ import { filterMessagesLike } from "../filters/likeThese";
 import { LabelMenu } from "../labels/LabelMenu";
 import { IconButton } from "../shell/IconButton";
 import type { LabelRoute } from "../shell/router";
+import { SnoozeMenu } from "../snooze/SnoozeMenu";
 import type { SelectKind } from "./controller";
 import { MenuButton, type MenuItem } from "./Menu";
 import { getActiveList } from "./registry";
@@ -31,6 +32,8 @@ export interface ToolbarProps {
   someUnstarred: boolean;
   someImportant: boolean;
   someNotImportant: boolean;
+  /** Something selected is snoozed: the snooze menu offers Unsnooze. */
+  someSnoozed: boolean;
   /** "1–17 of 2,035", or empty. */
   paging: string;
   /** For the label menus (brief 09). */
@@ -46,6 +49,8 @@ export interface ToolbarProps {
   onRead(read: boolean): void;
   onStar(on: boolean): void;
   onImportant(on: boolean): void;
+  onSnooze(at: Date): void;
+  onUnsnooze(): void;
   onLabelsDone(): void;
   onMoveDone(): void;
 }
@@ -126,7 +131,7 @@ export function Toolbar(props: ToolbarProps) {
             ) : (
               <IconButton label="Mark as unread" icon={Mail} onClick={() => props.onRead(false)} />
             )}
-            <IconButton label="Snooze isn't available yet" icon={Clock} aria-disabled="true" className="list-unavailable" />
+            <SnoozeMenu onSnooze={props.onSnooze} {...(props.someSnoozed ? { onUnsnooze: props.onUnsnooze } : {})} />
           </div>
           <span className="list-toolbar-divider" aria-hidden="true" />
           <div className="list-toolbar-group">

@@ -1,0 +1,81 @@
+/* Snooze (brief 24): the toolbar menu's help line and times, the date dialog,
+   and the "Snoozed until" chip on a row. */
+
+.snooze-help {
+  max-width: 18rem;
+  padding: var(--space-1) var(--space-4) var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.list-menu-item.snooze-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.snooze-item-time {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.snooze-separator {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--color-border);
+}
+
+.snooze-dialog {
+  width: min(24rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
+.snooze-dialog-title {
+  font-size: var(--text-xl);
+}
+
+.snooze-dialog-help {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.snooze-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.snooze-field {
+  display: grid;
+  flex: 1 1 9rem;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.snooze-error {
+  margin-top: var(--space-3);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+.snooze-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.chip.list-snoozed {
+  color: var(--color-on-accent-soft);
+  background: var(--color-accent-soft);
+  white-space: nowrap;
+}

@@ -5,7 +5,7 @@
 // In rail mode only the icons show; the names stay for screen readers.
 
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, ChevronRight, ChevronUp, Clock, File, Inbox, Mails, Pencil, Send, ShieldAlert, Star, Tag, Trash2, Users } from "lucide-react";
+import { CalendarClock, ChevronDown, ChevronRight, ChevronUp, Clock, File, Inbox, Mails, Pencil, Send, ShieldAlert, Star, Tag, Trash2, Users } from "lucide-react";
 import { Fragment, useMemo, useState, type CSSProperties, type MouseEvent } from "react";
 import { useCompose } from "../composer";
 import { useOptionalComposerStore } from "../composer/compose";
@@ -21,6 +21,7 @@ import { NavSkeleton } from "./states";
 const SYSTEM_ICONS: Record<SystemView, LucideIcon> = {
   inbox: Inbox,
   starred: Star,
+  snoozed: Clock,
   sent: Send,
   drafts: File,
   spam: ShieldAlert,
@@ -95,7 +96,7 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
                   aria-current={route.kind === "scheduled" ? "page" : undefined}
                   title={rail ? "Scheduled" : undefined}
                 >
-                  <Clock aria-hidden="true" />
+                  <CalendarClock aria-hidden="true" />
                   <span className="shell-nav-text">Scheduled</span>
                 </a>
               </li>

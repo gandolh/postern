@@ -14,6 +14,7 @@
 import { JmapNetworkError, type Id } from "@postern/jmap";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { isImportant, isStarred, isUnread, shownMessages, type ConversationScope } from "../actions/conversation";
+import { snoozedUntil } from "../snooze/keyword";
 import type { MailActions } from "../actions/runner";
 import { undoLast } from "../actions/undo";
 import { useMailActions } from "../actions/useMailActions";
@@ -98,6 +99,9 @@ export interface ListApi extends ListController {
   setRead(read: boolean): Promise<void>;
   setStar(on: boolean): Promise<void>;
   setImportant(on: boolean): Promise<void>;
+  /** Brief 24: snooze the targets until `at`, or bring them back now. */
+  snooze(at: Date): Promise<void>;
+  unsnooze(): Promise<void>;
   confirmDelete(rows: readonly ConversationRow[]): Promise<void>;
 }
 
@@ -287,6 +291,14 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
     markImportant: () => setImportant(true),
     markNotImportant: () => setImportant(false),
     setImportant: (on) => setImportant(on),
+    snooze(at) {
+      const { actions, scope } = get();
+      return leaving(undefined, (rows) => actions.snooze(rows, scope, at));
+    },
+    unsnooze() {
+      const { actions, scope } = get();
+      return leaving(undefined, (rows) => actions.unsnooze(rows, scope));
+    },
     refresh: () => get().store.refresh(),
     undoLast,
   };
@@ -544,6 +556,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         someUnstarred={selection.all || selectedRows.some((r) => !isStarred(r, scope))}
         someImportant={selectedRows.some((r) => isImportant(r, scope))}
         someNotImportant={selection.all || selectedRows.some((r) => !isImportant(r, scope))}
+        someSnoozed={selectedRows.some((r) => snoozedUntil(r.messages) !== null)}
         paging={paging}
         conversationIds={selectedRows.map((r) => r.id)}
         emailIds={selectedRows.flatMap((r) => shownMessages(r, scope).map((m) => m.id))}
@@ -557,6 +570,8 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         onRead={(read) => void api.setRead(read)}
         onStar={(on) => void api.setStar(on)}
         onImportant={(on) => void api.setImportant(on)}
+        onSnooze={(at) => void api.snooze(at)}
+        onUnsnooze={() => void api.unsnooze()}
         onLabelsDone={() => {}}
         onMoveDone={() => api.select("none")}
       />

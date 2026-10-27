@@ -127,10 +127,54 @@ describe("selection and the toolbar", () => {
     expect(rowsOf(grid).map((r) => r.getAttribute("aria-selected"))).toEqual(["true", "false"]);
   });
 
-  it("shows snooze as not available yet", async () => {
-    const { user, grid } = await renderList(inboxThreads(1));
+  it("snoozes until a chosen time, making the Snoozed label on first use, with Undo (brief 24)", async () => {
+    const { mail, user, grid } = await renderList(inboxThreads(2));
     await user.click(within(rowsOf(grid)[0]!).getByRole("checkbox", { name: "Select" }));
-    expect(screen.getByRole("button", { name: "Snooze isn't available yet" }).getAttribute("aria-disabled")).toBe("true");
+    await user.click(within(toolbar()).getByRole("button", { name: "Snooze" }));
+    const menu = await screen.findByRole("menu", { name: "Snooze until" });
+    expect(menu.textContent).toContain("Snoozed mail comes back when Postern is open.");
+    expect(within(menu).queryByRole("menuitem", { name: "Unsnooze" })).toBeNull();
+    await user.click(within(menu).getByRole("menuitem", { name: /^Tomorrow/ }));
+    expect(await screen.findByText(/^Conversation snoozed until /)).toBeTruthy();
+    const snoozed = mail.mailboxes.find((b) => b.name === "Snoozed")!;
+    expect(snoozed).toMatchObject({ role: null, parentId: null });
+    await waitFor(() => expect(Object.keys(mail.emails.get("m0")!.mailboxIds)).toEqual([snoozed.id]));
+    expect(Object.keys(mail.emails.get("m0")!.keywords).some((k) => k.startsWith("$snoozed-"))).toBe(true);
+    expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["t1"]);
+
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(mail.emails.get("m0")!.mailboxIds).toEqual({ a: true }));
+    expect(mail.emails.get("m0")!.keywords).toEqual({});
+  });
+
+  it("lists Snoozed with each conversation's time, and Unsnooze brings one back (brief 24)", async () => {
+    const SNOOZED = { id: "z", name: "Snoozed", role: null, parentId: null };
+    const mail = new FakeMail({
+      mailboxes: [...MAILBOXES, SNOOZED],
+      emails: [fakeEmail({ id: "s1", threadId: "S1", mailboxIds: { z: true }, keywords: { $seen: true, "$snoozed-20261028T0700Z": true } })],
+    });
+    const client = await mail.connect();
+    const labels = new LabelsStore(client, () => "A");
+    const user = userEvent.setup();
+    render(
+      <SessionContext.Provider value={{ client, account: { username: "alice@postern.test" }, signOut: async () => {} }}>
+        <LabelsStoreProvider store={labels}>
+          <ToastProvider>
+            <Screen route={{ kind: "system", view: "snoozed" }} />
+          </ToastProvider>
+        </LabelsStoreProvider>
+      </SessionContext.Provider>,
+    );
+    const grid = await screen.findByRole("grid");
+    expect(grid.getAttribute("aria-label")).toBe("Conversations in Snoozed");
+    expect(rowsOf(grid)[0]!.textContent).toMatch(/Snoozed until /);
+    await user.click(within(rowsOf(grid)[0]!).getByRole("checkbox", { name: "Select" }));
+    expect(within(toolbar()).queryByRole("button", { name: "Archive" })).toBeNull();
+    await user.click(within(toolbar()).getByRole("button", { name: "Snooze" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Unsnooze" }));
+    expect(await screen.findByText("Conversation unsnoozed.")).toBeTruthy();
+    await waitFor(() => expect(mail.emails.get("s1")!.mailboxIds).toEqual({ a: true }));
+    expect(mail.emails.get("s1")!.keywords).toEqual({ $seen: true });
   });
 });
 

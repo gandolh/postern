@@ -28,6 +28,7 @@ import {
   planTrash,
   type LabelChange,
 } from "./plans";
+import { planSnooze, planUnsnooze, snoozeCopy, UNSNOOZE_COPY } from "./snooze";
 import { NOT_SPAM_COPY, planNotSpam, planReportSpam, REPORT_SPAM_COPY } from "./spam";
 import { runUndo, setUndo, type UndoEntry } from "./undo";
 
@@ -42,6 +43,10 @@ export interface MailActionDeps {
   roles: () => MailboxRoles;
   /** All Mail's id, creating it when the account has none (ensureAllMail). */
   ensureAllMail: () => Promise<Id>;
+  /** Brief 24: the Snoozed label's id, creating it on first use (snooze/label.ts). Without it, snooze fails. */
+  ensureSnoozed?: () => Promise<Id>;
+  /** Brief 24: the Snoozed label's id if it exists (for unsnooze). */
+  snoozedId?: () => Id | undefined;
   /** Bring the label counts up to date (labels store sync). */
   syncLabels: () => void;
   toast: ActionToast | null;
@@ -82,6 +87,10 @@ export interface MailActions {
   applyLabels(conversations: readonly Conversation[], scope: ConversationScope, change: LabelChange, copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
   /** Brief 09: Gmail's "Move to" (out of `from`, into `to`). */
   moveTo(conversations: readonly Conversation[], scope: ConversationScope, from: Id | undefined, to: Id, copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
+  /** Brief 24: snooze until `at` (the Snoozed label is made on first use). */
+  snooze(conversations: readonly Conversation[], scope: ConversationScope, at: Date, options?: ActionOptions): Promise<ActionOutcome>;
+  /** Brief 24: back to the Inbox now. */
+  unsnooze: Scoped;
   /** Run any plan the same way. `make` may throw (MissingLabelError): that is reported as a failure. */
   run(make: MessagePlan | (() => MessagePlan), copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
 }
@@ -315,6 +324,19 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     moveTo(conversations, scope, from, to, copy, options) {
       return run(() => planMove(conversations, fresh(scope), from, to), copy, options);
     },
+    async snooze(conversations, scope, at, options) {
+      const copy = snoozeCopy(at);
+      let snoozedId: Id;
+      try {
+        if (!deps.ensureSnoozed) throw new Error("Snooze needs the Snoozed label");
+        snoozedId = await deps.ensureSnoozed();
+      } catch (err) {
+        if (!isQuietError(err)) toast(copy.failed(conversations.length));
+        return "failed";
+      }
+      return run(() => planSnooze(conversations, fresh(scope), snoozedId, at), copy, options);
+    },
+    unsnooze: (conversations, scope, options) => run(() => planUnsnooze(conversations, fresh(scope).roles, deps.snoozedId?.()), UNSNOOZE_COPY, options),
     run,
   };
 }

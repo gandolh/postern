@@ -38,6 +38,8 @@ const ROUTES: Route[] = [
   { kind: "settings", section: "filters" },
   { kind: "contacts" },
   { kind: "scheduled" },
+  { kind: "system", view: "snoozed" },
+  { kind: "system", view: "snoozed", conversationId: "T3" },
 ];
 
 describe("parseRoute and formatRoute", () => {

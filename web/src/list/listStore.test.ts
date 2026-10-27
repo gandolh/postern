@@ -39,7 +39,17 @@ describe("loading pages", () => {
     await vi.waitFor(() => expect(store.getSnapshot().status).toBe("ready"));
     expect(mail.calls()).toEqual([["Email/query", "Email/get", "Thread/get", "Email/get"]]);
     const [q, g, t, m] = mail.posts[0]!;
-    expect(q![1]).toMatchObject({ filter: { inMailbox: "a" }, sort: [{ property: "receivedAt", isAscending: false }], collapseThreads: true, position: 0, limit: 50 });
+    // The Inbox puts woken conversations first (brief 24), then newest first.
+    expect(q![1]).toMatchObject({
+      filter: { inMailbox: "a" },
+      sort: [
+        { property: "hasKeyword", keyword: "$woken", isAscending: false },
+        { property: "receivedAt", isAscending: false },
+      ],
+      collapseThreads: true,
+      position: 0,
+      limit: 50,
+    });
     expect(g![1]["#ids"]).toEqual({ resultOf: "0", name: "Email/query", path: "/ids" });
     expect(t![1]["#ids"]).toEqual({ resultOf: "1", name: "Email/get", path: "/list/*/threadId" });
     expect(m![1]["#ids"]).toEqual({ resultOf: "2", name: "Thread/get", path: "/list/*/emailIds" });
