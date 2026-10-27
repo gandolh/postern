@@ -1,6 +1,6 @@
 ---
 summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), its own host since 2026-10-22 (another estate app can no longer reach it) and what a script on Postern's own origin could still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
-updated: 2026-10-22
+updated: 2026-10-27
 ---
 
 # Security
@@ -171,8 +171,8 @@ or a console line), but it **could**:
 
 ## The malicious-mail corpus and the browser tests
 
-`dev/` seeds 17 hostile messages (brief 02): script tags and event handlers,
-SVG with script, CSS that overlays the page, `javascript:` and `data:` links,
+`dev/` seeds 18 hostile messages (brief 02; brief 25 added an invite): script tags,
+event handlers, SVG with script, CSS overlays, `javascript:` and `data:` links,
 a meta refresh, a `<base>`, forms, frames and embeds, remote trackers, link
 text that lies, look-alike hosts, forged display names, and attachments
 named to deceive. Brief 17's suite in [web/e2e](../../web/e2e/README.md)

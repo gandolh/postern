@@ -1,3 +1,4 @@
 # Directories the briefs will create. lint.sh skips them until they exist;
-# remove a line when its directory lands (brief 24 created web/src/snooze).
-web/src/invites
+# remove a line when its directory lands. All planned roots exist now
+# (brief 24 made web/src/snooze, brief 25 web/src/invites), so this file holds
+# only this note.

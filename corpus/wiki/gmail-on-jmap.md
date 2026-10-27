@@ -41,7 +41,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 | Snooze | a hidden "Snoozed" mailbox and a `$snoozed-<time>` keyword; an open Postern moves it back; the Inbox sorts `hasKeyword $woken` first | client-side | 24 |
 | Schedule send | `EmailSubmission` held with FUTURERELEASE `HOLDUNTIL` in the envelope; the draft waits marked `$scheduled`; the client files it in Sent once the submission is final | native, client-filed | 23 |
 | Category tabs (Primary, Social, Promotions) | no classifier; Sieve on headers at best | needs server work | todo |
-| Calendar invites, RSVP | calendars capability; Stalwart has `/calendar/rsvp` | to check | todo |
+| Calendar invites, RSVP | the `text/calendar` part parsed in the browser; the REPLY sent as an ordinary email; the answer kept as a `$rsvp-*` keyword; no JMAP calendar | client-side | 25 |
 
 ## Two JMAP facts that shape the UI
 
@@ -104,6 +104,10 @@ calendars, principals, mail:share, websocket, plus Web Push for
   and `emailIds` but cannot sort by `sendAt`. Destroying a pending submission
   does not stop it: two held messages whose submissions were destroyed were
   delivered at their time anyway. Only `undoStatus: "canceled"` cancels.
+- **Calendar invites** (brief 25, 2026-10-27): a delivered iMIP REQUEST is left
+  as it came, with no event added to the calendar, and `/calendar/rsvp` only
+  serves Stalwart's own invitations, so the client sends the REPLY. A created
+  `text/calendar` part takes its `method` through `header:Content-Type`.
 - **Snooze** (brief 24, 2026-10-27): nothing moves or flags a message at a
   time. The Sieve extensions are the stock set, `urn:stalwart:jmap` is empty,
   and JMAP has no timer. Keywords keep their case, and a 309-character one was

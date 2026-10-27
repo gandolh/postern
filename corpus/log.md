@@ -375,7 +375,7 @@ is marked dropped.
 ## [2026-10-23] todo | Brief 25: a calendar invite's card and reply
 
 The owner chose a card and a reply only, over adding an "Add to Almanac" button or a
-calendar inside Postern. [Brief 25](briefs/todo/25-calendar-invite-card.md) first checks
+calendar inside Postern. [Brief 25](briefs/done/25-calendar-invite-card.md) first checks
 what Stalwart 0.16 does with an iMIP REQUEST and whether it can send the REPLY, then
 parses the VEVENT fields the card needs and shows them as inert text. No todos are parked
 now.
@@ -430,3 +430,20 @@ probe messages turned out to have been delivered after their submissions were de
 only `undoStatus: "canceled"` stops a held message. That is now in
 [gmail-on-jmap.md](wiki/gmail-on-jmap.md), and the probe mail is gone from bob's Inbox.
 brief-board is down (since 2026-10-13), so this is recorded here only.
+
+## [2026-10-27] done | Brief 25: a calendar invite's card and reply
+
+[Brief 25](briefs/done/25-calendar-invite-card.md) is built. Step one found that Stalwart 0.16.25
+leaves a delivered iMIP REQUEST as it came: nothing is added to the calendar, and
+`/calendar/rsvp` only serves Stalwart's own invitations. So the browser parses the VEVENT by
+hand (TZID through Intl, a VTIMEZONE's offset otherwise) and shows the card above the body:
+Yes / No / Maybe on a REQUEST, "This event was cancelled" on a CANCEL, facts only when the
+user isn't invited, no card for PUBLISH. Everything is text, and only an http(s) place is a
+link. A reply is an ordinary email with a `method=REPLY` part from the invited identity, and
+the answer stays on the invite as a `$rsvp-*` keyword. The seed gained bob's REQUEST and
+CANCEL and a hostile invite. The hostile invite sits in `hostile/invites/`, so the
+sanitiser's fixture test in `web/src/render/` (off limits) keeps its count. The dev Stalwart
+was reseeded clean (Inbox 2147 / 2038 / 129 unread, Hostile 18). 1240 unit and 36 browser
+tests pass; live, Yes reached bob with `PARTSTAT=ACCEPTED` and the same UID.
+[gmail-on-jmap.md](wiki/gmail-on-jmap.md), [security.md](wiki/security.md) and the glossary
+("invite") are updated. brief-board is down (since 2026-10-13), so this is recorded here only.

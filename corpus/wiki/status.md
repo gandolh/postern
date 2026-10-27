@@ -1,12 +1,12 @@
 ---
-summary: Snapshot as of 2026-10-27. Briefs 01-24 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze), 25 is queued, nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-27. Briefs 01-25 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards), nothing is queued, nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
 updated: 2026-10-27
 ---
 
-# Status (2026-10-22)
+# Status (2026-10-27)
 
-Postern is built: all 18 briefs are done, with 1,165 unit and integration
-tests and a 34-test browser suite (`npm run test:e2e`) that runs the
+Postern is built: all 25 briefs are done, with 1,240 unit and integration
+tests and a 36-test browser suite (`npm run test:e2e`) that runs the
 production build behind Caddy with the final headers. Nothing is deployed.
 Brief 18 committed the stack and routes in `../vps-deploy` (commit
 `85f0934` there); the deploy itself, and the checks only a person can do,
@@ -53,7 +53,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [22](../briefs/done/22-conversation-view-off.md): conversation view off, one row per message; a row is a one-message conversation, so the planners stay as they are. **Done 2026-10-27**: a per-device pref and switch, the list without `collapseThreads`, a message row opening its conversation at that message; 1186 unit and 34 browser tests.
 - [23](../briefs/done/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded. **Done 2026-10-27**: Stalwart holds a message with FUTURERELEASE `HOLDUNTIL` (not `sendAt`); the Send menu, a Scheduled page with Cancel send, and the client filing sent ones in Sent; 1211 unit and 34 browser tests.
 - [24](../briefs/done/24-snooze.md): snooze, run by the browser (the owner's call, 2026-10-23): a hidden Snoozed label plus a keyword holding the time; it wakes while Postern is open. **Done 2026-10-27**: Stalwart has no way of its own; Snoozed between Starred and Sent, the toolbar's Snooze menu, waking on time, on opening and on a reply, woken conversations sorted first in the Inbox; 1228 unit and 34 browser tests.
-- [25](../briefs/todo/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite.
+- [25](../briefs/done/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite. **Done 2026-10-27**: Stalwart does nothing with one, so Postern parses the VEVENT, shows the card and sends the REPLY itself; the dev seed has bob's REQUEST and CANCEL and a hostile invite (reseeded: Inbox 2147, Hostile 18); 1240 unit and 36 browser tests.
 
 ## Parked (todos)
 
