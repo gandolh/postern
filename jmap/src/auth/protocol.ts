@@ -1,6 +1,6 @@
 // Stalwart 0.16.25's sign-in endpoints, one function each. Verified against
 // its source (crates/http/src/auth/oauth/) and the dev server on 2026-10-20;
-// corpus/wiki/architecture.md, Sign-in, has the shapes. Nothing here keeps
+// corpus/wiki/sign-in.md has the shapes. Nothing here keeps
 // state: the caller holds the tokens.
 
 import { isAbortError } from "../errors.js";
