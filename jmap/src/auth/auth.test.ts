@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeServer, SESSION, json, type Recorded } from "../../test/unit/helpers.js";
 import { JmapClient, JmapNetworkError, JmapUnauthorizedError } from "../index.js";
 import {
+  ACTIVITY_SAVE_MS,
   AuthSession,
   BEFORE_SIGN_OUT_MS,
   IDLE_TIMEOUT_MS,
@@ -14,8 +15,10 @@ import {
   SignedOutError,
   createPkce,
   pkceChallenge,
+  memorySessionStore,
   requestAuthCode,
   type AuthStatusEvent,
+  type SessionStore,
 } from "./index.js";
 import { base64Url } from "./pkce.js";
 
@@ -598,6 +601,240 @@ describe("before sign-out hooks", () => {
     await auth.signOut();
     expect(hook).not.toHaveBeenCalled();
     expect(gone).not.toHaveBeenCalled();
+    expect(auth.status).toBe("signedOut");
+  });
+});
+
+describe("the store: a reload keeps the session (brief 27)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const passwordPosts = (server: FakeServer) => server.requests.filter((r) => r.url.endsWith("/api/auth"));
+
+  it("keeps the refresh token, the account and the last activity after sign-in; never the access token", async () => {
+    const server = stalwart();
+    const store = memorySessionStore();
+    const auth = session(server, { store });
+    await auth.signIn("alice@postern.test", PASSWORD);
+    expect(store.current).toEqual({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer", lastActivity: Date.now() });
+    expect(JSON.stringify(store.current)).not.toContain("A1");
+    await auth.signOut();
+  });
+
+  it("replaces the stored refresh token whenever a refresh returns one", async () => {
+    const server = stalwart();
+    const store = memorySessionStore();
+    const auth = session(server, { store });
+    await auth.signIn("alice@postern.test", PASSWORD);
+    expect(await auth.refresh()).toBe(true);
+    expect(store.current?.refreshToken).toBe("R1");
+    server.once("POST /auth/token", () => json({ access_token: "A9", refresh_token: "R2", expires_in: 900 }));
+    expect(await auth.refresh()).toBe(true);
+    expect(store.current?.refreshToken).toBe("R2");
+    server.once("POST /auth/token", () => json({ access_token: "A10", refresh_token: "R3", expires_in: 900 }));
+    expect(await auth.refresh()).toBe(true);
+    expect(store.current?.refreshToken).toBe("R3");
+    expect(JSON.stringify(store.current)).not.toMatch(/A9|A10/);
+    await auth.signOut();
+  });
+
+  it("clears on sign-out, on the idle timeout and on a refused refresh", async () => {
+    const server = stalwart();
+    const store = memorySessionStore();
+    const user = session(server, { store });
+    await user.signIn("alice@postern.test", PASSWORD);
+    await user.signOut();
+    expect(store.current).toBeUndefined();
+
+    const idle = session(server, { store, idleTimeoutMs: 60_000 });
+    await idle.signIn("alice@postern.test", PASSWORD);
+    expect(store.current).toBeDefined();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(idle.status).toBe("signedOut");
+    expect(store.current).toBeUndefined();
+
+    const refused = session(server, { store });
+    await refused.signIn("alice@postern.test", PASSWORD);
+    server.once("POST /auth/token", () => json({ error: "invalid_grant" }, 400));
+    expect(await refused.refresh()).toBe(false);
+    expect(refused.status).toBe("expired");
+    expect(store.current).toBeUndefined();
+    // Signing in again in the session-expired dialog keeps it again.
+    await refused.signIn("alice@postern.test", PASSWORD);
+    expect(store.current?.refreshToken).toBe("R1");
+    await refused.signOut();
+  });
+
+  it("clears before another account signs in, even if that sign-in fails; the same account keeps it", async () => {
+    const server = stalwart();
+    const kept = { refreshToken: "OLD", username: "Alice@Postern.test", lastActivity: Date.now() };
+    const store = memorySessionStore(kept);
+    await session(server, { store })
+      .signIn("alice@postern.test", "wrong")
+      .catch(() => undefined);
+    expect(store.current).toEqual(kept);
+    await session(server, { store })
+      .signIn("bob@postern.test", "wrong")
+      .catch(() => undefined);
+    expect(store.current).toBeUndefined();
+  });
+
+  it("a sign-out of a session that never started leaves the store alone (StrictMode's rehearsal)", async () => {
+    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() });
+    await session(stalwart(), { store }).signOut();
+    expect(store.current?.refreshToken).toBe("R1");
+  });
+
+  it("resumes with one refresh grant and no password, and the idle clock goes on from the stored activity", async () => {
+    const server = stalwart();
+    const lastActivity = Date.now() - 2 * 60 * 60_000;
+    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer", lastActivity });
+    const auth = session(server, { store });
+    const events: AuthStatusEvent[] = [];
+    auth.onStatus((e) => events.push(e));
+    expect(auth.resumable()).toBe(true);
+    expect(await auth.resume()).toBe("resumed");
+    expect(auth.status).toBe("active");
+    expect(auth.account).toEqual({ id: "1", username: "alice@postern.test", name: "Alice Archer" });
+    expect(events).toEqual([{ status: "active" }]);
+    expect(refreshes(server).map((r) => form(r)["refresh_token"])).toEqual(["R1"]);
+    expect(tokenRequests(server)).toHaveLength(1);
+    expect(passwordPosts(server)).toHaveLength(0);
+    expect(await auth.authorization()).toBe("Bearer A1");
+    expect(store.current).toEqual({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer", lastActivity });
+    // Six hours left on the clock, not eight.
+    await vi.advanceTimersByTimeAsync(IDLE_TIMEOUT_MS - 2 * 60 * 60_000 - 1000);
+    expect(auth.status).toBe("active");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(auth.status).toBe("signedOut");
+    expect(store.current).toBeUndefined();
+  });
+
+  it("keeps a renewed refresh token from the resume at once", async () => {
+    const server = stalwart();
+    server.once("POST /auth/token", () => json({ access_token: "A7", refresh_token: "R2", expires_in: 900 }));
+    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() });
+    const auth = session(server, { store });
+    expect(await auth.resume()).toBe("resumed");
+    expect(store.current?.refreshToken).toBe("R2");
+    await auth.signOut();
+  });
+
+  it("does not resume after the idle deadline passed: it clears, without a request", async () => {
+    const server = stalwart();
+    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() - 61_000 });
+    const auth = session(server, { store, idleTimeoutMs: 60_000 });
+    expect(await auth.resume()).toBe("idle");
+    expect(auth.status).toBe("signedOut");
+    expect(store.current).toBeUndefined();
+    expect(server.requests).toHaveLength(0);
+  });
+
+  it("a refused refresh token clears; an unreachable server keeps it for the next reload", async () => {
+    const server = stalwart();
+    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() });
+    server.once("POST /auth/token", () => Promise.reject(new TypeError("fetch failed")));
+    expect(await session(server, { store }).resume()).toBe("unreachable");
+    expect(store.current?.refreshToken).toBe("R1");
+    server.once("POST /auth/token", () => new Response("", { status: 502 }));
+    expect(await session(server, { store }).resume()).toBe("unreachable");
+    server.once("GET /auth/userinfo", () => Promise.reject(new TypeError("fetch failed")));
+    const auth = session(server, { store });
+    expect(await auth.resume()).toBe("unreachable");
+    expect(auth.status).toBe("signedOut");
+    expect(store.current?.refreshToken).toBe("R1");
+
+    server.once("POST /auth/token", () => json({ error: "invalid_grant" }, 400));
+    const refused = session(server, { store });
+    expect(await refused.resume()).toBe("refused");
+    expect(refused.status).toBe("signedOut");
+    expect(store.current).toBeUndefined();
+    expect(refused.resumable()).toBe(false);
+    expect(await refused.resume()).toBe("none");
+  });
+
+  it("a sign-out overtaking the resume cancels it and leaves the store; the next resume works (StrictMode)", async () => {
+    const server = stalwart();
+    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() });
+    const auth = session(server, { store });
+    let release!: () => void;
+    server.once("POST /auth/token", () => new Promise<Response>((resolve) => (release = () => resolve(json({ access_token: "LATE", expires_in: 3600 })))));
+    const first = auth.resume();
+    expect(auth.resume()).toBe(first);
+    await vi.advanceTimersByTimeAsync(0);
+    await auth.signOut();
+    const second = auth.resume();
+    expect(second).not.toBe(first);
+    release();
+    expect(await first).toBe("cancelled");
+    expect(await second).toBe("resumed");
+    expect(await auth.authorization()).toBe("Bearer A1");
+    expect(store.current?.refreshToken).toBe("R1");
+    await auth.signOut();
+  });
+
+  it("brings the stored activity up to date at most once a minute", async () => {
+    const server = stalwart();
+    const saves: number[] = [];
+    const memory = memorySessionStore();
+    const store: SessionStore = { ...memory, save: (s) => (saves.push(s.lastActivity), memory.save(s)) };
+    const auth = session(server, { store });
+    await auth.signIn("alice@postern.test", PASSWORD);
+    const start = Date.now();
+    for (let i = 0; i < 30; i++) {
+      await vi.advanceTimersByTimeAsync(5_000);
+      auth.noteActivity();
+    }
+    expect(saves).toEqual([start, start + 60_000, start + 120_000]);
+    expect(ACTIVITY_SAVE_MS).toBe(60_000);
+    await auth.signOut();
+  });
+
+  it("two tabs holding the same refresh token: one tab's renewal never signs the other out", async () => {
+    // A duplicated tab copies sessionStorage. Stalwart's tokens are stateless, so an old refresh
+    // token works until it expires (checked against the dev server, 2026-10-28).
+    const server = stalwart();
+    const kept = { refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() };
+    const a = memorySessionStore(kept);
+    const b = memorySessionStore(kept);
+    const tabA = session(server, { store: a });
+    const tabB = session(server, { store: b });
+    expect(await tabA.resume()).toBe("resumed");
+    expect(await tabB.resume()).toBe("resumed");
+    server.once("POST /auth/token", () => json({ access_token: "A8", refresh_token: "R2", expires_in: 900 }));
+    expect(await tabA.refresh()).toBe(true);
+    expect(a.current?.refreshToken).toBe("R2");
+    expect(b.current?.refreshToken).toBe("R1");
+    expect(await tabB.refresh()).toBe(true);
+    expect(tabB.status).toBe("active");
+    expect(refreshes(server).map((r) => form(r)["refresh_token"])).toEqual(["R1", "R1", "R1", "R1"]);
+    await tabA.signOut();
+    expect(a.current).toBeUndefined();
+    expect(b.current?.refreshToken).toBe("R1");
+    await tabB.signOut();
+  });
+
+  it("a store that throws never breaks a sign-in", async () => {
+    const broken: SessionStore = {
+      load: () => {
+        throw new Error("SecurityError");
+      },
+      save: () => {
+        throw new Error("QuotaExceededError");
+      },
+      clear: () => {
+        throw new Error("SecurityError");
+      },
+    };
+    const auth = session(stalwart(), { store: broken });
+    expect(await auth.resume()).toBe("none");
+    expect(await auth.signIn("alice@postern.test", PASSWORD)).toBe("signedIn");
+    auth.noteActivity();
+    await auth.signOut();
     expect(auth.status).toBe("signedOut");
   });
 });

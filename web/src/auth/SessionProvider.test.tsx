@@ -1,18 +1,20 @@
 // @vitest-environment jsdom
-// The sign-in page, the TOTP step, the session-expired dialog, sign-out and the
-// idle timeout, against a scripted Stalwart behind /webmail-api.
+// The sign-in page, the TOTP step, the session-expired dialog, sign-out, the
+// idle timeout, and a reload resuming the session (brief 27), against a
+// scripted Stalwart behind /webmail-api.
 
 import type { FetchLike, JmapClient } from "@postern/jmap";
 import { SignedOutError } from "@postern/jmap";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useEffect, useState } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { pendingPatches, publishPending } from "../actions/bus";
 import { peekUndo, setUndo } from "../actions/undo";
 import { formatRoute, useRoute } from "../shell/router";
 import { onBeforeSignOut } from "./beforeSignOut";
 import { SessionProvider, useAccount, useJmap, useSignOut } from "./index";
+import { SESSION_KEY } from "./sessionStore";
 
 const PASSWORD = "correct horse battery staple";
 
@@ -115,6 +117,7 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   lastClient = undefined;
+  sessionStorage.clear();
 });
 
 describe("the sign-in page", () => {
@@ -142,7 +145,7 @@ describe("the sign-in page", () => {
     }
   });
 
-  it("signs in with email and password, and keeps nothing in storage", async () => {
+  it("signs in with email and password, and keeps only the refresh token, in sessionStorage (brief 27)", async () => {
     const server = fakeStalwart();
     const user = userEvent.setup();
     render(
@@ -158,7 +161,12 @@ describe("the sign-in page", () => {
     expect(lastClient?.session.username).toBe("alice@postern.test");
     expect(server.seen.find((s) => s.key === "GET /webmail-api/jmap/session")?.authorization).toBe("Bearer A1");
     expect(document.body.innerHTML).not.toContain(PASSWORD);
-    expect(localStorage.length + sessionStorage.length).toBe(0);
+    expect(localStorage.length).toBe(0);
+    expect(Object.keys(sessionStorage)).toEqual([SESSION_KEY]);
+    const kept = sessionStorage.getItem(SESSION_KEY) ?? "";
+    expect(JSON.parse(kept)).toMatchObject({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer" });
+    expect(kept).not.toContain("A1");
+    expect(kept).not.toContain(PASSWORD);
     expect(document.cookie).toBe("");
   });
 
@@ -443,5 +451,108 @@ describe("before and after a sign-out", () => {
     await screen.findByText("Route: #search/secret/T1");
     await screen.findByRole("status", {}, { timeout: 2000 });
     expect(window.location.hash).toBe("");
+  });
+});
+
+describe("a reload (brief 27)", () => {
+  const refreshGrants = (server: ReturnType<typeof fakeStalwart>) =>
+    server.seen.filter((s) => s.key === "POST /webmail-api/auth/token" && new URLSearchParams(s.body ?? "").get("grant_type") === "refresh_token");
+
+  /** Sign in, then load the page again: the old tree goes without its unmount (a reload runs none), the tab's sessionStorage stays. */
+  async function signInThenReload(options: { idleTimeoutMs?: number; age?: number; prepare?: (server: ReturnType<typeof fakeStalwart>) => void } = {}) {
+    const server = fakeStalwart();
+    const user = userEvent.setup();
+    render(
+      <SessionProvider fetch={server.fetch} idleTimeoutMs={options.idleTimeoutMs}>
+        <App />
+      </SessionProvider>,
+    );
+    await signIn(user);
+    await screen.findByText("Signed in as alice@postern.test");
+    const kept = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? "{}") as { lastActivity: number };
+    cleanup(); // its sign-out clears the store, as a reload would not: put it back
+    lastClient = undefined;
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...kept, lastActivity: kept.lastActivity - (options.age ?? 0) }));
+    const before = server.seen.length;
+    options.prepare?.(server);
+    render(
+      <SessionProvider fetch={server.fetch} idleTimeoutMs={options.idleTimeoutMs}>
+        <App />
+      </SessionProvider>,
+    );
+    return { server, user, after: () => server.seen.slice(before) };
+  }
+
+  it("signs in again from the kept refresh token: a quiet page, never the form, one refresh grant and no password", async () => {
+    const { server, after } = await signInThenReload();
+    expect(screen.getByText("Signing you in…")).toBeTruthy();
+    expect(screen.queryByLabelText("Password")).toBeNull();
+    expect(await screen.findByText("Signed in as alice@postern.test")).toBeTruthy();
+    expect(screen.getByText("Name: Alice Archer")).toBeTruthy();
+    const grants = after().filter((s) => s.key === "POST /webmail-api/auth/token");
+    expect(grants).toHaveLength(1);
+    expect(new URLSearchParams(grants[0]!.body ?? "").get("refresh_token")).toBe("R1");
+    expect(after().filter((s) => s.key === "POST /webmail-api/api/auth")).toHaveLength(0);
+    expect(refreshGrants(server)).toHaveLength(1);
+    expect(lastClient?.session.username).toBe("alice@postern.test");
+  });
+
+  it("resumes under StrictMode too (its rehearsal's sign-out cancels the first try, not the store)", async () => {
+    const server = fakeStalwart();
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() }));
+    render(
+      <StrictMode>
+        <SessionProvider fetch={server.fetch}>
+          <App />
+        </SessionProvider>
+      </StrictMode>,
+    );
+    expect(await screen.findByText("Signed in as alice@postern.test")).toBeTruthy();
+    expect(JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? "{}")).toMatchObject({ refreshToken: "R1" });
+  });
+
+  it("with the idle timeout shortened, a reload after it passed signs out, says why and keeps nothing", async () => {
+    const { after } = await signInThenReload({ idleTimeoutMs: 5_000, age: 6_000 });
+    expect(await screen.findByText(/You were signed out after a long time without activity/)).toBeTruthy();
+    expect(screen.getByLabelText("Password")).toBeTruthy();
+    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
+    expect(after()).toHaveLength(0);
+  });
+
+  it("a refused refresh token (from before a password change, say) shows the form and clears the store", async () => {
+    await signInThenReload({ prepare: (server) => server.once("POST /webmail-api/auth/token", () => json({ error: "invalid_grant" }, 400)) });
+    expect(await screen.findByLabelText("Password")).toBeTruthy();
+    expect(screen.queryByText(/You're offline/)).toBeNull();
+    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it("a server out of reach shows the form with the offline notice, signs nothing in, and keeps the token for the next reload", async () => {
+    await signInThenReload({ prepare: (server) => server.once("POST /webmail-api/auth/token", () => Promise.reject(new TypeError("fetch failed"))) });
+    expect(await screen.findByText(/You're offline/)).toBeTruthy();
+    expect(screen.getByLabelText("Password")).toBeTruthy();
+    expect(lastClient).toBeUndefined();
+    expect(JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? "{}")).toMatchObject({ refreshToken: "R1" });
+  });
+
+  it("sign out, then reload: the form, and nothing of the session kept", async () => {
+    const server = fakeStalwart();
+    const user = userEvent.setup();
+    render(
+      <SessionProvider fetch={server.fetch}>
+        <App />
+      </SessionProvider>,
+    );
+    await signIn(user);
+    await user.click(await screen.findByRole("button", { name: "Sign out" }));
+    expect(await screen.findByLabelText("Password")).toBeTruthy();
+    expect(sessionStorage.length).toBe(0);
+    cleanup();
+    render(
+      <SessionProvider fetch={server.fetch}>
+        <App />
+      </SessionProvider>,
+    );
+    expect(screen.getByLabelText("Password")).toBeTruthy();
+    expect(screen.queryByText("Signing you in…")).toBeNull();
   });
 });

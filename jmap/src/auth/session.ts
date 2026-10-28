@@ -1,9 +1,12 @@
 // AuthSession: Postern's sign-in and token holder. It implements the
 // client's AuthProvider, so one object signs in, hands out Bearer headers,
 // refreshes, expires and signs out, and no token ever leaves it except as the
-// Authorization header value. Tokens live only in private fields: never
-// storage, cookies, BroadcastChannel, postMessage, URLs, logs or error
-// messages (corpus/wiki/security.md).
+// Authorization header value and, since brief 27, the refresh token to the
+// store the app hands it (`SessionStore`; sessionStorage in the browser, so a
+// reload signs in again with one refresh grant and closing the tab ends it).
+// The access token lives only in a private field. Neither token goes to
+// cookies, BroadcastChannel, postMessage, URLs, logs or error messages
+// (corpus/wiki/security.md).
 
 import { JmapError, JmapNetworkError } from "../errors.js";
 import type { AuthProvider, FetchLike } from "../http.js";
@@ -12,7 +15,8 @@ import { normalizeBase } from "../url.js";
 import { SessionExpiredError, SignInError, SignedOutError, TokenEndpointError } from "./errors.js";
 import { IdleTimeout } from "./idle.js";
 import { createPkce } from "./pkce.js";
-import { DEFAULT_SCOPE, POSTERN_CLIENT_ID, exchangeCode, fetchUserInfo, refreshGrant, requestAuthCode, type TokenGrant } from "./protocol.js";
+import { DEFAULT_SCOPE, POSTERN_CLIENT_ID, exchangeCode, fetchUserInfo, refreshGrant, requestAuthCode, type TokenGrant, type UserInfo } from "./protocol.js";
+import type { SessionStore, StoredSession } from "./store.js";
 
 /** Refresh this long before the access token expires (or a quarter of its lifetime, if shorter). */
 export const REFRESH_LEAD_MS = 5 * 60 * 1000;
@@ -25,6 +29,13 @@ const RECENT_REFRESH_MS = 5 * 1000;
 
 /** setTimeout's ceiling (2^31 - 1 ms). */
 const MAX_DELAY_MS = 2_147_483_647;
+
+/**
+ * The stored last activity is brought up to date at most this often: input
+ * events come many times a second. A stamp this much behind only makes a
+ * reload's idle check sign out that much sooner, never later.
+ */
+export const ACTIVITY_SAVE_MS = 60 * 1000;
 
 /** Retries after a refresh that failed for a transient reason (network, 5xx, 429). */
 const REFRESH_RETRY = { initialMs: 5_000, maxMs: 5 * 60_000 };
@@ -71,6 +82,19 @@ export interface AuthAccount {
 /** `signedIn`, or `mfaRequired`: ask for the TOTP code and call `signIn` again with it. */
 export type SignInOutcome = "signedIn" | "mfaRequired";
 
+/**
+ * What `resume()` did (brief 27):
+ * - `resumed`: signed in from the store, as after `signIn`.
+ * - `none`: nothing kept (or not signed out).
+ * - `idle`: the idle deadline passed before the reload; the store is cleared.
+ * - `refused`: the refresh token was refused (expired, or the password
+ *   changed); the store is cleared.
+ * - `unreachable`: the server could not be reached or failed; the store is
+ *   kept, so a later reload can try again. Nothing is signed in.
+ * - `cancelled`: a sign-out (or sign-in) overtook it; the store is untouched.
+ */
+export type ResumeOutcome = "resumed" | "none" | "idle" | "refused" | "unreachable" | "cancelled";
+
 export interface AuthSessionOptions {
   /** Where Stalwart is: `/webmail-api` in the browser, `http://127.0.0.1:18080` in Node. */
   baseUrl: string;
@@ -88,6 +112,14 @@ export interface AuthSessionOptions {
   refreshLeadMs?: number;
   /** How long a sign-out waits on the before-sign-out hooks. Default `BEFORE_SIGN_OUT_MS`. */
   beforeSignOutMs?: number;
+  /**
+   * Brief 27: where to keep the refresh token, the account and the last
+   * activity so a reload can `resume()`. Saved after sign-in and after every
+   * refresh that returns a refresh token; cleared on sign-out, the idle
+   * timeout, a refused refresh, and before another account signs in. Without
+   * one, nothing survives the page.
+   */
+  store?: SessionStore;
   /** Injected for tests. */
   now?: () => number;
 }
@@ -100,7 +132,8 @@ export interface SignInOptions {
 
 /**
  * Signs in through Stalwart (authorization code + PKCE, TOTP when the account
- * has it) and holds the tokens in memory.
+ * has it) and holds the tokens in memory; with a `store`, the refresh token
+ * also goes there, so `resume()` can sign in again after a reload (brief 27).
  *
  * ```ts
  * const auth = new AuthSession({ baseUrl: "/webmail-api", redirectUri: `${location.origin}/webmail/` });
@@ -123,6 +156,7 @@ export class AuthSession implements AuthProvider {
   readonly #listeners = new Set<(event: AuthStatusEvent) => void>();
   readonly #beforeSignOut = new Set<BeforeSignOutHook>();
   readonly #beforeSignOutMs: number;
+  readonly #store: SessionStore | undefined;
 
   #status: AuthStatus = "signedOut";
   #account: AuthAccount | undefined;
@@ -139,6 +173,9 @@ export class AuthSession implements AuthProvider {
   #signingIn = false;
   /** A sign-out waiting on its hooks; a second sign-out joins it. */
   #ending: Promise<void> | undefined;
+  #resuming: { generation: number; promise: Promise<ResumeOutcome> } | undefined;
+  /** The last activity time last written to the store. */
+  #savedActivity = 0;
 
   constructor(options: AuthSessionOptions) {
     this.baseUrl = normalizeBase(options.baseUrl);
@@ -149,6 +186,7 @@ export class AuthSession implements AuthProvider {
     this.#now = options.now ?? Date.now;
     this.#lead = options.refreshLeadMs ?? REFRESH_LEAD_MS;
     this.#beforeSignOutMs = options.beforeSignOutMs ?? BEFORE_SIGN_OUT_MS;
+    this.#store = options.store;
     this.#idle = new IdleTimeout({
       timeoutMs: options.idleTimeoutMs,
       now: this.#now,
@@ -200,6 +238,9 @@ export class AuthSession implements AuthProvider {
     if (this.checkIdle()) throw new SignedOutError();
     this.#signingIn = true;
     try {
+      // What another account kept must not outlive its sign-in page (brief 27).
+      const kept = this.#load();
+      if (kept && kept.username.trim().toLowerCase() !== username.trim().toLowerCase()) this.#forget();
       const again = this.#status === "expired" ? this.#account : undefined;
       const generation = this.#generation;
       const pkce = await createPkce();
@@ -247,11 +288,80 @@ export class AuthSession implements AuthProvider {
       this.#apply(grant);
       this.#status = "active";
       this.#idle.start();
+      this.#persist();
       this.#emit({ status: "active" });
       return "signedIn";
     } finally {
       this.#signingIn = false;
     }
+  }
+
+  /** Brief 27: the store holds a session `resume()` can try (signed out only). */
+  resumable(): boolean {
+    return this.#status === "signedOut" && this.#load() !== undefined;
+  }
+
+  /**
+   * Brief 27: sign in again from the store after a reload, with one refresh
+   * grant and no password, unless the idle deadline passed meanwhile (the
+   * clock goes on from the stored last activity). Then the account is read
+   * from `/auth/userinfo` with the new access token, which also proves it
+   * works. Only from `signedOut`; concurrent calls share one run. Never
+   * rejects: see `ResumeOutcome`.
+   */
+  resume(): Promise<ResumeOutcome> {
+    if (this.#status !== "signedOut" || this.#signingIn) return Promise.resolve("none");
+    const generation = this.#generation;
+    if (this.#resuming?.generation === generation) return this.#resuming.promise;
+    const promise = this.#runResume(generation).finally(() => {
+      if (this.#resuming?.promise === promise) this.#resuming = undefined;
+    });
+    this.#resuming = { generation, promise };
+    return promise;
+  }
+
+  async #runResume(generation: number): Promise<ResumeOutcome> {
+    const kept = this.#load();
+    if (!kept) return "none";
+    const now = this.#now();
+    const last = Math.min(kept.lastActivity, now);
+    if (Number.isFinite(this.#idle.timeoutMs) && now - last >= this.#idle.timeoutMs) {
+      this.#forget();
+      return "idle";
+    }
+    const overtaken = () => generation !== this.#generation || this.#status !== "signedOut";
+    let grant: TokenGrant;
+    try {
+      grant = await refreshGrant(this.#fetch, this.baseUrl, { refreshToken: kept.refreshToken, clientId: this.clientId });
+    } catch (err) {
+      if (overtaken()) return "cancelled";
+      if (err instanceof TokenEndpointError) {
+        this.#forget();
+        return "refused";
+      }
+      return "unreachable";
+    }
+    if (overtaken()) return "cancelled";
+    // A renewed refresh token is kept at once, whatever happens next.
+    const refreshToken = grant.refreshToken ?? kept.refreshToken;
+    if (grant.refreshToken) this.#save({ ...kept, refreshToken });
+    let info: UserInfo;
+    try {
+      info = await fetchUserInfo(this.#fetch, this.baseUrl, grant.accessToken);
+    } catch {
+      return overtaken() ? "cancelled" : "unreachable";
+    }
+    if (overtaken()) return "cancelled";
+    this.#generation++;
+    this.#account = { id: info.sub, username: info.email, name: info.name };
+    this.#refresh = refreshToken;
+    this.#retryAttempt = 0;
+    this.#apply(grant);
+    this.#status = "active";
+    this.#idle.start(last);
+    this.#persist();
+    this.#emit({ status: "active" });
+    return "resumed";
   }
 
   /**
@@ -316,6 +426,8 @@ export class AuthSession implements AuthProvider {
    */
   noteActivity(): void {
     this.#idle.activity();
+    // Brief 27: the store's copy follows, at most once per ACTIVITY_SAVE_MS.
+    if (this.#status === "active" && this.#idle.lastActivity - this.#savedActivity >= ACTIVITY_SAVE_MS) this.#persist();
   }
 
   /**
@@ -372,6 +484,8 @@ export class AuthSession implements AuthProvider {
       if (generation !== this.#generation || this.#status !== "active") return false;
       this.#retryAttempt = 0;
       this.#apply(grant);
+      // Brief 27: a renewed refresh token replaces the stored one (production renews it on every refresh).
+      if (grant.refreshToken) this.#persist();
       return true;
     } catch (err) {
       if (generation !== this.#generation || this.#status !== "active") return false;
@@ -427,15 +541,20 @@ export class AuthSession implements AuthProvider {
   #expire(): void {
     if (this.#status !== "active") return;
     this.#dropTokens();
+    // A refused refresh token is no use to a reload either.
+    this.#forget();
     this.#status = "expired";
     this.#emit({ status: "expired" });
   }
 
   #end(reason: SignOutReason): void {
     this.#idle.stop();
-    // Bumping the generation cancels a sign-in in flight, even from signedOut.
+    // Bumping the generation cancels a sign-in or a resume in flight, even from signedOut.
     this.#dropTokens();
+    // A session that never started keeps the store: React's StrictMode signs out
+    // a fresh one on mount, before its resume runs again (brief 27).
     if (this.#status === "signedOut") return;
+    this.#forget();
     this.#account = undefined;
     this.#status = "signedOut";
     this.#emit({ status: "signedOut", reason });
@@ -443,6 +562,42 @@ export class AuthSession implements AuthProvider {
 
   #checkIdle(): void {
     this.#idle.check();
+  }
+
+  // ---- The store (brief 27). A store that throws is treated as empty; it never breaks a sign-in.
+
+  #load(): StoredSession | undefined {
+    try {
+      const kept = this.#store?.load();
+      return kept && typeof kept.refreshToken === "string" && kept.refreshToken && typeof kept.username === "string" ? kept : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  #save(session: StoredSession): void {
+    try {
+      this.#store?.save(session);
+    } catch {
+      // Nothing to do: the next reload signs in with the password.
+    }
+  }
+
+  #forget(): void {
+    try {
+      this.#store?.clear();
+    } catch {
+      // As above.
+    }
+  }
+
+  /** Write the refresh token, the account and the last activity (never the access token). */
+  #persist(): void {
+    if (!this.#store || this.#status !== "active" || !this.#refresh || !this.#account) return;
+    const lastActivity = this.#idle.lastActivity;
+    this.#savedActivity = lastActivity;
+    const { username, name } = this.#account;
+    this.#save({ refreshToken: this.#refresh, username, ...(name ? { name } : {}), lastActivity });
   }
 
   #assertActive(): void {

@@ -52,6 +52,16 @@
     center / contain no-repeat;
 }
 
+/* Brief 27: a reload signing in again from the kept refresh token. */
+.auth-resuming .auth-wordmark {
+  margin-bottom: var(--space-3);
+}
+
+.auth-resuming-text {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;

@@ -4,8 +4,8 @@
 // Inbox messages are made unread for the run and put back as they were after.
 
 import { expect, test, type Page } from "@playwright/test";
-import { goTo, signIn, stubOutsideWorld } from "./lib/app.ts";
-import { address, devJmap, password } from "./lib/devmail.ts";
+import { goTo, sawPasswordField, signIn, stubOutsideWorld, watchPasswordField } from "./lib/app.ts";
+import { address, devJmap } from "./lib/devmail.ts";
 
 const PREFS_KEY = `postern.prefs.${address("alice")}`;
 const SUBJECT = "Q4 roadmap review";
@@ -70,25 +70,15 @@ test.afterAll(async () => {
 async function start(page: Page): Promise<void> {
   await stubOutsideWorld(page.context());
   await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [PREFS_KEY, JSON.stringify({ version: 1, conversationView: false })] as const);
+  await watchPasswordField(page);
   await signIn(page);
   await expect(page.getByRole("grid", { name: "Messages in Inbox" })).toBeVisible();
 }
 
-/** After a reload: sign in again in place if the form asks (the hash, and so the route, stays). */
-async function signInAgainIfAsked(page: Page): Promise<void> {
-  const form = page.locator("input[name=password]");
-  const shell = page.locator(".shell");
-  await expect(form.or(shell)).toBeVisible({ timeout: 20_000 });
-  if (!(await form.isVisible())) return;
-  await page.locator("input[name=username]").fill(address("alice"));
-  await form.fill(password("alice"));
-  try {
-    await page.locator("button[type=submit]").click();
-    await expect(shell).toBeVisible({ timeout: 20_000 });
-  } catch (err) {
-    await form.fill("", { timeout: 2_000 }).catch(() => undefined);
-    throw err;
-  }
+/** After a reload: the session resumes (brief 27), the route with it, and the form never shows. */
+async function expectResumed(page: Page): Promise<void> {
+  await expect(page.locator(".shell")).toBeVisible({ timeout: 20_000 });
+  expect(await sawPasswordField(page), "the password field appeared during the reload").toBe(false);
 }
 
 const row = (page: Page, id: string) => page.locator(`[role=row][data-row-id="${id}"]`);
@@ -112,7 +102,7 @@ test("a message row opens alone, marks only itself read, and survives a reload; 
   expect(after.get(m.id)?.seen).toBe(false);
 
   await page.reload();
-  await signInAgainIfAsked(page);
+  await expectResumed(page);
   await expect(page).toHaveURL(new RegExp(`#inbox/${threadId}/${n.id}$`));
   await expect(cards(page)).toHaveCount(1);
   await expect(page.locator(`#conv-message-${n.id}`)).toBeVisible();

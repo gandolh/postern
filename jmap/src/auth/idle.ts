@@ -5,6 +5,9 @@
 // first input after waking finds the deadline passed and ends the session
 // instead of restarting the clock, the web app asks `check()` when the tab
 // becomes visible, and the token holder asks before every request.
+//
+// Since brief 27 the clock survives a reload: AuthSession keeps the last
+// activity time with the refresh token and starts the clock from it again.
 
 /**
  * Sign out after 8 hours without input. Long enough that a working day of
@@ -44,11 +47,20 @@ export class IdleTimeout {
     return this.#running;
   }
 
-  /** Start (or restart) counting from now. */
-  start(): void {
+  /**
+   * Start (or restart) counting from now, or from `from`, the last activity
+   * before a reload (brief 27; a time in the future counts as now).
+   */
+  start(from?: number): void {
     this.#running = true;
-    this.#last = this.#now();
-    this.#schedule(this.timeoutMs);
+    const now = this.#now();
+    this.#last = from === undefined ? now : Math.min(from, now);
+    this.#schedule(this.timeoutMs - (now - this.#last));
+  }
+
+  /** When the clock last started or saw activity, in ms since the epoch. */
+  get lastActivity(): number {
+    return this.#last;
   }
 
   /** Stop counting. `onIdle` will not be called. */

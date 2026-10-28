@@ -50,8 +50,9 @@ npx playwright test -c web/e2e hostile -g script-tag
 | [hostile.spec.ts](hostile.spec.ts) | One test per hostile fixture: no script, no early request, no navigation, the exact sandbox, no message markup in the app's DOM; then spoofed senders, link warnings, attachments. |
 | [dns.spec.ts](dns.spec.ts) | Chrome's net log: no host a message names is looked up before "Display images". |
 | [csp.spec.ts](csp.spec.ts) | The served headers against [lib/headers.ts](lib/headers.ts), the `/webmail-api` path allowlist, and every screen under the CSP with zero violations. |
-| [tokens.spec.ts](tokens.spec.ts) | No secret in storage, cookies, caches, URLs, the DOM or the console; what another estate app's page (same site, another origin) can and cannot reach; cache entries rewritten on the origin are never served; the idle timeout; sign-out. |
+| [tokens.spec.ts](tokens.spec.ts) | No secret in storage, cookies, caches, URLs, the DOM or the console (since brief 27, Postern's sessionStorage holds the refresh token and nothing else); what another estate app's page (same site, another origin) can and cannot reach; cache entries rewritten on the origin are never served; the idle timeout; sign-out. |
 | [conversation-view-off.spec.ts](conversation-view-off.spec.ts) | Brief 26: with conversation view off, a message row opens that message alone and marks only it read; reload, Back, Reply, `j` / `k`, Archive and the copy that counts messages. It makes three messages of one conversation unread for the run and puts them back. |
+| [reload.spec.ts](reload.spec.ts) | Brief 27: a reload resumes the session with one refresh grant and no password post, the form never showing; closing the tab, signing out, the idle deadline passing and a refused refresh token each end it and leave sessionStorage empty; two tabs with the same refresh token both stay signed in. |
 
 Three tests are controls, there to show a green run means something: an
 unsandboxed frame does set the canary, an injected inline script is caught by

@@ -1,11 +1,14 @@
-// Tokens stay in memory (corpus/wiki/security.md). These tests catch every
-// secret the sign-in handles (the password, the authorization code, the PKCE
-// verifier, the access, refresh and ID tokens) as it crosses the network, then
-// look for it everywhere else: storage, cookies, IndexedDB, Cache Storage,
-// URLs, the DOM, console lines and errors, from Postern's page and from
-// another estate app's page (the same site, another origin, as the apex is to
-// postern.<domain>). Secrets are only ever compared, never printed: a failure
-// names the place, not the value.
+// The access token stays in memory; since brief 27 the refresh token is kept
+// in this tab's sessionStorage, so a reload keeps the session
+// (corpus/wiki/security.md). These tests catch every secret the sign-in
+// handles (the password, the authorization code, the PKCE verifier, the
+// access, refresh and ID tokens) as it crosses the network, then look for it
+// everywhere else: storage, cookies, IndexedDB, Cache Storage, URLs, the DOM,
+// console lines and errors, from Postern's page and from another estate app's
+// page (the same site, another origin, as the apex is to postern.<domain>).
+// Postern's sessionStorage may hold the refresh token and nothing else.
+// Secrets are only ever compared, never printed: a failure names the place
+// or the kind, not the value.
 
 import { expect, test, type BrowserContext, type Page, type Request } from "@playwright/test";
 import { goTo, openConversation, signIn, stubOutsideWorld } from "./lib/app.ts";
@@ -17,7 +20,8 @@ test.use({ serviceWorkers: "allow" });
 
 /** Every secret the sign-in and refreshes put on the wire, caught from the traffic. */
 class Secrets {
-  readonly values = new Set<string>();
+  /** Each secret, with its kind. */
+  readonly values = new Map<string, string>();
   readonly kinds = new Set<string>();
 
   constructor(context: BrowserContext) {
@@ -43,15 +47,20 @@ class Secrets {
 
   add(kind: string, value: unknown): void {
     if (typeof value !== "string" || value.length < 8) return;
-    this.values.add(value);
+    this.values.set(value, kind);
     this.kinds.add(kind);
   }
 
   /** The names of the places whose text holds any secret. */
   foundIn(places: Record<string, string>): string[] {
     return Object.entries(places)
-      .filter(([, text]) => [...this.values].some((secret) => text.includes(secret)))
+      .filter(([, text]) => [...this.values.keys()].some((secret) => text.includes(secret)))
       .map(([place]) => place);
+  }
+
+  /** The kinds of secret a text holds, sorted. */
+  kindsIn(text: string): string[] {
+    return [...new Set([...this.values].filter(([secret]) => text.includes(secret)).map(([, kind]) => kind))].sort();
   }
 }
 
@@ -138,8 +147,10 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
 
   const probe = await context.newPage();
   await probe.goto(PROBE_URL);
+  // Brief 27: Postern's sessionStorage is checked on its own, below.
+  const { sessionStorage: kept, ...postern } = await dumpOrigin(page);
   const places: Record<string, string> = {
-    ...Object.fromEntries(Object.entries(await dumpOrigin(page)).map(([k, v]) => [`Postern's ${k}`, v])),
+    ...Object.fromEntries(Object.entries(postern).map(([k, v]) => [`Postern's ${k}`, v])),
     ...Object.fromEntries(Object.entries(await dumpOrigin(probe)).map(([k, v]) => [`another app's ${k}`, v])),
     ...(await requestPlaces(requests)),
     "console lines": consoleLines.join("\n"),
@@ -149,7 +160,10 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
   };
   expect(secrets.foundIn(places), "places holding a secret").toEqual([]);
   // Nothing at all in the places a token would hide in. (Booleans: a failure must not print what was found.)
-  expect(places["Postern's sessionStorage"] === "[]", "sessionStorage is empty").toBe(true);
+  // sessionStorage holds Postern's session record, with the refresh token and no other secret (brief 27).
+  const keys = (JSON.parse(kept ?? "[]") as [string, string][]).map(([key]) => key);
+  expect(keys.join(",") === "postern.session", "sessionStorage holds only postern.session").toBe(true);
+  expect(secrets.kindsIn(kept ?? "")).toEqual(["refresh token"]);
   expect(places["Postern's document.cookie"] === "", "no cookie").toBe(true);
   expect(places["Postern's IndexedDB"] === "[]", "IndexedDB is empty").toBe(true);
   // What Cache Storage does hold is the app shell, nothing from Stalwart.
@@ -239,6 +253,7 @@ test("the idle timeout signs out after 8 hours without input, and the session is
   await page.clock.fastForward("07:00:01");
   await expect(page.locator(".auth-notice")).toHaveText("You were signed out after a long time without activity. Sign in again to continue.");
   expect((await page.locator("input[name=password]").inputValue()) === "", "the password field is empty").toBe(true);
+  expect(await page.evaluate(() => sessionStorage.getItem("postern.session") === null), "the kept session is gone").toBe(true);
   const after = authorized.length;
   await goTo(page, "#inbox");
   await page.clock.fastForward("00:05:00");

@@ -5,10 +5,12 @@ import { useSyncExternalStore } from "react";
 import { STALWART_ACCOUNT_URL } from "./config";
 import { SignInForm } from "./SignInForm";
 
+/** Why the form shows when it was not the user's choice: the idle timeout, or a reload that could not reach the server (brief 27). */
+export type SignInNotice = "idle" | "offline";
+
 export interface SignInPageProps {
   onSignIn: (username: string, password: string, mfaToken?: string) => Promise<SignInOutcome>;
-  /** Why the last session ended, when it was not the user's choice. */
-  notice?: "idle";
+  notice?: SignInNotice;
 }
 
 function subscribeOnline(onChange: () => void): () => void {
@@ -36,7 +38,7 @@ export function SignInPage({ onSignIn, notice }: SignInPageProps) {
             You were signed out after a long time without activity. Sign in again to continue.
           </p>
         ) : null}
-        {online ? null : (
+        {online && notice !== "offline" ? null : (
           <p className="auth-notice" role="status">
             You're offline. Postern keeps no mail on this device, so connect to sign in.
           </p>
@@ -52,6 +54,20 @@ export function SignInPage({ onSignIn, notice }: SignInPageProps) {
           .
         </p>
       ) : null}
+    </main>
+  );
+}
+
+/** Brief 27: while a reload signs in again from the kept refresh token. Quiet: no form, no flash of one. */
+export function ResumingPage() {
+  return (
+    <main className="auth-page" aria-busy="true">
+      <div className="auth-card auth-resuming">
+        <p className="auth-wordmark">Postern</p>
+        <p className="auth-resuming-text" role="status">
+          Signing you in…
+        </p>
+      </div>
     </main>
   );
 }
