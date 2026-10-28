@@ -1,6 +1,6 @@
 ---
-summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), its own host since 2026-10-22 (another estate app can no longer reach it) and what a script on Postern's own origin could still do, token handling (memory only, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
-updated: 2026-10-27
+summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), its own host since 2026-10-22 (another estate app can no longer reach it) and what a script on Postern's own origin could still do, token handling (the access token in memory, the refresh token in sessionStorage since brief 27 and what a script on the origin can then read, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
+updated: 2026-10-28
 ---
 
 # Security
@@ -42,15 +42,40 @@ updated: 2026-10-27
   - Download with the blob's real type and `Content-Disposition: attachment`.
   - Preview images and PDFs only, in sandboxed frames.
   - Never render an HTML attachment inline.
-- **Tokens.** In memory only, in a closure in
-  [jmap/src/auth](../../jmap/src/auth/). Never storage, IndexedDB, a readable
-  cookie, `BroadcastChannel`, `postMessage`, a URL, a log line or an error
-  message; any same-origin script can read the first four. Keep the access
-  token short-lived, and run a session timeout (below).
+- **Tokens.** The access token lives in memory only, in a private field of
+  `AuthSession` in [jmap/src/auth](../../jmap/src/auth/). Since brief 27
+  (owner, 2026-10-28) the refresh token is kept in this tab's
+  `sessionStorage` under `postern.session`, with the account's address and
+  display name and the last activity time, so a reload signs in again; the
+  `jmap` package writes it only through the store the web app hands it
+  ([../../web/src/auth/sessionStore.ts](../../web/src/auth/sessionStore.ts)).
+  Neither token goes to `localStorage`, IndexedDB, a readable cookie,
+  `BroadcastChannel`, `postMessage`, a URL, a log line or an error message.
+  Keep the access token short-lived, and run a session timeout (below).
+- **What a script on Postern's origin can read (since brief 27).** Any
+  script that runs on Postern's origin reads `sessionStorage`, and with it
+  the refresh token: it can mint access tokens until that token expires (30
+  days on Stalwart's defaults; about a day once `../vps-deploy` brief 20 is
+  applied), from anywhere, after the tab is closed, and sign-out cannot stop
+  it (no revocation, below). Before brief 27 such a script could act only
+  through the running app. Stalwart's tokens are stateless, so an old refresh
+  token keeps working after a refresh returned a new one (the same token
+  refreshed three times in a row on the dev server, 2026-10-28): renewing on
+  each refresh does not shorten a copied token's life, only the refresh
+  lifetime does. A password change still kills it (architecture.md,
+  Sign-in). What stops such a script is the CSP, the sandbox, the verified
+  service-worker cache and having no third-party scripts.
+- **Closing the tab is not always the end.** Chrome brings a closed tab's
+  `sessionStorage` back with "Reopen closed tab" (Ctrl+Shift+T) and with
+  session restore after a browser restart ("Continue where you left off"), so
+  such a tab resumes the session while the idle deadline and the refresh
+  token's lifetime allow. Nothing tells that apart from a reload, so the code
+  does not try. On a shared machine, sign out.
 - **Sign-out cannot revoke.** Stalwart 0.16.25 has no revocation endpoint
   ([architecture.md](architecture.md), Sign-in). Sign-out forgets the tokens
-  and drops the JMAP client with its caches; a token copied before that stays
-  valid until it expires (1 hour access, 30 days refresh). Changing the
+  and drops the JMAP client with its caches, and clears the session kept in
+  `sessionStorage`; a token copied before that stays valid until it expires
+  (1 hour access, 30 days refresh on Stalwart's defaults). Changing the
   password on Stalwart's account page is the only kill switch, and it signs
   out every device. Whether to shorten the lifetimes is in
   [open-questions.md](open-questions.md).
@@ -60,7 +85,12 @@ updated: 2026-10-27
   overnight on an unattended machine is signed out by morning. Timers may not
   count a machine's sleep, so the deadline is also checked when the tab becomes
   visible or gains focus, on the first input (which then signs out instead of
-  restarting the clock) and before each request. Brief 17 tests it.
+  restarting the clock) and before each request. Brief 17 tests it. Since
+  brief 27 the last activity is kept with the refresh token, brought up to
+  date at most once a minute (`ACTIVITY_SAVE_MS`), and a reload checks it
+  before resuming: after 8 idle hours the reload signs out (with the idle
+  notice) instead of restarting the clock. The stored time can lag the real
+  one by up to a minute, which only makes that check sign out sooner.
 - **The last work before a sign-out.** Both sign-outs, the user's and the
   idle timeout's, first give the app at most `BEFORE_SIGN_OUT_MS` (3 s) with
   the tokens still valid ([../../web/src/auth/beforeSignOut.ts](../../web/src/auth/beforeSignOut.ts)):
@@ -157,10 +187,12 @@ shared origin, until 2026-10-22, it could reach the preferences, the worker
 and notifications.
 
 What is left is a script on Postern's own origin, which none should be (no
-third-party scripts, message HTML only in the sandbox). It could not read a
-token (none is in storage, cookies, IndexedDB, Cache Storage, a URL, the DOM
-or a console line), but it **could**:
+third-party scripts, message HTML only in the sandbox). It cannot read the
+access token (it is in no storage, cookie, IndexedDB, Cache Storage, URL, the
+DOM or a console line), but it **could**:
 
+- read the refresh token in `sessionStorage` (since brief 27; see Tokens
+  above): the one secret `tokens.spec.ts` allows there, and nowhere else;
 - read and write the per-device preferences, including ones that load remote
   images or turn Web Push on (F6), and read the last username;
 - read a notification on screen, show its own, and unregister the worker;

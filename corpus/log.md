@@ -470,7 +470,7 @@ is to be written.
 
 ## [2026-10-28] todo | Brief 27: a reload keeps the session
 
-[Brief 27](briefs/todo/27-a-reload-keeps-the-session.md) builds the owner's
+[Brief 27](briefs/done/27-a-reload-keeps-the-session.md) builds the owner's
 call of the same day: the refresh token, the account name and the last
 activity time go to `sessionStorage` through an adapter the web app hands to
 `AuthSession`, so the `jmap` package stays storage-free; the access token
@@ -492,3 +492,22 @@ with the pref off, through tokens in a new `actions/copy.ts`; the pref on keeps 
 1272 unit and 40 browser tests pass (4 new in `conversation-view-off.spec.ts`), and the dev
 mailbox is back at the manifest's counts. brief-board is down (since 2026-10-13), so this is
 recorded here only.
+
+## [2026-10-28] done | Brief 27: a reload keeps the session
+
+[Brief 27](briefs/done/27-a-reload-keeps-the-session.md) is built. `AuthSession` takes a
+`SessionStore` from the web app (the `jmap` package touches no storage), and the web app keeps
+one record in this tab's `sessionStorage`: the refresh token, the account's address and name,
+and the last activity, never the access token. It is saved after sign-in and after every
+refresh that returns a refresh token, and cleared on sign-out, the idle timeout, a refused
+refresh and before another account signs in. A reload shows a quiet "Signing you in…" page
+and resumes with one refresh grant and no password; the idle clock goes on from the stored
+activity, so a reload after 8 idle hours signs out. A refused token clears and shows the form;
+an unreachable server shows the form with the offline notice and keeps the token. On the dev
+Stalwart the same refresh token served three refreshes in a row, so a duplicated tab never
+signs the other out. The acceptance line against production's token settings was skipped on
+the coordinator's instruction (dev's defaults only), and the Android check is an owner step.
+1291 unit and 46 browser tests pass; `tokens.spec.ts` now allows the refresh token,
+and nothing else, in `sessionStorage`. [security.md](wiki/security.md) says what a script on
+the origin can now read and that Chrome restores a closed tab's `sessionStorage`.
+brief-board is down (since 2026-10-13), so this is recorded here only.

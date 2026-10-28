@@ -1,12 +1,12 @@
 ---
-summary: Snapshot as of 2026-10-28. Briefs 01-26 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards, 26 a message row opening that message alone); 27 (a reload keeps the session) is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-28. Briefs 01-27 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards, 26 a message row opening that message alone, 27 a reload keeping the session); none is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install and reload, real push, production's token lifetimes).
 updated: 2026-10-28
 ---
 
 # Status (2026-10-28)
 
-Postern is built: briefs 01-26 are done, with 1,272 unit and integration
-tests and a 40-test browser suite (`npm run test:e2e`) that runs the
+Postern is built: all 27 briefs are done, with 1,291 unit and integration
+tests and a 46-test browser suite (`npm run test:e2e`) that runs the
 production build behind Caddy with the final headers. Nothing is deployed.
 Brief 18 committed the stack and routes in `../vps-deploy` (commit
 `85f0934` there); the deploy itself, and the checks only a person can do,
@@ -57,7 +57,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 
 **Wave 9: what wave 8 left (filed 2026-10-28)**
 - [26](../briefs/done/26-conversation-view-off-opens-one-message.md): with conversation view off, a message row opens that message alone and marks only it read, as Gmail does (the owner's call, 2026-10-28); the copy says "message" with the pref off. **Done 2026-10-28**: the route names the message (`#inbox/<conversation>/<message>`), the reader shows it alone and acts on it, `j` / `k` step through the message rows, every toast and count says "message"; 1272 unit and 40 browser tests.
-- [27](../briefs/todo/27-a-reload-keeps-the-session.md): a reload keeps the session through a refresh token in `sessionStorage`; closing the tab ends it (the owner's call, 2026-10-28, revisiting the memory-only rule). **Todo.**
+- [27](../briefs/done/27-a-reload-keeps-the-session.md): a reload keeps the session through a refresh token in `sessionStorage`; closing the tab ends it (the owner's call, 2026-10-28, revisiting the memory-only rule). **Done 2026-10-28**: a `SessionStore` adapter the web app hands `AuthSession`, a quiet resume with one refresh grant, the idle clock across a reload; built on dev's default token lifetimes, the production-settings line skipped (coordinator's call), the Android line an owner step; 1291 unit and 46 browser tests.
 
 ## Parked (todos)
 
@@ -123,6 +123,10 @@ Things only the owner can do, collected from the briefs as they finished.
 - **Install on Android** (brief 16, after the deploy): open `https://postern.<domain>/` in
   Chrome, menu, "Install app", launch from the home screen; in airplane mode
   it opens to the sign-in page and says it is offline.
+- **A reload on Android** (brief 27, after the install): sign in in the
+  installed app, reload (pull down, or the menu's Reload): the Inbox comes
+  back without the sign-in form. Close the app from the recent-apps screen
+  and open it again: the sign-in form.
 - **Real push** (brief 16): Settings, General, "Notifications for new mail
   when Postern is closed", allow; close Postern; mail yourself from another
   account; the notification shows sender and subject and opens the
@@ -135,6 +139,10 @@ Things only the owner can do, collected from the briefs as they finished.
   key, and each device then re-subscribes at its next sign-in. If no push
   ever arrives, check that the mail container reaches `fcm.googleapis.com`,
   `updates.push.services.mozilla.com` and `web.push.apple.com` over HTTPS.
-- **Token lifetimes** (brief 04): decide whether to shorten production's
-  access and refresh token lifetimes, since Stalwart cannot revoke a token
-  ([open-questions.md](open-questions.md)).
+- **Token lifetimes** (brief 04): decided 2026-10-28 (access 15 minutes,
+  refresh about a day, a new refresh token on each refresh); applying them is
+  `../vps-deploy` brief 20. After that deploy, brief 27's skipped check: on
+  `https://postern.<domain>/` sign in, reload a few times a minute or more
+  apart, and in DevTools (Application, Session Storage) see `postern.session`
+  hold a new refresh token after each refresh, with the reload still
+  signed in.

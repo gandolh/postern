@@ -1,6 +1,6 @@
 ---
-summary: How Postern is put together, as built (briefs 01-17, 2026-10-20). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in with OAuth and PKCE through Stalwart's own endpoints (verified and built in brief 04: the /api/auth and /auth/token shapes, the TOTP retry, refresh without rotation, token lifetimes, no revocation, the account page URL), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy as built in brief 18 (a static stack for /webmail with its headers, and the allowlisted /webmail-api route in the mail stack of ../vps-deploy; not deployed yet).
-updated: 2026-10-20
+summary: How Postern is put together, as built (briefs 01-17, 2026-10-20). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in with OAuth and PKCE through Stalwart's own endpoints (verified and built in brief 04: the /api/auth and /auth/token shapes, the TOTP retry, refresh without rotation, token lifetimes, no revocation, the account page URL; since brief 27 the refresh token in sessionStorage so a reload resumes), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy as built in brief 18 (a static stack for /webmail with its headers, and the allowlisted /webmail-api route in the mail stack of ../vps-deploy; not deployed yet).
+updated: 2026-10-28
 ---
 
 # Architecture
@@ -106,8 +106,26 @@ app at `/account/` on Stalwart's host, not under `/webmail-api` (its asset
 paths are absolute). Postern links to it through `VITE_STALWART_ACCOUNT_URL`,
 set at build time; the dev default is the dev server's own `/account/`.
 
-Tokens stay in memory and die with the tab ([decisions.md](decisions.md)).
-After 8 hours without input Postern signs out ([security.md](security.md)).
+**A reload keeps the session (brief 27).** The access token stays in
+memory. The refresh token, with the account's address and display name and
+the time of the last activity, is kept in this tab's `sessionStorage` under
+`postern.session`, so a reload or a crashed tab signs in again, and closing
+the tab ends it ([decisions.md](decisions.md)). The `jmap` package touches no
+storage: `AuthSession` takes a `SessionStore` (`load`, `save`, `clear`) from
+the web app ([../../web/src/auth/sessionStore.ts](../../web/src/auth/sessionStore.ts)).
+It saves after sign-in and after every refresh that returns a refresh token,
+and clears on sign-out, the idle timeout, a refused refresh and before another
+account signs in. On load, `SessionProvider` asks `resumable()`; if so it shows
+a quiet "Signing you in…" page instead of the form while `resume()` runs: one
+refresh grant, then `/auth/userinfo` for the account (which also proves the new
+access token works), then the JMAP session. A refused token clears and shows
+the form; an unreachable server shows the form with the offline notice and
+keeps the token for the next reload. The same refresh token served three
+refreshes in a row on the dev server (2026-10-28), as stateless tokens should,
+so a duplicated tab, which copies `sessionStorage`, never signs the other out.
+
+After 8 hours without input Postern signs out ([security.md](security.md));
+the clock survives a reload.
 
 ## Live updates
 
