@@ -1,5 +1,5 @@
 ---
-summary: Snapshot as of 2026-10-28. Briefs 01-25 are done, 26 (conversation view off opens one message) is todo (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-28. Briefs 01-25 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards); 26 (conversation view off opens one message) is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
 updated: 2026-10-28
 ---
 

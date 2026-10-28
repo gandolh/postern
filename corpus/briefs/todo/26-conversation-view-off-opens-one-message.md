@@ -40,8 +40,8 @@ UI copy; a message row is a message, so with the pref off the copy says
 - The `ActionCopy` objects in `web/src/actions/` and
   `web/src/labels/useLabelOps.ts` (the copy only, not the planners)
 - Browser tests for this
-- corpus: this brief's outcome, `wiki/status.md`, `wiki/glossary.md` (a
-  **Message row** entry, if it helps), `log.md`, and the todo's status
+- corpus: this brief's outcome, `corpus/wiki/status.md`, `corpus/wiki/glossary.md` (a
+  **Message row** entry, if it helps), `corpus/log.md`, and the todo's status
 
 ## Files you must NOT touch
 
