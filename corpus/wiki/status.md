@@ -1,5 +1,5 @@
 ---
-summary: Snapshot as of 2026-10-28. Briefs 01-25 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards); 26 (conversation view off opens one message) is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-28. Briefs 01-25 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards); 26 (conversation view off opens one message) and 27 (a reload keeps the session) are todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
 updated: 2026-10-28
 ---
 
@@ -57,6 +57,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 
 **Wave 9: what wave 8 left (filed 2026-10-28)**
 - [26](../briefs/todo/26-conversation-view-off-opens-one-message.md): with conversation view off, a message row opens that message alone and marks only it read, as Gmail does (the owner's call, 2026-10-28); the copy says "message" with the pref off. **Todo.**
+- [27](../briefs/todo/27-a-reload-keeps-the-session.md): a reload keeps the session through a refresh token in `sessionStorage`; closing the tab ends it (the owner's call, 2026-10-28, revisiting the memory-only rule). **Todo.**
 
 ## Parked (todos)
 

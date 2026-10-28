@@ -467,3 +467,11 @@ reload keeps the session: the refresh token is kept in `sessionStorage`
 timeout; closing the tab still signs out. The two decisions entries are
 revisited and `corpus/CLAUDE.md`'s token rule follows. A brief for the session
 is to be written.
+
+## [2026-10-28] todo | Brief 27: a reload keeps the session
+
+[Brief 27](briefs/todo/27-a-reload-keeps-the-session.md) builds the owner's
+call of the same day: the refresh token, the account name and the last
+activity time go to `sessionStorage` through an adapter the web app hands to
+`AuthSession`, so the `jmap` package stays storage-free; the access token
+stays in memory; sign-out, the idle timeout and a refused refresh clear it.
