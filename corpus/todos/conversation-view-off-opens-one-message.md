@@ -1,9 +1,11 @@
 ---
 title: With conversation view off, a message row opens that message alone
 created: 2026-10-28
-status: open
+status: promoted
 tags: [gmail-parity]
 ---
+
+Promoted 2026-10-28 into [brief 26](../briefs/todo/26-conversation-view-off-opens-one-message.md).
 
 # With conversation view off, a message row opens that message alone
 

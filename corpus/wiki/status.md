@@ -1,6 +1,6 @@
 ---
-summary: Snapshot as of 2026-10-27. Briefs 01-25 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards), nothing is queued, nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
-updated: 2026-10-27
+summary: Snapshot as of 2026-10-28. Briefs 01-25 are done, 26 (conversation view off opens one message) is todo (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards), nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+updated: 2026-10-28
 ---
 
 # Status (2026-10-27)
@@ -55,9 +55,12 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [24](../briefs/done/24-snooze.md): snooze, run by the browser (the owner's call, 2026-10-23): a hidden Snoozed label plus a keyword holding the time; it wakes while Postern is open. **Done 2026-10-27**: Stalwart has no way of its own; Snoozed between Starred and Sent, the toolbar's Snooze menu, waking on time, on opening and on a reply, woken conversations sorted first in the Inbox; 1228 unit and 34 browser tests.
 - [25](../briefs/done/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite. **Done 2026-10-27**: Stalwart does nothing with one, so Postern parses the VEVENT, shows the card and sends the REPLY itself; the dev seed has bob's REQUEST and CANCEL and a hostile invite (reseeded: Inbox 2147, Hostile 18); 1240 unit and 36 browser tests.
 
+**Wave 9: what wave 8 left (filed 2026-10-28)**
+- [26](../briefs/todo/26-conversation-view-off-opens-one-message.md): with conversation view off, a message row opens that message alone and marks only it read, as Gmail does (the owner's call, 2026-10-28); the copy says "message" with the pref off. **Todo.**
+
 ## Parked (todos)
 
-None. The last five became briefs 22–25 or were dropped (inbox category tabs) on 2026-10-23.
+None. The last five became briefs 22–25 or were dropped (inbox category tabs) on 2026-10-23; the one filed 2026-10-28 became brief 26.
 
 ## Owner steps
 
