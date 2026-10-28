@@ -1,12 +1,12 @@
 ---
-summary: Snapshot as of 2026-10-28. Briefs 01-25 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards); 26 (conversation view off opens one message) and 27 (a reload keeps the session) are todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
+summary: Snapshot as of 2026-10-28. Briefs 01-26 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards, 26 a message row opening that message alone); 27 (a reload keeps the session) is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install, real push, token lifetimes).
 updated: 2026-10-28
 ---
 
-# Status (2026-10-27)
+# Status (2026-10-28)
 
-Postern is built: all 25 briefs are done, with 1,240 unit and integration
-tests and a 36-test browser suite (`npm run test:e2e`) that runs the
+Postern is built: briefs 01-26 are done, with 1,272 unit and integration
+tests and a 40-test browser suite (`npm run test:e2e`) that runs the
 production build behind Caddy with the final headers. Nothing is deployed.
 Brief 18 committed the stack and routes in `../vps-deploy` (commit
 `85f0934` there); the deploy itself, and the checks only a person can do,
@@ -56,7 +56,7 @@ are the owner steps at the end of this page. Neither repo is pushed.
 - [25](../briefs/done/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite. **Done 2026-10-27**: Stalwart does nothing with one, so Postern parses the VEVENT, shows the card and sends the REPLY itself; the dev seed has bob's REQUEST and CANCEL and a hostile invite (reseeded: Inbox 2147, Hostile 18); 1240 unit and 36 browser tests.
 
 **Wave 9: what wave 8 left (filed 2026-10-28)**
-- [26](../briefs/todo/26-conversation-view-off-opens-one-message.md): with conversation view off, a message row opens that message alone and marks only it read, as Gmail does (the owner's call, 2026-10-28); the copy says "message" with the pref off. **Todo.**
+- [26](../briefs/done/26-conversation-view-off-opens-one-message.md): with conversation view off, a message row opens that message alone and marks only it read, as Gmail does (the owner's call, 2026-10-28); the copy says "message" with the pref off. **Done 2026-10-28**: the route names the message (`#inbox/<conversation>/<message>`), the reader shows it alone and acts on it, `j` / `k` step through the message rows, every toast and count says "message"; 1272 unit and 40 browser tests.
 - [27](../briefs/todo/27-a-reload-keeps-the-session.md): a reload keeps the session through a refresh token in `sessionStorage`; closing the tab ends it (the owner's call, 2026-10-28, revisiting the memory-only rule). **Todo.**
 
 ## Parked (todos)

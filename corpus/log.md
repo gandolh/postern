@@ -475,3 +475,20 @@ call of the same day: the refresh token, the account name and the last
 activity time go to `sessionStorage` through an adapter the web app hands to
 `AuthSession`, so the `jmap` package stays storage-free; the access token
 stays in memory; sign-out, the idle timeout and a refused refresh clear it.
+
+## [2026-10-28] done | Brief 26: conversation view off opens one message
+
+[Brief 26](briefs/done/26-conversation-view-off-opens-one-message.md) is built. With
+conversation view off a message row opens that message alone: the route names it in a third
+segment (`#inbox/<conversationId>/<messageId>`), so a reload or Back shows the same one; the
+reader shows it open under the conversation's subject, marks only it read, and its toolbar,
+Reply, the keys and the label menus act on it alone (the reader lends a one-message
+conversation to the label resolver, since `Thread/get` cannot fetch by a message id). `j` /
+`k` in the reader open the next and previous message rows from rows the list keeps while
+mounted, so they work with the reading pane off; after a reload in the reader they wait for
+the list. The route decides what the reader shows: a link naming only the conversation (a
+notification, "View message") still shows all of it. Every toast and count says "message"
+with the pref off, through tokens in a new `actions/copy.ts`; the pref on keeps every string.
+1272 unit and 40 browser tests pass (4 new in `conversation-view-off.spec.ts`), and the dev
+mailbox is back at the manifest's counts. brief-board is down (since 2026-10-13), so this is
+recorded here only.

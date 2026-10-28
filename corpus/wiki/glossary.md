@@ -1,6 +1,6 @@
 ---
-summary: Postern's vocabulary, one canonical word per concept with the synonyms it replaces, mapping Gmail's words (what the UI says) to JMAP's (what the jmap package says). Conversation, message, label, system label, Inbox, archive, All Mail, star, Spam, draft, invite, snoozed, scheduled message, composer, identity, snippet, reading pane, conversation view, keyword, mailbox. Use these words in code, UI copy and briefs.
-updated: 2026-10-27
+summary: Postern's vocabulary, one canonical word per concept with the synonyms it replaces, mapping Gmail's words (what the UI says) to JMAP's (what the jmap package says). Conversation, message, message row, label, system label, Inbox, archive, All Mail, star, Spam, draft, invite, snoozed, scheduled message, composer, identity, snippet, reading pane, conversation view, keyword, mailbox. Use these words in code, UI copy and briefs.
+updated: 2026-10-28
 ---
 
 # Glossary
@@ -17,6 +17,11 @@ _Avoid_: mail item, email object (in UI copy).
 **Conversation**:
 The messages that belong together as replies, shown as one row. A JMAP `Thread`.
 _Avoid_: thread (in UI copy), chain.
+
+**Message row**:
+A row of the list with conversation view off: one message. It opens that
+message alone (brief 26), and the copy counts it as a message.
+_Avoid_: message line, single row.
 
 **Snippet**:
 The line of preview text after the subject in the list, or the highlighted
