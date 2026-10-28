@@ -511,3 +511,10 @@ the coordinator's instruction (dev's defaults only), and the Android check is an
 and nothing else, in `sessionStorage`. [security.md](wiki/security.md) says what a script on
 the origin can now read and that Chrome restores a closed tab's `sessionStorage`.
 brief-board is down (since 2026-10-13), so this is recorded here only.
+
+## [2026-10-28] lint | Sign-in and rendering on pages of their own
+
+Brief 27's notes took `architecture.md` and `security.md` past the 200-line limit, so two
+sections moved, unchanged but for their headings: Sign-in to [sign-in.md](wiki/sign-in.md),
+and "Message rendering as built" to [rendering.md](wiki/rendering.md). Each old page keeps a
+short section pointing to the new one; `routing.md` routes the two questions there.

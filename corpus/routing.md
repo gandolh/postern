@@ -41,6 +41,8 @@ Read by the `orchestrate` skill at the start of a work request.
 | "Why is it built this way?" | `wiki/` | The corpus is the why. |
 | "How does Postern talk to Stalwart?" | [wiki/architecture.md](wiki/architecture.md) | Owns JMAP, the proxy path and push. |
 | "Is this safe to render / store?" | [wiki/security.md](wiki/security.md) | Owns the sandbox and token rules. |
+| "How do sign-in and the session work?" | [wiki/sign-in.md](wiki/sign-in.md) | Owns Stalwart's sign-in endpoints, refresh and the session a reload keeps. |
+| "How is a message body rendered?" | [wiki/rendering.md](wiki/rendering.md) | Owns the sanitiser and the frame as built. |
 | "What does the Gmail feature map to in JMAP?" | [wiki/gmail-on-jmap.md](wiki/gmail-on-jmap.md) | Owns the feature mapping. |
 | "Where does feature Y live?" | `grep` | Structural. Never ask the wiki. |
 | "Did I get every usage?" | `grep -rnw` | Completeness needs exhaustive search. |

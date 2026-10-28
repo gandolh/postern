@@ -62,8 +62,8 @@ updated: 2026-10-28
   token keeps working after a refresh returned a new one (the same token
   refreshed three times in a row on the dev server, 2026-10-28): renewing on
   each refresh does not shorten a copied token's life, only the refresh
-  lifetime does. A password change still kills it (architecture.md,
-  Sign-in). What stops such a script is the CSP, the sandbox, the verified
+  lifetime does. A password change still kills it
+  ([sign-in.md](sign-in.md)). What stops such a script is the CSP, the sandbox, the verified
   service-worker cache and having no third-party scripts.
 - **Closing the tab is not always the end.** Chrome brings a closed tab's
   `sessionStorage` back with "Reopen closed tab" (Ctrl+Shift+T) and with
@@ -72,7 +72,7 @@ updated: 2026-10-28
   token's lifetime allow. Nothing tells that apart from a reload, so the code
   does not try. On a shared machine, sign out.
 - **Sign-out cannot revoke.** Stalwart 0.16.25 has no revocation endpoint
-  ([architecture.md](architecture.md), Sign-in). Sign-out forgets the tokens
+  ([sign-in.md](sign-in.md)). Sign-out forgets the tokens
   and drops the JMAP client with its caches, and clears the session kept in
   `sessionStorage`; a token copied before that stays valid until it expires
   (1 hour access, 30 days refresh on Stalwart's defaults). Changing the
@@ -113,50 +113,12 @@ updated: 2026-10-28
 - **No third-party scripts, fonts or analytics.** Everything is self-hosted
   from Postern's own host.
 
-## Message rendering as built (brief 07, 2026-10-20)
+## Message rendering as built
 
-- **Sanitiser:** DOMPurify 3.4.16 in a detached document
-  (`web/src/render/sanitize.ts`), then a `srcdoc` frame with exactly
-  `sandbox="allow-popups allow-popups-to-escape-sandbox"`. Each frame also
-  carries its own CSP and `no-referrer`, as a second layer.
-- **Dropped on purpose:** inline SVG and MathML, audio and video, forms and
-  every form control, remote fonts and `@import` (even after "Display
-  images"). `position: fixed`, `absolute` and `sticky` become `static`, which
-  can flatten a newsletter's layout. A message with its own `<style>` stays on
-  a light background in dark mode.
-- **Inline images** are `data:` URLs. A `blob:` URL made by the app shows as a
-  broken image inside the opaque-origin frame (tested in Chrome).
-- **Frame height** cannot be measured, because the frame cannot script and
-  the app cannot read it. It is estimated from the sanitised document, capped
-  at 1.5 times the viewport, and scrolls inside past that, with "Show full
-  message" to lift the cap.
-- **PDF preview** opens in a new tab with no opener, after checking the bytes
-  start with `%PDF-`. Chrome refuses a PDF in any sandboxed frame. Images
-  preview in a `sandbox=""` frame and are typed by their bytes.
-- **Hardening after review (2026-10-20):** CSS escapes are decoded to a fixed
-  point and leftover backslashes dropped, so a double-escaped `url()` or
-  `@import` cannot slip through. Names, addresses and file names sit in
-  `<bdi>`, and bidi control characters are stripped from attachment names for
-  display, checks and saving. The in-frame link pill carries an inline
-  `!important` style, and message markup loses any `postern*` class or id.
-  Image previews stop at 20 MB; inline images load up to 8 MB each and 16 MB
-  per message on open, the rest on request.
-- **Brief 17 (2026-10-20):**
-  - Look-alike hosts are decided in `web/src/render/idn.ts`: a label that
-    mixes scripts (Japanese, Chinese and Korean mixes with Latin allowed),
-    one whose letters all imitate Latin under a TLD of another script, or a
-    Latin letter made to pass for another. münchen.de and почта.test are not
-    flagged; аpple.test and аррӏе.test are.
-  - "Always display images from <sender>" applies only when the topmost
-    Authentication-Results (Stalwart's own) says `dmarc=pass` for the
-    sender's domain. Stalwart keeps a sender-written header with its own
-    name underneath its result, so only the topmost one counts. The global
-    "always display" setting is unchanged.
-  - Every frame turns DNS prefetching off, so no link's host is resolved
-    before a click.
-  - Plain-text bodies, quotes and display names are scanned in linear time;
-    before, one hostile message could freeze the tab
-    ([security-findings.md](security-findings.md), F2).
+On its own page since 2026-10-28, when this one passed 200 lines:
+[rendering.md](rendering.md) (the sanitiser and the sandbox, what is dropped,
+inline images, frame height, previews, the hardening of brief 07's review and
+brief 17).
 
 ## The service worker (brief 16)
 
