@@ -21,7 +21,7 @@ import type { ListPresentation } from "./types";
 
 export interface ToolbarProps {
   presentation: ListPresentation;
-  /** How many conversations are selected (all of them in "Select all N" mode). */
+  /** How many rows are selected (all of them in "Select all N" mode): conversations, or messages with conversation view off. */
   selectedCount: number;
   /** Every loaded row is selected. */
   allLoadedSelected: boolean;

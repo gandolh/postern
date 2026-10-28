@@ -35,7 +35,10 @@ interface Harness {
 
 let unsubscribe: (() => void) | null = null;
 
-async function harness(emails: FakeEmail[], options: { roles?: Record<string, string>; maxObjectsInSet?: number; caller?: MethodCaller } = {}): Promise<Harness> {
+async function harness(
+  emails: FakeEmail[],
+  options: { roles?: Record<string, string>; maxObjectsInSet?: number; caller?: MethodCaller; noun?: () => "conversation" | "message" } = {},
+): Promise<Harness> {
   const mailboxes = options.roles && !options.roles["archive"] ? MAILBOXES.filter((m) => m.role !== "archive") : MAILBOXES;
   const mail = new FakeMail({ mailboxes, emails, maxObjectsInSet: options.maxObjectsInSet });
   const client = await mail.connect();
@@ -58,6 +61,7 @@ async function harness(emails: FakeEmail[], options: { roles?: Record<string, st
     ensureAllMail: () => ensureAllMail(caller, labels),
     syncLabels,
     toast: { show: (t) => void toasts.push(t) },
+    ...(options.noun ? { noun: options.noun } : {}),
   });
   return { mail, client, actions, toasts, changes, syncLabels, roles };
 }
@@ -99,6 +103,15 @@ describe("archive", () => {
     const h = await harness([fakeEmail({ id: "1", threadId: "T1" })]);
     await h.actions.archive(conversations(h.mail, "T1"), scope);
     expect(h.toasts[0]!.message).toBe("Conversation archived.");
+  });
+
+  it("counts messages when the list's rows are messages, unless the caller says otherwise (brief 26)", async () => {
+    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })], { noun: () => "message" });
+    await h.actions.archive(conversations(h.mail, "T1", "T2"), scope);
+    expect(h.toasts[0]!.message).toBe("2 messages archived.");
+    expect(peekUndo()?.label).toBe("2 messages archived.");
+    await h.actions.markRead(conversations(h.mail, "T1"), scope, { noun: "conversation" });
+    expect(h.toasts.at(-1)!.message).toBe("Conversation marked as read.");
   });
 
   it("creates All Mail on first need, uses it, and syncs the labels", async () => {

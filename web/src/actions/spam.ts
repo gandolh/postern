@@ -24,7 +24,7 @@ import { JUNK, NOT_JUNK, type Conversation, type ConversationScope, type Mailbox
 import { sendPlan, type SendResult } from "./execute";
 import { planEdits, type MessageEdit, type MessagePlan } from "./patches";
 import { MissingLabelError, movedMessages } from "./plans";
-import type { ActionCopy } from "./runner";
+import { actionCopy as copy, type ActionCopy } from "./copy";
 
 /** Report spam: every message moved (reply drafts aside) leaves its labels for Spam and is marked `$junk`. */
 export function planReportSpam(conversations: readonly Conversation[], scope: ConversationScope): MessagePlan {
@@ -61,23 +61,14 @@ export async function notSpam(caller: MethodCaller, conversations: readonly Conv
   return sendPlan(caller, planNotSpam(conversations, scope));
 }
 
-/** runner.ts's actionCopy, here so that spam.ts (which runner.ts imports) imports nothing back at run time. */
-function copy(oneDone: string, manyDone: string, oneFailed: string, manyFailed: string): ActionCopy {
-  const n = (count: number) => count.toLocaleString();
-  return {
-    done: (count) => (count === 1 ? oneDone : manyDone.replace("{n}", n(count))),
-    failed: (count) => (count === 1 ? oneFailed : manyFailed.replace("{n}", n(count))),
-  };
-}
-
 /** Said once after the toast's own words: Stalwart learns from both (see the top of this file). */
 export const LEARNS = "Your mail server learns from this.";
 
 export const REPORT_SPAM_COPY: ActionCopy = copy(
-  `Conversation reported as spam. ${LEARNS}`,
-  `{n} conversations reported as spam. ${LEARNS}`,
-  "Couldn't report the conversation as spam.",
-  "Couldn't report {n} conversations as spam.",
+  `{Thing} reported as spam. ${LEARNS}`,
+  `{n} {things} reported as spam. ${LEARNS}`,
+  "Couldn't report the {thing} as spam.",
+  "Couldn't report {n} {things} as spam.",
 );
 
 export const REPORT_SPAM_MESSAGE_COPY: ActionCopy = copy(
@@ -88,10 +79,10 @@ export const REPORT_SPAM_MESSAGE_COPY: ActionCopy = copy(
 );
 
 export const NOT_SPAM_COPY: ActionCopy = copy(
-  `Conversation marked as not spam and moved to Inbox. ${LEARNS}`,
-  `{n} conversations marked as not spam and moved to Inbox. ${LEARNS}`,
-  "Couldn't move the conversation out of Spam.",
-  "Couldn't move {n} conversations out of Spam.",
+  `{Thing} marked as not spam and moved to Inbox. ${LEARNS}`,
+  `{n} {things} marked as not spam and moved to Inbox. ${LEARNS}`,
+  "Couldn't move the {thing} out of Spam.",
+  "Couldn't move {n} {things} out of Spam.",
 );
 
 // ---- Delete all spam messages now / Empty Trash now ------------------------

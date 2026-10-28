@@ -3,11 +3,13 @@
 
 import { SearchX } from "lucide-react";
 import type { ReactNode } from "react";
+import { rowNoun } from "../actions/copy";
 import { ContactsRoute } from "../contacts/ContactsRoute";
 import { ConversationView } from "../conversation/ConversationView";
 import { resolveLabelRoute } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
 import { ListRoute } from "../list/ListRoute";
+import { usePrefs } from "../prefs/usePrefs";
 import { SearchConversation } from "../search/SearchConversation";
 import { SearchRoute } from "../search/SearchRoute";
 import { ScheduledRoute } from "../send/ScheduledRoute";
@@ -81,11 +83,13 @@ function LabelArea({ route, pane }: { route: LabelRoute; pane: ReadingPane }) {
 
 /** The list alone, the conversation alone (reading pane off), or both side by side or stacked. */
 function MailSplit({ pane, list, conversation }: { pane: ReadingPane; list: ReactNode; conversation: ReactNode }) {
+  // Brief 26: with conversation view off a row is a message.
+  const noun = rowNoun(usePrefs().prefs.conversationView);
   if (pane === "none") return conversation ?? list;
   return (
     <div className="shell-split" data-pane={pane}>
       <div className="shell-split-list">{list}</div>
-      <div className="shell-split-pane">{conversation ?? <EmptyState title="No conversation selected" />}</div>
+      <div className="shell-split-pane">{conversation ?? <EmptyState title={`No ${noun} selected`} />}</div>
     </div>
   );
 }

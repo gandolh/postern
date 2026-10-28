@@ -10,10 +10,13 @@
 //
 // With conversation view off (brief 22, a per-device pref) every row is one
 // message. Switching remounts the list, so a selection never carries over.
+// Since brief 26 a message row opens that message alone (./openMessage.ts),
+// and the copy counts messages.
 
 import { JmapNetworkError, type Id } from "@postern/jmap";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { isImportant, isStarred, isUnread, shownMessages, type ConversationScope } from "../actions/conversation";
+import { capitalised, nounFor, rowNoun } from "../actions/copy";
 import { snoozedUntil } from "../snooze/keyword";
 import type { MailActions } from "../actions/runner";
 import { undoLast } from "../actions/undo";
@@ -29,7 +32,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import type { ListController, SelectKind } from "./controller";
 import type { ChipLabel } from "./format";
 import type { ListStore } from "./listStore";
-import { revealMessageOnOpen } from "./openMessage";
+import { forgetMessageRows, holdMessageRows, messageRowRoute } from "./openMessage";
 import { setActiveList } from "./registry";
 import { rememberOpened, takeReturnFocus } from "./returnFocus";
 import { ConversationRowView, PlaceholderRow, type RowContext, type RowHandlers } from "./Row";
@@ -48,7 +51,7 @@ export interface ConversationListProps {
   heading?: string;
   /** How "Select all N conversations …" ends: "in Inbox" by default, "that match this search" for brief 10. */
   allLabel?: string;
-  /** Rows open with withConversation(route, row.conversationId); the open conversation's row is highlighted. */
+  /** Rows open with withConversation(route, row.conversationId), a message row alone (brief 26); the open one's row is highlighted. */
   route: MailRoute;
   /** The label route, for the label menus' `current` (null in search results). */
   labelRoute: LabelRoute | null;
@@ -82,14 +85,14 @@ interface Latest {
   store: ListStore;
   actions: MailActions;
   scrollToIndex: (index: number) => void;
+  /** One row per conversation, or per message (brief 22). */
+  conversationView: boolean;
 }
 
 interface Setters {
   setSelection: (update: Selection | ((s: Selection) => Selection)) => void;
   setFocusId: (id: Id | null) => void;
   setConfirming: (rows: readonly ConversationRow[] | null) => void;
-  /** The row last opened: which of a conversation's message rows to highlight. */
-  setOpenedId: (id: Id) => void;
 }
 
 /** The list's behaviour beyond the keyboard controller: the toolbar's. */
@@ -183,16 +186,14 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
   const open = (id: Id | null | undefined) => {
     const target = id ?? get().focusId;
     if (!target) return;
-    const { rows, route } = get();
+    const { rows, route, conversationView } = get();
     const index = rows.findIndex((r) => r.id === target);
     const row = rows[index];
     set.setFocusId(target);
-    set.setOpenedId(target);
     rememberOpened(target, Math.max(0, index));
-    const conversationId = row?.conversationId ?? target;
-    // A message row (conversation view off) opens its conversation at that message.
-    if (row && row.id !== conversationId) revealMessageOnOpen(conversationId, row.emailId);
-    navigate(withConversation(route, conversationId));
+    // A message row (conversation view off) opens that message alone (brief 26).
+    if (row && !conversationView) navigate(messageRowRoute(route, row));
+    else navigate(withConversation(route, row?.conversationId ?? target));
   };
 
   const archive = (only?: readonly ConversationRow[]) => {
@@ -365,7 +366,6 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   const { store, snapshot } = useListStore(client, query, { conversationView });
   const [selection, setSelection] = useState<Selection>(NO_SELECTION);
   const [focusId, setFocusId] = useState<Id | null>(null);
-  const [openedId, setOpenedId] = useState<Id | null>(null);
   const [confirming, setConfirming] = useState<readonly ConversationRow[] | null>(null);
   const now = useMinuteClock();
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -378,10 +378,19 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   const { scrollToIndex } = virtual;
   const scope = query.scope;
 
-  const [behaviour] = useState(() => new ListBehaviour({ setSelection, setFocusId, setConfirming, setOpenedId }));
+  const [behaviour] = useState(() => new ListBehaviour({ setSelection, setFocusId, setConfirming }));
   const { api, handlers } = behaviour;
   useLayoutEffect(() => {
-    behaviour.update({ rows, selection, focusId, presentation, scope, route, store, actions, scrollToIndex });
+    behaviour.update({ rows, selection, focusId, presentation, scope, route, store, actions, scrollToIndex, conversationView });
+  });
+
+  // Brief 26: the reader's `j` / `k` step through the message rows, the list on screen or not.
+  useLayoutEffect(() => {
+    if (conversationView) forgetMessageRows();
+  }, [conversationView]);
+  useLayoutEffect(() => {
+    if (conversationView) return;
+    return holdMessageRows(route, rows, (count) => store.ensureLoaded(count));
   });
 
   useEffect(() => setActiveList(api), [api]);
@@ -442,13 +451,13 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
     [scope, username, presentation, query.matches, chipLabels, now, props.renderSubject],
   );
 
-  // The open conversation's row: the one opened from here, else its newest (a conversation can be several message rows).
+  // The open row: the message shown alone (brief 26), else the open conversation's newest row.
   const openRowId = useMemo(() => {
     const open = route.conversationId;
     if (!open) return null;
-    const opened = openedId === null ? undefined : rows.find((r) => r.id === openedId && r.conversationId === open);
-    return (opened ?? rows.find((r) => r.conversationId === open))?.id ?? null;
-  }, [route.conversationId, openedId, rows]);
+    const message = !conversationView && route.messageId ? rows.find((r) => r.id === route.messageId) : undefined;
+    return (message ?? rows.find((r) => r.conversationId === open))?.id ?? null;
+  }, [route.conversationId, route.messageId, conversationView, rows]);
 
   const focusIndex = focusId === null ? -1 : rows.findIndex((r) => r.id === focusId);
   const tabStop = focusIndex >= virtual.start && focusIndex < Math.min(virtual.end, rows.length) ? focusIndex : Math.min(virtual.start, rows.length - 1);
@@ -485,17 +494,20 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   const total = snapshot.total.toLocaleString();
   const allLabel = props.allLabel ?? `in ${title}`;
   const paging = count > 0 ? `${(virtual.first + 1).toLocaleString()}–${Math.min(Math.max(virtual.last, virtual.first + 1), count).toLocaleString()} of ${count.toLocaleString()}` : "";
-  const announcement = selectedCount > 0 ? `${selectedCount.toLocaleString()} ${selectedCount === 1 ? "conversation" : "conversations"} selected` : "";
+  // Brief 26: the copy counts what a row is, a conversation or a message.
+  const noun = rowNoun(conversationView);
+  const things = nounFor(2, noun);
+  const announcement = selectedCount > 0 ? `${selectedCount.toLocaleString()} ${nounFor(selectedCount, noun)} selected` : "";
 
   let body: ReactNode;
   if (snapshot.status === "loading") {
-    body = <ListSkeleton />;
+    body = <ListSkeleton label={`Loading ${things}`} />;
   } else if (snapshot.status === "error") {
     body =
       snapshot.error instanceof JmapNetworkError ? (
         <ConnectionLost onRetry={() => store.retry()} />
       ) : (
-        <ConnectionLost title="Your conversations didn't load" onRetry={() => store.retry()}>
+        <ConnectionLost title={`Your ${things} didn't load`} onRetry={() => store.retry()}>
           <p>Something went wrong on the way. Try again in a moment.</p>
         </ConnectionLost>
       );
@@ -526,7 +538,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
       <div
         ref={gridRef}
         role="grid"
-        aria-label={`Conversations ${allLabel}`}
+        aria-label={`${capitalised(things)} ${allLabel}`}
         aria-rowcount={count}
         aria-multiselectable="true"
         className="list-grid"
@@ -578,7 +590,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
       {selection.all ? (
         <div className="list-banner">
           <span>
-            All {total} conversations {allLabel} are selected.
+            All {total} {things} {allLabel} are selected.
           </span>
           <button type="button" className="btn btn-quiet list-banner-action" onClick={() => api.select("none")}>
             Clear selection
@@ -586,9 +598,11 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         </div>
       ) : allLoadedSelected && snapshot.total > rows.length ? (
         <div className="list-banner">
-          <span>All {rows.length.toLocaleString()} conversations shown are selected.</span>
+          <span>
+            All {rows.length.toLocaleString()} {things} shown are selected.
+          </span>
           <button type="button" className="btn btn-quiet list-banner-action" onClick={() => api.selectAllMatching()}>
-            Select all {total} conversations {allLabel}
+            Select all {total} {things} {allLabel}
           </button>
         </div>
       ) : null}
@@ -603,7 +617,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
       {confirming ? (
         <ConfirmDialog
           title="Delete forever?"
-          body={`${confirming.length === 1 ? "This conversation" : `These ${confirming.length.toLocaleString()} conversations`} will be deleted forever. This can't be undone.`}
+          body={`${confirming.length === 1 ? `This ${noun}` : `These ${confirming.length.toLocaleString()} ${things}`} will be deleted forever. This can't be undone.`}
           confirmLabel="Delete forever"
           onConfirm={() => void api.confirmDelete(confirming)}
           onCancel={() => setConfirming(null)}

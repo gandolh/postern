@@ -55,7 +55,8 @@ export function ShortcutsHost() {
       const conversation = getActiveConversation();
       const list = getActiveList();
       let conversationIds: string[];
-      if (conversationFirst(lastTarget) && conversation) conversationIds = [conversation.conversationId];
+      // One message shown alone (brief 26) is labelled alone, by its own id.
+      if (conversationFirst(lastTarget) && conversation) conversationIds = [conversation.messageId ?? conversation.conversationId];
       else {
         if (!list) return false;
         conversationIds = (await list.targets()).map((r) => r.id);
@@ -85,6 +86,17 @@ export function ShortcutsHost() {
         list(l);
         return true;
       };
+    // Brief 26: in a reader showing one message alone, `j` / `k` open the next / previous message row.
+    const readerRowOr =
+      (delta: 1 | -1, otherwise: () => boolean | void) =>
+      (): boolean | void => {
+        const c = getActiveConversation();
+        if (c?.openRow && conversationFirst(lastTarget)) {
+          c.openRow(delta);
+          return true;
+        }
+        return otherwise();
+      };
     const conversationOnly = (run: (c: NonNullable<ReturnType<typeof getActiveConversation>>) => unknown) => () => {
       const c = getActiveConversation();
       if (!c) return false;
@@ -104,8 +116,8 @@ export function ShortcutsHost() {
         void undoLast();
         return true;
       },
-      next: onList((l) => l.moveFocus(1)),
-      previous: onList((l) => l.moveFocus(-1)),
+      next: readerRowOr(1, onList((l) => l.moveFocus(1))),
+      previous: readerRowOr(-1, onList((l) => l.moveFocus(-1))),
       select: onList((l) => l.toggleSelect()),
       star: onList((l) => l.toggleStar()),
       markRead: onList((l) => l.markRead()),

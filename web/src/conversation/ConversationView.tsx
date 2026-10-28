@@ -4,6 +4,13 @@
 // each message's body in a sandboxed frame, and a toolbar that acts on the
 // whole conversation. The shell renders it full width or in the reading pane.
 //
+// Brief 26: when the route names a message (a message row opened with
+// conversation view off), it shows that message alone, open, under the
+// conversation's subject; the toolbar, the keys and mark-read act on it alone,
+// and `j` / `k` open the next and previous message rows (list/openMessage.ts).
+// The route decides, not the pref: a link naming only the conversation (a
+// notification, "View message" after sending) shows all of it.
+//
 // Every message body is hostile: HTML only ever reaches the screen through
 // render/ (sanitised, then a sandboxed srcdoc frame). See render/srcdoc.ts.
 
@@ -11,6 +18,7 @@ import type { Id } from "@postern/jmap";
 import { Archive, ArrowLeft, Inbox, MailOpen, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DRAFT, FLAGGED, labelIdsOf, SEEN, shownMessages, type Conversation, type ConversationScope, type MailboxRoles } from "../actions/conversation";
+import type { RowNoun } from "../actions/copy";
 import { planEdits } from "../actions/patches";
 import { planTrash } from "../actions/plans";
 import { actionCopy, COPY } from "../actions/runner";
@@ -20,11 +28,13 @@ import { useAccount, useJmap } from "../auth";
 import { useCompose, type ComposeMode } from "../composer";
 import { useBlockSender } from "../filters/BlockSender";
 import { filterMessagesLike } from "../filters/likeThese";
+import { lendConversation } from "../labels/conversations";
 import { LabelMenu } from "../labels/LabelMenu";
 import type { ResolvedLabel } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
 import { ConfirmDialog } from "../list/ConfirmDialog";
 import { chipLabels, type ChipLabel } from "../list/format";
+import { openNeighbourRow } from "../list/openMessage";
 import { requestReturnFocus } from "../list/returnFocus";
 import { useImageAllowance } from "../render/allowance";
 import { IconButton } from "../shell/IconButton";
@@ -41,7 +51,7 @@ import { useConversationStore } from "./useConversationStore";
 import "./conversation.css";
 
 export interface ConversationViewProps {
-  /** Where it was opened from; `route.conversationId` equals `conversationId`. */
+  /** Where it was opened from; `route.conversationId` equals `conversationId`. `route.messageId`, if any, is the one message shown (brief 26). */
   route: MailRoute;
   /** The JMAP Thread id. */
   conversationId: string;
@@ -62,14 +72,17 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   const backHref = formatRoute(withoutConversation(route));
   const backLabel = label ? `Back to ${label.title}` : "Back to search results";
   const kind = label ? scopeKind(label) : (scope ?? "normal");
+  // Brief 26: one message alone, when the route names it.
+  const messageId = route.messageId;
+  const noun: RowNoun = messageId ? "message" : "conversation";
 
-  if (snapshot.status === "loading") return <ConversationLoading backHref={backHref} backLabel={backLabel} />;
-  if (snapshot.status === "missing") {
+  if (snapshot.status === "loading") return <ConversationLoading backHref={backHref} backLabel={backLabel} noun={noun} />;
+  if (snapshot.status === "missing" || (messageId !== undefined && snapshot.status === "ready" && !snapshot.messages.some((m) => m.id === messageId))) {
     return (
       <section className="conv-page" aria-labelledby="conv-subject">
-        <PlaceholderHeading />
+        <PlaceholderHeading noun={noun} />
         <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
-        <EmptyState title="This conversation doesn't exist">
+        <EmptyState title={`This ${noun} doesn't exist`}>
           <p>It may have been deleted forever.</p>
           <a className="btn" href={backHref}>
             {backLabel}
@@ -81,9 +94,9 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   if (snapshot.status === "error") {
     return (
       <section className="conv-page" aria-labelledby="conv-subject">
-        <PlaceholderHeading />
+        <PlaceholderHeading noun={noun} />
         <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
-        <ConnectionLost title="This conversation didn't load" onRetry={() => void store.refresh()}>
+        <ConnectionLost title={`This ${noun} didn't load`} onRetry={() => void store.refresh()}>
           <p>Something went wrong on the way. Try again in a moment.</p>
         </ConnectionLost>
       </section>
@@ -91,11 +104,12 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   }
   return (
     <ConversationBody
-      key={conversationId}
+      key={messageId === undefined ? conversationId : `${conversationId}/${messageId}`}
       route={route}
       label={label}
       kind={kind}
       conversationId={conversationId}
+      {...(messageId === undefined ? {} : { messageId })}
       snapshot={snapshot}
       loadBodies={(ids) => void store.loadBodies(ids)}
       loadInlineImages={(id) => void store.loadInlineImages(id)}
@@ -103,14 +117,14 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   );
 }
 
-/** The screen while the conversation (or the labels it needs) loads. */
-export function ConversationLoading({ backHref, backLabel }: { backHref: string; backLabel: string }) {
+/** The screen while the conversation (or the labels it needs) loads; `noun` "message" for one shown alone. */
+export function ConversationLoading({ backHref, backLabel, noun = "conversation" }: { backHref: string; backLabel: string; noun?: RowNoun }) {
   return (
     <section className="conv-page" aria-busy="true" aria-labelledby="conv-subject">
-      <PlaceholderHeading />
+      <PlaceholderHeading noun={noun} />
       <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
       <div className="conv-scroll">
-        <div className="conv-loading" role="status" aria-label="Loading the conversation">
+        <div className="conv-loading" role="status" aria-label={`Loading the ${noun}`}>
           <span className="skeleton conv-skeleton-title" />
           <span className="skeleton conv-skeleton-card" />
           <span className="skeleton conv-skeleton-card" />
@@ -121,10 +135,10 @@ export function ConversationLoading({ backHref, backLabel }: { backHref: string;
 }
 
 /** Every state of the screen has its h1; until the subject is known, a hidden one. */
-function PlaceholderHeading() {
+function PlaceholderHeading({ noun }: { noun: RowNoun }) {
   return (
     <h1 id="conv-subject" className="visually-hidden">
-      Conversation
+      {noun === "message" ? "Message" : "Conversation"}
     </h1>
   );
 }
@@ -174,12 +188,14 @@ interface BodyProps {
   /** Which messages it shows: the label's view, or the search's scope. */
   kind: ConversationScope["kind"];
   conversationId: Id;
+  /** Brief 26: the one message to show alone (ConversationView checked it is in the conversation). */
+  messageId?: Id;
   snapshot: ConversationSnapshot;
   loadBodies: (ids: Id[]) => void;
   loadInlineImages: (id: Id) => void;
 }
 
-function ConversationBody({ route, label, kind, conversationId, snapshot, loadBodies, loadInlineImages }: BodyProps) {
+function ConversationBody({ route, label, kind, conversationId, messageId, snapshot, loadBodies, loadInlineImages }: BodyProps) {
   const client = useJmap();
   const account = useAccount();
   const me = account.username;
@@ -202,18 +218,24 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
   // also cards here, unless nothing else is left to show. Any draft shown as a
   // card the composer leaves alone (it gets the ids through the inline slot).
   const inScope = useMemo(() => shownMessages(conversation, scope), [conversation, scope]);
-  const shown = useMemo(() => {
+  const conversationShown = useMemo(() => {
     const drafts = roles.drafts;
     const sent = inScope.filter((m) => !(m.keywords[DRAFT] === true && drafts !== undefined && m.mailboxIds[drafts] === true));
     return sent.length > 0 ? sent : inScope;
   }, [inScope, roles.drafts]);
+  // Brief 26: one message alone. Everything below that reads `shown` or
+  // `acted` (the toolbar, the keys, mark-read, the label menus) then acts on it.
+  const single = useMemo(() => (messageId === undefined ? undefined : snapshot.messages.find((m) => m.id === messageId)), [messageId, snapshot.messages]);
+  const shown = useMemo(() => (single ? [single] : conversationShown), [single, conversationShown]);
+  const noun: RowNoun = single ? "message" : "conversation";
   // The conversation's own actions (archive, delete, spam, mark unread) leave
   // the hidden reply draft alone: the inline composer holds it, and moving it
   // would only have its next autosave bring it back.
   const acted = useMemo<Conversation<ConvMessage>>(() => {
+    if (single) return { id: conversationId, messages: [single] };
     const hidden = new Set(inScope.filter((m) => !shown.includes(m)).map((m) => m.id));
     return hidden.size === 0 ? conversation : { id: conversationId, messages: snapshot.messages.filter((m) => !hidden.has(m.id)) };
-  }, [conversation, conversationId, snapshot.messages, inScope, shown]);
+  }, [single, conversation, conversationId, snapshot.messages, inScope, shown]);
   const last = shown[shown.length - 1];
   const hiddenCount = snapshot.messages.length - inScope.length;
   const backRoute = useMemo(() => withoutConversation(route), [route]);
@@ -253,13 +275,17 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedKey]);
 
-  // Mark read on open, once per conversation shown.
+  // Mark read on open, once per conversation shown; one message shown alone marks only it (brief 26).
+  const opened = single ? acted : conversation;
   const markedRef = useRef(false);
   useEffect(() => {
     if (markedRef.current) return;
     markedRef.current = true;
-    void markReadOnOpen(client, conversation, scope, () => void labels.store.sync());
-  }, [client, conversation, scope, labels.store]);
+    void markReadOnOpen(client, opened, scope, () => void labels.store.sync());
+  }, [client, opened, scope, labels.store]);
+
+  // Brief 26: the label menus and keys find the one message by its own id (labels/conversations.ts).
+  useEffect(() => (single ? lendConversation({ id: single.id, messages: [single] }) : undefined), [single]);
 
   // Messages that arrive while the conversation is open show open (isExpanded),
   // so they are read too, as in Gmail: marked at once while the tab is visible,
@@ -307,36 +333,37 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
     [compose, conversationId, last],
   );
 
+  // The toasts say what is shown, whatever the list's rows are (brief 26).
   const conversationActions = useMemo(
     () => ({
       archive: () => {
-        void actions.archive([acted], scope);
+        void actions.archive([acted], scope, { noun });
         goBack(true);
       },
       trash: () => {
-        void actions.trash([acted], scope);
+        void actions.trash([acted], scope, { noun });
         goBack(true);
       },
       reportSpam: () => {
         // Spam's own copy (the server learns from it); roles as they are now, as the runner does.
-        void actions.run(() => planReportSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), REPORT_SPAM_COPY);
+        void actions.run(() => planReportSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), REPORT_SPAM_COPY, { noun });
         goBack(true);
       },
       notSpam: () => {
-        void actions.run(() => planNotSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), NOT_SPAM_COPY);
+        void actions.run(() => planNotSpam([acted], { kind: scope.kind, roles: rolesFrom(labels.store) }), NOT_SPAM_COPY, { noun });
         goBack(true);
       },
       markUnread: () => {
-        void actions.markUnread([acted], scope);
+        void actions.markUnread([acted], scope, { noun });
         goBack();
       },
       deleteForever: () => {
         setConfirmForever(false);
-        void actions.deleteForever([acted], scope);
+        void actions.deleteForever([acted], scope, { noun });
         goBack(true);
       },
     }),
-    [actions, acted, scope, goBack, labels.store],
+    [actions, acted, scope, goBack, labels.store, noun],
   );
 
   const cardActions = (m: ConvMessage, index: number): MessageCardActions => ({
@@ -393,9 +420,9 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
     },
     [items],
   );
-  const latest = useRef({ shown, cursor, focusMessage, toggle, goBack, openCompose, conversationActions });
+  const latest = useRef({ shown, cursor, focusMessage, toggle, goBack, openCompose, conversationActions, route });
   useEffect(() => {
-    latest.current = { shown, cursor, focusMessage, toggle, goBack, openCompose, conversationActions };
+    latest.current = { shown, cursor, focusMessage, toggle, goBack, openCompose, conversationActions, route };
   });
   useEffect(() => {
     const step = (delta: number) => {
@@ -424,16 +451,21 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
       trash: () => latest.current.conversationActions.trash(),
       reportSpam: () => latest.current.conversationActions.reportSpam(),
       markUnread: () => latest.current.conversationActions.markUnread(),
+      // Brief 26: one message alone; `j` / `k` step through the message rows.
+      ...(messageId === undefined ? {} : { messageId, openRow: (delta: 1 | -1) => void openNeighbourRow(latest.current.route, delta) }),
     };
     return setActiveConversation(controller);
-  }, [conversationId]);
+  }, [conversationId, messageId]);
 
   // ---- Header ------------------------------------------------------------------------
-  const subject = (shown[0]?.subject ?? snapshot.messages[0]?.subject ?? "").trim() || "(no subject)";
+  // The conversation's subject, above one message shown alone too.
+  const subject = (conversationShown[0]?.subject ?? snapshot.messages[0]?.subject ?? "").trim() || "(no subject)";
   const chipList = useMemo<ChipLabel[]>(() => labels.labels.map((l) => ({ id: l.id, title: l.system ? l.title : l.path, system: l.system })), [labels.labels]);
-  const chips = chipLabels(labelIdsOf(conversation, scope), chipList, label?.mailboxId);
+  const chips = chipLabels(labelIdsOf(opened, scope), chipList, label?.mailboxId);
   const current = route.kind === "search" ? null : route;
   const emailIds = shown.map((m) => m.id);
+  // One message alone is labelled alone, by its own id (lent above).
+  const labelTargets = single ? [single.id] : [conversationId];
 
   return (
     <section className="conv-page" aria-labelledby="conv-subject" data-pane={readingPane}>
@@ -452,8 +484,8 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
         )}
         <span className="conv-toolbar-divider" aria-hidden="true" />
         <IconButton label="Mark as unread" icon={MailOpen} onClick={conversationActions.markUnread} />
-        <LabelMenu conversationIds={[conversationId]} emailIds={emailIds} current={current} mode="move" />
-        <LabelMenu conversationIds={[conversationId]} emailIds={emailIds} current={current} mode="label" />
+        <LabelMenu conversationIds={labelTargets} emailIds={emailIds} current={current} mode="move" />
+        <LabelMenu conversationIds={labelTargets} emailIds={emailIds} current={current} mode="label" />
       </ConversationToolbarShell>
 
       <div className="conv-scroll">
@@ -473,7 +505,7 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
           ) : null}
         </header>
 
-        {hiddenCount > 0 && scope.kind === "normal" ? (
+        {hiddenCount > 0 && scope.kind === "normal" && !single ? (
           <p className="conv-note conv-hidden-note">
             {hiddenCount === 1 ? "One message in this conversation is in Trash or Spam." : `${hiddenCount} messages in this conversation are in Trash or Spam.`}
           </p>
@@ -517,7 +549,7 @@ function ConversationBody({ route, label, kind, conversationId, snapshot, loadBo
       {confirmForever ? (
         <ConfirmDialog
           title="Delete forever?"
-          body="This conversation will be deleted forever. You can't undo this."
+          body={`This ${noun} will be deleted forever. You can't undo this.`}
           confirmLabel="Delete forever"
           onConfirm={conversationActions.deleteForever}
           onCancel={() => setConfirmForever(false)}

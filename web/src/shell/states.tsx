@@ -5,14 +5,16 @@
 //   <EmptyState title="No conversations in Spam">…</EmptyState>
 //   <ConnectionLost onRetry={…} />                the server cannot be reached
 //   emptyLabelMessage("Spam")                     "No conversations in Spam"
+//   emptyLabelMessage("Spam", "message")          "No messages in Spam" (conversation view off, brief 26)
 
 import type { LucideIcon } from "lucide-react";
+import type { RowNoun } from "../actions/copy";
 import { Inbox, RefreshCw, WifiOff } from "lucide-react";
 import { useSyncExternalStore, type ReactNode } from "react";
 
-/** Gmail's wording for a label with nothing in it. */
-export function emptyLabelMessage(title: string): string {
-  return `No conversations in ${title}`;
+/** Gmail's wording for a label with nothing in it; it counts messages with conversation view off. */
+export function emptyLabelMessage(title: string, noun: RowNoun = "conversation"): string {
+  return `No ${noun}s in ${title}`;
 }
 
 export interface EmptyStateProps {

@@ -1,97 +1,80 @@
-// Brief 22: with conversation view off a row is one message, and opening it
-// opens the whole conversation, as Gmail does, with that message open and
-// scrolled into view. The conversation view itself is unchanged: this waits
-// for it to mount and drives it from outside through its controller
-// (conversation/registry.ts), as brief 14's keys do.
+// Brief 26: with conversation view off a row is one message, and it opens
+// alone, as Gmail's does: `#inbox/<conversationId>/<messageId>` (router.ts),
+// so a reload or Back / Forward shows the same message. The reader then shows
+// that message by itself (conversation/ConversationView.tsx).
 //
-// A reply in progress in that conversation opens as the inline composer and
-// takes focus a moment later, which scrolls to the bottom. For a short while
-// after opening, until the reader scrolls, types or clicks, focus moving
-// inside the page brings the message back into view.
+// `j` / `k` in that reader open the next and previous message rows. The list
+// is not on screen there when the reading pane is off (the default), so the
+// list keeps its message rows here, in order, while it is mounted; what it
+// held when it unmounted stays for the reader. With nothing held (the reader
+// reached by a reload or a link) the keys do nothing until the list has been
+// shown once.
+//
+// (Brief 22's version opened the whole conversation and scrolled to the
+// message; that went with this brief.)
 
 import type { Id } from "@postern/jmap";
-import { getActiveConversation, messageCardId, subscribeActiveConversation, type ConversationController } from "../conversation/registry";
+import { formatRoute, navigate, withConversation, withoutConversation, type MailRoute } from "../shell/router";
+import { rememberOpened } from "./returnFocus";
+import type { ConversationRow } from "./types";
 
-/** Stop waiting for the conversation after this long (it failed to load, or the reader went elsewhere). */
-const WAIT_MS = 15_000;
-/** Frames to wait for the message's card to render open. */
-const FRAMES = 30;
-/** How long the message is kept in view against focus moves (the inline reply draft's). */
-const HOLD_MS = 3000;
+/** What a message row needs to open. */
+export type MessageRowRef = Pick<ConversationRow, "id" | "conversationId" | "emailId">;
 
-let pending: (() => void) | null = null;
-let holding: (() => void) | null = null;
+/** Ask the mounted list for more rows this many before the end of what it holds. */
+const LOAD_AHEAD = 10;
+
+interface Held {
+  /** The list the rows came from: its route, without an open conversation. */
+  list: string;
+  rows: readonly MessageRowRef[];
+  /** While the list is mounted: load at least this many rows. */
+  loadMore: ((count: number) => void) | null;
+}
+
+let held: Held | null = null;
+
+/** The route that opens a message row alone, on the same list. */
+export function messageRowRoute<R extends MailRoute>(route: R, row: MessageRowRef): R {
+  return withConversation(route, row.conversationId, row.emailId);
+}
 
 /**
- * Once the conversation `conversationId` is on screen (now, or when it has
- * loaded), open the message `emailId` in it and scroll it into view. A later
- * call replaces an earlier one still waiting.
+ * The list (conversation view off) hands over its rows after every render.
+ * Returns the release, for its unmount: the rows stay, the loader goes.
  */
-export function revealMessageOnOpen(conversationId: Id, emailId: Id): void {
-  pending?.();
-  holding?.();
-  let done = false;
-  const finish = () => {
-    done = true;
-    clearTimeout(timer);
-    unsubscribe();
-    if (pending === finish) pending = null;
+export function holdMessageRows(route: MailRoute, rows: readonly MessageRowRef[], loadMore: (count: number) => void): () => void {
+  const mine: Held = { list: formatRoute(withoutConversation(route)), rows, loadMore };
+  held = mine;
+  return () => {
+    if (held === mine) held = { ...mine, loadMore: null };
   };
-  const attempt = () => {
-    const controller = getActiveConversation();
-    if (done || !controller || controller.conversationId !== conversationId) return;
-    finish();
-    reveal(controller, emailId);
-  };
-  const timer = setTimeout(finish, WAIT_MS);
-  const unsubscribe = subscribeActiveConversation(attempt);
-  pending = finish;
-  attempt();
 }
 
-/** For tests: stop waiting and holding. */
-export function cancelRevealMessage(): void {
-  pending?.();
-  holding?.();
+/** A list of conversations holds no message rows: forget any (the pref was switched back on). */
+export function forgetMessageRows(): void {
+  held = null;
 }
 
-function reveal(controller: ConversationController, emailId: Id): void {
-  // Not a card of this conversation (a reply draft shows as the inline composer instead).
-  if (!controller.messageIds().includes(emailId)) return;
-  const card = document.getElementById(messageCardId(emailId));
-  // No card yet means it is folded away among older messages; opening it unfolds it.
-  if (!card || card.dataset["expanded"] !== "true") controller.toggleMessage(emailId);
-  scrollWhenOpen(emailId, FRAMES);
+/**
+ * `j` (1) / `k` (-1) in the reader: open the message row after or before the
+ * one `route` shows, on the list it came from. False when there is none held.
+ */
+export function openNeighbourRow(route: MailRoute, delta: 1 | -1): boolean {
+  const messageId = route.messageId;
+  if (!held || !messageId || held.list !== formatRoute(withoutConversation(route))) return false;
+  const at = held.rows.findIndex((r) => r.id === messageId);
+  if (at < 0) return false;
+  const index = at + delta;
+  if (delta > 0 && index >= held.rows.length - LOAD_AHEAD) held.loadMore?.(index + LOAD_AHEAD * 2);
+  const next = held.rows[index];
+  if (!next) return false;
+  rememberOpened(next.id, index);
+  navigate(messageRowRoute(route, next));
+  return true;
 }
 
-function scrollWhenOpen(emailId: Id, frames: number): void {
-  requestAnimationFrame(() => {
-    const card = document.getElementById(messageCardId(emailId));
-    if (card?.dataset["expanded"] === "true") {
-      card.scrollIntoView({ block: "start" });
-      holdInView(emailId);
-    } else if (frames > 0) scrollWhenOpen(emailId, frames - 1);
-  });
-}
-
-/** Keep the card in view when focus moves within HOLD_MS, until the reader does anything. */
-function holdInView(emailId: Id): void {
-  const READER = ["wheel", "keydown", "pointerdown", "touchstart"] as const;
-  const back = () =>
-    requestAnimationFrame(() => {
-      if (!stopped) document.getElementById(messageCardId(emailId))?.scrollIntoView({ block: "start" });
-    });
-  let stopped = false;
-  const stop = () => {
-    stopped = true;
-    if (holding === stop) holding = null;
-    clearTimeout(timer);
-    document.removeEventListener("focusin", back);
-    for (const type of READER) document.removeEventListener(type, stop, true);
-  };
-  holding?.();
-  holding = stop;
-  const timer = setTimeout(stop, HOLD_MS);
-  document.addEventListener("focusin", back);
-  for (const type of READER) document.addEventListener(type, stop, true);
+/** For tests. */
+export function heldMessageRows(): readonly Id[] | null {
+  return held ? held.rows.map((r) => r.id) : null;
 }

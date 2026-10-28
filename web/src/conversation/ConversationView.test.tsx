@@ -12,8 +12,10 @@ import { publishMailChange } from "../actions/bus";
 import { fakeEmail, FakeMail, MAILBOXES, type FakeEmail } from "../actions/fakeMail";
 import { clearUndo, peekUndo } from "../actions/undo";
 import { SessionContext } from "../auth/context";
+import { resolveConversations } from "../labels/conversations";
 import { LabelsStore, resolveLabelRoute } from "../labels/labelsStore";
 import { LabelsStoreProvider, useLabels } from "../labels/useLabels";
+import { forgetMessageRows, holdMessageRows } from "../list/openMessage";
 import { MESSAGE_FRAME_SANDBOX } from "../render/srcdoc";
 import { SearchConversation } from "../search/SearchConversation";
 import type { LabelRoute, SearchResultsRoute } from "../shell/router";
@@ -226,6 +228,92 @@ describe("the conversation view", () => {
     expect(name.textContent).toBe("Support \u202Emoc.knab");
     expect(address.textContent).toBe("attacker@evil.test");
     expect(name.contains(address)).toBe(false);
+  });
+});
+
+describe("one message alone (brief 26: a message row with conversation view off)", () => {
+  const UNREAD = [
+    message("u1", "T1", "2026-10-01T10:00:00Z", { text: "FIRST_TEXT" }, { from: BOB, keywords: {} }),
+    message("u2", "T1", "2026-10-02T10:00:00Z", { text: "SECOND_TEXT" }, { from: BOB, keywords: {}, subject: "Re: Plans" }),
+    message("u3", "T1", "2026-10-03T10:00:00Z", { text: "THIRD_TEXT" }, { from: BOB, keywords: {}, subject: "Re: Plans" }),
+  ];
+
+  async function renderMessage(emails: FakeEmail[], messageId: string) {
+    const mail = new FakeMail({ mailboxes: MAILBOXES, emails });
+    const client = await mail.connect();
+    const labels = new LabelsStore(client, () => "A");
+    const user = userEvent.setup();
+    const route: LabelRoute = { ...INBOX, conversationId: "T1", messageId };
+    window.history.replaceState(null, "", `#inbox/T1/${messageId}`);
+    render(
+      <SessionContext.Provider value={{ client, account: { username: "alice@postern.test" }, signOut: async () => {} }}>
+        <LabelsStoreProvider store={labels}>
+          <ToastProvider>
+            <Screen route={route} conversationId="T1" />
+          </ToastProvider>
+        </LabelsStoreProvider>
+      </SessionContext.Provider>,
+    );
+    return { mail, client, user };
+  }
+
+  afterEach(() => forgetMessageRows());
+
+  it("shows that message alone, open, under the conversation's subject, and marks only it read", async () => {
+    const { mail } = await renderMessage(UNREAD, "u2");
+    await screen.findByRole("heading", { level: 1, name: "Plans" });
+    expect(document.querySelectorAll("[id^='conv-message-']")).toHaveLength(1);
+    const card = document.getElementById("conv-message-u2")!;
+    expect(card.dataset["expanded"]).toBe("true");
+    await waitFor(() => expect(within(card).getByText(/SECOND_TEXT/)).toBeTruthy());
+    await waitFor(() => expect(mail.emails.get("u2")!.keywords["$seen"]).toBe(true));
+    expect(mail.emails.get("u1")!.keywords["$seen"]).toBeUndefined();
+    expect(mail.emails.get("u3")!.keywords["$seen"]).toBeUndefined();
+    expect(peekUndo()).toBeNull();
+  });
+
+  it("archives only that message, says so, and goes back to the list", async () => {
+    const { mail, user } = await renderMessage(UNREAD, "u2");
+    await screen.findByRole("heading", { level: 1, name: "Plans" });
+    await user.click(within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }));
+    expect(window.location.hash).toBe("#inbox");
+    await waitFor(() => expect(Object.keys(mail.emails.get("u2")!.mailboxIds)).toEqual(["h"]));
+    expect(Object.keys(mail.emails.get("u1")!.mailboxIds)).toEqual(["a"]);
+    expect(Object.keys(mail.emails.get("u3")!.mailboxIds)).toEqual(["a"]);
+    expect(peekUndo()?.label).toBe("Message archived.");
+    expect(await screen.findByText("Message archived.")).toBeTruthy();
+  });
+
+  it("hands the keys and the label menus that message alone", async () => {
+    const { client } = await renderMessage(UNREAD, "u2");
+    await screen.findByRole("heading", { level: 1, name: "Plans" });
+    const controller = getActiveConversation();
+    expect(controller?.conversationId).toBe("T1");
+    expect(controller?.messageId).toBe("u2");
+    expect(controller?.messageIds()).toEqual(["u2"]);
+    const picked = await resolveConversations(client, ["u2"]);
+    expect(picked.map((c) => c.messages.map((m) => m.id))).toEqual([["u2"]]);
+  });
+
+  it("opens the next and previous message rows on j and k", async () => {
+    await renderMessage(UNREAD, "u2");
+    await screen.findByRole("heading", { level: 1, name: "Plans" });
+    const rows = [
+      { id: "u3", conversationId: "T1", emailId: "u3" },
+      { id: "u2", conversationId: "T1", emailId: "u2" },
+      { id: "x9", conversationId: "T9", emailId: "x9" },
+    ];
+    holdMessageRows({ kind: "system", view: "inbox" }, rows, () => {})();
+    act(() => getActiveConversation()!.openRow!(1));
+    expect(window.location.hash).toBe("#inbox/T9/x9");
+    window.history.replaceState(null, "", "#inbox/T1/u2");
+    act(() => getActiveConversation()!.openRow!(-1));
+    expect(window.location.hash).toBe("#inbox/T1/u3");
+  });
+
+  it("says the message doesn't exist when the conversation no longer has it", async () => {
+    await renderMessage(UNREAD, "gone");
+    expect(await screen.findByText("This message doesn't exist")).toBeTruthy();
   });
 });
 

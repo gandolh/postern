@@ -1,5 +1,6 @@
 // The mail actions for React: the runner (./runner) on the signed-in client,
-// the labels store and the shell's toast.
+// the labels store, the shell's toast and the conversation view pref (what the
+// toasts count).
 //
 //   const actions = useMailActions();
 //   await actions.archive([conversation], scope);
@@ -8,10 +9,12 @@ import { useMemo } from "react";
 import { useJmap } from "../auth";
 import type { LabelsStore } from "../labels/labelsStore";
 import { useLabelsStore } from "../labels/useLabels";
+import { getPrefs } from "../prefs/prefs";
 import { useToast } from "../shell/toast";
 import { ensureSnoozedLabel } from "../snooze/label";
 import { ensureAllMail } from "./allMail";
 import { ROLE_NAMES, type MailboxRoles } from "./conversation";
+import { rowNoun } from "./copy";
 import { createMailActions, type MailActions } from "./runner";
 
 /** The account's system labels by role, from the labels store. */
@@ -38,6 +41,8 @@ export function useMailActions(): MailActions {
         snoozedId: () => labels.snoozedId(),
         syncLabels: () => void labels.sync(),
         toast,
+        // Brief 26: a list row is a message with conversation view off, and the toasts say so.
+        noun: () => rowNoun(getPrefs().conversationView),
       }),
     [client, labels, toast],
   );

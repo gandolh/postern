@@ -40,6 +40,9 @@ const ROUTES: Route[] = [
   { kind: "scheduled" },
   { kind: "system", view: "snoozed" },
   { kind: "system", view: "snoozed", conversationId: "T3" },
+  { kind: "system", view: "inbox", conversationId: "T1", messageId: "M2" },
+  { kind: "label", labelId: "i", conversationId: "T9", messageId: "M-_9" },
+  { kind: "search", query: "café ✉", conversationId: "T7", messageId: "M7" },
 ];
 
 describe("parseRoute and formatRoute", () => {
@@ -78,10 +81,12 @@ describe("parseRoute and formatRoute", () => {
     "#bogus",
     "#Inbox",
     "#inbox/",
-    "#inbox/a/b",
+    "#inbox/a/b/c",
+    "#inbox/a/",
+    "#inbox/a/%E0%A4%A",
     "#label",
     "#label/",
-    "#label/i/T1/extra",
+    "#label/i/T1/M1/extra",
     "#search",
     "#search/",
     "#search/%20%20",
@@ -108,6 +113,17 @@ describe("conversation helpers", () => {
     expect(sameList(open, list)).toBe(true);
     expect(sameList(open, { kind: "label", labelId: "j" })).toBe(false);
     expect(sameList({ kind: "contacts" }, { kind: "contacts" })).toBe(false);
+  });
+
+  it("opens one message of a conversation alone, and drops it with the conversation (brief 26)", () => {
+    const list = { kind: "system", view: "inbox" } as const;
+    const one = withConversation(list, "T1", "M2");
+    expect(one).toEqual({ kind: "system", view: "inbox", conversationId: "T1", messageId: "M2" });
+    expect(formatRoute(one)).toBe("#inbox/T1/M2");
+    expect(withConversation(one, "T3")).toEqual({ kind: "system", view: "inbox", conversationId: "T3" });
+    expect(withoutConversation(one)).toEqual(list);
+    expect("messageId" in withoutConversation(one)).toBe(false);
+    expect(sameList(one, withConversation(list, "T1"))).toBe(true);
   });
 
   it("knows which routes show conversations", () => {

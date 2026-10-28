@@ -77,4 +77,5 @@ export {
   type MailActionDeps,
   type MailActions,
 } from "./runner";
+export { capitalised, nounFor, rowNoun, type RowNoun } from "./copy";
 export { rolesFrom, useMailActions } from "./useMailActions";

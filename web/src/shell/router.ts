@@ -5,6 +5,7 @@
 //   #label/<labelId>                                          a user label (by mailbox id)
 //   #search/<query>                                           search results (query URI-encoded)
 //   #<any of the above>/<conversationId>                      a conversation opened from there
+//   #<any of the above>/<conversationId>/<messageId>          one message of it, alone (brief 26: conversation view off)
 //   #settings/<section>                                       settings (#settings alone is general)
 //   #contacts                                                 contacts
 //   #scheduled                                                messages waiting to be sent (brief 23)
@@ -15,7 +16,7 @@
 //
 //   parseRoute(hash): Route        formatRoute(route): "#..."     routeHref = formatRoute
 //   useRoute(): Route              navigate(route, { replace? })
-//   withConversation(route, id), withoutConversation(route), isMailRoute(route), sameList(a, b)
+//   withConversation(route, id, messageId?), withoutConversation(route), isMailRoute(route), sameList(a, b)
 
 import { useSyncExternalStore } from "react";
 
@@ -33,6 +34,8 @@ export interface SystemLabelRoute {
   view: SystemView;
   /** The open conversation (a JMAP Thread id), if any. */
   conversationId?: string;
+  /** Brief 26: the one message of it shown alone (a JMAP Email id), as a message row opens it with conversation view off. */
+  messageId?: string;
 }
 
 /** A user label's list, or a conversation opened from it: `#label/<id>`, `#label/<id>/<conversationId>`. */
@@ -41,6 +44,7 @@ export interface UserLabelRoute {
   /** The label's mailbox id. */
   labelId: string;
   conversationId?: string;
+  messageId?: string;
 }
 
 /** A system or user label. */
@@ -52,6 +56,7 @@ export interface SearchResultsRoute {
   /** The query as typed (Gmail operators included); never empty. */
   query: string;
   conversationId?: string;
+  messageId?: string;
 }
 
 /** A route that shows conversations: a label or search results. */
@@ -93,11 +98,23 @@ function encode(segment: string): string {
   return encodeURIComponent(segment);
 }
 
-function conversationFrom(segments: readonly string[]): { ok: true; id?: string } | { ok: false } {
+type Opened = { ok: true; id?: string; messageId?: string } | { ok: false };
+
+/** The open conversation, and the one message shown alone (brief 26), from the segments after the list's. */
+function conversationFrom(segments: readonly string[]): Opened {
   if (segments.length === 0) return { ok: true };
-  if (segments.length > 1) return { ok: false };
+  if (segments.length > 2) return { ok: false };
   const id = decode(segments[0]!);
-  return id ? { ok: true, id } : { ok: false };
+  if (!id) return { ok: false };
+  if (segments.length === 1) return { ok: true, id };
+  const messageId = decode(segments[1]!);
+  return messageId ? { ok: true, id, messageId } : { ok: false };
+}
+
+function withOpened<R extends MailRoute>(route: R, opened: Opened): R {
+  if (opened.ok && opened.id) route.conversationId = opened.id;
+  if (opened.ok && opened.messageId) route.messageId = opened.messageId;
+  return route;
 }
 
 /**
@@ -114,9 +131,7 @@ export function parseRoute(hash: string): Route {
   if (IS_SYSTEM_VIEW.has(head)) {
     const conversation = conversationFrom(rest);
     if (!conversation.ok) return INBOX;
-    const route: SystemLabelRoute = { kind: "system", view: head as SystemView };
-    if (conversation.id) route.conversationId = conversation.id;
-    return route;
+    return withOpened<SystemLabelRoute>({ kind: "system", view: head as SystemView }, conversation);
   }
 
   switch (head) {
@@ -125,18 +140,14 @@ export function parseRoute(hash: string): Route {
       if (!labelId) return INBOX;
       const conversation = conversationFrom(rest.slice(1));
       if (!conversation.ok) return INBOX;
-      const route: UserLabelRoute = { kind: "label", labelId };
-      if (conversation.id) route.conversationId = conversation.id;
-      return route;
+      return withOpened<UserLabelRoute>({ kind: "label", labelId }, conversation);
     }
     case "search": {
       const query = rest[0] ? decode(rest[0]) : null;
       if (!query || !query.trim()) return INBOX;
       const conversation = conversationFrom(rest.slice(1));
       if (!conversation.ok) return INBOX;
-      const route: SearchResultsRoute = { kind: "search", query };
-      if (conversation.id) route.conversationId = conversation.id;
-      return route;
+      return withOpened<SearchResultsRoute>({ kind: "search", query }, conversation);
     }
     case "settings": {
       if (rest.length > 1) return INBOX;
@@ -172,7 +183,9 @@ export function formatRoute(route: Route): string {
     case "scheduled":
       return "#scheduled";
   }
-  return route.conversationId ? `#${path}/${encode(route.conversationId)}` : `#${path}`;
+  if (!route.conversationId) return `#${path}`;
+  const conversation = `#${path}/${encode(route.conversationId)}`;
+  return route.messageId ? `${conversation}/${encode(route.messageId)}` : conversation;
 }
 
 /** Alias of formatRoute, for `<a href={routeHref(route)}>`. */
@@ -189,14 +202,19 @@ export function isMailRoute(route: Route): route is MailRoute {
   return route.kind === "system" || route.kind === "label" || route.kind === "search";
 }
 
-/** The same list with a conversation open. */
-export function withConversation<R extends MailRoute>(route: R, conversationId: string): R {
-  return { ...route, conversationId };
+/**
+ * The same list with a conversation open: the whole of it, or with
+ * `messageId` that one message alone (brief 26, a message row with
+ * conversation view off).
+ */
+export function withConversation<R extends MailRoute>(route: R, conversationId: string, messageId?: string): R {
+  const { messageId: _drop, ...list } = route;
+  return (messageId ? { ...list, conversationId, messageId } : { ...list, conversationId }) as R;
 }
 
 /** The list a conversation was opened from (Gmail's "Back to Inbox"). */
 export function withoutConversation<R extends MailRoute>(route: R): R {
-  const { conversationId: _drop, ...list } = route;
+  const { conversationId: _drop, messageId: _message, ...list } = route;
   return list as R;
 }
 

@@ -12,7 +12,7 @@
 
 import type { Id } from "@postern/jmap";
 import { useMemo } from "react";
-import { rolesFrom, useMailActions, type ActionCopy, type ActionOutcome } from "../actions";
+import { capitalised, nounFor, rolesFrom, useMailActions, type ActionCopy, type ActionOutcome } from "../actions";
 import { useJmap } from "../auth";
 import type { LabelRoute } from "../shell/router";
 import { resolveConversations, scopeFor, type ResolveOptions } from "./conversations";
@@ -21,24 +21,28 @@ import { useLabelsStore } from "./useLabels";
 
 const count = (n: number) => n.toLocaleString();
 
+// The copy quotes the label's name, so it is built here rather than from
+// actionCopy's tokens. `noun` is the conversation, or the message with
+// conversation view off (brief 26; the runner passes it).
+
 export function addedCopy(name: string): ActionCopy {
   return {
-    done: (n) => (n === 1 ? `Label "${name}" added.` : `Label "${name}" added to ${count(n)} conversations.`),
-    failed: (n) => (n === 1 ? `Couldn't add the label "${name}".` : `Couldn't add the label "${name}" to ${count(n)} conversations.`),
+    done: (n, noun) => (n === 1 ? `Label "${name}" added.` : `Label "${name}" added to ${count(n)} ${nounFor(n, noun)}.`),
+    failed: (n, noun) => (n === 1 ? `Couldn't add the label "${name}".` : `Couldn't add the label "${name}" to ${count(n)} ${nounFor(n, noun)}.`),
   };
 }
 
 export function removedCopy(name: string): ActionCopy {
   return {
-    done: (n) => (n === 1 ? `Label "${name}" removed.` : `Label "${name}" removed from ${count(n)} conversations.`),
-    failed: (n) => (n === 1 ? `Couldn't remove the label "${name}".` : `Couldn't remove the label "${name}" from ${count(n)} conversations.`),
+    done: (n, noun) => (n === 1 ? `Label "${name}" removed.` : `Label "${name}" removed from ${count(n)} ${nounFor(n, noun)}.`),
+    failed: (n, noun) => (n === 1 ? `Couldn't remove the label "${name}".` : `Couldn't remove the label "${name}" from ${count(n)} ${nounFor(n, noun)}.`),
   };
 }
 
 export function movedCopy(name: string): ActionCopy {
   return {
-    done: (n) => (n === 1 ? `Conversation moved to "${name}".` : `${count(n)} conversations moved to "${name}".`),
-    failed: (n) => (n === 1 ? `Couldn't move the conversation to "${name}".` : `Couldn't move ${count(n)} conversations to "${name}".`),
+    done: (n, noun) => (n === 1 ? `${capitalised(nounFor(1, noun))} moved to "${name}".` : `${count(n)} ${nounFor(n, noun)} moved to "${name}".`),
+    failed: (n, noun) => (n === 1 ? `Couldn't move the ${nounFor(1, noun)} to "${name}".` : `Couldn't move ${count(n)} ${nounFor(n, noun)} to "${name}".`),
   };
 }
 

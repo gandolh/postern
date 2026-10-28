@@ -36,6 +36,14 @@ export function mountedConversationStores(): readonly ConversationStore[] {
 /** What brief 14's keys can do to the open conversation. */
 export interface ConversationController {
   conversationId: Id;
+  /**
+   * Brief 26: the one message shown alone (a message row opened with
+   * conversation view off), else undefined. The label keys act on it, by this
+   * id (labels/conversations.ts lendConversation).
+   */
+  messageId?: Id;
+  /** Brief 26, with one message shown: `j` / `k` open the next / previous message row of the list it came from. */
+  openRow?(delta: 1 | -1): void;
   /** The messages shown, oldest first. */
   messageIds(): Id[];
   /** The message the cursor is on (the last focused card), or null. */

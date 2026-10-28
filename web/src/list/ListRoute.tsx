@@ -5,9 +5,11 @@
 
 import { useMemo } from "react";
 import type { MailboxRoles } from "../actions/conversation";
+import { rowNoun } from "../actions/copy";
 import { rolesFrom } from "../actions/useMailActions";
 import type { ResolvedLabel } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
+import { usePrefs } from "../prefs/usePrefs";
 import type { LabelRoute } from "../shell/router";
 import { EmptyState, emptyLabelMessage } from "../shell/states";
 import { ConversationList } from "./ConversationList";
@@ -31,7 +33,9 @@ export function ListRoute({ route, label }: ListRouteProps) {
   const rolesKey = JSON.stringify(rolesFrom(labels.store));
   const roles = useMemo(() => JSON.parse(rolesKey) as MailboxRoles, [rolesKey]);
   const view = useMemo(() => labelListView({ view: label.view, mailboxId: label.mailboxId }, roles), [label.view, label.mailboxId, roles]);
-  const emptyMessage = label.view === "starred" ? "No starred conversations" : emptyLabelMessage(label.title);
+  // Brief 26: a list of messages (conversation view off) says so.
+  const noun = rowNoun(usePrefs().prefs.conversationView);
+  const emptyMessage = label.view === "starred" ? `No starred ${noun}s` : emptyLabelMessage(label.title, noun);
 
   // A label whose own count says it is empty needs no query. Not All Mail or
   // Starred: their mailbox count is not the list's.

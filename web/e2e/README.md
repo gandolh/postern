@@ -51,6 +51,7 @@ npx playwright test -c web/e2e hostile -g script-tag
 | [dns.spec.ts](dns.spec.ts) | Chrome's net log: no host a message names is looked up before "Display images". |
 | [csp.spec.ts](csp.spec.ts) | The served headers against [lib/headers.ts](lib/headers.ts), the `/webmail-api` path allowlist, and every screen under the CSP with zero violations. |
 | [tokens.spec.ts](tokens.spec.ts) | No secret in storage, cookies, caches, URLs, the DOM or the console; what another estate app's page (same site, another origin) can and cannot reach; cache entries rewritten on the origin are never served; the idle timeout; sign-out. |
+| [conversation-view-off.spec.ts](conversation-view-off.spec.ts) | Brief 26: with conversation view off, a message row opens that message alone and marks only it read; reload, Back, Reply, `j` / `k`, Archive and the copy that counts messages. It makes three messages of one conversation unread for the run and puts them back. |
 
 Three tests are controls, there to show a green run means something: an
 unsandboxed frame does set the canary, an injected inline script is caught by

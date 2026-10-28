@@ -1,111 +1,70 @@
 // @vitest-environment jsdom
-// Brief 22: opening a message row opens its conversation at that message,
-// through the conversation's controller, once the conversation is on screen.
+// Brief 26: a message row opens alone, and the reader's `j` / `k` step through
+// the message rows the list held, on screen or not.
 
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { messageCardId, setActiveConversation, type ConversationController } from "../conversation/registry";
-import { cancelRevealMessage, revealMessageOnOpen } from "./openMessage";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { MailRoute } from "../shell/router";
+import { forgetMessageRows, heldMessageRows, holdMessageRows, messageRowRoute, openNeighbourRow } from "./openMessage";
+import { requestReturnFocus, takeReturnFocus } from "./returnFocus";
 
-const unsets: (() => void)[] = [];
+const INBOX: MailRoute = { kind: "system", view: "inbox" };
+const row = (id: string, conversationId: string) => ({ id, conversationId, emailId: id });
+const ROWS = [row("m3", "T1"), row("m2", "T1"), row("s1", "T2"), row("m1", "T1")];
 
-afterEach(() => {
-  cancelRevealMessage();
-  for (const unset of unsets.splice(0)) unset();
-  document.body.innerHTML = "";
+beforeEach(() => window.history.replaceState(null, "", "#inbox"));
+afterEach(() => forgetMessageRows());
+
+describe("messageRowRoute", () => {
+  it("names the conversation and the message, on the same list", () => {
+    expect(messageRowRoute({ kind: "label", labelId: "i" }, row("m2", "T1"))).toEqual({ kind: "label", labelId: "i", conversationId: "T1", messageId: "m2" });
+    expect(messageRowRoute({ ...INBOX, conversationId: "T9", messageId: "x" }, row("m2", "T1"))).toEqual({ ...INBOX, conversationId: "T1", messageId: "m2" });
+  });
 });
 
-/** A card in the DOM, as MessageCard renders it, whose scrollIntoView is recorded. */
-function card(id: string, expanded: boolean): { el: HTMLElement; scrolled: ReturnType<typeof vi.fn> } {
-  const el = document.createElement("article");
-  el.id = messageCardId(id);
-  el.dataset["expanded"] = String(expanded);
-  const scrolled = vi.fn();
-  el.scrollIntoView = scrolled;
-  document.body.append(el);
-  return { el, scrolled };
-}
-
-/** The conversation's controller; toggling a message opens its card, adding it if it was folded away. */
-function conversation(conversationId: string, ids: string[]) {
-  const scrolls = new Map<string, ReturnType<typeof vi.fn>>();
-  const toggleMessage = vi.fn((id?: string) => {
-    const el = document.getElementById(messageCardId(id!));
-    if (el) el.dataset["expanded"] = el.dataset["expanded"] === "true" ? "false" : "true";
-    else scrolls.set(id!, card(id!, true).scrolled);
-  });
-  const controller = { conversationId, messageIds: () => ids, toggleMessage } as unknown as ConversationController;
-  return {
-    controller,
-    toggleMessage,
-    mount: () => unsets.push(setActiveConversation(controller)),
-    scrollOf: (id: string) => scrolls.get(id),
-  };
-}
-
-describe("revealMessageOnOpen", () => {
-  it("waits for the conversation to mount, then opens a collapsed message and scrolls to it", async () => {
-    const { scrolled } = card("2", false);
-    const other = conversation("OTHER", ["9"]);
-    const conv = conversation("T1", ["1", "2", "3"]);
-    revealMessageOnOpen("T1", "2");
-    other.mount();
-    expect(other.toggleMessage).not.toHaveBeenCalled();
-    conv.mount();
-    expect(conv.toggleMessage).toHaveBeenCalledWith("2");
-    await vi.waitFor(() => expect(scrolled).toHaveBeenCalledWith({ block: "start" }));
+describe("openNeighbourRow", () => {
+  it("opens the next row on j and the previous on k, and focus comes back to the last one opened", () => {
+    holdMessageRows(INBOX, ROWS, () => {});
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "m2" }, 1)).toBe(true);
+    expect(window.location.hash).toBe("#inbox/T2/s1");
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T2", messageId: "s1" }, -1)).toBe(true);
+    expect(window.location.hash).toBe("#inbox/T1/m2");
+    requestReturnFocus(false);
+    expect(takeReturnFocus(ROWS)).toBe("m2");
   });
 
-  it("leaves an open message open, and acts at once when the conversation is already on screen", async () => {
-    const { scrolled } = card("3", true);
-    const conv = conversation("T1", ["1", "2", "3"]);
-    conv.mount();
-    revealMessageOnOpen("T1", "3");
-    expect(conv.toggleMessage).not.toHaveBeenCalled();
-    await vi.waitFor(() => expect(scrolled).toHaveBeenCalled());
+  it("stops at either end", () => {
+    holdMessageRows(INBOX, ROWS, () => {});
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "m3" }, -1)).toBe(false);
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "m1" }, 1)).toBe(false);
+    expect(window.location.hash).toBe("#inbox");
   });
 
-  it("unfolds a message folded among older ones", async () => {
-    const conv = conversation("T1", ["1", "2", "3", "4", "5"]);
-    revealMessageOnOpen("T1", "2");
-    conv.mount();
-    expect(conv.toggleMessage).toHaveBeenCalledWith("2");
-    await vi.waitFor(() => expect(conv.scrollOf("2")).toHaveBeenCalled());
+  it("keeps the rows when the list unmounts (reading pane off), without its loader", () => {
+    const loadMore = vi.fn();
+    const release = holdMessageRows(INBOX, ROWS, loadMore);
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "m3" }, 1)).toBe(true);
+    expect(loadMore).toHaveBeenCalledWith(1 + 20);
+    release();
+    loadMore.mockClear();
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "m2" }, 1)).toBe(true);
+    expect(window.location.hash).toBe("#inbox/T2/s1");
+    expect(loadMore).not.toHaveBeenCalled();
   });
 
-  it("brings the message back when focus moves away a moment later (a reply draft), until the reader acts", async () => {
-    const { scrolled } = card("3", true);
-    const conv = conversation("T1", ["1", "2", "3"]);
-    conv.mount();
-    revealMessageOnOpen("T1", "3");
-    await vi.waitFor(() => expect(scrolled).toHaveBeenCalledTimes(1));
-    const draft = document.createElement("textarea");
-    document.body.append(draft);
-    draft.focus();
-    await vi.waitFor(() => expect(scrolled).toHaveBeenCalledTimes(2));
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
-    draft.blur();
-    draft.focus();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(scrolled).toHaveBeenCalledTimes(2);
+  it("does nothing for another list, a whole conversation, or with nothing held", () => {
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "m3" }, 1)).toBe(false);
+    holdMessageRows(INBOX, ROWS, () => {});
+    expect(openNeighbourRow({ kind: "system", view: "starred", conversationId: "T1", messageId: "m3" }, 1)).toBe(false);
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1" }, 1)).toBe(false);
+    expect(openNeighbourRow({ ...INBOX, conversationId: "T1", messageId: "elsewhere" }, 1)).toBe(false);
+    forgetMessageRows();
+    expect(heldMessageRows()).toBeNull();
+    expect(window.location.hash).toBe("#inbox");
   });
 
-  it("does nothing for a message the conversation does not show as a card", () => {
-    const conv = conversation("T1", ["1"]);
-    revealMessageOnOpen("T1", "draft");
-    conv.mount();
-    expect(conv.toggleMessage).not.toHaveBeenCalled();
-  });
-
-  it("forgets an earlier request when another row opens", () => {
-    const first = conversation("T1", ["1"]);
-    const second = conversation("T2", ["2"]);
-    card("1", false);
-    card("2", false);
-    revealMessageOnOpen("T1", "1");
-    revealMessageOnOpen("T2", "2");
-    first.mount();
-    expect(first.toggleMessage).not.toHaveBeenCalled();
-    second.mount();
-    expect(second.toggleMessage).toHaveBeenCalledWith("2");
+  it("follows the list it came from, with the open message", () => {
+    holdMessageRows({ kind: "search", query: "from:bob" }, ROWS, () => {});
+    expect(openNeighbourRow({ kind: "search", query: "from:bob", conversationId: "T1", messageId: "m3" }, 1)).toBe(true);
+    expect(window.location.hash).toBe("#search/from%3Abob/T1/m2");
   });
 });

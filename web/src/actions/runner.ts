@@ -14,6 +14,7 @@
 import { isAbortError, SessionExpiredError, SignedOutError, type Id, type MethodCaller, type PatchObject } from "@postern/jmap";
 import { publishMailChange, publishPending } from "./bus";
 import { shownMessages, type Conversation, type ConversationScope, type MailboxRoles } from "./conversation";
+import { actionCopy, type ActionCopy, type RowNoun } from "./copy";
 import { destroyMessages, sendPlan, type SendResult } from "./execute";
 import { isEmptyPlan, reversePlan, type MessagePlan } from "./patches";
 import {
@@ -50,21 +51,19 @@ export interface MailActionDeps {
   /** Bring the label counts up to date (labels store sync). */
   syncLabels: () => void;
   toast: ActionToast | null;
+  /** Brief 26: what the toasts count, "conversation" (the default) or "message" with conversation view off. */
+  noun?: () => RowNoun;
 }
 
-/** What the toast says about an action. */
-export interface ActionCopy {
-  /** "Conversation archived." / "3 conversations archived." */
-  done: (count: number) => string;
-  /** "Couldn't archive the conversation." / "Couldn't archive 3 conversations." */
-  failed: (count: number) => string;
-}
+export { actionCopy, type ActionCopy, type RowNoun };
 
 export type ActionOutcome = "done" | "partial" | "nothing" | "failed";
 
 export interface ActionOptions {
   /** Show the toast (default true). The row's star toggle turns it off, as Gmail does; undo stays on `z`. */
   toast?: boolean;
+  /** What the toast counts, when not what the list's rows are (deps.noun): the open conversation says what it shows (brief 26). */
+  noun?: RowNoun;
 }
 
 type Scoped = (conversations: readonly Conversation[], scope: ConversationScope, options?: ActionOptions) => Promise<ActionOutcome>;
@@ -95,48 +94,29 @@ export interface MailActions {
   run(make: MessagePlan | (() => MessagePlan), copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
 }
 
-const n = (count: number) => count.toLocaleString();
-
-/** Gmail's toast wording, singular and plural. */
-export function actionCopy(oneDone: string, manyDone: string, oneFailed: string, manyFailed: string): ActionCopy {
-  return {
-    done: (count) => (count === 1 ? oneDone : manyDone.replace("{n}", n(count))),
-    failed: (count) => (count === 1 ? oneFailed : manyFailed.replace("{n}", n(count))),
-  };
-}
-
+// "{Thing}" and "{things}" are the conversation, or the message with conversation view off (./copy).
 export const COPY = {
-  archive: actionCopy("Conversation archived.", "{n} conversations archived.", "Couldn't archive the conversation.", "Couldn't archive {n} conversations."),
-  trash: actionCopy("Conversation moved to Trash.", "{n} conversations moved to Trash.", "Couldn't delete the conversation.", "Couldn't delete {n} conversations."),
-  deleteForever: actionCopy(
-    "Conversation deleted forever.",
-    "{n} conversations deleted forever.",
-    "Couldn't delete the conversation.",
-    "Couldn't delete {n} conversations.",
-  ),
+  archive: actionCopy("{Thing} archived.", "{n} {things} archived.", "Couldn't archive the {thing}.", "Couldn't archive {n} {things}."),
+  trash: actionCopy("{Thing} moved to Trash.", "{n} {things} moved to Trash.", "Couldn't delete the {thing}.", "Couldn't delete {n} {things}."),
+  deleteForever: actionCopy("{Thing} deleted forever.", "{n} {things} deleted forever.", "Couldn't delete the {thing}.", "Couldn't delete {n} {things}."),
   // Spam's own words: Stalwart trains its spam filter on both (spam.ts).
   reportSpam: REPORT_SPAM_COPY,
   notSpam: NOT_SPAM_COPY,
-  read: actionCopy("Conversation marked as read.", "{n} conversations marked as read.", "Couldn't mark the conversation as read.", "Couldn't mark {n} conversations as read."),
-  unread: actionCopy(
-    "Conversation marked as unread.",
-    "{n} conversations marked as unread.",
-    "Couldn't mark the conversation as unread.",
-    "Couldn't mark {n} conversations as unread.",
-  ),
-  star: actionCopy("Conversation starred.", "{n} conversations starred.", "Couldn't star the conversation.", "Couldn't star {n} conversations."),
-  unstar: actionCopy("Star removed.", "Stars removed from {n} conversations.", "Couldn't remove the star.", "Couldn't remove the stars from {n} conversations."),
+  read: actionCopy("{Thing} marked as read.", "{n} {things} marked as read.", "Couldn't mark the {thing} as read.", "Couldn't mark {n} {things} as read."),
+  unread: actionCopy("{Thing} marked as unread.", "{n} {things} marked as unread.", "Couldn't mark the {thing} as unread.", "Couldn't mark {n} {things} as unread."),
+  star: actionCopy("{Thing} starred.", "{n} {things} starred.", "Couldn't star the {thing}.", "Couldn't star {n} {things}."),
+  unstar: actionCopy("Star removed.", "Stars removed from {n} {things}.", "Couldn't remove the star.", "Couldn't remove the stars from {n} {things}."),
   important: actionCopy(
-    "Conversation marked as important.",
-    "{n} conversations marked as important.",
-    "Couldn't mark the conversation as important.",
-    "Couldn't mark {n} conversations as important.",
+    "{Thing} marked as important.",
+    "{n} {things} marked as important.",
+    "Couldn't mark the {thing} as important.",
+    "Couldn't mark {n} {things} as important.",
   ),
   notImportant: actionCopy(
-    "Conversation marked as not important.",
-    "{n} conversations marked as not important.",
-    "Couldn't mark the conversation as not important.",
-    "Couldn't mark {n} conversations as not important.",
+    "{Thing} marked as not important.",
+    "{n} {things} marked as not important.",
+    "Couldn't mark the {thing} as not important.",
+    "Couldn't mark {n} {things} as not important.",
   ),
 } as const satisfies Record<string, ActionCopy>;
 
@@ -160,6 +140,9 @@ function conversationsIn(plan: MessagePlan, messageIds: Iterable<Id>): number {
 export function createMailActions(deps: MailActionDeps): MailActions {
   // The labels store's roles now, not the ones a view captured when it mounted (All Mail may exist since).
   const fresh = (scope: ConversationScope): ConversationScope => ({ kind: scope.kind, roles: deps.roles() });
+
+  /** What the toasts count: the caller's word, else the list's rows' (brief 26). */
+  const nounOf = (options?: ActionOptions): RowNoun => options?.noun ?? deps.noun?.() ?? "conversation";
 
   const toast = (message: string, undo?: UndoEntry) => {
     deps.toast?.show(undo ? { message, action: { label: "Undo", onClick: () => void runUndo(undo) } } : { message });
@@ -191,12 +174,13 @@ export function createMailActions(deps: MailActionDeps): MailActions {
   }
 
   async function run(make: MessagePlan | (() => MessagePlan), copy: ActionCopy, options: ActionOptions = {}): Promise<ActionOutcome> {
+    const noun = nounOf(options);
     let plan: MessagePlan;
     try {
       plan = typeof make === "function" ? make() : make;
     } catch (err) {
       console.error(err);
-      toast(copy.failed(1));
+      toast(copy.failed(1, noun));
       return "failed";
     }
     if (isEmptyPlan(plan)) return "nothing";
@@ -210,7 +194,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
       answered();
       publishMailChange({ kind: "patch", update: plan.inverse });
       settle();
-      if (!isQuietError(err)) toast(copy.failed(count));
+      if (!isQuietError(err)) toast(copy.failed(count, noun));
       return "failed";
     } finally {
       answered();
@@ -221,21 +205,22 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     settle();
 
     if (isEmptyPlan(result.done)) {
-      toast(copy.failed(count));
+      toast(copy.failed(count, noun));
       return "failed";
     }
-    const entry: UndoEntry = { label: copy.done(result.done.conversationIds.length), undo: () => undoDone(result.done) };
+    const entry: UndoEntry = { label: copy.done(result.done.conversationIds.length, noun), undo: () => undoDone(result.done) };
     setUndo(entry);
     if (failedCount > 0) {
-      toast(copy.failed(failedCount), entry);
+      toast(copy.failed(failedCount, noun), entry);
       return "partial";
     }
-    if (options.toast !== false) toast(copy.done(count), entry);
+    if (options.toast !== false) toast(copy.done(count, noun), entry);
     return "done";
   }
 
   async function deleteForever(conversations: readonly Conversation[], scope: ConversationScope, options: ActionOptions = {}): Promise<ActionOutcome> {
     const s = fresh(scope);
+    const noun = nounOf(options);
     const ids = new Set(destroyIds(conversations, s));
     if (ids.size === 0) return "nothing";
     // Locally the messages leave every label, so every view drops them; put back if the server refuses.
@@ -259,7 +244,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
       answered();
       publishMailChange({ kind: "patch", update: restore });
       settle();
-      if (!isQuietError(err)) toast(COPY.deleteForever.failed(count));
+      if (!isQuietError(err)) toast(COPY.deleteForever.failed(count, noun));
       return "failed";
     } finally {
       answered();
@@ -271,10 +256,10 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     settle();
     const failedCount = new Set(refused.map((id) => conversationOf.get(id))).size;
     if (failedCount > 0) {
-      toast(COPY.deleteForever.failed(failedCount));
+      toast(COPY.deleteForever.failed(failedCount, noun));
       return failedCount === count ? "failed" : "partial";
     }
-    if (options.toast !== false) toast(COPY.deleteForever.done(count));
+    if (options.toast !== false) toast(COPY.deleteForever.done(count, noun));
     return "done";
   }
 
@@ -284,7 +269,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
       try {
         s = { ...s, roles: { ...s.roles, archive: await deps.ensureAllMail() } };
       } catch (err) {
-        if (!isQuietError(err)) toast(COPY.archive.failed(conversations.length));
+        if (!isQuietError(err)) toast(COPY.archive.failed(conversations.length, nounOf(options)));
         return "failed";
       }
     }
@@ -315,7 +300,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
         try {
           s = { ...s, roles: { ...s.roles, archive: await deps.ensureAllMail() } };
         } catch (err) {
-          if (!isQuietError(err)) toast(copy.failed(conversations.length));
+          if (!isQuietError(err)) toast(copy.failed(conversations.length, nounOf(options)));
           return "failed";
         }
       }
@@ -331,7 +316,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
         if (!deps.ensureSnoozed) throw new Error("Snooze needs the Snoozed label");
         snoozedId = await deps.ensureSnoozed();
       } catch (err) {
-        if (!isQuietError(err)) toast(copy.failed(conversations.length));
+        if (!isQuietError(err)) toast(copy.failed(conversations.length, nounOf(options)));
         return "failed";
       }
       return run(() => planSnooze(conversations, fresh(scope), snoozedId, at), copy, options);

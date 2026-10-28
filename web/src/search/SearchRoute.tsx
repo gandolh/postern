@@ -7,10 +7,12 @@
 
 import { useMemo } from "react";
 import type { ConversationScope } from "../actions/conversation";
+import { rowNoun } from "../actions/copy";
 import { ConversationList } from "../list/ConversationList";
 import type { ListPresentation, ListQuery } from "../list/types";
 import { rolesFrom } from "../actions/useMailActions";
 import { useLabelsStore } from "../labels/useLabels";
+import { usePrefs } from "../prefs/usePrefs";
 import type { SearchResultsRoute } from "../shell/router";
 import { ListSkeleton } from "../shell/states";
 import { useParsedSearch } from "./useParsedSearch";
@@ -24,6 +26,7 @@ export interface SearchRouteProps {
 export function SearchRoute({ route }: SearchRouteProps) {
   const parsed = useParsedSearch(route.query);
   const store = useLabelsStore();
+  const noun = rowNoun(usePrefs().prefs.conversationView);
   const scope = parsed?.scope ?? "normal";
   const query = useMemo<ListQuery | null>(() => {
     if (!parsed) return null;
@@ -73,7 +76,7 @@ export function SearchRoute({ route }: SearchRouteProps) {
           allLabel="that match this search"
           route={route}
           labelRoute={null}
-          emptyMessage="No conversations match this search"
+          emptyMessage={`No ${noun}s match this search`}
         />
       </div>
     </div>

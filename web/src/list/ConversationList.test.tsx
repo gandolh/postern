@@ -15,6 +15,7 @@ import { resetPrefs, setPrefs } from "../prefs/prefs";
 import type { LabelRoute } from "../shell/router";
 import { ToastProvider } from "../shell/toast";
 import { ListRoute } from "./ListRoute";
+import { heldMessageRows } from "./openMessage";
 import { getActiveList } from "./registry";
 
 const INBOX: LabelRoute = { kind: "system", view: "inbox" };
@@ -257,7 +258,7 @@ describe("conversation view off (brief 22)", () => {
     const { mail, user, grid } = await renderList(mail3());
     await user.click(within(rowsOf(grid)[1]!).getByRole("button", { name: "Archive" }));
     expect(rowsOf(grid).map((r) => r.getAttribute("data-row-id"))).toEqual(["3", "1", "s"]);
-    expect(await screen.findByText("Conversation archived.")).toBeTruthy();
+    expect(await screen.findByText("Message archived.")).toBeTruthy();
     await waitFor(() => expect(mail.emails.get("2")!.mailboxIds).toEqual({ h: true }));
     expect(mail.emails.get("1")!.mailboxIds).toEqual({ a: true });
     expect(mail.emails.get("3")!.mailboxIds).toEqual({ a: true });
@@ -272,7 +273,7 @@ describe("conversation view off (brief 22)", () => {
     const { mail, user, grid } = await renderList(mail3());
     await user.click(within(rowsOf(grid)[2]!).getByRole("checkbox", { name: "Select" }));
     expect(getActiveList()!.selectedIds).toEqual(new Set(["1"]));
-    expect(screen.getByText("1 conversation selected")).toBeTruthy();
+    expect(screen.getByText("1 message selected")).toBeTruthy();
     await user.click(within(toolbar()).getByRole("button", { name: "Mark as read" }));
     await waitFor(() => expect(mail.emails.get("1")!.keywords).toEqual({ $seen: true }));
     expect(mail.emails.get("3")!.keywords).toEqual({});
@@ -293,10 +294,43 @@ describe("conversation view off (brief 22)", () => {
     expect(picked.map((c) => c.messages.map((m) => m.id))).toEqual([["2"]]);
   });
 
-  it("opens a message row's conversation", async () => {
+  it("opens a message row alone, naming the message in the route (brief 26)", async () => {
     const { user, grid } = await renderList(mail3());
     await user.click(within(rowsOf(grid)[2]!).getByText("first"));
-    expect(window.location.hash).toBe("#inbox/T1");
+    expect(window.location.hash).toBe("#inbox/T1/1");
+    expect(heldMessageRows()).toEqual(["3", "2", "1", "s"]);
+  });
+
+  it("counts messages: the toast, the selection, the grid and Select all (brief 26)", async () => {
+    const { user, grid } = await renderList(mail3());
+    expect(grid.getAttribute("aria-label")).toBe("Messages in Inbox");
+    await user.click(within(rowsOf(grid)[0]!).getByRole("checkbox", { name: "Select" }));
+    await user.click(within(rowsOf(grid)[1]!).getByRole("checkbox", { name: "Select" }));
+    expect(screen.getByText("2 messages selected")).toBeTruthy();
+    await user.click(within(toolbar()).getByRole("button", { name: "Archive" }));
+    expect(await screen.findByText("2 messages archived.")).toBeTruthy();
+    cleanup();
+
+    const many = await renderList(inboxThreads(60));
+    await many.user.click(screen.getByRole("checkbox", { name: "Select all" }));
+    expect(screen.getByText("All 50 messages shown are selected.")).toBeTruthy();
+    await many.user.click(screen.getByRole("button", { name: "Select all 60 messages in Inbox" }));
+    expect(screen.getByText("All 60 messages in Inbox are selected.")).toBeTruthy();
+  });
+
+  it("says an empty label has no messages (brief 26)", async () => {
+    const mail = new FakeMail({ mailboxes: MAILBOXES, emails: [fakeEmail({ id: "1", threadId: "T1", mailboxIds: { e: true } })] });
+    const client = await mail.connect();
+    render(
+      <SessionContext.Provider value={{ client, account: { username: "alice@postern.test" }, signOut: async () => {} }}>
+        <LabelsStoreProvider store={new LabelsStore(client, () => "A")}>
+          <ToastProvider>
+            <Screen route={INBOX} />
+          </ToastProvider>
+        </LabelsStoreProvider>
+      </SessionContext.Provider>,
+    );
+    expect(await screen.findByText("No messages in Inbox")).toBeTruthy();
   });
 
   it("shows one row per conversation again when switched back on, without a reload", async () => {

@@ -13,7 +13,7 @@ import { snoozeKeyword, snoozeKeywordsOf, WOKEN } from "../snooze/keyword";
 import { latest, SEEN, type Conversation, type ConversationScope, type MailboxRoles } from "./conversation";
 import { planEdits, type MessagePlan } from "./patches";
 import { MissingLabelError, movedMessages } from "./plans";
-import type { ActionCopy } from "./runner";
+import { actionCopy, type ActionCopy } from "./copy";
 import { formatSnoozeTime } from "../snooze/times";
 
 /** Snooze until `at`: every message moved (a reply draft stays, as for archive) leaves the Inbox for Snoozed. */
@@ -69,19 +69,10 @@ export function planUnsnooze(
   });
 }
 
-/** runner.ts's actionCopy, here so that this module (which runner.ts imports) imports nothing back at run time. */
-function actionCopy(oneDone: string, manyDone: string, oneFailed: string, manyFailed: string): ActionCopy {
-  const n = (count: number) => count.toLocaleString();
-  return {
-    done: (count) => (count === 1 ? oneDone : manyDone.replace("{n}", n(count))),
-    failed: (count) => (count === 1 ? oneFailed : manyFailed.replace("{n}", n(count))),
-  };
-}
-
-/** "Conversation snoozed until Tue 08:00." */
+/** "Conversation snoozed until Tue 08:00." (`when` is a formatted time: no tokens in it.) */
 export function snoozeCopy(at: Date, now: Date = new Date()): ActionCopy {
   const when = formatSnoozeTime(at, now);
-  return actionCopy(`Conversation snoozed until ${when}.`, `{n} conversations snoozed until ${when}.`, "Couldn't snooze the conversation.", "Couldn't snooze {n} conversations.");
+  return actionCopy(`{Thing} snoozed until ${when}.`, `{n} {things} snoozed until ${when}.`, "Couldn't snooze the {thing}.", "Couldn't snooze {n} {things}.");
 }
 
-export const UNSNOOZE_COPY = actionCopy("Conversation unsnoozed.", "{n} conversations unsnoozed.", "Couldn't unsnooze the conversation.", "Couldn't unsnooze {n} conversations.");
+export const UNSNOOZE_COPY = actionCopy("{Thing} unsnoozed.", "{n} {things} unsnoozed.", "Couldn't unsnooze the {thing}.", "Couldn't unsnooze {n} {things}.");

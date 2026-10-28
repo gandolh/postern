@@ -1,7 +1,8 @@
 // The conversations a label action works on, from the ids a toolbar, a drag
 // or a keyboard shortcut hands over. Rows already loaded in the mounted list
-// are used as they are (they carry every message's labels); anything else
-// (a conversation open without its list, say) is fetched.
+// are used as they are (they carry every message's labels), then whatever an
+// open view lent (brief 26: one message shown alone, keyed by its own id);
+// anything else (a conversation open without its list, say) is fetched.
 
 import type { Id, MethodCaller } from "@postern/jmap";
 import type { Conversation, ConversationMessage, ConversationScope, MailboxRoles } from "../actions/conversation";
@@ -19,6 +20,22 @@ export function isAllSelected(ids: readonly Id[]): boolean {
   return list !== null && list.allSelected && ids.length > 0 && ids.every((id) => list.selectedIds.has(id));
 }
 
+const lent = new Map<Id, Conversation>();
+
+/**
+ * Brief 26: the reader showing one message alone (conversation view off)
+ * lends it as a one-message conversation under the message's id, so a label
+ * applied from there touches that message only, with or without the list on
+ * screen. Fetching could not do it: `Thread/get` takes a conversation's id.
+ * Returns the release.
+ */
+export function lendConversation(conversation: Conversation): () => void {
+  lent.set(conversation.id, conversation);
+  return () => {
+    if (lent.get(conversation.id) === conversation) lent.delete(conversation.id);
+  };
+}
+
 export async function resolveConversations(caller: MethodCaller, ids: readonly Id[], options: ResolveOptions = {}): Promise<Conversation[]> {
   const list = getActiveList();
   const held = new Map<Id, Conversation>();
@@ -27,6 +44,10 @@ export async function resolveConversations(caller: MethodCaller, ids: readonly I
     for (const row of list.rows) if (!held.has(row.id)) held.set(row.id, row);
   }
   const wanted = options.all && list ? [...held.keys()] : [...new Set(ids)];
+  for (const id of wanted) {
+    const conversation = held.has(id) ? undefined : lent.get(id);
+    if (conversation) held.set(id, conversation);
+  }
   const missing = wanted.filter((id) => !held.has(id));
   if (missing.length > 0) for (const c of await fetchConversations(caller, missing)) held.set(c.id, c);
   return wanted.flatMap((id) => {
