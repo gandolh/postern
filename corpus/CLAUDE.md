@@ -97,11 +97,10 @@ updated: <YYYY-MM-DD>
   `allow-same-origin` or `allow-scripts`, after sanitising, with remote content
   blocked by default. No code path may insert message HTML into the app's own
   DOM. See [wiki/security.md](wiki/security.md).
-- **Tokens live in memory only.** Never `localStorage`, `sessionStorage`,
-  IndexedDB or a cookie the app's script can read. Postern has had its own
-  host since 2026-10-22, which meets the decision's revisit condition, but the
-  rule stands until the owner decides; see [wiki/decisions.md](wiki/decisions.md)
-  and [wiki/open-questions.md](wiki/open-questions.md).
+- **The access token lives in memory only; the refresh token may live in
+  `sessionStorage`** (owner, 2026-10-28), cleared on sign-out and by the idle
+  timeout. Never `localStorage`, IndexedDB or a cookie the app's script can
+  read. See [wiki/decisions.md](wiki/decisions.md).
 - **No backend of our own.** Postern is static files plus Stalwart. A feature
   that seems to need a server is a decision to bring to the owner first.
 - **No CI.** Don't add GitHub Actions, runners or other GitHub-specific

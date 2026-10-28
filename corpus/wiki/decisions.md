@@ -1,6 +1,6 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; tokens in memory only, and no staying signed in across a reload (owner, 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native. How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
-updated: 2026-10-23
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; the access token in memory and the refresh token in sessionStorage, so a reload keeps the session and closing the tab ends it (owner, 2026-10-28, revisiting 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native. How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
+updated: 2026-10-28
 ---
 
 # Decisions
@@ -64,8 +64,8 @@ its own.
 
 **Mitigations, all kept:**
 
-- tokens in memory only, until the owner decides otherwise
-  ([open-questions.md](open-questions.md));
+- the access token in memory only, the refresh token in `sessionStorage`
+  (owner, 2026-10-28);
 - message HTML only in the sandbox;
 - a strict CSP, with `frame-ancestors 'none'` and COOP;
 - a service worker that serves only files whose hash it knows;
@@ -86,6 +86,9 @@ readable by any script on the origin. The cost is that a reload or a new tab
 means signing in again, which Gmail users do not expect. The owner kept that
 cost on 2026-10-20; see the next entry. The origin has been Postern's alone
 since 2026-10-22, and the rule stands until the owner revisits it.
+
+**Revisited 2026-10-28, owner:** the refresh token may live in
+`sessionStorage`. The access token stays in memory. See the next entry.
 
 ## No staying signed in across a reload
 _2026-10-20, owner_. A reload or a new tab signs in again; the tokens die with
@@ -111,6 +114,18 @@ estate app's script can reach. Revisit only if Postern gets its own origin.
 Nothing changed: the tokens still die with the tab. Whether to keep a session
 across reloads now is the owner's call, filed in
 [open-questions.md](open-questions.md).
+
+**Revisited 2026-10-28, owner: a reload keeps the session; closing the tab
+does not.** The refresh token is kept in `sessionStorage`, so a reload or a
+crashed tab signs in again silently, and closing the tab or the phone killing
+the installed app signs out. Sign-out and the 8-hour idle timeout clear it.
+Production's tokens shrink the same day (access 15 minutes, refresh about a
+day, renewed on each refresh; a `../vps-deploy` brief), so a copied refresh
+token dies within a day. Rejected: **IndexedDB**, which survives a browser
+restart and suits the installed Android app better (the owner picked the
+store that dies with the tab, and gave no further reason); **memory only**, as before, because every reload
+signed out. What still reads the token is a script on Postern's own origin,
+which the CSP, the sandbox and having no third-party scripts are there to stop.
 
 ## Postern is not registered as an OAuth client
 _2026-10-20_. Postern signs in with the constant client ID `postern` and the

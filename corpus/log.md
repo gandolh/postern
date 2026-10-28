@@ -456,3 +456,14 @@ does; the copy that still counts conversations gets fixed with it. Filed as
 [conversation-view-off-opens-one-message](todos/conversation-view-off-opens-one-message.md).
 Snooze stays browser-only: the held self-addressed message through FUTURERELEASE
 was turned down, as it leaves an extra message in every snoozed thread.
+
+## [2026-10-28] decision | Shorter tokens, and a reload keeps the session
+
+The owner answered both open questions. Production's Stalwart tokens get
+shorter: access 15 minutes, refresh about a day, renewed on each refresh, so a
+copied refresh token dies within a day; that is a `../vps-deploy` change. And a
+reload keeps the session: the refresh token is kept in `sessionStorage`
+(IndexedDB was offered and declined), cleared on sign-out and by the 8-hour idle
+timeout; closing the tab still signs out. The two decisions entries are
+revisited and `corpus/CLAUDE.md`'s token rule follows. A brief for the session
+is to be written.
