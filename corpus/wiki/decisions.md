@@ -127,6 +127,13 @@ store that dies with the tab, and gave no further reason); **memory only**, as b
 signed out. What still reads the token is a script on Postern's own origin,
 which the CSP, the sandbox and having no third-party scripts are there to stop.
 
+**Settled after brief 27 (2026-10-28, owner, picking the recommended
+answers):** Chrome brings a closed tab's `sessionStorage` back on "Reopen
+closed tab" and on session restore, so that tab resumes within the idle
+deadline and the refresh token's day; accepted, the store stays. When the
+server can't be reached during a resume, the stored token is kept so a later
+reload can resume; only the in-memory state is dropped.
+
 ## Postern is not registered as an OAuth client
 _2026-10-20_. Postern signs in with the constant client ID `postern` and the
 redirect URI `${origin}/` (`${origin}/webmail/` until 2026-10-22), and

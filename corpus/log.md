@@ -518,3 +518,10 @@ Brief 27's notes took `architecture.md` and `security.md` past the 200-line limi
 sections moved, unchanged but for their headings: Sign-in to [sign-in.md](wiki/sign-in.md),
 and "Message rendering as built" to [rendering.md](wiki/rendering.md). Each old page keeps a
 short section pointing to the new one; `routing.md` routes the two questions there.
+
+## [2026-10-28] decision | Brief 27's two questions answered
+
+The owner, in full-auto mode, took the recommended answers: `sessionStorage`
+stays even though Chrome restores it with a reopened tab or a restored session,
+and a resume that can't reach the server keeps the stored token for the next
+reload. Recorded under the reload entry in [decisions.md](wiki/decisions.md).
