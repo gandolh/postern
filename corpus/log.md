@@ -447,3 +447,12 @@ was reseeded clean (Inbox 2147 / 2038 / 129 unread, Hostile 18). 1240 unit and 3
 tests pass; live, Yes reached bob with `PARTSTAT=ACCEPTED` and the same UID.
 [gmail-on-jmap.md](wiki/gmail-on-jmap.md), [security.md](wiki/security.md) and the glossary
 ("invite") are updated. brief-board is down (since 2026-10-13), so this is recorded here only.
+
+## [2026-10-28] todo | Conversation view off opens one message; snooze stays as built
+
+The owner answered what briefs 22 and 24 left open. With conversation view off,
+a message row should open that message alone and mark only it read, as Gmail
+does; the copy that still counts conversations gets fixed with it. Filed as
+[conversation-view-off-opens-one-message](todos/conversation-view-off-opens-one-message.md).
+Snooze stays browser-only: the held self-addressed message through FUTURERELEASE
+was turned down, as it leaves an extra message in every snoozed thread.
