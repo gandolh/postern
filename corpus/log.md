@@ -525,3 +525,7 @@ The owner, in full-auto mode, took the recommended answers: `sessionStorage`
 stays even though Chrome restores it with a reopened tab or a restored session,
 and a resume that can't reach the server keeps the stored token for the next
 reload. Recorded under the reload entry in [decisions.md](wiki/decisions.md).
+
+## [2026-10-31] maintenance | README to the readme-docs standard, and a docs/ folder
+
+The README said Postern was built through brief 17 and ready to deploy. It now follows the readme-docs standard: what it is, an honest status (briefs 01-27 done, nothing deployed), what it does including send later, snooze, invite cards and conversation view off, how it works with the request-path diagram, how to run it, the deploy, the layout and the license. `docs/` is new, with `getting-started.md`. There are no screenshots: the app needs a Stalwart to show mail, the dev one runs in Docker, and this workspace could not pull its images or run Stalwart another way. `docs/README.md` says where the images go and that they come from Alice's seeded test mailbox. Checked: `npm ci`, `npm run typecheck`, `npm run lint`, `npm run build`, and `vitest run` (1,259 passed, 32 skipped: the integration tests that need the local Stalwart).
