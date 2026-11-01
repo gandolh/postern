@@ -9,7 +9,7 @@ small scheduler service was rejected: it would break "No backend of our own".
 
 Gmail's Snooze hides a conversation and brings it back to the top of the Inbox at a
 chosen time. Nothing in JMAP (RFC 8620, 8621) schedules a message's return, and
-nothing in Stalwart 0.16 is known to (the version is pinned in `../vps-deploy`).
+nothing in Stalwart 0.16 is known to (the version is pinned in `vps-deploy`).
 
 Where it plugs in (checked 2026-10-23):
 
@@ -34,7 +34,7 @@ Where it plugs in (checked 2026-10-23):
 
 ## Files you must NOT touch
 
-- `dev/plan.ndjson` and anything under `../vps-deploy`: no server change.
+- `dev/plan.ndjson` and anything under `vps-deploy`: no server change.
 - `jmap/` unless a missing method type is needed.
 
 ## What to do

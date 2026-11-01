@@ -84,4 +84,4 @@ idle sign-out unsubscribes the browser but leaves the server's copy until the
 next sign-in or expiry; two accounts in one browser profile share one push
 endpoint. Owner steps (Android install, the real push check, Safari on iOS
 16.4+, `webPushContact` and outbound HTTPS to push services in
-`../vps-deploy`) are in [status.md](../../wiki/status.md).
+`vps-deploy`) are in [status.md](../../wiki/status.md).

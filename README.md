@@ -44,7 +44,7 @@ The test accounts' passwords are in the git-ignored `dev/.env` that `dev:mail` w
 
 ## Deploy
 
-Postern ships through the estate's deploy tool, `../vps-deploy`. Its stack runs `npm ci` and `npm run build` here, then uploads `web/dist`, served at the root of `postern.<domain>` with the headers in [corpus/wiki/security-headers.md](corpus/wiki/security-headers.md). The owner runs the deploy; the steps and the smoke test are in [corpus/wiki/status.md](corpus/wiki/status.md), under Owner steps.
+Postern ships through the estate's deploy tool, `vps-deploy`. Its stack runs `npm ci` and `npm run build` here, then uploads `web/dist`, served at the root of `postern.<domain>` with the headers in [corpus/wiki/security-headers.md](corpus/wiki/security-headers.md). The owner runs the deploy; the steps and the smoke test are in [corpus/wiki/status.md](corpus/wiki/status.md), under Owner steps.
 
 ## Project layout
 

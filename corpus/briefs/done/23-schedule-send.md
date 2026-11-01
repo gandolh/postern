@@ -35,7 +35,7 @@ How sending works now (checked 2026-10-23):
 
 ## Files you must NOT touch
 
-- `dev/plan.ndjson` and production's mail config in `../vps-deploy`: if Stalwart
+- `dev/plan.ndjson` and production's mail config in `vps-deploy`: if Stalwart
   needs a setting to hold messages, write it down for the owner instead.
 - The client-side undo delay.
 
@@ -137,7 +137,7 @@ Left for the owner:
   conversation hides drafts in Drafts, as for any reply draft.
 - Production: the menu and Scheduled show only if production's Stalwart
   advertises `maxDelayedSend` too. The dev plan doesn't set it, so it is
-  Stalwart's default; nothing was checked in `../vps-deploy`.
+  Stalwart's default; nothing was checked in `vps-deploy`.
 
 Checked:
 

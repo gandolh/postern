@@ -1,5 +1,5 @@
 ---
-summary: How Postern is put together, as built (briefs 01-17, 2026-10-20). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in in brief (the details are in sign-in.md), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy as built in brief 18 (a static stack for /webmail with its headers, and the allowlisted /webmail-api route in the mail stack of ../vps-deploy; not deployed yet).
+summary: How Postern is put together, as built (briefs 01-17, 2026-10-20). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in in brief (the details are in sign-in.md), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy as built in brief 18 (a static stack for /webmail with its headers, and the allowlisted /webmail-api route in the mail stack of vps-deploy; not deployed yet).
 updated: 2026-10-28
 ---
 
@@ -32,7 +32,7 @@ Any other `/webmail-api` path is a 404, not the app's fallback. Same origin
 means no CORS. Stalwart's only CORS switch allows every origin, which is why
 an API on another origin was not attractive.
 
-The `/webmail-api` route is declared in the mail stack (`../vps-deploy`), not in
+The `/webmail-api` route is declared in the mail stack (`vps-deploy`), not in
 Postern's. The route claims Stalwart's loopback port, and the mail stack already
 owns that port; a second claimant fails synth.
 
@@ -90,7 +90,7 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
 
 ## Local development
 
-`dev/` runs Stalwart 0.16 (the version `../vps-deploy` pins) in Docker, with a
+`dev/` runs Stalwart 0.16 (the version `vps-deploy` pins) in Docker, with a
 test domain, test accounts and seeded mail (brief 02). The Vite dev server
 proxies `/webmail-api` to it, the same path as production. Docker on the dev
 machine is Docker Desktop, so the proxy targets a port published on
@@ -98,11 +98,11 @@ machine is Docker Desktop, so the proxy targets a port published on
 
 ## Deploy (brief 18)
 
-Built on 2026-10-20 in `../vps-deploy`, the estate's deploy tool. Deploying
+Built on 2026-10-20 in `vps-deploy`, the estate's deploy tool. Deploying
 is the owner's step; the commands are in [status.md](status.md), Owner steps.
 
-- **`postern.<domain>`** is `../vps-deploy/stacks/postern.ts`, a static site
-  on a host of its own (`../vps-deploy` brief 14, 2026-10-22). The
+- **`postern.<domain>`** is `vps-deploy/stacks/postern.ts`, a static site
+  on a host of its own (`vps-deploy` brief 14, 2026-10-22). The
   deploy runs `npm ci` and `npm run build` in this checkout (Node 24, as
   `engines` says), checks that `web/dist/index.html` loads from
   `/assets/`, and uploads `web/dist` as a new release; a symlink swap
@@ -115,7 +115,7 @@ is the owner's step; the commands are in [status.md](status.md), Owner steps.
   `application/manifest+json`. The stack copies the text, so a header change
   touches `web/src/sw/headers.ts`, the e2e Caddyfile, security-headers.md and
   that stack.
-- **`/webmail-api`** is a route of the mail stack (`../vps-deploy/stacks/mail.ts`),
+- **`/webmail-api`** is a route of the mail stack (`vps-deploy/stacks/mail.ts`),
   on Postern's host. It claims Stalwart's loopback port, which the mail stack
   owns, and a second stack claiming it fails synth. Only the allowlisted paths
   in [security-headers.md](security-headers.md) reach Stalwart, with the

@@ -2,7 +2,7 @@
 # the real mailbox. Run it through `npm run dev:mail` (dev/setup.sh), which
 # writes dev/.env first; dev/README.md has the rest.
 #
-# The shape is production's (../vps-deploy/infrastructure/mail/): the same
+# The shape is production's (vps-deploy/infrastructure/mail): the same
 # image, `config.json` saying only where the database is, and every other
 # setting in `plan.ndjson`, applied with the CLI below. What dev leaves out: the
 # recursive resolver (no spam blocklists to query), PROXY-protocol trust (no

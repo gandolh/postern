@@ -55,7 +55,7 @@ updated: 2026-10-28
 - **What a script on Postern's origin can read (since brief 27).** Any
   script that runs on Postern's origin reads `sessionStorage`, and with it
   the refresh token: it can mint access tokens until that token expires (30
-  days on Stalwart's defaults; about a day once `../vps-deploy` brief 20 is
+  days on Stalwart's defaults; about a day once `vps-deploy` brief 20 is
   applied), from anywhere, after the tab is closed, and sign-out cannot stop
   it (no revocation, below). Before brief 27 such a script could act only
   through the running app. Stalwart's tokens are stateless, so an old refresh

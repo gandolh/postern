@@ -11,7 +11,7 @@ access token stays in memory. IndexedDB was offered and declined. The
 reason the old rule existed, another estate app's script reading Postern's
 storage, ended when Postern got its own host (brief 19).
 
-Production's tokens shrink the same day (`../vps-deploy` brief 20): access 15
+Production's tokens shrink the same day (`vps-deploy` brief 20): access 15
 minutes, refresh a day, and **a new refresh token on every refresh**. Dev's
 Stalwart keeps the defaults (1 hour, 30 days, a new one only in the last 4
 days), so the code must handle both: whenever a refresh returns a refresh
@@ -42,7 +42,7 @@ Where things are today:
 
 ## Files you must NOT touch
 
-- `../vps-deploy` (brief 20 there sets production's lifetimes).
+- `vps-deploy` (brief 20 there sets production's lifetimes).
 - The sign-in form and the TOTP flow, beyond what resuming needs.
 
 ## What to do
@@ -97,7 +97,7 @@ Where things are today:
 Done, in `c8dd3cb`, but for two acceptance lines: the one against the dev
 Stalwart with production's settings was **skipped** on the coordinator's
 instruction (built against dev's default lifetimes, without waiting for
-`../vps-deploy` brief 20), and the Android one is an owner step (below).
+`vps-deploy` brief 20), and the Android one is an owner step (below).
 
 - **The adapter.** `jmap/src/auth/store.ts` defines `SessionStore` (`load`,
   `save`, `clear`) and `StoredSession`: the refresh token, the account's
@@ -171,7 +171,7 @@ Owner steps:
   to reload or use the menu's Reload: the Inbox comes back without the form.
   Close the app from the recent-apps screen and open it again: the sign-in
   form. Nothing here is Android-only; the iPhone is not tested.
-- **Production's tokens** (after `../vps-deploy` brief 20 is deployed): on
+- **Production's tokens** (after `vps-deploy` brief 20 is deployed): on
   `https://postern.<domain>/`, sign in, reload a few times a minute or more
   apart, and in DevTools (Application, Session Storage) see `postern.session`
   change its refresh token after each refresh. This is the skipped

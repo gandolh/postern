@@ -4,7 +4,7 @@
 
 On 2026-10-21 the owner asked for Postern on its own subdomain,
 `postern.<domain>`, instead of `/webmail` on the estate's shared origin. The
-routing is `../vps-deploy`'s brief 14. Stalwart's API moves onto the same host,
+routing is `vps-deploy`'s brief 14. Stalwart's API moves onto the same host,
 at `postern.<domain>/webmail-api`, so Postern stays same-origin with its API.
 
 This revisits "Served at /webmail, sharing the estate's origin" in
@@ -33,7 +33,7 @@ What has the base baked in (checked 2026-10-21):
 ## Files you must NOT touch
 
 - `API_BASE = "/webmail-api"` and the service worker's `API_PREFIX`. The API
-  keeps its path. Renaming it touches `../vps-deploy` too and buys nothing.
+  keeps its path. Renaming it touches `vps-deploy` too and buys nothing.
 - The token handling. "Tokens live in memory only" says "Revisit only if
   Postern gets its own origin", and this brief gives it one. Whether to keep a
   session across reloads is a separate call for the owner. Record it in
@@ -50,7 +50,7 @@ What has the base baked in (checked 2026-10-21):
    origin, and why the CORS objection no longer applies. Shorten the list of
    same-origin risks in `security.md`: other estate apps no longer share
    Postern's origin. Keep the hash check on cached files.
-4. Update `status.md`'s deploy steps to the new host, after `../vps-deploy`
+4. Update `status.md`'s deploy steps to the new host, after `vps-deploy`
    brief 14.
 
 ## Acceptance

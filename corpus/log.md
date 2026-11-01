@@ -249,7 +249,7 @@ and a page reload on a worker update only while signed out and hidden. See
 
 ## [2026-10-21] done | Brief 18: the deploy, prepared for the owner
 
-`../vps-deploy` gained the `postern` stack and the `/webmail-api` route
+`vps-deploy` gained the `postern` stack and the `/webmail-api` route
 (committed there as `85f0934`, not pushed), with Postern's headers, a path
 allowlist for the API and `webPushContact` for Web Push. The e2e Caddyfile
 now matches production's block. Everything passes short of the deploy,
@@ -280,11 +280,11 @@ The decision itself stands.
 
 ## 2026-10-21: brief 19 filed, Postern gets its own origin
 
-The owner asked for Postern on its own subdomain, `postern.<domain>`. `../vps-deploy` brief 14 routes it, with Stalwart's API on the same host at `/webmail-api`, so Postern stays same-origin with its API and the CORS objection in "Served at /webmail, sharing the estate's origin" no longer applies. [Brief 19](briefs/done/19-served-at-the-root-of-postern-domain.md) moves the base from `/webmail/` to `/` and revisits that decision. Nothing was deployed at `/webmail`, so no install or push subscription is lost. Whether a session should now survive a reload is left as an open question for the owner.
+The owner asked for Postern on its own subdomain, `postern.<domain>`. `vps-deploy` brief 14 routes it, with Stalwart's API on the same host at `/webmail-api`, so Postern stays same-origin with its API and the CORS objection in "Served at /webmail, sharing the estate's origin" no longer applies. [Brief 19](briefs/done/19-served-at-the-root-of-postern-domain.md) moves the base from `/webmail/` to `/` and revisits that decision. Nothing was deployed at `/webmail`, so no install or push subscription is lost. Whether a session should now survive a reload is left as an open question for the owner.
 
 ## 2026-10-22: brief 19 done, Postern at the root of postern.<domain>
 
-The base moved from `/webmail/` to `/`, with `../vps-deploy` brief 14 routing
+The base moved from `/webmail/` to `/`, with `vps-deploy` brief 14 routing
 `postern.<domain>` and Stalwart's API on the same host. The e2e harness now
 puts the stand-in for another estate app on a second origin (same site,
 `localhost:5194`), which is what the apex apps are to Postern now, and
@@ -461,7 +461,7 @@ was turned down, as it leaves an extra message in every snoozed thread.
 
 The owner answered both open questions. Production's Stalwart tokens get
 shorter: access 15 minutes, refresh about a day, renewed on each refresh, so a
-copied refresh token dies within a day; that is a `../vps-deploy` change. And a
+copied refresh token dies within a day; that is a `vps-deploy` change. And a
 reload keeps the session: the refresh token is kept in `sessionStorage`
 (IndexedDB was offered and declined), cleared on sign-out and by the 8-hour idle
 timeout; closing the tab still signs out. The two decisions entries are

@@ -5,7 +5,7 @@
 Every later brief needs a real Stalwart with real mail, and the hard rule is
 never to develop against the owner's mailbox. This brief gives Postern its own
 Stalwart in Docker, on the same version and configuration style as production.
-Production's setup is `../vps-deploy/infrastructure/mail/` (compose,
+Production's setup is `vps-deploy/infrastructure/mail` (compose,
 `config.json`, and `plan.ndjson` applied with `stalwart-cli`); read it first and
 reuse its shape.
 
@@ -15,7 +15,7 @@ machine.
 
 ## Files you OWN
 
-- `dev/docker-compose.yml`: Stalwart (the tag `../vps-deploy` pins), its CLI,
+- `dev/docker-compose.yml`: Stalwart (the tag `vps-deploy` pins), its CLI,
   a data-owner helper. Publishes HTTP on `127.0.0.1:18080` and SMTP on
   `127.0.0.1:12525`. No resolver; no PROXY trust.
 - `dev/config.json`, `dev/plan.ndjson`: domain `postern.test`, listeners, plain

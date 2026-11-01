@@ -23,7 +23,7 @@ popovers. Each dialog below opens a native `<dialog>` with its own
 - `web/src/labels/LabelManager.tsx`: an inline `role="alertdialog"` for
   deleting a label
 
-The pattern to copy is `../newspapper/ui/src/components/ui/Modal.tsx`: Base UI
+The pattern to copy is `newspapper/ui/src/components/ui/Modal.tsx`: Base UI
 `Dialog`, the app's own stylesheet, and the component's props unchanged.
 
 ## Files you OWN

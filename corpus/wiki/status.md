@@ -1,5 +1,5 @@
 ---
-summary: Snapshot as of 2026-10-28. Briefs 01-27 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in ../vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards, 26 a message row opening that message alone, 27 a reload keeping the session); none is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install and reload, real push, production's token lifetimes).
+summary: Snapshot as of 2026-10-28. Briefs 01-27 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards, 26 a message row opening that message alone, 27 a reload keeping the session); none is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install and reload, real push, production's token lifetimes).
 updated: 2026-10-28
 ---
 
@@ -8,7 +8,7 @@ updated: 2026-10-28
 Postern is built: all 27 briefs are done, with 1,291 unit and integration
 tests and a 46-test browser suite (`npm run test:e2e`) that runs the
 production build behind Caddy with the final headers. Nothing is deployed.
-Brief 18 committed the stack and routes in `../vps-deploy` (commit
+Brief 18 committed the stack and routes in `vps-deploy` (commit
 `85f0934` there); the deploy itself, and the checks only a person can do,
 are the owner steps at the end of this page. Neither repo is pushed.
 
@@ -40,10 +40,10 @@ are the owner steps at the end of this page. Neither repo is pushed.
 **Wave 5: hardening and deploy**
 - [16](../briefs/done/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11. **Done 2026-10-20.**
 - [17](../briefs/done/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04. **Done 2026-10-20.**
-- [18](../briefs/done/18-deploy.md): deploy through `../vps-deploy` (at /webmail when written; on `postern.<domain>` since 19). Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
+- [18](../briefs/done/18-deploy.md): deploy through `vps-deploy` (at /webmail when written; on `postern.<domain>` since 19). Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
 
 **Wave 6: its own origin**
-- [19](../briefs/done/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`../vps-deploy` brief 14). Revisits "Served at /webmail". **Done 2026-10-22**: base `/`, the e2e harness at the root with another estate app on a second origin, all 34 browser tests and 1135 unit tests passing.
+- [19](../briefs/done/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`vps-deploy` brief 14). Revisits "Served at /webmail". **Done 2026-10-22**: base `/`, the e2e harness at the root with another estate app on a second origin, all 34 browser tests and 1135 unit tests passing.
 
 **Wave 7: Base UI**
 - [20](../briefs/done/20-base-ui-dialogs.md): the modal dialogs on Base UI `Dialog`/`AlertDialog` through `web/src/shell/Modal.tsx`; the composer window stays native. **Done 2026-10-23**: 1166 unit and 34 browser tests.
@@ -68,10 +68,10 @@ None. The last five became briefs 22–25 or were dropped (inbox category tabs) 
 Things only the owner can do, collected from the briefs as they finished.
 
 - **Deploy** (brief 18, on its own host since brief 19). After
-  `../vps-deploy` brief 14 (code done 2026-10-22). DNS is already in place: `postern.<domain>`
-  has its A record. Deploy Ward first, in `../vps-deploy` brief 16's order. From a clean, committed
+  `vps-deploy` brief 14 (code done 2026-10-22). DNS is already in place: `postern.<domain>`
+  has its A record. Deploy Ward first, in `vps-deploy` brief 16's order. From a clean, committed
   checkout of this repo (the build runs in it, and `npm ci` replaces its
-  `node_modules`), in `../vps-deploy`:
+  `node_modules`), in `vps-deploy`:
 
   ```
   node cli.ts --check              # the committed Caddyfile matches the stacks
@@ -133,7 +133,7 @@ Things only the owner can do, collected from the briefs as they finished.
   conversation. iOS needs 16.4 or later and Postern added to the Home Screen
   first.
 - **Web Push on Stalwart** (brief 16, configured by brief 18): the mail plan
-  in `../vps-deploy` now sets `webPushContact`, the VAPID subject Apple
+  in `vps-deploy` now sets `webPushContact`, the VAPID subject Apple
   requires, to the domain's postmaster address. The VAPID key is the one in
   Stalwart's store and the plan leaves it alone; a lost store means a new
   key, and each device then re-subscribes at its next sign-in. If no push
@@ -141,7 +141,7 @@ Things only the owner can do, collected from the briefs as they finished.
   `updates.push.services.mozilla.com` and `web.push.apple.com` over HTTPS.
 - **Token lifetimes** (brief 04): decided 2026-10-28 (access 15 minutes,
   refresh about a day, a new refresh token on each refresh); applying them is
-  `../vps-deploy` brief 20. After that deploy, brief 27's skipped check: on
+  `vps-deploy` brief 20. After that deploy, brief 27's skipped check: on
   `https://postern.<domain>/` sign in, reload a few times a minute or more
   apart, and in DevTools (Application, Session Storage) see `postern.session`
   hold a new refresh token after each refresh, with the reload still

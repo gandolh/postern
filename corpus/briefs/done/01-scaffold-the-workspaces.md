@@ -5,7 +5,7 @@
 Postern starts empty. This brief lays down the house layout
 ([architecture.md](../../wiki/architecture.md)): two packages, `jmap/` and
 `web/`, plus the tooling every later brief assumes. Match Satchel
-(`../satchel`), the newest estate app, so the owner sees nothing unfamiliar.
+(`satchel`), the newest estate app, so the owner sees nothing unfamiliar.
 
 ## Files you OWN
 

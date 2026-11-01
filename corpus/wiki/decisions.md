@@ -39,7 +39,7 @@ to run. Revisit if a feature truly needs one.
 ## Served at the root of its own host, `postern.<domain>`
 _2026-10-21, owner; built 2026-10-22 (brief 19)_. Postern lives at the root of
 `postern.<domain>`, and Stalwart's API at `/webmail-api` on that same host,
-routed by `../vps-deploy` (its brief 14). Postern was never deployed, so
+routed by `vps-deploy` (its brief 14). Postern was never deployed, so
 nobody had a `/webmail` install, bookmark or push subscription to lose.
 
 **This revisits "Served at /webmail, sharing the estate's origin"**
@@ -120,7 +120,7 @@ does not.** The refresh token is kept in `sessionStorage`, so a reload or a
 crashed tab signs in again silently, and closing the tab or the phone killing
 the installed app signs out. Sign-out and the 8-hour idle timeout clear it.
 Production's tokens shrink the same day (access 15 minutes, refresh about a
-day, renewed on each refresh; a `../vps-deploy` brief), so a copied refresh
+day, renewed on each refresh; a `vps-deploy` brief), so a copied refresh
 token dies within a day. Rejected: **IndexedDB**, which survives a browser
 restart and suits the installed Android app better (the owner picked the
 store that dies with the tab, and gave no further reason); **memory only**, as before, because every reload
@@ -145,13 +145,13 @@ on. Stalwart only checks that the token request repeats the sign-in's
 
 - **An `OAuthClient` object in the plans.** Nothing would check it while
   registration is off, and it would be one more object to keep in step in
-  `../vps-deploy`.
+  `vps-deploy`.
 - **Dynamic registration at `/auth/register`.** It returns a stateless client
   ID sealed with the server's OAuth key: a new call on every load, or a value
   that breaks when the key changes. A public client gains nothing from it.
 
 Revisit if production ever turns `requireClientRegistration` on: Postern then
-needs an `OAuthClient` with its redirect URI in `../vps-deploy`'s mail plan.
+needs an `OAuthClient` with its redirect URI in `vps-deploy`'s mail plan.
 
 ## The house stack
 _2026-10-09_. TypeScript, React 19 and Vite 8, with Vitest and ESLint, in npm

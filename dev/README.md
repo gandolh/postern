@@ -2,7 +2,7 @@
 
 A Stalwart in Docker to develop and test Postern against, with two seeded
 accounts and a corpus of ordinary and hostile mail. It mirrors production's
-setup (`../vps-deploy/infrastructure/mail/`): same images, a `config.json` that
+setup (`vps-deploy/infrastructure/mail`): same images, a `config.json` that
 only says where the database lives, and everything else in `plan.ndjson`,
 applied with the CLI. What this one drops: no recursive resolver, no
 PROXY-protocol trust, no ACME, no TLS, no inbound SMTP throttles. It is plain

@@ -65,7 +65,7 @@ updated: <YYYY-MM-DD>
    formally revisited. Changing a recorded decision needs an explicit revisit
    and a `log.md` entry.
 4. For JMAP behaviour, the RFCs (8620, 8621) and Stalwart's own docs and
-   source win over this wiki. Stalwart is pinned by `../vps-deploy`; check the
+   source win over this wiki. Stalwart is pinned by `vps-deploy`; check the
    version there before trusting a claim about it.
 
 ## Decisions and glossary
@@ -81,7 +81,7 @@ updated: <YYYY-MM-DD>
 
 - Standard relative markdown links. Code links from `wiki/` look like
   `../../web/src/main.tsx`. Other repos are named in backticks
-  (`../vps-deploy/stacks/mail.ts`), never linked.
+  (`vps-deploy/stacks/mail.ts`), never linked.
 - Absolute dates only (`2026-10-09`), never "last week".
 - One concept per page. Split a page past 200 body lines.
 - Never commit corpus changes unless the owner asks, except during a brief

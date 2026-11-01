@@ -1,5 +1,5 @@
 ---
-summary: The HTTP headers production sends for Postern and /webmail-api on postern.<domain>, final since brief 17 (2026-10-20), on its own host since brief 19 (2026-10-22). The exact CSP and why each directive is there (style-src 'unsafe-inline' exists only for the message frames, and why it cannot go), COOP, CORP, Permissions-Policy, nosniff, no-referrer, X-Frame-Options, the /webmail-api path allowlist, which screens were proven under them, and the Caddy route shape ../vps-deploy renders. Read before changing a header or the Caddy route.
+summary: The HTTP headers production sends for Postern and /webmail-api on postern.<domain>, final since brief 17 (2026-10-20), on its own host since brief 19 (2026-10-22). The exact CSP and why each directive is there (style-src 'unsafe-inline' exists only for the message frames, and why it cannot go), COOP, CORP, Permissions-Policy, nosniff, no-referrer, X-Frame-Options, the /webmail-api path allowlist, which screens were proven under them, and the Caddy route shape vps-deploy renders. Read before changing a header or the Caddy route.
 updated: 2026-10-22
 ---
 
@@ -122,9 +122,9 @@ injects an inline script and sees the watch catch it.
 
 ## The Caddy shape on postern.<domain>
 
-`../vps-deploy` renders Postern's site block from its stacks
-(`../vps-deploy/stacks/postern.ts`, and the `/webmail-api` route in
-`../vps-deploy/stacks/mail.ts`). What
+`vps-deploy` renders Postern's site block from its stacks
+(`vps-deploy/stacks/postern.ts`, and the `/webmail-api` route in
+`vps-deploy/stacks/mail.ts`). What
 [the e2e Caddyfile](../../web/e2e/Caddyfile) proves, in the order Caddy tries
 the blocks:
 

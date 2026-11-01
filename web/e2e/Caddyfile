@@ -6,7 +6,7 @@
 # apps on the apex are to postern.<domain>. The dev Stalwart is reached through
 # Docker Desktop's host.docker.internal.
 #
-# The :80 block is the shape ../vps-deploy renders for postern.<domain>;
+# The :80 block is the shape vps-deploy renders for postern.<domain>;
 # corpus/wiki/security-headers.md has the header set and why each one is
 # there. Only three things here are test scaffolding: plain HTTP, the :81
 # stand-in, and the env defaults.
