@@ -1,6 +1,6 @@
 ---
-summary: How Postern is put together, as built (briefs 01-17, 2026-10-20). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in in brief (the details are in sign-in.md), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy as built in brief 18 (a static stack for /webmail with its headers, and the allowlisted /webmail-api route in the mail stack of vps-deploy; not deployed yet).
-updated: 2026-10-28
+summary: How Postern is put together, as built (2026-10-20). The three workspaces (jmap client, web app, dev mail server), the request path through Caddy to Stalwart on the same origin, JMAP session-URL rebasing, sign-in in brief (the details are in sign-in.md), live updates by fetch-streamed event source plus Web Push, where state lives, local development, and the deploy as built on 2026-10-21 (a static stack for /webmail with its headers, and the allowlisted /webmail-api route in the mail stack of vps-deploy; not deployed yet).
+updated: 2026-11-02
 ---
 
 # Architecture
@@ -11,9 +11,9 @@ npm workspaces, the estate's house layout:
 
 | Workspace | Package | What it is |
 |---|---|---|
-| `jmap/` | `@postern/jmap` | A typed JMAP client: session, batched requests with back-references, the mail/submission/sieve/contacts methods, blobs, changes, push. No React, no DOM beyond `fetch`. Brief 03. |
-| `web/` | `@postern/web` | The React app, built by Vite with base `/` (`/webmail/` until 2026-10-22, brief 19). Briefs 05 onward. |
-| `dev/` | (not a package) | A local Stalwart in Docker with test accounts and seeded mail. Brief 02. |
+| `jmap/` | `@postern/jmap` | A typed JMAP client: session, batched requests with back-references, the mail/submission/sieve/contacts methods, blobs, changes, push. No React, no DOM beyond `fetch`. |
+| `web/` | `@postern/web` | The React app, built by Vite with base `/` (`/webmail/` until 2026-10-22). |
+| `dev/` | (not a package) | A local Stalwart in Docker with test accounts and seeded mail. |
 
 The JMAP layer is its own package so it can be tested against a real Stalwart
 without a browser. The UI then depends on a contract, not on raw JMAP.
@@ -41,16 +41,16 @@ owns that port; a second claimant fails synth.
 The session object (`GET /jmap/session`) returns absolute URLs built from
 Stalwart's hostname: `https://mail.<domain>/jmap/…` for `apiUrl`,
 `downloadUrl`, `uploadUrl` and `eventSourceUrl`. The client rewrites each onto
-`/webmail-api/` before use (brief 03). The rejected alternative was setting
+`/webmail-api/` before use (2026-10-20). The rejected alternative was setting
 `STALWART_PUBLIC_URL=https://example.com/webmail-api`. That would move every
 discovery URL, the admin UI's OAuth included.
 
 ## Sign-in
 
 On its own page since 2026-10-28, when this one passed 200 lines:
-[sign-in.md](sign-in.md) has Stalwart's sign-in endpoints as verified in
-brief 04, refresh, token lifetimes, no revocation, client registration, the
-account page, and the session a reload keeps since brief 27.
+[sign-in.md](sign-in.md) has Stalwart's sign-in endpoints as verified on
+2026-10-20, refresh, token lifetimes, no revocation, client registration, the
+account page, and the session a reload keeps since 2026-10-28.
 
 ## Live updates
 
@@ -60,9 +60,9 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
 
 - **While the app is open:** read the event-source stream with `fetch()`, which
   can send the header, and parse the server-sent events by hand. The
-  `StateChange` events drive `Email/changes` and `Email/queryChanges` (brief 11).
+  `StateChange` events drive `Email/changes` and `Email/queryChanges` (2026-10-20).
   Caddy flushes `text/event-stream` responses as they arrive.
-- **As built (brief 11):** one reader per sign-in for `Email`, `Mailbox`,
+- **As built (2026-10-20):** one reader per sign-in for `Email`, `Mailbox`,
   `Thread` and `EmailDelivery`. Each `StateChange` re-syncs the labels and
   every mounted list, and announces "settled" on the actions bus so an open
   conversation and search results refresh. Mail sent over SMTP showed in an
@@ -70,7 +70,7 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
   retries the stream every 60 s; it was back within 6 s in the dev test. The
   Vite dev proxy holds a proxied response's headers until the first body
   chunk, so `web/vite.config.ts` flushes event-stream headers itself.
-- **While it is closed:** Web Push, built in brief 16: the subscription asks
+- **While it is closed:** Web Push, built on 2026-10-20: the subscription asks
   Stalwart for the sender and subject of new Inbox mail, and the service worker
   shows them with no token (see [decisions.md](decisions.md)). The JMAP
   `PushSubscription` carries the browser's push endpoint, Stalwart signs with
@@ -83,26 +83,28 @@ Stalwart's push endpoints (`/jmap/eventsource`, `/jmap/ws`) accept only an
 
 - **Mail, labels, identities, filters, vacation, contacts:** Stalwart, always.
 - **Display preferences** (density, reading pane, shortcuts on/off): per
-  device, in the browser. Not secret. Brief 12 decides the store.
-- **Label colours:** JMAP `Mailbox` has no colour field. Brief 09 decides.
+  device, in the browser's localStorage (`theme/displaySettings.ts`). Not secret.
+- **Label colours:** JMAP `Mailbox` has no colour field, so a label's colour
+  and "show if unread" are per device too, in localStorage keyed per account
+  (`labels/labelPrefs.ts`; owner, 2026-10-20).
 - **Offline cache:** none, by the owner's decision of 2026-10-20. The
   service worker caches the app shell only ([decisions.md](decisions.md)).
 
 ## Local development
 
 `dev/` runs Stalwart 0.16 (the version `vps-deploy` pins) in Docker, with a
-test domain, test accounts and seeded mail (brief 02). The Vite dev server
+test domain, test accounts and seeded mail (2026-10-20). The Vite dev server
 proxies `/webmail-api` to it, the same path as production. Docker on the dev
 machine is Docker Desktop, so the proxy targets a port published on
 `127.0.0.1`. Host networking reaches the Desktop VM, not this machine.
 
-## Deploy (brief 18)
+## Deploy (2026-10-21)
 
 Built on 2026-10-20 in `vps-deploy`, the estate's deploy tool. Deploying
 is the owner's step; the commands are in [status.md](status.md), Owner steps.
 
 - **`postern.<domain>`** is `vps-deploy/stacks/postern.ts`, a static site
-  on a host of its own (`vps-deploy` brief 14, 2026-10-22). The
+  on a host of its own (`vps-deploy`, 2026-10-22). The
   deploy runs `npm ci` and `npm run build` in this checkout (Node 24, as
   `engines` says), checks that `web/dist/index.html` loads from
   `/assets/`, and uploads `web/dist` as a new release; a symlink swap
@@ -123,7 +125,7 @@ is the owner's step; the commands are in [status.md](status.md), Owner steps.
   is a 404. No `encode`, no caching, no CORS, and Caddy's own
   `X-Forwarded-For`.
 - **The Caddy renderer** gained per-route headers and path allowlists for
-  this, and hosts of their own with allowlists (brief 14). Its synth refuses
+  this, and hosts of their own with allowlists (2026-10-20). Its synth refuses
   any route on the shared origin that sends `Service-Worker-Allowed`; since
   Postern left that origin, the rule protects the other apps.
 - **Stalwart.** The mail plan sets `webPushContact`, the VAPID `sub` that

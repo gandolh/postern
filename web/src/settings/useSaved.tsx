@@ -31,7 +31,7 @@ export function useSaved(): SavedState {
       timer.current = setTimeout(() => setText(""), 2500);
       return true;
     } catch (error) {
-      // The session dialog (brief 04) deals with an expired session.
+      // The session dialog deals with an expired session.
       if (error instanceof JmapUnauthorizedError) return false;
       setFailed(true);
       setText(`Could not save: ${error instanceof Error ? error.message : "unknown error"}`);

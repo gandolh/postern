@@ -4,7 +4,7 @@
 // unavailable (private mode, blocked) the list lives in memory for the tab.
 //
 // The list names From addresses, which anyone can write. So it applies only
-// to a message DMARC vouches for (brief 17): the receiving server's
+// to a message DMARC vouches for: the receiving server's
 // Authentication-Results says dmarc=pass for the From domain. A forged
 // "news@shop.test" fails DMARC when shop.test publishes a policy, and one
 // without a policy gets dmarc=none; either way the reader is asked again.
@@ -13,11 +13,11 @@
 //                                       is this sender on the list, and did
 //                                       this message pass DMARC?
 //   allowImagesFrom(account, sender)    add them
-//   forgetImagesFrom(account, sender)   take them off (brief 12's settings)
+//   forgetImagesFrom(account, sender)   take them off (the settings)
 //   imageAllowanceList(account)         the whole list
 //   useImageAllowance(account)          the same, re-rendering on change
 //   setAlwaysDisplayImages(on)          global "always display external images"
-//                                       (brief 12's setting; default off = ask).
+//                                       (the setting; default off = ask).
 //                                       While on, allowsImagesFrom is true for everyone.
 //
 // Keyed by the real From address, lower-cased, never the display name.

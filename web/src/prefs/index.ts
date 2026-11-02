@@ -1,4 +1,4 @@
-// Per-device preferences (brief 12). See prefs.ts for how to add one.
+// Per-device preferences. See prefs.ts for how to add one.
 export { PrefsHost } from "./PrefsHost";
 export { startDisplayPersistence } from "./display";
 export {

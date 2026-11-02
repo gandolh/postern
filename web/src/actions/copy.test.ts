@@ -1,4 +1,4 @@
-// Brief 26: the toasts' tokens, and what they count.
+// The toasts' tokens, and what they count.
 
 import { describe, expect, it } from "vitest";
 import { actionCopy, nounFor, rowNoun } from "./copy";

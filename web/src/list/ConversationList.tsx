@@ -1,5 +1,5 @@
 // The conversation list, reusable: label routes render it through ListRoute,
-// brief 10's search results with a query of their own.
+// the search results with a query of their own.
 //
 //   <ConversationList query={...} presentation={...} title="Inbox" route={route} labelRoute={route} emptyMessage="..." />
 //
@@ -8,9 +8,9 @@
 // you scroll. While mounted it is the active list for keyboard shortcuts
 // (registry.getActiveList()).
 //
-// With conversation view off (brief 22, a per-device pref) every row is one
+// With conversation view off (a per-device pref) every row is one
 // message. Switching remounts the list, so a selection never carries over.
-// Since brief 26 a message row opens that message alone (./openMessage.ts),
+// Since 2026-10-28 a message row opens that message alone (./openMessage.ts),
 // and the copy counts messages.
 
 import { JmapNetworkError, type Id } from "@postern/jmap";
@@ -49,15 +49,15 @@ export interface ConversationListProps {
   title: string;
   /** The page's h1 (visually hidden, as Gmail has none). Default: `title`. */
   heading?: string;
-  /** How "Select all N conversations …" ends: "in Inbox" by default, "that match this search" for brief 10. */
+  /** How "Select all N conversations …" ends: "in Inbox" by default, "that match this search" for search results. */
   allLabel?: string;
-  /** Rows open with withConversation(route, row.conversationId), a message row alone (brief 26); the open one's row is highlighted. */
+  /** Rows open with withConversation(route, row.conversationId), a message row alone; the open one's row is highlighted. */
   route: MailRoute;
   /** The label route, for the label menus' `current` (null in search results). */
   labelRoute: LabelRoute | null;
   /** What an empty list says: "No conversations in Spam". */
   emptyMessage: string;
-  /** Replace a row's subject and snippet (brief 10). */
+  /** Replace a row's subject and snippet. */
   renderSubject?: (row: ConversationRow) => ReactNode;
 }
 
@@ -85,7 +85,7 @@ interface Latest {
   store: ListStore;
   actions: MailActions;
   scrollToIndex: (index: number) => void;
-  /** One row per conversation, or per message (brief 22). */
+  /** One row per conversation, or per message. */
   conversationView: boolean;
 }
 
@@ -102,7 +102,7 @@ export interface ListApi extends ListController {
   setRead(read: boolean): Promise<void>;
   setStar(on: boolean): Promise<void>;
   setImportant(on: boolean): Promise<void>;
-  /** Brief 24: snooze the targets until `at`, or bring them back now. */
+  /** Snooze the targets until `at`, or bring them back now. */
   snooze(at: Date): Promise<void>;
   unsnooze(): Promise<void>;
   confirmDelete(rows: readonly ConversationRow[]): Promise<void>;
@@ -191,7 +191,7 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
     const row = rows[index];
     set.setFocusId(target);
     rememberOpened(target, Math.max(0, index));
-    // A message row (conversation view off) opens that message alone (brief 26).
+    // A message row (conversation view off) opens that message alone.
     if (row && !conversationView) navigate(messageRowRoute(route, row));
     else navigate(withConversation(route, row?.conversationId ?? target));
   };
@@ -384,7 +384,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
     behaviour.update({ rows, selection, focusId, presentation, scope, route, store, actions, scrollToIndex, conversationView });
   });
 
-  // Brief 26: the reader's `j` / `k` step through the message rows, the list on screen or not.
+  // The reader's `j` / `k` step through the message rows, the list on screen or not.
   useLayoutEffect(() => {
     if (conversationView) forgetMessageRows();
   }, [conversationView]);
@@ -395,7 +395,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
 
   useEffect(() => setActiveList(api), [api]);
 
-  // Brief 16: on a touch screen, swipe a row (archive / delete / read, per the
+  // On a touch screen, swipe a row (archive / delete / read, per the
   // device's prefs) and pull the list down to refresh. The same row handlers
   // as the hover buttons; the toolbar and keys still do it all.
   const gestureLayer = useListGestures({
@@ -451,7 +451,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
     [scope, username, presentation, query.matches, chipLabels, now, props.renderSubject],
   );
 
-  // The open row: the message shown alone (brief 26), else the open conversation's newest row.
+  // The open row: the message shown alone, else the open conversation's newest row.
   const openRowId = useMemo(() => {
     const open = route.conversationId;
     if (!open) return null;
@@ -494,7 +494,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   const total = snapshot.total.toLocaleString();
   const allLabel = props.allLabel ?? `in ${title}`;
   const paging = count > 0 ? `${(virtual.first + 1).toLocaleString()}–${Math.min(Math.max(virtual.last, virtual.first + 1), count).toLocaleString()} of ${count.toLocaleString()}` : "";
-  // Brief 26: the copy counts what a row is, a conversation or a message.
+  // The copy counts what a row is, a conversation or a message.
   const noun = rowNoun(conversationView);
   const things = nounFor(2, noun);
   const announcement = selectedCount > 0 ? `${selectedCount.toLocaleString()} ${nounFor(selectedCount, noun)} selected` : "";

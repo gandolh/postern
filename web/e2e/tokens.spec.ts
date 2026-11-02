@@ -1,4 +1,4 @@
-// The access token stays in memory; since brief 27 the refresh token is kept
+// The access token stays in memory; since 2026-10-28 the refresh token is kept
 // in this tab's sessionStorage, so a reload keeps the session
 // (corpus/wiki/security.md). These tests catch every secret the sign-in
 // handles (the password, the authorization code, the PKCE verifier, the
@@ -147,7 +147,7 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
 
   const probe = await context.newPage();
   await probe.goto(PROBE_URL);
-  // Brief 27: Postern's sessionStorage is checked on its own, below.
+  // Postern's sessionStorage is checked on its own, below.
   const { sessionStorage: kept, ...postern } = await dumpOrigin(page);
   const places: Record<string, string> = {
     ...Object.fromEntries(Object.entries(postern).map(([k, v]) => [`Postern's ${k}`, v])),
@@ -160,7 +160,7 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
   };
   expect(secrets.foundIn(places), "places holding a secret").toEqual([]);
   // Nothing at all in the places a token would hide in. (Booleans: a failure must not print what was found.)
-  // sessionStorage holds Postern's session record, with the refresh token and no other secret (brief 27).
+  // sessionStorage holds Postern's session record, with the refresh token and no other secret.
   const keys = (JSON.parse(kept ?? "[]") as [string, string][]).map(([key]) => key);
   expect(keys.join(",") === "postern.session", "sessionStorage holds only postern.session").toBe(true);
   expect(secrets.kindsIn(kept ?? "")).toEqual(["refresh token"]);

@@ -1,6 +1,6 @@
 // How an action tells every screen holding messages what just changed, before
-// and after the server agrees: the list (brief 06), the open conversation
-// (brief 07), search results (brief 10).
+// and after the server agrees: the list, the open conversation
+// (the conversation view), search results.
 //
 //   subscribeMailChanges((change) => {
 //     if (change.kind === "patch") ...apply change.update to the messages you hold

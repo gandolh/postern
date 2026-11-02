@@ -1,4 +1,4 @@
-// "Schedule send" (brief 23), from the menu beside Send: Gmail's three
+// "Schedule send", from the menu beside Send: Gmail's three
 // choices with their times, and "Pick date and time". Times are this
 // browser's time zone; Postern keeps no time zone of its own for the account.
 // A modal dialog through shell/Modal, so it opens inside the composer window

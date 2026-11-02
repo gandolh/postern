@@ -4,7 +4,7 @@
 //   Enter            search (the chosen suggestion, if one is highlighted)
 //   Up / Down        move through the suggestions
 //   Escape           close the list; then clear the box; then leave it
-//   focusSearch()    from ./focus: brief 14's `/`
+//   focusSearch()    from ./focus: the keyboard shortcuts' `/`
 
 import { Popover } from "@base-ui/react/popover";
 import { Search, SlidersHorizontal, X } from "lucide-react";

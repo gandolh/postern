@@ -1,5 +1,5 @@
 // Reaching the mounted lists from outside them, without importing their
-// components: brief 11's LiveHost passes push StateChanges in, brief 14's
+// components: the LiveHost passes push StateChanges in, the keyboard shortcuts'
 // keyboard shortcuts drive the list that has the user's attention.
 //
 //   applyListStateChange(change)   every mounted list catches up (Email/changes, queryChanges)
@@ -27,7 +27,7 @@ export function mountedListStores(): readonly ListStore[] {
 }
 
 /**
- * Brief 11's entry point: pass every push StateChange. Each mounted list
+ * The entry point: pass every push StateChange. Each mounted list
  * refreshes if the Email state moved, keeping scroll position and selection.
  */
 export function applyListStateChange(change: StateChange): Promise<void> {
@@ -50,7 +50,7 @@ export function setActiveList(controller: ListController): () => void {
   };
 }
 
-/** The list keyboard shortcuts act on (brief 14), or null when no list is on screen. */
+/** The list keyboard shortcuts act on, or null when no list is on screen. */
 export function getActiveList(): ListController | null {
   return active;
 }

@@ -2,7 +2,7 @@
 // Bcc, Subject (not inline), the body, the attachment tray and the footer with
 // Send. Send checks first (recipients, uploads, the "attached" warning, an
 // empty message) and asks before going on, as Gmail does. Beside Send, when
-// the server can hold a message, a menu offers Schedule send (brief 23), which
+// the server can hold a message, a menu offers Schedule send, which
 // makes the same checks.
 
 import { mentionsAttachment } from "@postern/jmap";
@@ -57,7 +57,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuChoice = useRef<(() => void) | null>(null);
   const [question, setQuestion] = useState<Ask | null>(null);
-  // Schedule send (brief 23): the menu beside Send, the time dialog, and the time a question is holding.
+  // Schedule send: the menu beside Send, the time dialog, and the time a question is holding.
   const canSchedule = store.canSchedule;
   const [sendMenu, setSendMenu] = useState(false);
   const { anchor: sendMenuAnchor, container: sendMenuContainer } = useLayer(sendMenu);
@@ -117,7 +117,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
     else void store.send(session.key);
   }
 
-  // Ctrl+Enter from outside the window (brief 14's global key).
+  // Ctrl+Enter from outside the window (the global key).
   useEffect(() => {
     session.onSendRequest(() => send());
     return () => session.onSendRequest(null);

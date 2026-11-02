@@ -1,4 +1,4 @@
-// Brief 26: with conversation view off a row is one message, and it opens
+// With conversation view off a row is one message, and it opens
 // alone, as Gmail's does: `#inbox/<conversationId>/<messageId>` (router.ts),
 // so a reload or Back / Forward shows the same message. The reader then shows
 // that message by itself (conversation/ConversationView.tsx).
@@ -10,7 +10,7 @@
 // reached by a reload or a link) the keys do nothing until the list has been
 // shown once.
 //
-// (Brief 22's version opened the whole conversation and scrolled to the
+// (The 2026-10-27 version opened the whole conversation and scrolled to the
 // message; that went with this brief.)
 
 import type { Id } from "@postern/jmap";

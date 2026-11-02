@@ -1,4 +1,4 @@
-// Web Push for one signed-in session (brief 16): subscribe this browser with
+// Web Push for one signed-in session: subscribe this browser with
 // the PushManager, register it with Stalwart as a JMAP PushSubscription,
 // complete the verification handshake, keep it alive, and end it.
 //

@@ -1,4 +1,4 @@
-// Touch gestures on the conversation list (brief 16), as pure logic so they
+// Touch gestures on the conversation list, as pure logic so they
 // can be tested without a screen. useListGestures.tsx feeds them touch points
 // and moves the DOM.
 //
@@ -143,7 +143,7 @@ export class PullTracker {
   }
 }
 
-/** What the list allows: brief 06's presentation. */
+/** What the list allows: the presentation. */
 export interface SwipeContext {
   canArchive: boolean;
   deleteForever: boolean;

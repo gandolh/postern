@@ -1,4 +1,4 @@
-// The messages between the service worker and Postern's pages (brief 16).
+// The messages between the service worker and Postern's pages.
 // Shared by both sides; nothing here touches a token, and nothing here may:
 // the worker never holds one (corpus/wiki/security.md, Tokens).
 //

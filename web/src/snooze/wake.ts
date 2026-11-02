@@ -1,4 +1,4 @@
-// Waking snoozed mail (brief 24), in the browser: the owner chose that over a
+// Waking snoozed mail, in the browser: the owner chose that over a
 // scheduler of our own (decisions-mail.md), so mail comes back only while
 // Postern is open somewhere. Stalwart 0.16.25 has nothing that moves or flags
 // a message at a time (no such Sieve extension, task or JMAP call; checked

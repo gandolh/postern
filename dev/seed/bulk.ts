@@ -2,7 +2,7 @@
 // in All Mail, over the two years before the anchor date, from dozens of
 // senders. Most are one message; a few are short exchanges with alice, whose
 // replies go to Sent. For list performance
-// (brief 06) and date and size searches (brief 10). Seeded PRNG, so every
+// (the conversation list) and date and size searches. Seeded PRNG, so every
 // run generates the same mail.
 
 import { png, prng, pick } from "./mime.ts";

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Calendar invites (brief 25): the parser (times, zones, escapes, hostile
+// Calendar invites: the parser (times, zones, escapes, hostile
 // values), the REPLY it writes, and the card over the compose test server:
 // Yes sends the REPLY to the organiser and keeps the answer; CANCEL, PUBLISH,
 // someone else's invite and a hostile one.

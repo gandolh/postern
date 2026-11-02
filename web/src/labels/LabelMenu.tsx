@@ -1,6 +1,6 @@
-// The label menu (brief 09): Gmail's Labels button (a checkbox per label, with
-// a search box and "Create new") and its Move to twin. Brief 06's toolbar
-// renders it for the selection; brief 14's `l` and `v` render
+// The label menu: Gmail's Labels button (a checkbox per label, with
+// a search box and "Create new") and its Move to twin. The toolbar
+// renders it for the selection; the keyboard shortcuts' `l` and `v` render
 // <LabelMenuPopover> for the focused conversation.
 //
 //   <LabelMenu conversationIds emailIds current mode onDone />   the toolbar button + its menu
@@ -11,7 +11,7 @@
 // focus back on the button are Base UI's; the panel keeps its own search box,
 // list and arrow keys.
 //
-// Choices apply at once (optimistic, with the toast and Undo of brief 06's
+// Choices apply at once (optimistic, with the toast and Undo of the conversation list's
 // actions) and the Labels menu stays open, so several labels can be set in a
 // row; Move to closes. A label carried by only some of the selected
 // conversations shows as indeterminate; clicking it puts it on all of them.

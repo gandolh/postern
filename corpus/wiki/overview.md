@@ -38,7 +38,7 @@ not do yet, or that has to be checked first.
 
 - The mail server is the `mail` stack in `vps-deploy`:
   `vps-deploy/stacks/mail.ts` and `vps-deploy/infrastructure/mail`.
-- Postern's own deploy (brief 18) adds a stack there, plus the
+- Postern's own deploy (2026-10-21) adds a stack there, plus the
   `/webmail-api` route on the mail stack.
 - The name: a postern is the small side gate in a castle wall, which fits an
   estate whose services are called ward, citadel and atrium.

@@ -1,4 +1,4 @@
-// Focus coming back to the list after a conversation closes (brief 14).
+// Focus coming back to the list after a conversation closes.
 //
 // `u`, the back button and the conversation's own archive / delete / spam all
 // return to the list, which mounts afresh. The list remembers which row it

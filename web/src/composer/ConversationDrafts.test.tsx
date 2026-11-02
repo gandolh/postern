@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Drafts inside a conversation, with brief 07's view and the composer
+// Drafts inside a conversation, with the view and the composer
 // together: a reply draft in Drafts is the inline composer, not also a card;
 // any other `$draft` stays a card; the conversation's actions leave the reply
 // draft alone; a reply whose original was deleted opens in a window.

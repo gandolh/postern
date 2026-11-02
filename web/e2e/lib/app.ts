@@ -127,7 +127,7 @@ export async function signIn(page: Page, who: AccountName = "alice"): Promise<vo
 }
 
 /**
- * Brief 27: note, from the first byte of every page load, whether the
+ * Note, from the first byte of every page load, whether the
  * password field ever appears, so a reload that resumed the session can be
  * told from one that flashed the form. Read it with `sawPasswordField`.
  */
@@ -145,7 +145,7 @@ export function sawPasswordField(page: Page): Promise<boolean> {
   return page.evaluate(() => (window as unknown as { __posternSawPassword?: boolean }).__posternSawPassword === true);
 }
 
-/** Postern's session record in this tab's sessionStorage (brief 27), parsed; null when there is none. Never print it. */
+/** Postern's session record in this tab's sessionStorage, parsed; null when there is none. Never print it. */
 export function keptSession(page: Page): Promise<{ refreshToken: string; username: string; lastActivity: number } | null> {
   return page.evaluate(() => {
     const raw = sessionStorage.getItem("postern.session");
@@ -153,7 +153,7 @@ export function keptSession(page: Page): Promise<{ refreshToken: string; usernam
   });
 }
 
-/** Go to a route in the signed-in app (a hash change; since brief 27 a reload signs in again from sessionStorage). */
+/** Go to a route in the signed-in app (a hash change; since 2026-10-28 a reload signs in again from sessionStorage). */
 export async function goTo(page: Page, hash: string): Promise<void> {
   await page.evaluate((h) => {
     window.location.hash = h;

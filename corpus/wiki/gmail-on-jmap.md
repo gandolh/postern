@@ -1,6 +1,6 @@
 ---
 summary: Which Gmail feature maps to which JMAP object or method on Stalwart 0.16, and whether it is native, client-side, needs checking, or impossible without server work. Conversations, labels and archive, stars and unread, search operators, drafts and sending, undo send, signatures, vacation, filters, spam, contacts, push, attachments, quota, and the Gmail features deferred to todos. Read before writing or working any feature brief.
-updated: 2026-10-28
+updated: 2026-11-02
 ---
 
 # Gmail on JMAP
@@ -49,9 +49,9 @@ calendars, principals, mail:share, websocket, plus Web Push for
   above, and Trash and Spam as real mailboxes rather than flags.
 - **Postern has no server state of its own.** Anything that must survive the
   browser goes into a JMAP object. A preference that cannot (label colours,
-  density) is per device unless brief 09 or 12 finds a home for it.
+  density) is per device, in the browser's localStorage.
 
-## What Stalwart 0.16.25 actually does (found in brief 02, 2026-10-20)
+## What Stalwart 0.16.25 actually does (found 2026-10-20)
 
 - **No All Mail by default.** A new account gets Inbox, Sent Items, Drafts,
   Junk Mail and Deleted Items, but no archive-role mailbox. Postern must create
@@ -72,7 +72,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
 - **The event stream** pings every 30 s at the shortest and sends nothing on
   connect. A bad `sinceState` comes back as `invalidArguments`, which the
   client treats like `cannotCalculateChanges`.
-- **Search** (brief 10): `from`, `to`, `cc`, `subject`, `body`, `text`,
+- **Search** (2026-10-20): `from`, `to`, `cc`, `subject`, `body`, `text`,
   `hasAttachment`, `before`/`after`, `minSize`/`maxSize`, the keyword and
   mailbox conditions and AND/OR/NOT all work. Words match whole and
   case-insensitive, with no prefix match (`road` misses "roadmap"), and a
@@ -80,7 +80,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `bcc` is accepted but unproven. Gmail's `rfc822msgid:`, `list:`,
   `deliveredto:`, `replyto:`, `filename:` and `category:` have nothing to map
   to; Postern searches them as text and says so.
-- **Writing mail** (brief 08): an existing Email's subject and body cannot be
+- **Writing mail** (2026-10-20): an existing Email's subject and body cannot be
   updated, so a draft is replaced by create plus destroy in one request,
   keeping its Message-ID and so its conversation. A create refuses `null` on
   an address header. A forward can reuse the original's part `blobId`s
@@ -91,7 +91,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
   unreachable domain succeeds and the message moves to Sent; the failure
   arrives later as a bounce in the Inbox. Submission advertises
   `maxDelayedSend` 2592000 and FUTURERELEASE, which schedule send uses.
-- **Schedule send** (brief 23, 2026-10-27): a client-set `sendAt` is refused
+- **Schedule send** (2026-10-27): a client-set `sendAt` is refused
   (`invalidProperties`); `HOLDUNTIL` (or `HOLDFOR`) in the envelope's
   `mailFrom.parameters` holds the message, and a client envelope must list
   every recipient, Bcc included. Until then the submission reads
@@ -104,20 +104,20 @@ calendars, principals, mail:share, websocket, plus Web Push for
   and `emailIds` but cannot sort by `sendAt`. Destroying a pending submission
   does not stop it: two held messages whose submissions were destroyed were
   delivered at their time anyway. Only `undoStatus: "canceled"` cancels.
-- **Calendar invites** (brief 25, 2026-10-27): a delivered iMIP REQUEST is left
+- **Calendar invites** (2026-10-27): a delivered iMIP REQUEST is left
   as it came, with no event added to the calendar, and `/calendar/rsvp` only
   serves Stalwart's own invitations, so the client sends the REPLY. A created
   `text/calendar` part takes its `method` through `header:Content-Type`.
-- **Snooze** (brief 24, 2026-10-27): nothing moves or flags a message at a
+- **Snooze** (2026-10-27): nothing moves or flags a message at a
   time. The Sieve extensions are the stock set, `urn:stalwart:jmap` is empty,
   and JMAP has no timer. Keywords keep their case, and a 309-character one was
   accepted. `Email/query` sorts by `hasKeyword` (with `collapseThreads`) and
   `queryChanges` works with that sort.
-- **Settings** (brief 12): `VacationResponse` works as the RFC says (null
+- **Settings** (2026-10-20): `VacationResponse` works as the RFC says (null
   dates mean always on) and has no "contacts only" switch. `Quota/get`
   returns nothing until a quota is set, then one account-wide octets quota.
   `Identity/set` updates name, reply-to and both signatures.
-- **Contacts** (brief 15): each account has one default address book, which
+- **Contacts** (2026-10-20): each account has one default address book, which
   CardDAV serves at `/dav/card/<account>/default/`. Stalwart assigns no `uid`
   to a card created over JMAP, and a `uid` cannot change later, so Postern
   sets `urn:uuid:<random>` on create; groups (`kind: "group"`) list members
@@ -125,7 +125,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
   replace whole maps.
   `ContactCard/query` text and name filters found
   nothing in tests, so Postern loads every card and filters in the browser.
-- **Filters** (brief 13): Postern writes one script, `postern`, marked as
+- **Filters** (2026-10-20): Postern writes one script, `postern`, marked as
   generated, files labels by mailbox id (RFC 9042, which also needs
   `require "mailbox"`), and keeps blocked senders in it so they sync. A
   hand-written active script is kept running through `include :personal
@@ -143,7 +143,7 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `Email/set` handler, checked in its v0.16.25 source). The classifier is FTRL logistic regression,
   retrained every 12 hours once it has 100 samples of each kind. The UI says
   "Your mail server learns from this."
-- **Web Push** (brief 16): the VAPID key is the session capability
+- **Web Push** (2026-10-20): the VAPID key is the session capability
   `urn:ietf:params:jmap:webpush-vapid` (`applicationServerKey`). With
   `emailpush`, a subscription can ask for the new message's id, thread,
   sender and subject on delivery, filtered to the Inbox, encrypted to the

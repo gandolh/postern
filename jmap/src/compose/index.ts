@@ -1,4 +1,4 @@
-// Writing mail (brief 08): pure helpers for the composer. They build Email/set
+// Writing mail: pure helpers for the composer. They build Email/set
 // create objects (bodyStructure, headers), reply and forward subjects and
 // threading headers, reply-all recipients, quotes, and parse typed addresses.
 // No network, no DOM.

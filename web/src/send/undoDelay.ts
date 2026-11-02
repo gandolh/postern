@@ -1,5 +1,5 @@
 // How long a sent message is held in the client so Undo can take it back.
-// Gmail's default is 5 seconds (choices 5, 10, 20, 30). Brief 12 owns the
+// Gmail's default is 5 seconds (choices 5, 10, 20, 30). The settings pages own the
 // setting: it calls setUndoSendDelay(seconds * 1000) at start-up and when the
 // user changes it (the per-device display settings have no field for it yet).
 

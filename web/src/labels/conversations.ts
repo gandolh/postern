@@ -1,7 +1,7 @@
 // The conversations a label action works on, from the ids a toolbar, a drag
 // or a keyboard shortcut hands over. Rows already loaded in the mounted list
 // are used as they are (they carry every message's labels), then whatever an
-// open view lent (brief 26: one message shown alone, keyed by its own id);
+// open view lent (one message shown alone, keyed by its own id);
 // anything else (a conversation open without its list, say) is fetched.
 
 import type { Id, MethodCaller } from "@postern/jmap";
@@ -23,7 +23,7 @@ export function isAllSelected(ids: readonly Id[]): boolean {
 const lent = new Map<Id, Conversation>();
 
 /**
- * Brief 26: the reader showing one message alone (conversation view off)
+ * The reader showing one message alone (conversation view off)
  * lends it as a one-message conversation under the message's id, so a label
  * applied from there touches that message only, with or without the list on
  * screen. Fetching could not do it: `Thread/get` takes a conversation's id.

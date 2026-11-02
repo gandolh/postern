@@ -26,9 +26,9 @@ export interface MessageCardActions {
   markUnreadFromHere: () => void;
   trash: () => void;
   reportSpam: () => void;
-  /** Brief 13: open the filter editor with this sender. */
+  /** Open the filter editor with this sender. */
   filterLike: () => void;
-  /** Brief 13: block (or unblock, when `senderBlocked`) the sender. */
+  /** Block (or unblock, when `senderBlocked`) the sender. */
   block: () => void;
   showOriginal: () => void;
   displayImages: () => void;
@@ -212,7 +212,7 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
           <MenuButton label="More" icon={MoreVertical} items={moreItems} align="end" />
         </div>
       </header>
-      {/* Brief 25: a calendar invite's card, from parsed text only; the body below is untouched. */}
+      {/* A calendar invite's card, from parsed text only; the body below is untouched. */}
       <InviteCard messageId={message.id} messageIdHeader={message.messageId} keywords={message.keywords} attachments={message.attachments} />
       <MessageBody
         state={body}

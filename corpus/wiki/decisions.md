@@ -37,9 +37,9 @@ That is the threat the next entry is about. It would also be one more service
 to run. Revisit if a feature truly needs one.
 
 ## Served at the root of its own host, `postern.<domain>`
-_2026-10-21, owner; built 2026-10-22 (brief 19)_. Postern lives at the root of
+_2026-10-21, owner; built 2026-10-22 (2026-10-22)_. Postern lives at the root of
 `postern.<domain>`, and Stalwart's API at `/webmail-api` on that same host,
-routed by `vps-deploy` (its brief 14). Postern was never deployed, so
+routed by `vps-deploy` (since 2026-10-22). Postern was never deployed, so
 nobody had a `/webmail` install, bookmark or push subscription to lose.
 
 **This revisits "Served at /webmail, sharing the estate's origin"**
@@ -110,7 +110,7 @@ in again is a fill and a click. Rejected:
 Reason: every way to survive a reload stores a secret somewhere another
 estate app's script can reach. Revisit only if Postern gets its own origin.
 
-**2026-10-22:** it has one (brief 19), so the condition for a revisit is met.
+**2026-10-22:** it has one (2026-10-22), so the condition for a revisit is met.
 Nothing changed: the tokens still die with the tab. Whether to keep a session
 across reloads now is the owner's call, filed in
 [open-questions.md](open-questions.md).
@@ -127,7 +127,7 @@ store that dies with the tab, and gave no further reason); **memory only**, as b
 signed out. What still reads the token is a script on Postern's own origin,
 which the CSP, the sandbox and having no third-party scripts are there to stop.
 
-**Settled after brief 27 (2026-10-28, owner, picking the recommended
+**Settled after 2026-10-28 (2026-10-28, owner, picking the recommended
 answers):** Chrome brings a closed tab's `sessionStorage` back on "Reopen
 closed tab" and on session restore, so that tab resumes within the idle
 deadline and the refresh token's day; accepted, the store stays. When the
@@ -163,8 +163,8 @@ this stack, and so does the owner's muscle memory.
 _2026-10-23_, the owner's call, to match their other apps (atrium,
 imbatranimOS, sports-app, trips and others). The modal dialogs are Base UI
 `Dialog`/`AlertDialog` through one wrapper, `web/src/shell/Modal.tsx`
-([brief 20](../briefs/done/20-base-ui-dialogs.md)), and the menus and popovers
-are Base UI `Menu`/`Popover` ([brief 21](../briefs/done/21-base-ui-menus-and-popovers.md)). Base UI owns the focus trap, Escape, the inert page and
+(the 2026-10-23 work), and the menus and popovers
+are Base UI `Menu`/`Popover` (the 2026-10-23 work). Base UI owns the focus trap, Escape, the inert page and
 focus return, and Postern keeps its CSS. Rejected: keeping native `<dialog>`
 with hand-built wiring, and shadcn, which brings Tailwind.
 

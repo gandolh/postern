@@ -1,5 +1,5 @@
-// The one toast system: "Conversation archived. Undo" (brief 06), "Message
-// sent. Undo" (brief 08). One toast at a time, as in Gmail; a new one
+// The one toast system: "Conversation archived. Undo", "Message
+// sent. Undo". One toast at a time, as in Gmail; a new one
 // replaces the old. It sits bottom-left inside a polite live region that is
 // always in the page, so screen readers announce it.
 //

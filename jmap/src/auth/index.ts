@@ -1,4 +1,4 @@
-// Sign-in through Stalwart and the token holder (brief 04); since brief 27 the
+// Sign-in through Stalwart and the token holder; since 2026-10-28 the
 // refresh token can be kept in a store the app provides, so a reload resumes.
 
 export {

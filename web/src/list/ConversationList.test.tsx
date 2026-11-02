@@ -128,7 +128,7 @@ describe("selection and the toolbar", () => {
     expect(rowsOf(grid).map((r) => r.getAttribute("aria-selected"))).toEqual(["true", "false"]);
   });
 
-  it("snoozes until a chosen time, making the Snoozed label on first use, with Undo (brief 24)", async () => {
+  it("snoozes until a chosen time, making the Snoozed label on first use, with Undo", async () => {
     const { mail, user, grid } = await renderList(inboxThreads(2));
     await user.click(within(rowsOf(grid)[0]!).getByRole("checkbox", { name: "Select" }));
     await user.click(within(toolbar()).getByRole("button", { name: "Snooze" }));
@@ -148,7 +148,7 @@ describe("selection and the toolbar", () => {
     expect(mail.emails.get("m0")!.keywords).toEqual({});
   });
 
-  it("lists Snoozed with each conversation's time, and Unsnooze brings one back (brief 24)", async () => {
+  it("lists Snoozed with each conversation's time, and Unsnooze brings one back", async () => {
     const SNOOZED = { id: "z", name: "Snoozed", role: null, parentId: null };
     const mail = new FakeMail({
       mailboxes: [...MAILBOXES, SNOOZED],
@@ -214,7 +214,7 @@ describe("keyboard and the controller", () => {
     expect(window.location.hash).toBe("#inbox/t1");
   });
 
-  it("is the active list, for brief 14's keys", async () => {
+  it("is the active list, for the keyboard shortcuts' keys", async () => {
     const { mail, grid } = await renderList(inboxThreads(3));
     const list = getActiveList()!;
     expect(list).not.toBeNull();
@@ -230,7 +230,7 @@ describe("keyboard and the controller", () => {
   });
 });
 
-describe("conversation view off (brief 22)", () => {
+describe("conversation view off", () => {
   /** A conversation of three messages in the Inbox (one read, one from me in Sent), and a single message. */
   const mail3 = () => [
     fakeEmail({ id: "1", threadId: "T1", receivedAt: "2026-10-01T09:00:00Z", subject: "Plans", preview: "first" }),
@@ -294,14 +294,14 @@ describe("conversation view off (brief 22)", () => {
     expect(picked.map((c) => c.messages.map((m) => m.id))).toEqual([["2"]]);
   });
 
-  it("opens a message row alone, naming the message in the route (brief 26)", async () => {
+  it("opens a message row alone, naming the message in the route", async () => {
     const { user, grid } = await renderList(mail3());
     await user.click(within(rowsOf(grid)[2]!).getByText("first"));
     expect(window.location.hash).toBe("#inbox/T1/1");
     expect(heldMessageRows()).toEqual(["3", "2", "1", "s"]);
   });
 
-  it("counts messages: the toast, the selection, the grid and Select all (brief 26)", async () => {
+  it("counts messages: the toast, the selection, the grid and Select all", async () => {
     const { user, grid } = await renderList(mail3());
     expect(grid.getAttribute("aria-label")).toBe("Messages in Inbox");
     await user.click(within(rowsOf(grid)[0]!).getByRole("checkbox", { name: "Select" }));
@@ -318,7 +318,7 @@ describe("conversation view off (brief 22)", () => {
     expect(screen.getByText("All 60 messages in Inbox are selected.")).toBeTruthy();
   });
 
-  it("says an empty label has no messages (brief 26)", async () => {
+  it("says an empty label has no messages", async () => {
     const mail = new FakeMail({ mailboxes: MAILBOXES, emails: [fakeEmail({ id: "1", threadId: "T1", mailboxIds: { e: true } })] });
     const client = await mail.connect();
     render(

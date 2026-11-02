@@ -33,7 +33,7 @@ export function ListRoute({ route, label }: ListRouteProps) {
   const rolesKey = JSON.stringify(rolesFrom(labels.store));
   const roles = useMemo(() => JSON.parse(rolesKey) as MailboxRoles, [rolesKey]);
   const view = useMemo(() => labelListView({ view: label.view, mailboxId: label.mailboxId }, roles), [label.view, label.mailboxId, roles]);
-  // Brief 26: a list of messages (conversation view off) says so.
+  // A list of messages (conversation view off) says so.
   const noun = rowNoun(usePrefs().prefs.conversationView);
   const emptyMessage = label.view === "starred" ? `No starred ${noun}s` : emptyLabelMessage(label.title, noun);
 

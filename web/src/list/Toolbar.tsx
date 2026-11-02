@@ -1,7 +1,7 @@
 // The list's toolbar, as Gmail's: the select checkbox and menu; with nothing
 // selected, refresh and where you are ("1–17 of 2,035"); with a selection,
-// archive, report spam, delete, mark read or unread, snooze (brief 24), move
-// to, labels and more ("Filter messages like these", brief 13). In Spam and
+// archive, report spam, delete, mark read or unread, snooze, move
+// to, labels and more ("Filter messages like these"). In Spam and
 // Trash with nothing selected: "Delete all spam messages now" / "Empty Trash now".
 
 import type { Id } from "@postern/jmap";
@@ -36,7 +36,7 @@ export interface ToolbarProps {
   someSnoozed: boolean;
   /** "1–17 of 2,035", or empty. */
   paging: string;
-  /** For the label menus (brief 09). */
+  /** For the label menus. */
   conversationIds: readonly Id[];
   emailIds: readonly Id[];
   labelRoute: LabelRoute | null;

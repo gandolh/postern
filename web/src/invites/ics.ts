@@ -1,4 +1,4 @@
-// The few iCalendar (RFC 5545) facts a calendar invite's card needs (brief 25),
+// The few iCalendar (RFC 5545) facts a calendar invite's card needs,
 // read by hand: METHOD, and from the first VEVENT SUMMARY, DTSTART / DTEND,
 // LOCATION, ORGANIZER, ATTENDEE (address, name, PARTSTAT), UID and SEQUENCE.
 // Nothing else is read, and nothing here is ever HTML: every value is text the

@@ -5,7 +5,7 @@
 //   <EmptyState title="No conversations in Spam">…</EmptyState>
 //   <ConnectionLost onRetry={…} />                the server cannot be reached
 //   emptyLabelMessage("Spam")                     "No conversations in Spam"
-//   emptyLabelMessage("Spam", "message")          "No messages in Spam" (conversation view off, brief 26)
+//   emptyLabelMessage("Spam", "message")          "No messages in Spam" (conversation view off)
 
 import type { LucideIcon } from "lucide-react";
 import type { RowNoun } from "../actions/copy";

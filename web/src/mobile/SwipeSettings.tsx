@@ -1,4 +1,4 @@
-// "Swipe actions" for the settings page (brief 16): what swiping a
+// "Swipe actions" for the settings page: what swiping a
 // conversation left or right does on a touch screen. Per account, on this
 // device (prefs). Gmail's default: both archive.
 

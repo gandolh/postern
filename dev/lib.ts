@@ -1,5 +1,5 @@
 // Shared by dev/accounts.ts and dev/seed.ts: dev/.env, the two accounts, and
-// a few lines of raw JMAP over fetch. Brief 03's client does not exist yet,
+// a few lines of raw JMAP over fetch. The client does not exist yet,
 // and these scripts must not depend on it anyway: they build the server the
 // client is tested against.
 //

@@ -1,5 +1,5 @@
 // One ListStore per mounted list: created for the query, loaded on mount,
-// refreshed when the window regains focus, registered for brief 11's push,
+// refreshed when the window regains focus, registered for the push,
 // disposed on unmount.
 
 import { QueryStore, type JmapClient } from "@postern/jmap";
@@ -8,13 +8,13 @@ import { ListStore, NEWEST_FIRST } from "./listStore";
 import { registerListStore } from "./registry";
 import type { ListQuery, ListSnapshot } from "./types";
 
-/** The list's identity: the query, and whether rows are conversations or messages (brief 22), so one mode's pages never show in the other. */
+/** The list's identity: the query, and whether rows are conversations or messages, so one mode's pages never show in the other. */
 export function queryKey(query: ListQuery, conversationView = true): string {
   return `${QueryStore.keyOf({ filter: query.filter, sort: query.sort ?? NEWEST_FIRST, collapseThreads: conversationView })}|${query.scope.kind}|${query.searchSnippets ? 1 : 0}`;
 }
 
 export interface UseListStoreOptions {
-  /** Brief 22: false lists one row per message. Default true. */
+  /** False lists one row per message. Default true. */
   conversationView?: boolean;
 }
 

@@ -5,7 +5,7 @@ import { useSyncExternalStore } from "react";
 import { STALWART_ACCOUNT_URL } from "./config";
 import { SignInForm } from "./SignInForm";
 
-/** Why the form shows when it was not the user's choice: the idle timeout, or a reload that could not reach the server (brief 27). */
+/** Why the form shows when it was not the user's choice: the idle timeout, or a reload that could not reach the server. */
 export type SignInNotice = "idle" | "offline";
 
 export interface SignInPageProps {
@@ -58,7 +58,7 @@ export function SignInPage({ onSignIn, notice }: SignInPageProps) {
   );
 }
 
-/** Brief 27: while a reload signs in again from the kept refresh token. Quiet: no form, no flash of one. */
+/** While a reload signs in again from the kept refresh token. Quiet: no form, no flash of one. */
 export function ResumingPage() {
   return (
     <main className="auth-page" aria-busy="true">

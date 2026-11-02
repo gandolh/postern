@@ -1,4 +1,4 @@
-// A calendar invite's card, above the message body (brief 25): what, when (in
+// A calendar invite's card, above the message body: what, when (in
 // this browser's time zone), where, who organises, and Yes / No / Maybe with
 // the current answer marked. METHOD:CANCEL says the event was cancelled; an
 // invite that doesn't name one of the user's addresses shows the facts only;

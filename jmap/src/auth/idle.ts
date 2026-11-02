@@ -6,7 +6,7 @@
 // instead of restarting the clock, the web app asks `check()` when the tab
 // becomes visible, and the token holder asks before every request.
 //
-// Since brief 27 the clock survives a reload: AuthSession keeps the last
+// Since 2026-10-28 the clock survives a reload: AuthSession keeps the last
 // activity time with the refresh token and starts the clock from it again.
 
 /**
@@ -49,7 +49,7 @@ export class IdleTimeout {
 
   /**
    * Start (or restart) counting from now, or from `from`, the last activity
-   * before a reload (brief 27; a time in the future counts as now).
+   * before a reload (a time in the future counts as now).
    */
   start(from?: number): void {
     this.#running = true;

@@ -1,6 +1,6 @@
 ---
-summary: How Postern signs in through Stalwart and keeps the session, as built. Brief 04's checked shapes (Postern's own form posting to /api/auth, the TOTP retry, the code exchange at /auth/token with PKCE, /auth/userinfo), refresh (no rotation on Stalwart's defaults) and token lifetimes, no revocation (sealed stateless tokens; a password change kills them all), no client registration, Stalwart's account page; and since brief 27 the refresh token in sessionStorage, so a reload resumes with one refresh grant (the SessionStore adapter, resume() and its outcomes, the idle clock across a reload, two tabs). The rules are in security.md.
-updated: 2026-10-28
+summary: How Postern signs in through Stalwart and keeps the session, as built. The checked shapes (Postern's own form posting to /api/auth, the TOTP retry, the code exchange at /auth/token with PKCE, /auth/userinfo), refresh (no rotation on Stalwart's defaults) and token lifetimes, no revocation (sealed stateless tokens; a password change kills them all), no client registration, Stalwart's account page; and since 2026-10-28 the refresh token in sessionStorage, so a reload resumes with one refresh grant (the SessionStore adapter, resume() and its outcomes, the idle clock across a reload, two tabs). The rules are in security.md.
+updated: 2026-11-02
 ---
 
 # Sign-in and the session
@@ -9,7 +9,7 @@ Moved here from [architecture.md](architecture.md) on 2026-10-28, unchanged
 but for its heading. The token rules and their threats are in
 [security.md](security.md).
 
-## As built in brief 04
+## As built on 2026-10-20
 
 Stalwart is the identity provider. Verified on 2026-10-20 against Stalwart
 0.16.25's source (the OAuth and auth modules of its `http` and `common`
@@ -70,7 +70,7 @@ app at `/account/` on Stalwart's host, not under `/webmail-api` (its asset
 paths are absolute). Postern links to it through `VITE_STALWART_ACCOUNT_URL`,
 set at build time; the dev default is the dev server's own `/account/`.
 
-**A reload keeps the session (brief 27).** The access token stays in
+**A reload keeps the session (2026-10-28).** The access token stays in
 memory. The refresh token, with the account's address and display name and
 the time of the last activity, is kept in this tab's `sessionStorage` under
 `postern.session`, so a reload or a crashed tab signs in again, and closing

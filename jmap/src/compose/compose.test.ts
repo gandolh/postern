@@ -210,7 +210,7 @@ describe("quoting", () => {
     expect(q.html).not.toMatch(/<script|<b>/);
   });
 
-  it("trims a hostile original's trailing whitespace in linear time (brief 17)", () => {
+  it("trims a hostile original's trailing whitespace in linear time", () => {
     const start = performance.now();
     const text = `hi${" ".repeat(200_000)}x${" ".repeat(200_000)}`;
     expect(replyQuote(original, text, fmt).text.endsWith("x")).toBe(true);

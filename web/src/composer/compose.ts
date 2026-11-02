@@ -1,4 +1,4 @@
-// The composer's options, provider and hook (brief 08).
+// The composer's options, provider and hook.
 //
 //   const compose = useCompose();
 //   compose.open();                                              a new message

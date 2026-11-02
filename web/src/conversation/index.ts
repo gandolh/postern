@@ -1,14 +1,14 @@
-// The conversation view (brief 07). What other briefs import:
+// The conversation view. What other briefs import:
 //
 //   ConversationView                    the shell renders it
-//   applyConversationStateChange        brief 11: pass every push StateChange
+//   applyConversationStateChange        pass every push StateChange
 //   getActiveConversation / useActiveConversation / subscribeActiveConversation
-//                                       brief 14: n / p / u / r / a / f and the toolbar keys
+//                                       N / p / u / r / a / f and the toolbar keys
 //   setInlineReplyRenderer / inlineReplySlotId / messageCardId
-//                                       brief 08: the inline reply below the last message
+//                                       The inline reply below the last message
 //   quoteAttribution / quotePlainText / forwardHeaderText / htmlBodyText
-//                                       brief 08: quoting, as text
-//   ConversationStore                   the data (tests, brief 10 if it previews)
+//                                       Quoting, as text
+//   ConversationStore                   the data (tests, search if it previews)
 
 export { ConversationView, type ConversationViewProps } from "./ConversationView";
 export {

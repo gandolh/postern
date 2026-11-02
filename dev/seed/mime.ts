@@ -332,7 +332,7 @@ export interface CalendarEvent {
   organizer: Address;
   attendees: Address[];
   stamp: Date;
-  /** Brief 25: wall times in an IANA zone instead of UTC, e.g. { tzid: "Europe/Lisbon", start: "20261105T100000", end: ... }. */
+  /** Wall times in an IANA zone instead of UTC, e.g. { tzid: "Europe/Lisbon", start: "20261105T100000", end: ... }. */
   zone?: { tzid: string; start: string; end: string };
   sequence?: number;
   /** CANCELLED on a cancellation. */

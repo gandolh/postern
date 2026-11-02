@@ -31,7 +31,7 @@ export interface PushSubscription {
   verificationCode: string | null;
   expires: UTCDate | null;
   types: string[] | null;
-  /** Stalwart's `urn:ietf:params:jmap:emailpush` extension (brief 16): see EmailPushConfig. */
+  /** Stalwart's `urn:ietf:params:jmap:emailpush` extension: see EmailPushConfig. */
   emailPush?: Record<Id, EmailPushConfig> | null;
 }
 

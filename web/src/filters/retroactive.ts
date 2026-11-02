@@ -1,5 +1,5 @@
 // "Also apply to matching conversations": the filter's criteria as a Gmail
-// search (brief 10's operators, so the person can also open it as a search),
+// search (the operators, so the person can also open it as a search),
 // the conversations it finds, and one plan that does the filter's actions to
 // them. As in Gmail, only archive, mark as read, star, apply label and delete
 // (to Trash) reach existing mail; forwarding and "never send to Spam" are

@@ -22,7 +22,7 @@ import { useMediaQuery } from "./useMediaQuery";
 
 export function MainArea({ route }: { route: Route }) {
   const { readingPane: chosen } = useDisplaySettings();
-  // Brief 16: a phone has room for one column, so the list and the conversation
+  // A phone has room for one column, so the list and the conversation
   // stack as routes (back returns to the list), whatever the reading pane setting.
   const phone = useMediaQuery(PHONE_QUERY);
   const readingPane: ReadingPane = phone ? "none" : chosen;
@@ -83,7 +83,7 @@ function LabelArea({ route, pane }: { route: LabelRoute; pane: ReadingPane }) {
 
 /** The list alone, the conversation alone (reading pane off), or both side by side or stacked. */
 function MailSplit({ pane, list, conversation }: { pane: ReadingPane; list: ReactNode; conversation: ReactNode }) {
-  // Brief 26: with conversation view off a row is a message.
+  // With conversation view off a row is a message.
   const noun = rowNoun(usePrefs().prefs.conversationView);
   if (pane === "none") return conversation ?? list;
   return (

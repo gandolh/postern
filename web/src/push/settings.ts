@@ -1,5 +1,5 @@
-// "Notify me when Postern is closed" (brief 16): a per-device, per-account
-// choice, OFF until the person turns it on, kept like brief 11's desktop
+// "Notify me when Postern is closed": a per-device, per-account
+// choice, OFF until the person turns it on, kept like the desktop
 // notifications in this browser's localStorage. Nothing in it is secret: an
 // on/off flag and the deviceClientId (a hash) of the subscription this
 // browser last verified, so a sign-in can extend it rather than make a new one.

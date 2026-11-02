@@ -10,7 +10,7 @@ import { registerWorker } from "./push/install";
 const root = document.getElementById("root");
 if (!root) throw new Error("#root is missing from index.html");
 
-// The service worker (brief 16): install, offline start, Web Push. It never
+// The service worker: install, offline start, Web Push. It never
 // holds a token; there is none under `vite dev`.
 registerWorker();
 

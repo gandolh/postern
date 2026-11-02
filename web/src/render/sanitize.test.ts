@@ -315,7 +315,7 @@ describe("the srcdoc", () => {
     }
   });
 
-  it("turns DNS prefetching off, so no link's host is looked up before a click (brief 17)", () => {
+  it("turns DNS prefetching off, so no link's host is looked up before a click", () => {
     const srcdoc = buildSrcdoc(sanitizeMessageHtml('<a href="https://evil.test/x">x</a>'), { foldQuote: false, theme: "light", allowRemote: false });
     const doc = new DOMParser().parseFromString(srcdoc, "text/html");
     expect(doc.head.querySelector('meta[http-equiv="x-dns-prefetch-control"]')?.getAttribute("content")).toBe("off");

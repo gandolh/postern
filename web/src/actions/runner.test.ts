@@ -105,7 +105,7 @@ describe("archive", () => {
     expect(h.toasts[0]!.message).toBe("Conversation archived.");
   });
 
-  it("counts messages when the list's rows are messages, unless the caller says otherwise (brief 26)", async () => {
+  it("counts messages when the list's rows are messages, unless the caller says otherwise", async () => {
     const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })], { noun: () => "message" });
     await h.actions.archive(conversations(h.mail, "T1", "T2"), scope);
     expect(h.toasts[0]!.message).toBe("2 messages archived.");

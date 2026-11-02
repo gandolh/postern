@@ -97,7 +97,7 @@ describe("linkify", () => {
   });
 });
 
-describe("hostile plain text stays fast (brief 17)", () => {
+describe("hostile plain text stays fast", () => {
   // Each of these took seconds to minutes before: a regex rescanning a long
   // run from every position, or trimming one character at a time.
   const fast = (label: string, run: () => unknown) => {
@@ -275,7 +275,7 @@ describe("the per-device image allowance", () => {
     expect(imageAllowanceList("alice@postern.test")).toEqual([]);
   });
 
-  it("applies only to a message that passed DMARC for the sender's domain (brief 17)", () => {
+  it("applies only to a message that passed DMARC for the sender's domain", () => {
     allowImagesFrom("alice@postern.test", "news@shop.test");
     const allows = (results: string[]) => allowsImagesFrom("alice@postern.test", "news@shop.test", results);
     expect(allows(PASS)).toBe(true);

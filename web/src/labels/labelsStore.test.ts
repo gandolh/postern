@@ -104,7 +104,7 @@ describe("buildLabels", () => {
     expect(fresh.system.all.title).toBe("All Mail");
   });
 
-  it("finds Snoozed by name, a system label outside the user labels (brief 24)", () => {
+  it("finds Snoozed by name, a system label outside the user labels", () => {
     const b = buildLabels([...ALICE, mailbox({ id: "s", name: "Snoozed", isSubscribed: false }), mailbox({ id: "t", name: "Snoozed", parentId: "i" })]);
     expect(b.system.snoozed.label?.id).toBe("s");
     expect(b.system.snoozed.title).toBe("Snoozed");

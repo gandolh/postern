@@ -1,5 +1,5 @@
-// Where brief 08's inline reply renders: a slot below the last message of the
-// open conversation. Brief 08 registers a renderer once (from its provider);
+// Where the inline reply renders: a slot below the last message of the
+// open conversation. The composer registers a renderer once (from its provider);
 // the conversation view calls it with the context below.
 //
 //   useEffect(() => setInlineReplyRenderer((ctx) => <InlineReply {...ctx} />), []);

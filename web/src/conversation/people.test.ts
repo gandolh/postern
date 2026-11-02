@@ -11,7 +11,7 @@ describe("senders", () => {
     expect(forgedAddressInName({ name: null, email: "a@b.test" })).toBeNull();
   });
 
-  it("stays fast on a long hostile display name (brief 17)", () => {
+  it("stays fast on a long hostile display name", () => {
     const start = performance.now();
     expect(forgedAddressInName({ name: "a".repeat(200_000), email: "x@evil.test" })).toBeNull();
     expect(forgedAddressInName({ name: `${"a".repeat(100_000)}@bank`, email: "x@evil.test" })).toBeNull();

@@ -5,10 +5,10 @@
 //   #label/<labelId>                                          a user label (by mailbox id)
 //   #search/<query>                                           search results (query URI-encoded)
 //   #<any of the above>/<conversationId>                      a conversation opened from there
-//   #<any of the above>/<conversationId>/<messageId>          one message of it, alone (brief 26: conversation view off)
+//   #<any of the above>/<conversationId>/<messageId>          one message of it, alone (conversation view off)
 //   #settings/<section>                                       settings (#settings alone is general)
 //   #contacts                                                 contacts
-//   #scheduled                                                messages waiting to be sent (brief 23)
+//   #scheduled                                                messages waiting to be sent
 //
 // Anything else is the Inbox. Navigating pushes a history entry (the browser's
 // own hash history), so back and forward work as in Gmail; `replace` swaps the
@@ -22,7 +22,7 @@ import { useSyncExternalStore } from "react";
 
 /**
  * The system labels, by the word in the URL. Spam is role `junk`; All Mail is
- * role `archive`; Snoozed (brief 24) has no role and is found by its name.
+ * role `archive`; Snoozed has no role and is found by its name.
  */
 export type SystemView = "inbox" | "starred" | "snoozed" | "sent" | "drafts" | "spam" | "trash" | "all";
 
@@ -34,7 +34,7 @@ export interface SystemLabelRoute {
   view: SystemView;
   /** The open conversation (a JMAP Thread id), if any. */
   conversationId?: string;
-  /** Brief 26: the one message of it shown alone (a JMAP Email id), as a message row opens it with conversation view off. */
+  /** The one message of it shown alone (a JMAP Email id), as a message row opens it with conversation view off. */
   messageId?: string;
 }
 
@@ -62,7 +62,7 @@ export interface SearchResultsRoute {
 /** A route that shows conversations: a label or search results. */
 export type MailRoute = LabelRoute | SearchResultsRoute;
 
-/** `#settings/<section>`. Brief 12 defines the sections (general, accounts, labels, filters). */
+/** `#settings/<section>`. The settings pages define the sections (general, accounts, labels, filters). */
 export interface SettingsRoute {
   kind: "settings";
   section: string;
@@ -73,7 +73,7 @@ export interface ContactsRoute {
   kind: "contacts";
 }
 
-/** `#scheduled`: the messages Schedule send is holding (brief 23). Not a label: a list of submissions. */
+/** `#scheduled`: the messages Schedule send is holding. Not a label: a list of submissions. */
 export interface ScheduledRoute {
   kind: "scheduled";
 }
@@ -100,7 +100,7 @@ function encode(segment: string): string {
 
 type Opened = { ok: true; id?: string; messageId?: string } | { ok: false };
 
-/** The open conversation, and the one message shown alone (brief 26), from the segments after the list's. */
+/** The open conversation, and the one message shown alone, from the segments after the list's. */
 function conversationFrom(segments: readonly string[]): Opened {
   if (segments.length === 0) return { ok: true };
   if (segments.length > 2) return { ok: false };
@@ -204,7 +204,7 @@ export function isMailRoute(route: Route): route is MailRoute {
 
 /**
  * The same list with a conversation open: the whole of it, or with
- * `messageId` that one message alone (brief 26, a message row with
+ * `messageId` that one message alone (a message row with
  * conversation view off).
  */
 export function withConversation<R extends MailRoute>(route: R, conversationId: string, messageId?: string): R {

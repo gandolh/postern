@@ -1,4 +1,4 @@
-// Brief 27: a reload keeps the session, closing the tab ends it. The refresh
+// A reload keeps the session, closing the tab ends it. The refresh
 // token (and only it, with the account and the last activity) is kept in this
 // tab's sessionStorage; a reload signs in again with one refresh grant. Tokens
 // are only ever compared, never printed.

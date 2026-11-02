@@ -1,4 +1,4 @@
-// Snooze and unsnooze as plans (brief 24), so they run like every other
+// Snooze and unsnooze as plans, so they run like every other
 // action: applied at once, one Email/set, Undo from the inverse. Pure.
 //
 //   snooze     out of the Inbox into the Snoozed label, with $snoozed-<time>

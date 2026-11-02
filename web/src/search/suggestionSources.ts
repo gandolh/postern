@@ -7,8 +7,8 @@ import { searchSession, type SearchSession } from "./session";
 import { labelSource, recentSearchSource, senderSource, type SuggestibleLabel, type SuggestionSource } from "./suggestions";
 
 /**
- * The sources the search box asks, in the order their groups appear. Brief 15
- * adds contacts by returning one more source here (before the senders, which
+ * The sources the search box asks, in the order their groups appear. The contacts
+ * work adds them by returning one more source here (before the senders, which
  * it replaces for people it knows).
  */
 export function useSuggestionSources(): { sources: SuggestionSource[]; session: SearchSession; client: JmapClient } {

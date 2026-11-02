@@ -1,7 +1,7 @@
 // AuthSession: Postern's sign-in and token holder. It implements the
 // client's AuthProvider, so one object signs in, hands out Bearer headers,
 // refreshes, expires and signs out, and no token ever leaves it except as the
-// Authorization header value and, since brief 27, the refresh token to the
+// Authorization header value and, since 2026-10-28, the refresh token to the
 // store the app hands it (`SessionStore`; sessionStorage in the browser, so a
 // reload signs in again with one refresh grant and closing the tab ends it).
 // The access token lives only in a private field. Neither token goes to
@@ -83,7 +83,7 @@ export interface AuthAccount {
 export type SignInOutcome = "signedIn" | "mfaRequired";
 
 /**
- * What `resume()` did (brief 27):
+ * What `resume()` did:
  * - `resumed`: signed in from the store, as after `signIn`.
  * - `none`: nothing kept (or not signed out).
  * - `idle`: the idle deadline passed before the reload; the store is cleared.
@@ -113,7 +113,7 @@ export interface AuthSessionOptions {
   /** How long a sign-out waits on the before-sign-out hooks. Default `BEFORE_SIGN_OUT_MS`. */
   beforeSignOutMs?: number;
   /**
-   * Brief 27: where to keep the refresh token, the account and the last
+   * Where to keep the refresh token, the account and the last
    * activity so a reload can `resume()`. Saved after sign-in and after every
    * refresh that returns a refresh token; cleared on sign-out, the idle
    * timeout, a refused refresh, and before another account signs in. Without
@@ -133,7 +133,7 @@ export interface SignInOptions {
 /**
  * Signs in through Stalwart (authorization code + PKCE, TOTP when the account
  * has it) and holds the tokens in memory; with a `store`, the refresh token
- * also goes there, so `resume()` can sign in again after a reload (brief 27).
+ * also goes there, so `resume()` can sign in again after a reload.
  *
  * ```ts
  * const auth = new AuthSession({ baseUrl: "/webmail-api", redirectUri: `${location.origin}/webmail/` });
@@ -238,7 +238,7 @@ export class AuthSession implements AuthProvider {
     if (this.checkIdle()) throw new SignedOutError();
     this.#signingIn = true;
     try {
-      // What another account kept must not outlive its sign-in page (brief 27).
+      // What another account kept must not outlive its sign-in page.
       const kept = this.#load();
       if (kept && kept.username.trim().toLowerCase() !== username.trim().toLowerCase()) this.#forget();
       const again = this.#status === "expired" ? this.#account : undefined;
@@ -296,13 +296,13 @@ export class AuthSession implements AuthProvider {
     }
   }
 
-  /** Brief 27: the store holds a session `resume()` can try (signed out only). */
+  /** The store holds a session `resume()` can try (signed out only). */
   resumable(): boolean {
     return this.#status === "signedOut" && this.#load() !== undefined;
   }
 
   /**
-   * Brief 27: sign in again from the store after a reload, with one refresh
+   * Sign in again from the store after a reload, with one refresh
    * grant and no password, unless the idle deadline passed meanwhile (the
    * clock goes on from the stored last activity). Then the account is read
    * from `/auth/userinfo` with the new access token, which also proves it
@@ -426,7 +426,7 @@ export class AuthSession implements AuthProvider {
    */
   noteActivity(): void {
     this.#idle.activity();
-    // Brief 27: the store's copy follows, at most once per ACTIVITY_SAVE_MS.
+    // The store's copy follows, at most once per ACTIVITY_SAVE_MS.
     if (this.#status === "active" && this.#idle.lastActivity - this.#savedActivity >= ACTIVITY_SAVE_MS) this.#persist();
   }
 
@@ -484,7 +484,7 @@ export class AuthSession implements AuthProvider {
       if (generation !== this.#generation || this.#status !== "active") return false;
       this.#retryAttempt = 0;
       this.#apply(grant);
-      // Brief 27: a renewed refresh token replaces the stored one (production renews it on every refresh).
+      // A renewed refresh token replaces the stored one (production renews it on every refresh).
       if (grant.refreshToken) this.#persist();
       return true;
     } catch (err) {
@@ -552,7 +552,7 @@ export class AuthSession implements AuthProvider {
     // Bumping the generation cancels a sign-in or a resume in flight, even from signedOut.
     this.#dropTokens();
     // A session that never started keeps the store: React's StrictMode signs out
-    // a fresh one on mount, before its resume runs again (brief 27).
+    // a fresh one on mount, before its resume runs again.
     if (this.#status === "signedOut") return;
     this.#forget();
     this.#account = undefined;
@@ -564,7 +564,7 @@ export class AuthSession implements AuthProvider {
     this.#idle.check();
   }
 
-  // ---- The store (brief 27). A store that throws is treated as empty; it never breaks a sign-in.
+  // ---- The store. A store that throws is treated as empty; it never breaks a sign-in.
 
   #load(): StoredSession | undefined {
     try {

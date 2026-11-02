@@ -1,4 +1,4 @@
-// Brief 23 against the dev Stalwart: alice schedules two messages to bob 20 s
+// Against the dev Stalwart: alice schedules two messages to bob 20 s
 // ahead with HOLDUNTIL and cancels one. Both wait as $scheduled drafts and the
 // Scheduled list shows them; bob has neither before the time; the kept one
 // arrives at the time, not before, and the reconciler files it in Sent; the

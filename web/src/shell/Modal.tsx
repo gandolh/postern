@@ -1,4 +1,4 @@
-// The modal dialogs' shared shape (brief 20): Base UI's Dialog, or its
+// The modal dialogs' shared shape: Base UI's Dialog, or its
 // AlertDialog for a confirmation, with a backdrop, in the right layer. Base UI
 // does the focus trap, the inert page behind, Escape and focus return; each
 // dialog keeps its own look through `className`.

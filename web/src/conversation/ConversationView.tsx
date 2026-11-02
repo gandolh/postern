@@ -4,7 +4,7 @@
 // each message's body in a sandboxed frame, and a toolbar that acts on the
 // whole conversation. The shell renders it full width or in the reading pane.
 //
-// Brief 26: when the route names a message (a message row opened with
+// When the route names a message (a message row opened with
 // conversation view off), it shows that message alone, open, under the
 // conversation's subject; the toolbar, the keys and mark-read act on it alone,
 // and `j` / `k` open the next and previous message rows (list/openMessage.ts).
@@ -51,7 +51,7 @@ import { useConversationStore } from "./useConversationStore";
 import "./conversation.css";
 
 export interface ConversationViewProps {
-  /** Where it was opened from; `route.conversationId` equals `conversationId`. `route.messageId`, if any, is the one message shown (brief 26). */
+  /** Where it was opened from; `route.conversationId` equals `conversationId`. `route.messageId`, if any, is the one message shown. */
   route: MailRoute;
   /** The JMAP Thread id. */
   conversationId: string;
@@ -72,7 +72,7 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   const backHref = formatRoute(withoutConversation(route));
   const backLabel = label ? `Back to ${label.title}` : "Back to search results";
   const kind = label ? scopeKind(label) : (scope ?? "normal");
-  // Brief 26: one message alone, when the route names it.
+  // One message alone, when the route names it.
   const messageId = route.messageId;
   const noun: RowNoun = messageId ? "message" : "conversation";
 
@@ -188,7 +188,7 @@ interface BodyProps {
   /** Which messages it shows: the label's view, or the search's scope. */
   kind: ConversationScope["kind"];
   conversationId: Id;
-  /** Brief 26: the one message to show alone (ConversationView checked it is in the conversation). */
+  /** The one message to show alone (ConversationView checked it is in the conversation). */
   messageId?: Id;
   snapshot: ConversationSnapshot;
   loadBodies: (ids: Id[]) => void;
@@ -214,7 +214,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
   const scope = useMemo<ConversationScope>(() => ({ kind, roles }), [kind, roles]);
   const conversation = useMemo<Conversation<ConvMessage>>(() => ({ id: conversationId, messages: snapshot.messages }), [conversationId, snapshot.messages]);
   // A reply draft sits in the conversation it answers. The composer opens the
-  // ones in Drafts inline under the last message (brief 08), so those are not
+  // ones in Drafts inline under the last message, so those are not
   // also cards here, unless nothing else is left to show. Any draft shown as a
   // card the composer leaves alone (it gets the ids through the inline slot).
   const inScope = useMemo(() => shownMessages(conversation, scope), [conversation, scope]);
@@ -223,7 +223,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
     const sent = inScope.filter((m) => !(m.keywords[DRAFT] === true && drafts !== undefined && m.mailboxIds[drafts] === true));
     return sent.length > 0 ? sent : inScope;
   }, [inScope, roles.drafts]);
-  // Brief 26: one message alone. Everything below that reads `shown` or
+  // One message alone. Everything below that reads `shown` or
   // `acted` (the toolbar, the keys, mark-read, the label menus) then acts on it.
   const single = useMemo(() => (messageId === undefined ? undefined : snapshot.messages.find((m) => m.id === messageId)), [messageId, snapshot.messages]);
   const shown = useMemo(() => (single ? [single] : conversationShown), [single, conversationShown]);
@@ -275,7 +275,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedKey]);
 
-  // Mark read on open, once per conversation shown; one message shown alone marks only it (brief 26).
+  // Mark read on open, once per conversation shown; one message shown alone marks only it.
   const opened = single ? acted : conversation;
   const markedRef = useRef(false);
   useEffect(() => {
@@ -284,7 +284,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
     void markReadOnOpen(client, opened, scope, () => void labels.store.sync());
   }, [client, opened, scope, labels.store]);
 
-  // Brief 26: the label menus and keys find the one message by its own id (labels/conversations.ts).
+  // The label menus and keys find the one message by its own id (labels/conversations.ts).
   useEffect(() => (single ? lendConversation({ id: single.id, messages: [single] }) : undefined), [single]);
 
   // Messages that arrive while the conversation is open show open (isExpanded),
@@ -333,7 +333,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
     [compose, conversationId, last],
   );
 
-  // The toasts say what is shown, whatever the list's rows are (brief 26).
+  // The toasts say what is shown, whatever the list's rows are.
   const conversationActions = useMemo(
     () => ({
       archive: () => {
@@ -411,7 +411,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
     },
   });
 
-  // ---- Keyboard (brief 14): n / p / u / r / a / f and the toolbar keys ----------------
+  // ---- Keyboard: n / p / u / r / a / f and the toolbar keys ----------------
   const focusMessage = useCallback(
     (id: Id) => {
       setCursor(id);
@@ -451,7 +451,7 @@ function ConversationBody({ route, label, kind, conversationId, messageId, snaps
       trash: () => latest.current.conversationActions.trash(),
       reportSpam: () => latest.current.conversationActions.reportSpam(),
       markUnread: () => latest.current.conversationActions.markUnread(),
-      // Brief 26: one message alone; `j` / `k` step through the message rows.
+      // One message alone; `j` / `k` step through the message rows.
       ...(messageId === undefined ? {} : { messageId, openRow: (delta: 1 | -1) => void openNeighbourRow(latest.current.route, delta) }),
     };
     return setActiveConversation(controller);

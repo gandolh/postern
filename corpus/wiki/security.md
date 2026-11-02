@@ -1,6 +1,6 @@
 ---
-summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), its own host since 2026-10-22 (another estate app can no longer reach it) and what a script on Postern's own origin could still do, token handling (the access token in memory, the refresh token in sessionStorage since brief 27 and what a script on the origin can then read, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
-updated: 2026-10-28
+summary: Postern's threat model and the rules that answer it. Untrusted message content (HTML, links, look-alike hosts, remote images, attachments, spoofed senders), its own host since 2026-10-22 (another estate app can no longer reach it) and what a script on Postern's own origin could still do, token handling (the access token in memory, the refresh token in sessionStorage since 2026-10-28 and what a script on the origin can then read, no revocation in Stalwart, the 8-hour idle timeout, the bounded last work before a sign-out, the failed-password ban threshold), the sandboxed-iframe rendering rule and why CSP inheritance makes "show images" work, and the browser tests that prove it (web/e2e). Headers are in security-headers.md, open findings in security-findings.md. Read before touching message rendering, sign-in, storage or headers.
+updated: 2026-11-02
 ---
 
 # Security
@@ -43,7 +43,7 @@ updated: 2026-10-28
   - Preview images and PDFs only, in sandboxed frames.
   - Never render an HTML attachment inline.
 - **Tokens.** The access token lives in memory only, in a private field of
-  `AuthSession` in [jmap/src/auth](../../jmap/src/auth/). Since brief 27
+  `AuthSession` in [jmap/src/auth](../../jmap/src/auth/). Since 2026-10-28
   (owner, 2026-10-28) the refresh token is kept in this tab's
   `sessionStorage` under `postern.session`, with the account's address and
   display name and the last activity time, so a reload signs in again; the
@@ -52,12 +52,12 @@ updated: 2026-10-28
   Neither token goes to `localStorage`, IndexedDB, a readable cookie,
   `BroadcastChannel`, `postMessage`, a URL, a log line or an error message.
   Keep the access token short-lived, and run a session timeout (below).
-- **What a script on Postern's origin can read (since brief 27).** Any
+- **What a script on Postern's origin can read (since 2026-10-28).** Any
   script that runs on Postern's origin reads `sessionStorage`, and with it
   the refresh token: it can mint access tokens until that token expires (30
-  days on Stalwart's defaults; about a day once `vps-deploy` brief 20 is
-  applied), from anywhere, after the tab is closed, and sign-out cannot stop
-  it (no revocation, below). Before brief 27 such a script could act only
+  days on Stalwart's defaults; about a day once `vps-deploy`'s shorter
+  lifetimes are applied), from anywhere, after the tab is closed, and sign-out cannot stop
+  it (no revocation, below). Before 2026-10-28 such a script could act only
   through the running app. Stalwart's tokens are stateless, so an old refresh
   token keeps working after a refresh returned a new one (the same token
   refreshed three times in a row on the dev server, 2026-10-28): renewing on
@@ -85,8 +85,8 @@ updated: 2026-10-28
   overnight on an unattended machine is signed out by morning. Timers may not
   count a machine's sleep, so the deadline is also checked when the tab becomes
   visible or gains focus, on the first input (which then signs out instead of
-  restarting the clock) and before each request. Brief 17 tests it. Since
-  brief 27 the last activity is kept with the refresh token, brought up to
+  restarting the clock) and before each request. The hardening tests it. Since
+  2026-10-28 the last activity is kept with the refresh token, brought up to
   date at most once a minute (`ACTIVITY_SAVE_MS`), and a reload checks it
   before resuming: after 8 idle hours the reload signs out (with the idle
   notice) instead of restarting the clock. The stored time can lag the real
@@ -117,10 +117,10 @@ updated: 2026-10-28
 
 On its own page since 2026-10-28, when this one passed 200 lines:
 [rendering.md](rendering.md) (the sanitiser and the sandbox, what is dropped,
-inline images, frame height, previews, the hardening of brief 07's review and
-brief 17).
+inline images, frame height, previews, the review's hardening and
+the 2026-10-20 security hardening).
 
-## The service worker (brief 16)
+## The service worker (2026-10-20)
 
 - Scope `/`, the whole host, since 2026-10-22 (`/webmail/` before). It
   precaches the app shell only, routes nothing under `/webmail-api` (inside
@@ -130,7 +130,7 @@ brief 17).
   origin can read its sender and subject through
   `registration.getNotifications()` ([decisions-mail.md](decisions-mail.md)).
 
-## Headers (final since brief 17)
+## Headers (final since 2026-10-20)
 
 The CSP, COOP, CORP, Permissions-Policy and the rest, with the reason for each
 and the Caddy shape, are in [security-headers.md](security-headers.md).
@@ -153,7 +153,7 @@ third-party scripts, message HTML only in the sandbox). It cannot read the
 access token (it is in no storage, cookie, IndexedDB, Cache Storage, URL, the
 DOM or a console line), but it **could**:
 
-- read the refresh token in `sessionStorage` (since brief 27; see Tokens
+- read the refresh token in `sessionStorage` (since 2026-10-28; see Tokens
   above): the one secret `tokens.spec.ts` allows there, and nowhere else;
 - read and write the per-device preferences, including ones that load remote
   images or turn Web Push on (F6), and read the last username;
@@ -165,11 +165,11 @@ DOM or a console line), but it **could**:
 
 ## The malicious-mail corpus and the browser tests
 
-`dev/` seeds 18 hostile messages (brief 02; brief 25 added an invite): script tags,
+`dev/` seeds 18 hostile messages (2026-10-20; an invite added 2026-10-27): script tags,
 event handlers, SVG with script, CSS overlays, `javascript:` and `data:` links,
 a meta refresh, a `<base>`, forms, frames and embeds, remote trackers, link
 text that lies, look-alike hosts, forged display names, and attachments
-named to deceive. Brief 17's suite in [web/e2e](../../web/e2e/README.md)
+named to deceive. The hardening's suite in [web/e2e](../../web/e2e/README.md)
 (`npm run test:e2e`, Playwright and Chromium against the production build
 behind Caddy and the dev Stalwart) opens each in the real app and checks:
 

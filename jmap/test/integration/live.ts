@@ -1,4 +1,4 @@
-// Shared by the integration tests: is brief 02's Stalwart up, and clients for
+// Shared by the integration tests: is the dev Stalwart up, and clients for
 // its accounts. Tests skip (not fail) when the server or dev/.env is missing.
 // Passwords come from dev/.env and are never printed.
 

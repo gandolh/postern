@@ -4,7 +4,7 @@
 // VacationResponse, so it is not offered.
 //
 // Stalwart keeps the responder in a Sieve script named "vacation" and runs one
-// script at a time (brief 13, filters/filterScript.ts): turning the responder
+// script at a time (filters/filterScript.ts): turning the responder
 // on stops Postern's filters, and turning it off leaves no script running. So
 // with filters in place this asks before turning it on, and turns the filters
 // back on after turning it off.

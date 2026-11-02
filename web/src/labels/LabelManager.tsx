@@ -1,6 +1,6 @@
 // The label manager (settings, section "labels"): every label with show or
 // hide in the navigation, "show if unread", a colour, rename, nest and
-// delete, and a form to create one. Brief 12's settings page renders it.
+// delete, and a form to create one. The settings page renders it.
 //
 //   <LabelManager />
 //

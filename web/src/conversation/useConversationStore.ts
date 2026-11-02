@@ -1,6 +1,6 @@
 // One ConversationStore per open conversation: created for the id, loaded on
 // mount, refreshed when the window regains focus or comes back online,
-// registered for brief 11's push, disposed on unmount.
+// registered for the push, disposed on unmount.
 
 import type { Id, JmapClient } from "@postern/jmap";
 import { useEffect, useMemo, useSyncExternalStore } from "react";

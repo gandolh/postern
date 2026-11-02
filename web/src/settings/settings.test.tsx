@@ -110,7 +110,7 @@ describe("General", () => {
     expect(getPrefs().undoSendSeconds).toBe(20);
   });
 
-  it("conversation view is on by default and turns off (brief 22)", async () => {
+  it("conversation view is on by default and turns off", async () => {
     renderSettings("general");
     const box = screen.getByRole("checkbox", { name: "Conversation view: group replies into one row" });
     expect(box).toHaveProperty("checked", true);

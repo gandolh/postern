@@ -1,11 +1,11 @@
 ---
-summary: The HTTP headers production sends for Postern and /webmail-api on postern.<domain>, final since brief 17 (2026-10-20), on its own host since brief 19 (2026-10-22). The exact CSP and why each directive is there (style-src 'unsafe-inline' exists only for the message frames, and why it cannot go), COOP, CORP, Permissions-Policy, nosniff, no-referrer, X-Frame-Options, the /webmail-api path allowlist, which screens were proven under them, and the Caddy route shape vps-deploy renders. Read before changing a header or the Caddy route.
-updated: 2026-10-22
+summary: The HTTP headers production sends for Postern and /webmail-api on postern.<domain>, final since 2026-10-20 (2026-10-20), on its own host since 2026-10-22 (2026-10-22). The exact CSP and why each directive is there (style-src 'unsafe-inline' exists only for the message frames, and why it cannot go), COOP, CORP, Permissions-Policy, nosniff, no-referrer, X-Frame-Options, the /webmail-api path allowlist, which screens were proven under them, and the Caddy route shape vps-deploy renders. Read before changing a header or the Caddy route.
+updated: 2026-11-02
 ---
 
 # Security headers
 
-Settled by brief 17 and proven by the browser tests in [web/e2e](../../web/e2e/README.md)
+Settled by the 2026-10-20 hardening and proven by the browser tests in [web/e2e](../../web/e2e/README.md)
 (`csp.spec.ts`): the production build, served by Caddy 2.11.7 with
 [the e2e Caddyfile](../../web/e2e/Caddyfile), every screen walked with zero
 CSP violations. The same text lives in
@@ -31,7 +31,7 @@ Also: `Cache-Control: no-cache` by default (`?Cache-Control` in Caddy, so
 path list would miss the fallbacks, since Caddy's matchers run before
 `try_files`); `public, max-age=31536000, immutable` on `/assets/*`;
 `Content-Type: application/manifest+json` on the manifest; no `Server`
-header; never `Service-Worker-Allowed` (brief 16's estate rule).
+header; never `Service-Worker-Allowed` (the estate rule since 2026-10-20).
 
 ## /webmail-api/ (Stalwart, prefix stripped)
 
@@ -74,7 +74,7 @@ event source needs `flush_interval -1`, so each event is written as it comes.
 - **`media-src`, `object-src`, `frame-src 'none'`.** Postern plays no media
   and frames no URL: its frames are all `srcdoc`, which `frame-src` does not
   govern (tested).
-- **`worker-src`, `manifest-src 'self'`.** Brief 16's worker and manifest.
+- **`worker-src`, `manifest-src 'self'`.** The worker and the manifest.
 - **`form-action 'none'`.** Every form is handled by script; a submission that
   escaped would go nowhere.
 - **`base-uri 'none'`.** Side effect, expected: the sanitiser parses a message

@@ -182,7 +182,7 @@ describe("the conversation view", () => {
     expect(document.querySelectorAll(".conv-msg")).toHaveLength(7);
   });
 
-  it("offers brief 14 a controller for the open conversation", async () => {
+  it("offers the keyboard shortcuts a controller for the open conversation", async () => {
     await renderConversation(T1);
     const controller = getActiveConversation();
     expect(controller?.conversationId).toBe("T1");
@@ -231,7 +231,7 @@ describe("the conversation view", () => {
   });
 });
 
-describe("one message alone (brief 26: a message row with conversation view off)", () => {
+describe("one message alone (a message row with conversation view off)", () => {
   const UNREAD = [
     message("u1", "T1", "2026-10-01T10:00:00Z", { text: "FIRST_TEXT" }, { from: BOB, keywords: {} }),
     message("u2", "T1", "2026-10-02T10:00:00Z", { text: "SECOND_TEXT" }, { from: BOB, keywords: {}, subject: "Re: Plans" }),

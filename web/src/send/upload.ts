@@ -1,5 +1,5 @@
 // Uploading attachments with real progress. fetch() cannot report upload
-// progress, so this is an XMLHttpRequest `UploadTransport` (brief 03's seam),
+// progress, so this is an XMLHttpRequest `UploadTransport` (the seam),
 // and `uploadFile` drives it the way `client.blob.upload` does: within the
 // session's size limit, Authorization per attempt (never kept), one retry
 // after a 401 when the auth provider has refreshed.

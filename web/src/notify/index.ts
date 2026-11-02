@@ -1,6 +1,6 @@
-// Desktop notifications (brief 11). For brief 12's settings page:
+// Desktop notifications. For the settings page:
 //   useDesktopNotifications() / getDesktopNotifications / setDesktopNotifications / subscribeDesktopNotifications
-// For brief 16's Web Push: NewMailDetector + notifyNewMail's wording rules (sender, subject, no body).
+// For the Web Push: NewMailDetector + notifyNewMail's wording rules (sender, subject, no body).
 
 export {
   getDesktopNotifications,

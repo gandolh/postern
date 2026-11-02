@@ -1,4 +1,4 @@
-// The keyboard-shortcut sheet (brief 14): a modal Base UI dialog (shell/Modal), grouped as in
+// The keyboard-shortcut sheet: a modal Base UI dialog (shell/Modal), grouped as in
 // Gmail, with a search box. The shell renders it once; useHelpSheet().open() shows it.
 
 import { Fragment, useId, useState, useSyncExternalStore } from "react";

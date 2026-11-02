@@ -1,4 +1,4 @@
-// Postern's browser tests (brief 17): the hostile-mail suite, the CSP and
+// Postern's browser tests: the hostile-mail suite, the CSP and
 // headers, and the token checks, in Chromium against the production build
 // served by Caddy (Caddyfile) and the dev Stalwart. `npm run test:e2e` builds
 // first; README.md in this folder has the rest.

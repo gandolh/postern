@@ -1,6 +1,6 @@
 // Every mail action worked out as a plan of per-message patches, before
-// anything is sent. Pure: brief 06's list and brief 07's conversation view
-// plan the same way, and brief 09's label menu uses planLabels / planMove.
+// anything is sent. Pure: the list and the conversation view
+// plan the same way, and the label menu uses planLabels / planMove.
 //
 // Gmail's meanings (corpus/wiki/gmail-on-jmap.md, decisions-mail.md):
 //   archive   take the conversation out of the Inbox; a message left in no
@@ -134,7 +134,7 @@ export function planStar(conversations: readonly Conversation[], scope: Conversa
   return planEdits(groups, () => ({ keywords: { [FLAGGED]: true } }));
 }
 
-// ---- Labels (brief 09 builds its menu on these) ---------------------------
+// ---- Labels (the label menu builds its menu on these) ---------------------------
 
 export interface LabelChange {
   /** Labels to put the conversations in. */

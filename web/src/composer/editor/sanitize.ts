@@ -2,7 +2,7 @@
 // contentEditable inside the app's own DOM, so whatever lands in it runs with
 // Postern's origin: pasted HTML, a draft reopened from the server, a
 // signature, a quote. Everything goes through `sanitizeForEditor`, a strict
-// allow-list on its own DOMPurify instance (not brief 07's, whose hooks serve
+// allow-list on its own DOMPurify instance (not the conversation view's, whose hooks serve
 // the message frames), parsed in an inert document and imported into the
 // page only once clean.
 //

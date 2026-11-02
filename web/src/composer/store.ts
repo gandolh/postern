@@ -1,7 +1,7 @@
 // The composer windows: which drafts are open, where (docked, minimised, full
 // screen, inline under a conversation), and the actions on them: open, close
-// (keeps the draft), discard, send with Undo, schedule send (brief 23). One
-// store per signed-in session, made by ComposerProvider; brief 14's keys reach
+// (keeps the draft), discard, send with Undo, schedule send. One
+// store per signed-in session, made by ComposerProvider; the keys reach
 // it through getComposer().
 //
 // A scheduled message is a draft marked `$scheduled` (send/schedule.ts): it is
@@ -35,7 +35,7 @@ export interface ComposerDeps {
   recipients: RecipientSource;
   publish?: (change: MailChange) => void;
   navigate?: (route: Route) => void;
-  /** Brief 12's per-device default identity, for new messages. */
+  /** The per-device default identity, for new messages. */
   defaultIdentityId?: () => Id | null;
   /** Whether the conversation `threadId` is on screen with its inline reply slot. */
   hasInlineSlot?: (threadId: Id) => boolean;
@@ -57,7 +57,7 @@ export interface ThreadDrafts {
 
 export class ComposerStore {
   readonly outbox = new Outbox();
-  /** Files scheduled messages in Sent once they have gone (brief 23). */
+  /** Files scheduled messages in Sent once they have gone. */
   readonly scheduled: ScheduledSync;
   readonly #deps: ComposerDeps;
   readonly #listeners = new Set<() => void>();
@@ -139,7 +139,7 @@ export class ComposerStore {
 
   // ---- Identities ---------------------------------------------------------------------------
 
-  /** Identity/get, once per session (Brief 12 edits them; a new composer after that reads them again). */
+  /** Identity/get, once per session (the settings pages edit them; a new composer after that reads them again). */
   identities(): Promise<readonly Identity[]> {
     if (!this.#identities) {
       const fallback: Identity[] = [{ id: "", name: "", email: this.#deps.username, replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false }];
@@ -154,7 +154,7 @@ export class ComposerStore {
     return this.#identities;
   }
 
-  /** Forget the identities (brief 12, after editing them). */
+  /** Forget the identities (after editing them). */
   refreshIdentities(): void {
     this.#identities = null;
   }
@@ -543,7 +543,7 @@ export class ComposerStore {
     const messages = order
       .map((id) => byId.get(id))
       .filter((e): e is NonNullable<typeof e> => e !== undefined)
-      // A scheduled message is the server's to send now, not a draft to edit (brief 23).
+      // A scheduled message is the server's to send now, not a draft to edit.
       .map((e) => ({
         id: e.id,
         draft: e.keywords?.[DRAFT] === true && e.keywords?.[SCHEDULED] !== true && (!drafts || e.mailboxIds?.[drafts] === true),

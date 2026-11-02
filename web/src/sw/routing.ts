@@ -1,4 +1,4 @@
-// What the service worker answers (brief 16), as pure functions so they can be
+// What the service worker answers, as pure functions so they can be
 // tested without a worker. sw.ts is the thin part that wires them to workbox.
 //
 // The worker caches the app shell and nothing else (owner decision

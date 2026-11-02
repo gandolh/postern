@@ -1,5 +1,5 @@
 // The reply under the last message of the open conversation (Gmail's inline
-// reply). Brief 07's view calls the renderer registered by ComposerHost with
+// reply). The view calls the renderer registered by ComposerHost with
 // the conversation; this shows the inline composer for it, if one is open.
 // When the conversation holds a draft reply that no window has, the draft
 // opens here, as Gmail shows it; a draft the user closed is offered instead.

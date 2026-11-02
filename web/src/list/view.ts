@@ -4,10 +4,10 @@
 //
 //   Inbox, Sent, Spam, Trash           inMailbox: the role's mailbox
 //   Drafts                             inMailbox, less messages waiting to be sent
-//                                      ($scheduled, brief 23: they are in Scheduled)
-//   Inbox                              woken conversations first ($woken, brief 24),
+//                                      ($scheduled, schedule send: they are in Scheduled)
+//   Inbox                              woken conversations first ($woken),
 //                                      then newest first
-//   Snoozed                            inMailbox: the Snoozed label (brief 24)
+//   Snoozed                            inMailbox: the Snoozed label
 //   Starred                            $flagged, outside Spam and Trash
 //   All Mail                           everything outside Spam and Trash (Gmail's meaning,
 //                                      not just the archive-role mailbox)

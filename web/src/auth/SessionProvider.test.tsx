@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The sign-in page, the TOTP step, the session-expired dialog, sign-out, the
-// idle timeout, and a reload resuming the session (brief 27), against a
+// idle timeout, and a reload resuming the session, against a
 // scripted Stalwart behind /webmail-api.
 
 import type { FetchLike, JmapClient } from "@postern/jmap";
@@ -145,7 +145,7 @@ describe("the sign-in page", () => {
     }
   });
 
-  it("signs in with email and password, and keeps only the refresh token, in sessionStorage (brief 27)", async () => {
+  it("signs in with email and password, and keeps only the refresh token, in sessionStorage", async () => {
     const server = fakeStalwart();
     const user = userEvent.setup();
     render(
@@ -454,7 +454,7 @@ describe("before and after a sign-out", () => {
   });
 });
 
-describe("a reload (brief 27)", () => {
+describe("a reload", () => {
   const refreshGrants = (server: ReturnType<typeof fakeStalwart>) =>
     server.seen.filter((s) => s.key === "POST /webmail-api/auth/token" && new URLSearchParams(s.body ?? "").get("grant_type") === "refresh_token");
 

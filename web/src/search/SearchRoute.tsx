@@ -1,4 +1,4 @@
-// The search results: the conversation list (brief 06) over the filter the
+// The search results: the conversation list over the filter the
 // parser builds, with SearchSnippet highlights, every list action, and the
 // parser's warnings as a quiet hint above the rows.
 //

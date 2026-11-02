@@ -1,4 +1,4 @@
-// Quoting helpers for brief 08's reply and forward. Pure, text only: the
+// Quoting helpers for the reply and forward. Pure, text only: the
 // composer's editor is the app's DOM, so a message's HTML must never be
 // pasted into it. Quote as text (these), or carry the sanitised HTML as a
 // string into the outgoing MIME without rendering it.

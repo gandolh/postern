@@ -1,5 +1,5 @@
 # Postern served the way production serves it, for the browser tests
-# (brief 17; at the root of its own origin since brief 19). global-setup.ts
+# (the security suite; at the root of its own origin since 2026-10-22). global-setup.ts
 # runs it in Docker (caddy:2.11.7): Postern on 127.0.0.1:5193, with web/dist
 # mounted at /srv/webmail, and a stand-in for another estate app on
 # 127.0.0.1:5194. Both are localhost, so the same site on two origins, as the

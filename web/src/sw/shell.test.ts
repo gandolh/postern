@@ -202,7 +202,7 @@ describe("serving from the cache", () => {
 });
 
 describe("cleanup", () => {
-  it("deletes only this worker's old caches and brief 16's workbox cache", async () => {
+  it("deletes only this worker's old caches and the PWA work's workbox cache", async () => {
     const { caches, deps, name } = await setup();
     for (const n of [name, "postern-shell-deadbeef", `workbox-precache-v2-${SCOPE}`, "workbox-precache-v2-https://estate.example/satchel/", "atrium-cache"]) await caches.open(n);
     expect((await cleanupCaches(name, deps)).sort()).toEqual(["postern-shell-deadbeef", `workbox-precache-v2-${SCOPE}`]);

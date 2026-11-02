@@ -1,6 +1,6 @@
-// Desktop notification setting (brief 11). A per-device choice: it lives in this
+// Desktop notification setting. A per-device choice: it lives in this
 // browser's localStorage, keyed by account, and is OFF until the person turns
-// it on. Brief 12's settings page renders the toggle:
+// it on. The settings page renders the toggle:
 //
 //   const { enabled, permission, setEnabled } = useDesktopNotifications();
 //   <input type="checkbox" checked={enabled} onChange={(e) => void setEnabled(e.target.checked)} />

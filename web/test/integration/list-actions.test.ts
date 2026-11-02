@@ -1,4 +1,4 @@
-// Brief 06 against the dev Stalwart: the list loads alice's Inbox page by
+// Against the dev Stalwart: the list loads alice's Inbox page by
 // page, archive takes a conversation out of the Inbox (keeping its other
 // label, or landing in All Mail), and undo puts every message back exactly.
 // The account is left as dev/seed/manifest.json says; anything a failed test

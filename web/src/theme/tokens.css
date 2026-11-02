@@ -1,4 +1,4 @@
-/* Postern's design tokens (brief 05). Every colour, size and duration in the
+/* Postern's design tokens. Every colour, size and duration in the
    app comes from here; component CSS never writes a raw hex value.
 
    Theme: each colour is `light-dark(<light>, <dark>)`, resolved by the
@@ -59,7 +59,7 @@
   --color-warning-soft: light-dark(#fbeed3, #3a2e14);
   --color-on-warning-soft: light-dark(#5a3b00, #f6dda6);
 
-  /* ---- Colour: list rows (brief 06) ------------------------------------ */
+  /* ---- Colour: list rows ------------------------------------ */
   --color-row: var(--color-surface);
   --color-row-read: light-dark(#f6f8f5, #161b19);
   --color-row-hover: light-dark(#eef1ed, #222a26);
@@ -135,7 +135,7 @@
   --focus-offset: 2px;
 
   /* ---- Density: default ------------------------------------------------ */
-  /* Default leaves room under the subject for attachment chips (brief 06). */
+  /* Default leaves room under the subject for attachment chips. */
   --row-height: 3rem; /* 48px */
   --row-padding-inline: var(--space-4);
   --nav-item-height: 2rem; /* 32px */

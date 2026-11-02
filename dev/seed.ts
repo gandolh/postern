@@ -1,5 +1,5 @@
 // dev/seed.ts — fill the dev Stalwart with the fixtures in dev/seed/, over
-// raw JMAP (brief 03's client does not exist yet). Run after `npm run
+// raw JMAP (the client does not exist yet). Run after `npm run
 // dev:mail`:
 //
 //   node dev/seed.ts                 import everything, then verify the manifest

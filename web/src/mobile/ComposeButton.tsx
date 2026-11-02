@@ -1,4 +1,4 @@
-// The floating Compose button on phones (brief 16), bottom-right as in
+// The floating Compose button on phones, bottom-right as in
 // Gmail's app: the navigation, which holds Compose on wider screens, is
 // hidden there until the menu opens it. Shown over mail lists only; an open
 // conversation has Reply and Forward instead.

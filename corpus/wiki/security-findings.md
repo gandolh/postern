@@ -1,9 +1,9 @@
 ---
-summary: Every security finding from brief 17's whole-repo review (2026-10-20), by severity, with file and line, what an attacker gets, and whether it was fixed (with its test) or is open and whose lane the fix belongs in. The High one, the service worker's precache any script on the shared origin could rewrite, is fixed (hashes baked into sw.js, checked on every read). Read before working on the service worker, push, prefs, filters or anything the shared origin can reach, and when picking security follow-ups.
-updated: 2026-10-20
+summary: Every security finding from the whole-repo security review (2026-10-20), by severity, with file and line, what an attacker gets, and whether it was fixed (with its test) or is open and whose lane the fix belongs in. The High one, the service worker's precache any script on the shared origin could rewrite, is fixed (hashes baked into sw.js, checked on every read). Read before working on the service worker, push, prefs, filters or anything the shared origin can reach, and when picking security follow-ups.
+updated: 2026-11-02
 ---
 
-# Security findings (brief 17)
+# Security findings (2026-10-20)
 
 The review covered `jmap/src/**` and `web/src/**`, beyond the two reviews of
 rendering and sign-in. Threat model and rules: [security.md](security.md);
@@ -18,7 +18,7 @@ means a script running in any estate app on the shared origin
 - **Where:** `postern.prefs.<user>` `{"images":"always"}`
   ([web/src/prefs/prefs.ts](../../web/src/prefs/prefs.ts) lines 70-85, read
   and applied as the global setting) makes every sender's images load; `postern.images.<user>` adds senders
-  (though brief 17's DMARC gate now limits those);
+  (though the DMARC gate now limits those);
   `postern.webPush.<user>` `{"on":true}`
   ([web/src/push/webPush.ts](../../web/src/push/webPush.ts) lines 186-199)
   subscribes at the next sign-in when permission is already granted; swipe
@@ -31,7 +31,7 @@ means a script running in any estate app on the shared origin
 
 ### F4b · Low · The DMARC gate trusts the topmost Authentication-Results
 
-- Brief 17 made "Always display images from <sender>" apply only to mail
+- The hardening made "Always display images from <sender>" apply only to mail
   whose topmost header says `dmarc=pass` (fixed below). A dev probe on
   2026-10-20 showed Stalwart 0.16.25 prepends its own result
   (`dmarc=fail (policy not aligned)` for a forged sender) but keeps a
@@ -68,12 +68,12 @@ means a script running in any estate app on the shared origin
 - **No revocation:** a token copied before sign-out keeps working until it
   expires. `tokens.spec.ts` asserts this, so a Stalwart that gains
   revocation shows up.
-- `npm audit` (2026-10-20, after brief 17): one moderate advisory in Vite
+- `npm audit` (2026-10-20, after 2026-10-20): one moderate advisory in Vite
   8.2.2's dev server (`launch-editor` on Windows, GHSA-698v-4r3x-3vcv). Dev
   only, never shipped, and the estate pins Vite 8.2.2; left until the house
   stack moves.
 
-## Fixed after brief 17 (each with a test)
+## Fixed after 2026-10-20 (each with a test)
 
 - **F1 · High · A same-origin script could replace what the worker serves as
   Postern.** Fixed: the build bakes a SHA-256 of every shell file into
@@ -91,7 +91,7 @@ means a script running in any estate app on the shared origin
 - **F8 · Low · The page took worker messages from any worker.** Fixed: a
   message counts only from the `/webmail/` registration's active worker
   running `/webmail/sw.js` (`acceptsSource` in `web/src/push/register.ts`). Tests in
-  `web/src/push/register.test.ts`. Since 2026-10-22 (brief 19) the base is
+  `web/src/push/register.test.ts`. Since 2026-10-22 (2026-10-22) the base is
   `/`, so the window must be under `/` and the worker is `/sw.js`; both
   checks derive from the base and are unchanged.
 
@@ -108,7 +108,7 @@ means a script running in any estate app on the shared origin
   (`OR`, `AND`, a leading `-`, a colon or brackets) are quoted, so the
   search reads them as plain words, as the Sieve rule does.
 
-## Fixed in brief 17 (each with a test)
+## Fixed in the hardening (each with a test)
 
 - **F2 · Medium · One hostile plain-text message could freeze the tab.** These
   patterns rescanned a long run from every position, or trimmed one character

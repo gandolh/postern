@@ -1,5 +1,5 @@
 // Stalwart's verification codes, as the service worker hands them over
-// (brief 16). The worker posts every PushVerification to Postern's open
+// (the PWA work). The worker posts every PushVerification to Postern's open
 // windows; the page that created the subscription waits here for its id.
 // A code can arrive before PushSubscription/set has answered, so codes are
 // kept (a few, briefly) until asked for.

@@ -7,7 +7,7 @@
 // Mailbox/query by role, Email/query by mailbox or keyword,
 // EmailSubmission/query and /get, blob upload and download. `calls` records
 // every method call. With `maxDelayedSend` it advertises FUTURERELEASE and
-// holds a submission with HOLDUNTIL until `release(id)` (brief 23).
+// holds a submission with HOLDUNTIL until `release(id)`.
 
 import { JmapClient, type Id, type SessionObject } from "@postern/jmap";
 

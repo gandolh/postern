@@ -11,7 +11,7 @@
 //                    Chrome, 2026-10-20)
 //
 // Freshness: every action's optimistic patch (actions/bus) applies at once;
-// "settled", a push StateChange that moves the Email state (brief 11:
+// "settled", a push StateChange that moves the Email state (
 // applyConversationStateChange), window focus and coming online refresh.
 // A refresh's answer may predate a write still in flight (a star sent a
 // moment ago), so the patches still pending, and those published while the
@@ -295,7 +295,7 @@ export class ConversationStore {
     if (changed) this.#set({ messages });
   }
 
-  /** Brief 11: refresh if the push says the Email state moved. */
+  /** Refresh if the push says the Email state moved. */
   applyStateChange(change: StateChange): Promise<void> {
     const accountId = this.#accountId();
     const next = accountId === undefined ? undefined : change.changed[accountId]?.["Email"];

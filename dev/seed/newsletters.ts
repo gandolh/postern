@@ -1,6 +1,6 @@
 // HTML newsletters with remote images. Every image host is a reserved
 // example domain: nothing here is meant to load, and Postern blocks remote
-// content by default anyway (brief 07).
+// content by default anyway.
 
 import { PEOPLE as P, escapeHtml, seed } from "./people.ts";
 import type { Person } from "./people.ts";

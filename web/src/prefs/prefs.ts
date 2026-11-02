@@ -8,7 +8,7 @@
 //   desktop notifications          notify/settings.ts
 //   allowed image senders          render/allowance.ts
 //
-// To add a preference (brief 16 added swipeLeft / swipeRight, brief 22
+// To add a preference (the PWA work added swipeLeft / swipeRight, conversation view off
 // conversationView): add a field to AccountPrefs, its default to
 // DEFAULT_PREFS, a validator line in normalise(), and a getter/setter pair at
 // the bottom (or read it with usePrefs()). Bump PREFS_VERSION only
@@ -22,7 +22,7 @@ export const PREFS_VERSION = 1;
 export const UNDO_SEND_SECONDS = [5, 10, 20, 30] as const;
 export type UndoSendSeconds = (typeof UNDO_SEND_SECONDS)[number];
 export type ImagesPreference = "ask" | "always";
-/** What swiping a conversation row does on a touch screen (brief 16). "read" toggles read and unread. */
+/** What swiping a conversation row does on a touch screen. "read" toggles read and unread. */
 export const SWIPE_ACTIONS = ["archive", "delete", "read", "none"] as const;
 export type SwipeAction = (typeof SWIPE_ACTIONS)[number];
 
@@ -31,14 +31,14 @@ export interface AccountPrefs {
   undoSendSeconds: UndoSendSeconds;
   /** "ask": show external images per message or sender. "always": show them everywhere. */
   images: ImagesPreference;
-  /** Keyboard shortcuts on or off (brief 14 reads it). */
+  /** Keyboard shortcuts on or off (the keyboard shortcuts read it). */
   shortcuts: boolean;
   /** The identity new messages are sent from, when the composer has no better guess. null = the first one. */
   defaultIdentityId: string | null;
-  /** Swiping a row to the left / to the right on a touch screen (brief 16). Gmail's default: both archive. */
+  /** Swiping a row to the left / to the right on a touch screen. Gmail's default: both archive. */
   swipeLeft: SwipeAction;
   swipeRight: SwipeAction;
-  /** Brief 22: one row per conversation (Gmail's default), or one per message when off. */
+  /** One row per conversation (Gmail's default), or one per message when off. */
   conversationView: boolean;
 }
 
@@ -153,7 +153,7 @@ export function resetPrefs(): void {
 
 // ---- Named accessors (what other briefs import) ----------------------------
 
-/** Keyboard shortcuts on? Brief 14: read this on each key press or subscribe. */
+/** Keyboard shortcuts on? The keyboard shortcuts read this on each key press or subscribe. */
 export function getShortcutsEnabled(): boolean {
   return current.shortcuts;
 }
@@ -177,7 +177,7 @@ export function getDefaultIdentityId(): string | null {
   return current.defaultIdentityId;
 }
 
-/** Brief 16: what a swipe does, read when the swipe ends (so a change applies at once). */
+/** What a swipe does, read when the swipe ends (so a change applies at once). */
 export function getSwipeActions(): { left: SwipeAction; right: SwipeAction } {
   return { left: current.swipeLeft, right: current.swipeRight };
 }

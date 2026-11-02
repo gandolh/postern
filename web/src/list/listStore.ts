@@ -12,14 +12,14 @@
 // Email/queryChanges (the ids held), then fetches rows that came in. When
 // the server cannot calculate changes, the held pages are loaded again from
 // the top, the old rows staying on screen meanwhile. applyStateChange(change)
-// is the same, for brief 11's push.
+// is the same, for the push.
 //
 // Actions: every patch an action publishes (actions/bus) is applied to the
 // messages held at once, and a row whose messages no longer match the list
 // (archived out of the Inbox) leaves until the server confirms or undo
 // brings it back.
 //
-// Conversation view off (brief 22, `conversationView: false`): one row per
+// Conversation view off (`conversationView: false`): one row per
 // message. Email/query runs without collapseThreads and a page is two calls,
 // Email/query → Email/get of the row messages with every property a row and
 // the actions need. Each row is a conversation holding that one message, so
@@ -97,7 +97,7 @@ export interface ListStoreOptions {
   /** The mail account, for push StateChanges. */
   accountId?: () => Id | undefined;
   pageSize?: number;
-  /** Brief 22: false lists one row per message instead of one per conversation. Default true. */
+  /** False lists one row per message instead of one per conversation. Default true. */
   conversationView?: boolean;
 }
 
@@ -198,7 +198,7 @@ export class ListStore {
     return this.#refreshQueued;
   }
 
-  /** Brief 11: a push StateChange. Refreshes when it names an Email state other than the one held. */
+  /** A push StateChange. Refreshes when it names an Email state other than the one held. */
   applyStateChange(change: StateChange): Promise<void> {
     const accountId = this.#accountId();
     const next = accountId === undefined ? undefined : change.changed[accountId]?.["Email"];

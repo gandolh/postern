@@ -1,5 +1,5 @@
-// The Web Push opt-in for the settings page (brief 16), rendered next to brief
-// 11's desktop notifications. Off by default; turning it on asks for
+// The Web Push opt-in for the settings page, rendered next to the
+// desktop notifications. Off by default; turning it on asks for
 // notification permission and subscribes this device; off unsubscribes it.
 
 import { useId, useSyncExternalStore } from "react";

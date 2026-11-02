@@ -1,4 +1,4 @@
-/* Settings pages (brief 12). */
+/* Settings pages. */
 
 .settings-tabs {
   display: flex;
@@ -63,7 +63,7 @@
   margin: 0;
 }
 
-/* ---- Brief 12: the real pages ---- */
+/* ---- The settings pages ---- */
 
 .settings-form {
   max-width: 44rem;

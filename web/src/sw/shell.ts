@@ -205,7 +205,7 @@ export async function installShell(files: ReadonlyMap<string, ShellFile>, cacheN
   return { stored: stored.sort(), skipped: skipped.sort() };
 }
 
-/** Delete this worker's older caches and brief 16's workbox cache. Other apps' caches on the origin are left alone. */
+/** Delete this worker's older caches and the workbox cache. Other apps' caches on the origin are left alone. */
 export async function cleanupCaches(current: string, deps: ShellDeps): Promise<string[]> {
   const legacy = `workbox-precache-v2-${deps.scopeUrl}`;
   const gone = (await deps.caches.keys()).filter((name) => name === legacy || (name.startsWith(CACHE_PREFIX) && name !== current));

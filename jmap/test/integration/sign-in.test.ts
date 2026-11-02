@@ -1,4 +1,4 @@
-// Sign-in against the dev Stalwart (brief 04): alice without TOTP, bob with
+// Sign-in against the dev Stalwart: alice without TOTP, bob with
 // TOTP turned on for the test and off again, a wrong password, refresh, and
 // what sign-out can and cannot do. Restores what it changes: bob's TOTP is off
 // again at the end, so Basic auth keeps working for the other tests. No

@@ -1,6 +1,6 @@
 // The list's data: what a page fetch returns per conversation, and what a
-// list shows. Brief 10 (search) builds a ListQuery of its own; brief 07 and
-// brief 14 read rows.
+// list shows. Search builds a ListQuery of its own; the conversation view and
+// the keyboard shortcuts read rows.
 
 import type { EmailComparator, EmailFilter, Id, SearchSnippet } from "@postern/jmap";
 import type { Conversation, ConversationMessage, ConversationScope } from "../actions/conversation";
@@ -11,7 +11,7 @@ export type RowMessage = ConversationMessage;
 
 /**
  * One row: a conversation, with the message the query returned for it. With
- * conversation view off (brief 22) a row is one message, a conversation
+ * conversation view off a row is one message, a conversation
  * holding only that message, so every action acts on it alone.
  */
 export interface ConversationRow extends Conversation<RowMessage> {
@@ -32,7 +32,7 @@ export interface ConversationRow extends Conversation<RowMessage> {
   snippet?: SearchSnippet;
 }
 
-/** What a list shows. Labels build one in view.ts; brief 10 builds one per search. */
+/** What a list shows. Labels build one in view.ts; search builds one per search. */
 export interface ListQuery {
   /** The `Email/query` filter (null: every message). */
   filter: EmailFilter | null;
@@ -47,7 +47,7 @@ export interface ListQuery {
    * then leave when the server says so, a moment later.
    */
   matches?: (message: RowMessage) => boolean;
-  /** Fetch `SearchSnippet/get` highlights with each page (brief 10). */
+  /** Fetch `SearchSnippet/get` highlights with each page. */
   searchSnippets?: boolean;
 }
 

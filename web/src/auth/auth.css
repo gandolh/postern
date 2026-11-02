@@ -1,6 +1,6 @@
 /* Sign-in, the session-expired dialog: Postern's tokens (web/src/theme), light
-   and dark from the same values. Restyled in brief 05; the markup and its
-   selectors are brief 04's. */
+   and dark from the same values. Restyled with the shell; the markup and its
+   selectors are sign-in's. */
 
 .auth-page {
   display: flex;
@@ -52,7 +52,7 @@
     center / contain no-repeat;
 }
 
-/* Brief 27: a reload signing in again from the kept refresh token. */
+/* A reload signing in again from the kept refresh token. */
 .auth-resuming .auth-wordmark {
   margin-bottom: var(--space-3);
 }

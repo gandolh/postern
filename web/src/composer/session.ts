@@ -143,7 +143,7 @@ export interface SessionDeps {
    * has then closed this one and brought the other back.
    */
   claimDraft?(session: ComposeSession, draftId: Id): boolean;
-  /** The identity to start a new message from (brief 12's per-device default), if set. */
+  /** The identity to start a new message from (the per-device default), if set. */
   defaultIdentityId?(): Id | null;
   upload?: (client: JmapClient, file: Blob, options: UploadFileOptions) => Promise<{ blobId: Id; type: string; size: number }>;
   /** Unique strings (Message-ID, cids, keys). */
@@ -625,7 +625,7 @@ export class ComposeSession {
     return this.#body;
   }
 
-  /** Ctrl+Enter from outside the window (brief 14): the mounted form registers how it sends. */
+  /** Ctrl+Enter from outside the window: the mounted form registers how it sends. */
   onSendRequest(handler: (() => void) | null): void {
     this.#sendRequest = handler;
   }

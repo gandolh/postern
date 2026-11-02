@@ -1,4 +1,4 @@
-// Answering an invite (brief 25): Postern sends the iMIP REPLY itself (RFC
+// Answering an invite: Postern sends the iMIP REPLY itself (RFC
 // 6047). Stalwart 0.16.25 does nothing with an incoming REQUEST (no event in
 // the calendar, nothing added to the message), and its /calendar/rsvp page
 // only answers the links in invitations Stalwart sent (checked 2026-10-27).

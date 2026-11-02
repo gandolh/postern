@@ -1,5 +1,5 @@
 // The left navigation: Compose, the system labels with their counts (and
-// Scheduled after Drafts, when the server can hold a message: brief 23), the
+// Scheduled after Drafts, when the server can hold a message:), the
 // user labels nested and collapsible with "More" for the hidden ones, and
 // Contacts.
 // In rail mode only the icons show; the names stay for screen readers.

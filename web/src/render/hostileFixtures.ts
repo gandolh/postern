@@ -1,5 +1,5 @@
 // The hostile seed set (dev/seed/hostile/*.eml) as raw text, for the
-// sanitiser's tests and brief 17's. Vite inlines the files (?raw), so this
+// sanitiser's tests and the security suite's. Vite inlines the files (?raw), so this
 // module must only be imported from tests: never from app code.
 
 const files = import.meta.glob("../../../dev/seed/hostile/*.eml", { query: "?raw", import: "default", eager: true }) as Record<string, string>;

@@ -1,9 +1,9 @@
 // Reaching the open conversation from outside it, without importing its
 // components (the list's registry.ts, for the conversation):
 //
-//   applyConversationStateChange(change)   brief 11: every open conversation
+//   applyConversationStateChange(change)   every open conversation
 //                                          catches up when the Email state moved
-//   getActiveConversation()                brief 14: what n / p / u / r / a / f
+//   getActiveConversation()                what n / p / u / r / a / f
 //                                          act on, or null (none open)
 //   subscribeActiveConversation(fn)        hear when that changes; useActiveConversation() in React
 
@@ -21,7 +21,7 @@ export function registerConversationStore(store: ConversationStore): () => void 
   };
 }
 
-/** Brief 11's entry point, next to applyListStateChange: pass every push StateChange. */
+/** The entry point, next to applyListStateChange: pass every push StateChange. */
 export function applyConversationStateChange(change: StateChange): Promise<void> {
   return Promise.all([...stores].map((s) => s.applyStateChange(change))).then(() => undefined);
 }
@@ -33,16 +33,16 @@ export function mountedConversationStores(): readonly ConversationStore[] {
 
 // ---- The active conversation (keyboard) ------------------------------------------
 
-/** What brief 14's keys can do to the open conversation. */
+/** What the keys can do to the open conversation. */
 export interface ConversationController {
   conversationId: Id;
   /**
-   * Brief 26: the one message shown alone (a message row opened with
+   * The one message shown alone (a message row opened with
    * conversation view off), else undefined. The label keys act on it, by this
    * id (labels/conversations.ts lendConversation).
    */
   messageId?: Id;
-  /** Brief 26, with one message shown: `j` / `k` open the next / previous message row of the list it came from. */
+  /** With one message shown: `j` / `k` open the next / previous message row of the list it came from. */
   openRow?(delta: 1 | -1): void;
   /** The messages shown, oldest first. */
   messageIds(): Id[];
@@ -98,7 +98,7 @@ export function useActiveConversation(): ConversationController | null {
   return useSyncExternalStore(subscribeActiveConversation, getActiveConversation, getActiveConversation);
 }
 
-/** The DOM id of a message's card (brief 08 scrolls to it; brief 14 focuses it). */
+/** The DOM id of a message's card (the composer scrolls to it; the keyboard shortcuts focus it). */
 export function messageCardId(emailId: Id): string {
   return `conv-message-${emailId}`;
 }

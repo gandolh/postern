@@ -1,4 +1,4 @@
-// The global shortcut listener (brief 14). The shell renders it once; it binds
+// The global shortcut listener. The shell renders it once; it binds
 // the registry in ./shortcuts to the list, conversation and composer controllers.
 
 import { useEffect, useRef, useState } from "react";
@@ -55,7 +55,7 @@ export function ShortcutsHost() {
       const conversation = getActiveConversation();
       const list = getActiveList();
       let conversationIds: string[];
-      // One message shown alone (brief 26) is labelled alone, by its own id.
+      // One message shown alone is labelled alone, by its own id.
       if (conversationFirst(lastTarget) && conversation) conversationIds = [conversation.messageId ?? conversation.conversationId];
       else {
         if (!list) return false;
@@ -86,7 +86,7 @@ export function ShortcutsHost() {
         list(l);
         return true;
       };
-    // Brief 26: in a reader showing one message alone, `j` / `k` open the next / previous message row.
+    // In a reader showing one message alone, `j` / `k` open the next / previous message row.
     const readerRowOr =
       (delta: 1 | -1, otherwise: () => boolean | void) =>
       (): boolean | void => {

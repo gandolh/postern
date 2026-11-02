@@ -1,4 +1,4 @@
-// Web Push and the service worker, page side (brief 16).
+// Web Push and the service worker, page side.
 //
 //   registerWorker()      main.tsx (install.ts): register /sw.js, listen to it, apply updates safely
 //   <PushHost />          the shell, once per session: refresh on sign-in, end on sign-out

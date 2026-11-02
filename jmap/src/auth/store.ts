@@ -1,4 +1,4 @@
-// Where AuthSession keeps what survives a reload (brief 27). The package
+// Where AuthSession keeps what survives a reload. The package
 // touches no browser storage: the web app hands AuthSession an adapter
 // (sessionStorage, in web/src/auth/sessionStore.ts), tests a memory one.
 //

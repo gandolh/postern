@@ -1,4 +1,4 @@
-// Snooze's state on the server (brief 24; corpus/wiki/decisions-mail.md,
+// Snooze's state on the server (corpus/wiki/decisions-mail.md,
 // "Snooze runs in the browser"), so every device agrees and nothing sits in
 // localStorage:
 //

@@ -13,7 +13,7 @@ import {
 import type { ProblemDetails } from "./types/core.js";
 
 /**
- * Supplies credentials per request. Brief 04 implements it with Bearer tokens
+ * Supplies credentials per request. Sign-in implements it with Bearer tokens
  * and refresh; tests use Basic. The client never stores what it returns.
  */
 export interface AuthProvider {

@@ -191,7 +191,7 @@ describe("sending", () => {
   });
 });
 
-describe("schedule send (brief 23)", () => {
+describe("schedule send", () => {
   beforeEach(async () => {
     store.dispose();
     server = new ComposeTestServer({ maxDelayedSend: 2_592_000 });
@@ -574,7 +574,7 @@ describe("review fixes", () => {
     await vi.waitFor(() => expect(server.submissions).toHaveLength(1));
   });
 
-  it("starts a new message from the default identity (brief 12), and a reply from the address it was sent to", async () => {
+  it("starts a new message from the default identity, and a reply from the address it was sent to", async () => {
     server.identities = [
       { id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false },
       { id: "I2", name: "Alice at work", email: "alice@work.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: true },

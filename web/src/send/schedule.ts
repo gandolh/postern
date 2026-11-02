@@ -1,4 +1,4 @@
-// Schedule send (brief 23). Stalwart 0.16.25 holds a submission until a time
+// Schedule send. Stalwart 0.16.25 holds a submission until a time
 // given with SMTP FUTURERELEASE (RFC 4865): `HOLDUNTIL` in the envelope's
 // MAIL FROM parameters. It refuses a `sendAt` set by the client. Found against
 // the dev Stalwart on 2026-10-27 (corpus/wiki/gmail-on-jmap.md):

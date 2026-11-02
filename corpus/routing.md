@@ -23,7 +23,7 @@ Read by the `orchestrate` skill at the start of a work request.
 | "what does the wiki say about X" | `corpus-flow` §5 |
 | "grill me", "stress-test this design" | `grill-me` |
 | "make it look better", "polish the inbox" | `impeccable` |
-| "deploy it" | brief 18's owner steps; the deploy itself runs from `vps-deploy` |
+| "deploy it" | the owner steps in [wiki/status.md](wiki/status.md); the deploy itself runs from `vps-deploy` |
 
 ## READ / SKIP / SKILLS
 

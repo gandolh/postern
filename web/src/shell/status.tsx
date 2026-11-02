@@ -1,4 +1,4 @@
-// The top bar's status slot. Brief 11's LiveHost shows "Reconnecting…" there
+// The top bar's status slot. The LiveHost shows "Reconnecting…" there
 // without touching the shell:
 //
 //   import { TopBarStatus } from "../shell/status";

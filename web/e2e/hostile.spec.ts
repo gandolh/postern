@@ -1,4 +1,4 @@
-// The hostile seed set (dev/seed/hostile/, brief 02) opened in the real app,
+// The hostile seed set (dev/seed/hostile/,) opened in the real app,
 // one test per fixture. Each one checks, in Chromium against the production
 // build and its headers:
 //
@@ -60,7 +60,7 @@ const EXPECTED: Record<string, Expectation> = {
   "forged-sender-address-name": { frames: 0 },
   "forged-sender": { frames: 1 },
   "form-post": { frames: 1, markers: ["evil.test/collect", "evil.test/get-collect", "evil.test/detached"] },
-  // Brief 25: the card is built from parsed text, so the .ics markup shows only escaped
+  // The card is built from parsed text, so the .ics markup shows only escaped
   // (a bare "<script" would match Postern's own script tag in the head).
   "ics-invite": { frames: 1, markers: ["<script>window[", '<img src="https://evil.test/ics-summary.png"', "<b onmouseover"] },
   "iframe-object-embed": { frames: 1, markers: ["evil.test/frame", "object.pdf", "embed.swf", "iframe-srcdoc"] },
@@ -325,7 +325,7 @@ test("mismatched and look-alike links are named outside the frame", async ({ pag
     "A link goes to xn--pple-43d.test, a name written to look like another",
     "A link goes to xn--ypal-43d9g.test, a name written to look like another",
   ]);
-  // почта.test is an ordinary Cyrillic name: not flagged (brief 17).
+  // почта.test is an ordinary Cyrillic name: not flagged.
   await expect(page.locator(".conv-page .conv-banner-warning")).not.toContainText("xn--80a1acny");
 });
 
@@ -355,7 +355,7 @@ test("an attachment named to deceive downloads under its real name and never ope
   rec.stop();
 });
 
-test("a hostile calendar invite's card shows its fields as inert text, and its javascript: place is no link (brief 25)", async ({ page, context }) => {
+test("a hostile calendar invite's card shows its fields as inert text, and its javascript: place is no link", async ({ page, context }) => {
   await stubOutsideWorld(context);
   await signIn(page);
   await openConversation(page, labelId, fixtures.get("ics-invite")!.threadId);

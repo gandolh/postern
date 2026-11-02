@@ -1,4 +1,4 @@
-// Reaching the composer from outside React (brief 14's keys), the way the
+// Reaching the composer from outside React (the keys), the way the
 // list and the conversation expose theirs.
 
 import type { ComposerStore } from "./store";

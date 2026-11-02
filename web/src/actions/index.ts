@@ -1,4 +1,4 @@
-// Mail actions (brief 06): archive, delete, star, read, important, spam,
+// Mail actions: archive, delete, star, read, important, spam,
 // labels and move, as plans of per-message patches with exact inverses.
 //
 //   useMailActions()          the actions with optimistic update, toast and undo

@@ -1,4 +1,4 @@
-// What brief 14's keyboard shortcuts call. Gmail's keys:
+// What the keyboard shortcuts call. Gmail's keys:
 //
 //   c            composeNew()                    a new message (Shift+c: composeNew({ display: "fullscreen" }))
 //   r / a / f    composeFromConversation(mode)   reply / reply all / forward on the open conversation

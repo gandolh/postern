@@ -116,7 +116,7 @@ describe("read and unread", () => {
   });
 });
 
-describe("labels and move (brief 09)", () => {
+describe("labels and move", () => {
   it("adds and removes labels, sending a message with none left to All Mail", () => {
     const c = conv("T", m("1", ["i"]), m("2", ["a", "i"]));
     const plan = planLabels([c], normal, { add: ["x"], remove: ["i"] });
@@ -168,7 +168,7 @@ describe("the conversation as shown", () => {
   });
 });
 
-describe("a reply draft in the conversation (brief 08 review)", () => {
+describe("a reply draft in the conversation", () => {
   // Drafts is "d": a reply being written sits there with $draft, next to the messages it answers.
   const withDrafts = { ...roles, drafts: "d" };
   const scope: ConversationScope = { kind: "normal", roles: withDrafts };

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Scheduled page (brief 23): what waits, soonest first with its time,
+// The Scheduled page: what waits, soonest first with its time,
 // Cancel send, and a message that went out leaving for Sent.
 
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";

@@ -1,4 +1,4 @@
-// The Snoozed label, made on first use (brief 24): a top-level mailbox named
+// The Snoozed label, made on first use: a top-level mailbox named
 // "Snoozed", unsubscribed so an IMAP client leaves it out of its folder list.
 // The server is asked first, not the label cache: another device may have made
 // it. A top-level "Snoozed" folder that exists already is used as it is.

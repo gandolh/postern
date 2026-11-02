@@ -1,4 +1,4 @@
-// Brief 27: what a reload needs to sign in again, in this tab's
+// What a reload needs to sign in again, in this tab's
 // sessionStorage (the owner's call, 2026-10-28): the refresh token, the
 // account as the UI shows it, and the last activity time. Never the access
 // token. sessionStorage dies with the tab, so closing it (or Android killing

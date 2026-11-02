@@ -1,6 +1,6 @@
 // The hostile set: each .eml under dev/seed/hostile/ is filed in alice's
-// Inbox and in her "Hostile" label, so brief 17 can find them by label or by
-// the X-Postern-Fixture header. Calendar invites (brief 25) sit in
+// Inbox and in her "Hostile" label, so the security suite can find them by label or by
+// the X-Postern-Fixture header. Calendar invites sit in
 // hostile/invites/ and come after the rest: their danger is in the .ics the
 // invite card reads, not in an HTML body for the sanitiser's own fixture test
 // (web/src/render/), which reads hostile/*.eml only. The files are read as-is (they are the exact

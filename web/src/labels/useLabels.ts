@@ -7,7 +7,7 @@
 //   useResolvedLabel(route) the label a LabelRoute shows (or null while loading / not found)
 //
 // The provider loads the labels on mount and syncs again when the window
-// regains focus or the browser comes back online. Brief 11 adds push:
+// regains focus or the browser comes back online. Live updates add push:
 // `useLabelsStore().applyStateChange(change)` for every StateChange.
 
 import { createContext, createElement, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";

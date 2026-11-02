@@ -1,4 +1,4 @@
-// Gmail's keyboard shortcuts and the help sheet (brief 14). The shell imports exactly these names:
+// Gmail's keyboard shortcuts and the help sheet. The shell imports exactly these names:
 //   <KeysProvider>       around the shell
 //   <ShortcutsHost />    once
 //   <HelpSheet />        once

@@ -44,14 +44,14 @@ export interface MailActionDeps {
   roles: () => MailboxRoles;
   /** All Mail's id, creating it when the account has none (ensureAllMail). */
   ensureAllMail: () => Promise<Id>;
-  /** Brief 24: the Snoozed label's id, creating it on first use (snooze/label.ts). Without it, snooze fails. */
+  /** The Snoozed label's id, creating it on first use (snooze/label.ts). Without it, snooze fails. */
   ensureSnoozed?: () => Promise<Id>;
-  /** Brief 24: the Snoozed label's id if it exists (for unsnooze). */
+  /** The Snoozed label's id if it exists (for unsnooze). */
   snoozedId?: () => Id | undefined;
   /** Bring the label counts up to date (labels store sync). */
   syncLabels: () => void;
   toast: ActionToast | null;
-  /** Brief 26: what the toasts count, "conversation" (the default) or "message" with conversation view off. */
+  /** What the toasts count, "conversation" (the default) or "message" with conversation view off. */
   noun?: () => RowNoun;
 }
 
@@ -62,7 +62,7 @@ export type ActionOutcome = "done" | "partial" | "nothing" | "failed";
 export interface ActionOptions {
   /** Show the toast (default true). The row's star toggle turns it off, as Gmail does; undo stays on `z`. */
   toast?: boolean;
-  /** What the toast counts, when not what the list's rows are (deps.noun): the open conversation says what it shows (brief 26). */
+  /** What the toast counts, when not what the list's rows are (deps.noun): the open conversation says what it shows. */
   noun?: RowNoun;
 }
 
@@ -82,13 +82,13 @@ export interface MailActions {
   unstar: Scoped;
   markImportant: Scoped;
   markNotImportant: Scoped;
-  /** Brief 09: apply and remove labels, with the same optimistic update, toast and undo. */
+  /** Apply and remove labels, with the same optimistic update, toast and undo. */
   applyLabels(conversations: readonly Conversation[], scope: ConversationScope, change: LabelChange, copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
-  /** Brief 09: Gmail's "Move to" (out of `from`, into `to`). */
+  /** Gmail's "Move to" (out of `from`, into `to`). */
   moveTo(conversations: readonly Conversation[], scope: ConversationScope, from: Id | undefined, to: Id, copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
-  /** Brief 24: snooze until `at` (the Snoozed label is made on first use). */
+  /** Snooze until `at` (the Snoozed label is made on first use). */
   snooze(conversations: readonly Conversation[], scope: ConversationScope, at: Date, options?: ActionOptions): Promise<ActionOutcome>;
-  /** Brief 24: back to the Inbox now. */
+  /** Back to the Inbox now. */
   unsnooze: Scoped;
   /** Run any plan the same way. `make` may throw (MissingLabelError): that is reported as a failure. */
   run(make: MessagePlan | (() => MessagePlan), copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
@@ -123,7 +123,7 @@ export const COPY = {
 export const UNDONE_MESSAGE = "Action undone.";
 export const UNDO_FAILED_MESSAGE = "Couldn't undo that. Try again.";
 
-/** Session and abort errors are the sign-in layer's to show (brief 04), never a toast here. */
+/** Session and abort errors are the sign-in layer's to show, never a toast here. */
 export function isQuietError(err: unknown): boolean {
   return isAbortError(err) || err instanceof SessionExpiredError || err instanceof SignedOutError;
 }
@@ -141,7 +141,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
   // The labels store's roles now, not the ones a view captured when it mounted (All Mail may exist since).
   const fresh = (scope: ConversationScope): ConversationScope => ({ kind: scope.kind, roles: deps.roles() });
 
-  /** What the toasts count: the caller's word, else the list's rows' (brief 26). */
+  /** What the toasts count: the caller's word, else the list's rows'. */
   const nounOf = (options?: ActionOptions): RowNoun => options?.noun ?? deps.noun?.() ?? "conversation";
 
   const toast = (message: string, undo?: UndoEntry) => {

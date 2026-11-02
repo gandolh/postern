@@ -1,4 +1,4 @@
-// What brief 14's keyboard shortcuts drive: the list on screen, through
+// What the keyboard shortcuts drive: the list on screen, through
 // getActiveList() / useActiveList() from ./registry.
 //
 //   j / k        moveFocus(1) / moveFocus(-1)

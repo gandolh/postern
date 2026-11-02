@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Schedule send (brief 23) over the compose test server: the times offered,
+// Schedule send over the compose test server: the times offered,
 // the submission with HOLDUNTIL and every recipient, cancel, the Scheduled
 // list, and filing in Sent once the server has sent it.
 

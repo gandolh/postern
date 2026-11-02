@@ -19,7 +19,7 @@ import { FLAG_ATTR } from "./flag";
 import type { SanitizedHtml } from "./sanitize";
 import { QUOTE_ATTR } from "./quotes";
 
-/** The sandbox of every message frame. Exactly these two tokens; brief 17 asserts it. */
+/** The sandbox of every message frame. Exactly these two tokens; the security suite asserts it. */
 export const MESSAGE_FRAME_SANDBOX = "allow-popups allow-popups-to-escape-sandbox";
 
 /** The sandbox of the attachment image viewer: nothing at all. */

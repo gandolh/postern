@@ -9,7 +9,7 @@ flowchart LR
   phone["Phone and desktop mail apps"] -->|IMAP| stalwart
 ```
 
-**Status:** Built and not deployed yet. Briefs 01–27 are done and checked against a local Stalwart, with 1,291 unit and integration tests and a 46-test browser suite. The deploy is prepared in the estate's deploy tool and waits for the owner. A postern is the small side gate in a castle wall.
+**Status:** Built and not deployed yet, and checked against a local Stalwart, with 1,291 unit and integration tests and a 46-test browser suite. The deploy is prepared in the estate's deploy tool and waits for the owner. A postern is the small side gate in a castle wall.
 
 ## What it does
 

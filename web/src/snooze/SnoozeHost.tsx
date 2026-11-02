@@ -1,4 +1,4 @@
-// Brings snoozed mail back while Postern is open (brief 24; ./wake.ts). The
+// Brings snoozed mail back while Postern is open (./wake.ts). The
 // shell renders it once, under the labels provider.
 
 import { useEffect } from "react";

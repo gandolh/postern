@@ -1,6 +1,6 @@
 // The composer windows, docked bottom-right inside the shell's
 // .shell-compose-layer (rendered once). It also:
-//   - installs the inline reply under the open conversation (brief 07's slot);
+//   - installs the inline reply under the open conversation (the slot);
 //   - opens a draft in a window when a conversation that is only drafts is
 //     opened from a list (Drafts, All Mail, search), as Gmail does, and goes
 //     back to the list;

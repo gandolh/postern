@@ -5,8 +5,8 @@
 // System labels are found by JMAP role, never by name: Stalwart calls them
 // "Junk Mail" and "Deleted Items", the UI always says Gmail's words. Starred
 // is not a mailbox (it is the $flagged keyword). Stalwart creates no
-// archive-role mailbox, so All Mail may have no mailbox behind it; brief 06
-// creates it the first time something is archived. Snoozed (brief 24) is the
+// archive-role mailbox, so All Mail may have no mailbox behind it; the conversation list
+// creates it the first time something is archived. Snoozed is the
 // one system label found by name: a top-level "Snoozed" with no role
 // (snooze/label.ts makes it on first snooze). Nothing here creates one.
 
@@ -228,7 +228,7 @@ export function buildLabels(mailboxes: readonly Mailbox[]): Pick<LabelsSnapshot,
 
 // ---- Resolving a route to a label ------------------------------------------
 
-/** What a label route points at, for the list (brief 06) and the conversation view (brief 07). */
+/** What a label route points at, for the list and the conversation view. */
 export interface ResolvedLabel {
   route: LabelRoute;
   /** The heading: "Inbox", "Spam", "All Mail", or the user label's name. */
@@ -276,7 +276,7 @@ export const INITIAL_LABELS: LabelsSnapshot = Object.freeze({
   ...EMPTY,
 });
 
-/** Session errors are the sign-in layer's to show (brief 04): never an error state here. */
+/** Session errors are the sign-in layer's to show: never an error state here. */
 function isQuiet(err: unknown): boolean {
   return isAbortError(err) || err instanceof SessionExpiredError || err instanceof SignedOutError;
 }
@@ -285,7 +285,7 @@ function isQuiet(err: unknown): boolean {
  * The account's labels, kept current. React reads it through
  * `useSyncExternalStore(store.subscribe, store.getSnapshot)` (useLabels).
  *
- * Brief 11 keeps the counts live by passing each push `StateChange` to
+ * Live updates keep the counts live by passing each push `StateChange` to
  * `applyStateChange`; anything else that knows mailboxes changed calls `sync`.
  */
 export class LabelsStore {
@@ -318,7 +318,7 @@ export class LabelsStore {
     return this.#mailboxes.state;
   }
 
-  /** The Snoozed label's mailbox (brief 24), if the account has one yet. */
+  /** The Snoozed label's mailbox, if the account has one yet. */
   snoozedId(): Id | undefined {
     return this.#snapshot.system.snoozed.label?.id;
   }
@@ -357,7 +357,7 @@ export class LabelsStore {
   }
 
   /**
-   * Brief 11's entry point: a push `StateChange`. Syncs only when it names a
+   * The entry point: a push `StateChange`. Syncs only when it names a
    * Mailbox state for this account that differs from the one held.
    */
   applyStateChange(change: StateChange): Promise<void> {

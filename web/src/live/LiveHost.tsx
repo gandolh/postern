@@ -1,4 +1,4 @@
-// Live updates (brief 11): the push stream, the connection status in the top
+// Live updates: the push stream, the connection status in the top
 // bar, the tab title and favicon badge, and desktop notifications for new
 // Inbox mail. The shell renders it once, under the labels provider.
 
@@ -23,7 +23,7 @@ export function LiveHost() {
   const labelsStore = useLabelsStore();
   const labels = useLabels();
   const [status, setStatus] = useState<PushStatus>("connecting");
-  // Brief 16: with Postern's service worker running, notifications go through
+  // With Postern's service worker running, notifications go through
   // it (Android has no Notification constructor; a click then reaches the
   // worker, which tells this page to open the conversation).
   const registration = useRef<ServiceWorkerRegistration | null>(null);

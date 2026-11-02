@@ -39,7 +39,7 @@ describe("loading pages", () => {
     await vi.waitFor(() => expect(store.getSnapshot().status).toBe("ready"));
     expect(mail.calls()).toEqual([["Email/query", "Email/get", "Thread/get", "Email/get"]]);
     const [q, g, t, m] = mail.posts[0]!;
-    // The Inbox puts woken conversations first (brief 24), then newest first.
+    // The Inbox puts woken conversations first, then newest first.
     expect(q![1]).toMatchObject({
       filter: { inMailbox: "a" },
       sort: [
@@ -244,7 +244,7 @@ describe("select all", () => {
   });
 });
 
-describe("conversation view off (brief 22)", () => {
+describe("conversation view off", () => {
   /** One conversation of three messages in the Inbox, and one of a single message between them. */
   const threeAndOne = () => [
     fakeEmail({ id: "1", threadId: "T", receivedAt: "2026-10-01T09:00:00Z", subject: "Plans", preview: "first" }),

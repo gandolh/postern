@@ -3,7 +3,7 @@
 // from its cache with APP_HEADERS (shell.ts), so a cache entry with stripped
 // or forged headers cannot remove the CSP; web/e2e/lib/headers.ts re-exports
 // this file, and csp.spec.ts checks the served headers against it.
-// corpus/wiki/security-headers.md records the same text for brief 18 and the
+// corpus/wiki/security-headers.md records the same text for the deploy and the
 // e2e Caddyfile sets it: change all three together.
 //
 // No imports: the worker, the app and the e2e suite (verbatimModuleSyntax) all read it.

@@ -1,4 +1,4 @@
-// The toolbar's Snooze button (brief 24): Gmail's choices with their times,
+// The toolbar's Snooze button: Gmail's choices with their times,
 // "Pick date and time", and Unsnooze when the selection is snoozed. The menu
 // says once that snoozed mail comes back when Postern is open (the owner's
 // call: it runs in the browser). A choice runs once focus is back on the

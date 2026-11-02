@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Brief 26: a message row opens alone, and the reader's `j` / `k` step through
+// A message row opens alone, and the reader's `j` / `k` step through
 // the message rows the list held, on screen or not.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

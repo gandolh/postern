@@ -36,7 +36,7 @@ function devProxy(): Record<string, ProxyOptions> {
 
 /**
  * Where Postern is served: the root of its own host, postern.<domain>, since
- * 2026-10-22 (brief 19). Scope, start URL and the navigation fallback all hang
+ * 2026-10-22. Scope, start URL and the navigation fallback all hang
  * off it.
  */
 const BASE = "/";
@@ -71,7 +71,7 @@ export default defineConfig({
   plugins: [
     react(),
     /*
-     * The installable app (brief 16). Our own worker, src/sw/sw.ts, in
+     * The installable app. Our own worker, src/sw/sw.ts, in
      * vite-plugin-pwa's injectManifest mode (as Satchel does): workbox only
      * injects the list of app-shell files, here with a hash for each. The
      * worker caches the shell and nothing else (never mail, never a

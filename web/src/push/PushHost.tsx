@@ -1,4 +1,4 @@
-// Web Push for the signed-in session (brief 16). The shell renders it once,
+// Web Push for the signed-in session. The shell renders it once,
 // inside the labels provider. On sign-in it extends (or makes) this device's
 // subscription if the person turned Web Push on here; before every sign-out
 // (the user's or the idle timeout's) it destroys it while the tokens still

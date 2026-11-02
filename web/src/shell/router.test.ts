@@ -115,7 +115,7 @@ describe("conversation helpers", () => {
     expect(sameList({ kind: "contacts" }, { kind: "contacts" })).toBe(false);
   });
 
-  it("opens one message of a conversation alone, and drops it with the conversation (brief 26)", () => {
+  it("opens one message of a conversation alone, and drops it with the conversation", () => {
     const list = { kind: "system", view: "inbox" } as const;
     const one = withConversation(list, "T1", "M2");
     expect(one).toEqual({ kind: "system", view: "inbox", conversationId: "T1", messageId: "M2" });

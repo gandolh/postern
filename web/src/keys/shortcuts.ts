@@ -1,4 +1,4 @@
-// The shortcut registry and the key engine (brief 14).
+// The shortcut registry and the key engine.
 //
 // SHORTCUTS is the one list: the engine matches against it and the help sheet
 // prints it, so they cannot drift. The engine is plain TypeScript (no React):

@@ -2,7 +2,7 @@
 // the body. Clicking brings the window forward and opens the conversation.
 //
 // The wording lives in describeNewMail(), a pure function the service worker
-// shares (brief 16: Web Push while Postern is closed), so a notification reads
+// shares (Web Push while Postern is closed), so a notification reads
 // the same whichever side shows it.
 
 import type { InboxMessage } from "./detector";
@@ -37,7 +37,7 @@ export interface NewMailNotice {
   threadId?: string;
 }
 
-/** The part of a message the wording reads. Brief 11's InboxMessage and the worker's EmailPush emails both fit. */
+/** The part of a message the wording reads. The InboxMessage and the worker's EmailPush emails both fit. */
 export type NoticeMessage = Pick<InboxMessage, "threadId" | "from" | "subject">;
 
 function senderOf(m: NoticeMessage): string {

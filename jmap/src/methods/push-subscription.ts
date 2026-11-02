@@ -1,4 +1,4 @@
-// PushSubscription (RFC 8620 §7.2): Web Push registrations, for brief 16.
+// PushSubscription (RFC 8620 §7.2): Web Push registrations, for the PWA work.
 //
 // The flow: create the subscription with the browser's push endpoint and
 // keys; the server POSTs a PushVerification to that endpoint; the service

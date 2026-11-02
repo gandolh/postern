@@ -1,4 +1,4 @@
-/* The phone (brief 16): touch targets, the phone row, the floating Compose
+/* The phone: touch targets, the phone row, the floating Compose
    button, and the swipe and pull-to-refresh visuals. Tokens only.
 
    Phones are under 37.4375rem (600 px), the shell's PHONE_QUERY. Every rule
@@ -274,7 +274,7 @@ body {
     height: 2.75rem;
   }
 
-  /* The composer: full screen here already (brief 08's composer.css); its
+  /* The composer: full screen here already (the composer.css); its
      controls get the same 44 px. The format bar wraps onto two lines. */
   .compose-titlebar .compose-titlebar-actions .icon-btn,
   .compose-form .compose-format .compose-format-btn {

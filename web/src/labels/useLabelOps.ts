@@ -1,5 +1,5 @@
 // Applying, removing and moving labels on conversations, and editing the
-// labels themselves, for React. Wraps brief 06's useMailActions so the
+// labels themselves, for React. Wraps the useMailActions so the
 // optimistic update, the toast and Undo are the list's own.
 //
 //   const ops = useLabelOps(current);       // current: the label route being viewed, or null (search)
@@ -23,7 +23,7 @@ const count = (n: number) => n.toLocaleString();
 
 // The copy quotes the label's name, so it is built here rather than from
 // actionCopy's tokens. `noun` is the conversation, or the message with
-// conversation view off (brief 26; the runner passes it).
+// conversation view off (the runner passes it).
 
 export function addedCopy(name: string): ActionCopy {
   return {

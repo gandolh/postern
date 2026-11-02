@@ -90,7 +90,7 @@ curl -u "alice@postern.test:$ALICE_PASSWORD" http://127.0.0.1:18080/jmap/session
 
 Open <http://127.0.0.1:18080/admin/>, sign in as `admin` with
 `STALWART_ADMIN_PASSWORD` from `dev/.env`. Use it to turn on TOTP for an
-account (brief 04), inspect mailboxes, or watch the logs.
+account (sign-in), inspect mailboxes, or watch the logs.
 
 ## The seed
 
@@ -107,5 +107,5 @@ account (brief 04), inspect mailboxes, or watch the logs.
 - The hostile set is filed in Alice's Inbox and in her **Hostile** label, and
   each message carries an `X-Postern-Fixture: hostile/<slug>` header. Every
   payload is harmless and points only at `.test` / `example.com` hosts; the
-  script payloads set a `window.__POSTERN_PWNED` canary that brief 17 asserts
+  script payloads set a `window.__POSTERN_PWNED` canary that the security suite asserts
   stays unset.

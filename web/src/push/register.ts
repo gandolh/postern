@@ -1,4 +1,4 @@
-// The page's side of the service worker (brief 16). install.ts starts it from
+// The page's side of the service worker. install.ts starts it from
 // main.tsx (it alone imports vite-plugin-pwa's virtual module, so this file
 // stays testable).
 //
@@ -20,7 +20,7 @@
 //   PUSH_VERIFICATION   Stalwart's code for a new subscription -> verificationInbox
 //   OPEN                a notification was clicked -> show that route here
 //   WILL_NOTIFY         "will you show this new mail yourself?" -> yes when this
-//                       page is signed in with brief 11's desktop notifications on
+//                       page is signed in with the desktop notifications on
 
 import { getDesktopNotifications } from "../notify/settings";
 import { navigate, parseRoute } from "../shell/router";

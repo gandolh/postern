@@ -1,9 +1,9 @@
-// Search (brief 10): the top-bar box, its suggestions, the advanced-search
+// Search: the top-bar box, its suggestions, the advanced-search
 // form and the results. The parser itself is in @postern/jmap (parseSearch).
 //
 //   <SearchBox query? />, <SearchRoute route />   the shell renders them
 //   <SearchConversation route conversationId />   a result opened, in the search's scope
-//   focusSearch()                                 brief 14's `/`
+//   focusSearch()                                 the keyboard shortcuts' `/`
 //   useParsedSearch(query)                        a query parsed against the account's labels (null while they load)
 //   SuggestionSource, Suggestion, suggestionQuery, replaceToken   the suggestion-source interface (contacts plug in from ../contacts/searchSource)
 

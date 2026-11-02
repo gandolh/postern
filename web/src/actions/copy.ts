@@ -1,6 +1,6 @@
 // What a toast says about an action, singular and plural, and what it counts.
-// A row is a conversation, or a message with conversation view off (brief 22),
-// and since brief 26 the copy says which: "Conversation archived." with the
+// A row is a conversation, or a message with conversation view off,
+// and since 2026-10-28 the copy says which: "Conversation archived." with the
 // pref on, "Message archived." with it off. The noun is filled in when the
 // toast is made, so a template names it with a token:
 //

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Snooze (brief 24): the keyword, the times offered, the plans, and waking
+// Snooze: the keyword, the times offered, the plans, and waking
 // over the fake JMAP server: on time, on a reply, idempotent, $woken tidied.
 
 import { afterEach, describe, expect, it, vi } from "vitest";

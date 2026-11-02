@@ -1,4 +1,4 @@
-// The Scheduled page at #scheduled (brief 23): the messages Schedule send is
+// The Scheduled page at #scheduled: the messages Schedule send is
 // holding on the server, soonest first, each with its send time. Opening one
 // shows its recipients and text and offers "Cancel send", which leaves it a
 // draft in Drafts. It looks again when it opens, on focus, after any mail

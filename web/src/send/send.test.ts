@@ -214,7 +214,7 @@ describe("the outbox (undo send)", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
-  it("has a 5-second default delay that brief 12 can change", () => {
+  it("has a 5-second default delay that the settings pages can change", () => {
     expect(getUndoSendDelay()).toBe(DEFAULT_UNDO_SEND_DELAY_MS);
     setUndoSendDelay(20_000);
     expect(getUndoSendDelay()).toBe(20_000);

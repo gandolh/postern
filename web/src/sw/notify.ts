@@ -1,4 +1,4 @@
-// The worker's push decisions (brief 16), pure so they can be tested without a
+// The worker's push decisions, pure so they can be tested without a
 // worker. sw.ts calls them. Nothing here imports React, the router or the JMAP
 // client: all of it ends up in sw.js, which never holds a token.
 //

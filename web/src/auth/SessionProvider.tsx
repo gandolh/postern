@@ -5,7 +5,7 @@
 // idle timeout) drops it together with the JmapClient, and unmounts the
 // children, so every token, cache and piece of in-memory mail state goes with
 // it. The next sign-in starts from a fresh one. The access token never leaves
-// the AuthSession; since brief 27 the refresh token goes to this tab's
+// the AuthSession; since 2026-10-28 the refresh token goes to this tab's
 // sessionStorage (./sessionStore.ts), so a reload signs in again with one
 // refresh grant: a quiet "Signing you in" page instead of the form while it
 // runs. Closing the tab ends it (corpus/wiki/security.md).
@@ -76,7 +76,7 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
       }),
     [options],
   );
-  // A reload with a session kept in this tab resumes it before the form shows (brief 27).
+  // A reload with a session kept in this tab resumes it before the form shows.
   const [view, setView] = useState<View>(() => {
     const auth = createAuth();
     return auth.resumable() ? { kind: "resuming", auth } : { kind: "signedOut", auth };
@@ -142,7 +142,7 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
     [auth, openApp],
   );
 
-  // Brief 27: a reload signs in again from the refresh token this tab kept.
+  // A reload signs in again from the refresh token this tab kept.
   // A refused token, or the idle deadline passed meanwhile, clears it and shows
   // the form (with the idle notice for the second); a server out of reach
   // shows the form with the offline notice, and the token stays for the next

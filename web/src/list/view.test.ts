@@ -21,7 +21,7 @@ describe("labelListView", () => {
     expect(inbox.presentation).toEqual({ currentLabelId: "a", senderMode: "from", canArchive: true, deleteForever: false, notSpam: false });
   });
 
-  it("lists Drafts without the messages waiting to be sent (brief 23)", () => {
+  it("lists Drafts without the messages waiting to be sent", () => {
     const drafts = labelListView({ view: "drafts", mailboxId: "d" }, roles)!;
     expect(drafts.query.filter).toEqual({ operator: "AND", conditions: [{ inMailbox: "d" }, { notKeyword: "$scheduled" }] });
     expect(drafts.query.matches!(msg(["d"], ["$draft"]))).toBe(true);

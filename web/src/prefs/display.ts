@@ -1,6 +1,6 @@
 // Theme, density and reading pane persist here, device-wide (they apply before
 // anyone signs in, so they are not keyed by account). The theme store itself
-// (brief 05) holds no storage; this restores and saves it.
+// (the shell) holds no storage; this restores and saves it.
 
 import { DEFAULT_DISPLAY_SETTINGS, getDisplaySettings, setDisplaySettings, subscribeDisplaySettings, type DisplaySettings } from "../theme/displaySettings";
 import { isRecord, readRaw, writeRaw } from "./storage";

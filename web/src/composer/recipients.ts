@@ -1,7 +1,7 @@
 // Where To/Cc/Bcc suggestions come from: the saved contacts (groups expanded
 // to their members) and "Other contacts", the people the user has written to
 // (the newest messages in Sent plus this session's sends). Ranking is in
-// ../contacts/ranking.ts. The interface is brief 08's:
+// ../contacts/ranking.ts. The interface is the composer's:
 //
 //   const source = recipientSource(client);            one per signed-in client
 //   const people = await source.suggest("bo", 8, signal);

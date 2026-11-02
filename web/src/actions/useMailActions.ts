@@ -41,7 +41,7 @@ export function useMailActions(): MailActions {
         snoozedId: () => labels.snoozedId(),
         syncLabels: () => void labels.sync(),
         toast,
-        // Brief 26: a list row is a message with conversation view off, and the toasts say so.
+        // A list row is a message with conversation view off, and the toasts say so.
         noun: () => rowNoun(getPrefs().conversationView),
       }),
     [client, labels, toast],

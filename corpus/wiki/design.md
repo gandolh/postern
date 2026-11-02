@@ -1,6 +1,6 @@
 ---
-summary: How Postern looks and behaves. Gmail's familiar layout (top bar with search, left navigation with Compose, conversation list, reading pane, floating composer) in Postern's own visual identity, never Google's colours, logo or wordmark. The chosen visual system (brief 05) - patina-on-limestone palette with light and dark hex values and contrast ratios, Atkinson Hyperlegible Next and Mono, lucide icons, the three density metrics, the mark - plus the settings it supports and the motion and accessibility targets. Read before any UI brief; impeccable works within it.
-updated: 2026-10-27
+summary: How Postern looks and behaves. Gmail's familiar layout (top bar with search, left navigation with Compose, conversation list, reading pane, floating composer) in Postern's own visual identity, never Google's colours, logo or wordmark. The chosen visual system (2026-10-20) - patina-on-limestone palette with light and dark hex values and contrast ratios, Atkinson Hyperlegible Next and Mono, lucide icons, the three density metrics, the mark - plus the settings it supports and the motion and accessibility targets. Read before any UI brief; impeccable works within it.
+updated: 2026-11-02
 ---
 
 # Design
@@ -29,7 +29,7 @@ everything is:
 wordmark, Material-clone icons or product names. Gmail's arrangement is fair to
 borrow; its brand is not.
 
-## The visual system (brief 05, 2026-10-20)
+## The visual system (2026-10-20)
 
 Built with `impeccable` in Operate mode, on the familiar path the owner asked
 for: Gmail's arrangement played straight, at the craft level of Gmail and
@@ -64,7 +64,7 @@ be seen, as contrast ratios (AA: 4.5 text, 3 for large text and graphics):
 The roles: `canvas` behind the navigation and top bar, `surface` for the main
 panel, `surface-raised` for menus, `hover` / `active` for every quiet control,
 `accent-soft` for the selected label, `row`, `row-read`, `row-hover` and
-`row-selected` for brief 06's list, `inverse` for toasts and tooltips. Star is
+`row-selected` for the conversation list, `inverse` for toasts and tooltips. Star is
 brass and is for the icon; never set text in it (4.4 in light).
 
 **Type: Atkinson Hyperlegible Next and Mono**, self-hosted from
@@ -116,9 +116,9 @@ over the page; under 600 px it is hidden until the menu opens it.
 - Conversation view on or off (off shows single messages).
 
 Theme, density and reading pane live in one per-device store
-([displaySettings.ts](../../web/src/theme/displaySettings.ts)); brief 12
-persists them. Conversation view is a per-account pref in
-[prefs.ts](../../web/src/prefs/prefs.ts) (brief 22); with it off a row is one
+([displaySettings.ts](../../web/src/theme/displaySettings.ts)), kept in
+localStorage. Conversation view is a per-account pref in
+[prefs.ts](../../web/src/prefs/prefs.ts) (2026-10-27); with it off a row is one
 message, and opening it opens the whole conversation at that message.
 
 ## Quality bar

@@ -1,12 +1,12 @@
-// The conversation list (brief 06). What other briefs import:
+// The conversation list. What other briefs import:
 //
 //   ListRoute                  the shell renders it for label routes
-//   ConversationList           the list body with a query of your own (brief 10's search results)
+//   ConversationList           the list body with a query of your own (the search results)
 //   labelListView              a label's ListQuery and presentation
 //   ListStore / useListStore   the data, kept current
-//   applyListStateChange       brief 11: pass every push StateChange
-//   getActiveList / useActiveList / subscribeActiveList   brief 14: the list keys drive
-//   undoLast                   brief 14: z
+//   applyListStateChange       pass every push StateChange
+//   getActiveList / useActiveList / subscribeActiveList   the list keys drive
+//   undoLast                   z
 //   ROW_PROPERTIES / MESSAGE_PROPERTIES / PAGE_SIZE   what a page fetches
 //   summarizeSenders / formatListDate / chipLabels / parseHighlights   row text
 

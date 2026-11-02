@@ -5,7 +5,7 @@
 // `data-theme` is the preference (system | light | dark). With `system`,
 // tokens.css follows prefers-color-scheme by itself, so the switch is live
 // and needs no script; `useTheme().resolvedTheme` follows it too, for code
-// that must know (the message frame in brief 07).
+// that must know (the message frame in).
 
 import { LucideProvider } from "lucide-react";
 import { useLayoutEffect, type ReactNode } from "react";

@@ -1,4 +1,4 @@
-// The real browser behind WebPushDeps.browser (brief 16).
+// The real browser behind WebPushDeps.browser.
 
 import { withDeadline } from "./deadline";
 import type { BrowserPush, PushManagerLike } from "./webPush";

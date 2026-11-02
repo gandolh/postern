@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-// Postern's service worker (brief 16; vite-plugin-pwa, injectManifest).
+// Postern's service worker (vite-plugin-pwa, injectManifest).
 //
 // 1. The app shell: the files the build lists, each with a SHA-256 baked into
 //    this script, cached at install and checked on every read (shell.ts;
@@ -74,7 +74,7 @@ function windows(): Promise<readonly WindowClient[]> {
   return self.clients.matchAll({ type: "window", includeUncontrolled: true });
 }
 
-/** Asks a hidden page whether it will show this mail itself (brief 11's notifications are on there). */
+/** Asks a hidden page whether it will show this mail itself (the notifications are on there). */
 function willNotify(client: WindowClient): Promise<boolean> {
   return new Promise((resolve) => {
     const channel = new MessageChannel();
@@ -107,7 +107,7 @@ async function onPush(data: PushMessageData | null): Promise<void> {
 
   const notifications = notificationsFor(payload, { icon: ICON, badge: BADGE });
   if (notifications.length === 0) return;
-  // Someone is looking at Postern: the list updates live, and brief 11's
+  // Someone is looking at Postern: the list updates live, and the page's own
   // notifications cover the rest. Avoid showing the same mail twice.
   if (anyVisible(open)) return;
   if (open.length > 0 && (await Promise.all(open.map(willNotify))).some(Boolean)) return;

@@ -1,6 +1,6 @@
 // Display settings: theme, density and reading pane. They belong to the
 // device, not the account, so they live in one module-level store that
-// outlasts sign-out. Nothing here is persisted: brief 12 (web/src/prefs/**)
+// outlasts sign-out. Nothing here is persisted: the settings pages (web/src/prefs/**)
 // restores saved values with setDisplaySettings() when its module loads, and
 // saves them with subscribeDisplaySettings().
 //

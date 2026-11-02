@@ -1,4 +1,4 @@
-/* The composer (brief 08): windows docked bottom-right in .shell-compose-layer,
+/* The composer: windows docked bottom-right in .shell-compose-layer,
    minimised to a title bar, full screen as a modal dialog, and the inline
    reply under a conversation. Tokens only. */
 
@@ -635,7 +635,7 @@
   font-weight: var(--weight-semibold);
 }
 
-/* Send with the schedule menu beside it (brief 23): one pill, split. */
+/* Send with the schedule menu beside it: one pill, split. */
 .compose-send-group {
   display: inline-flex;
   flex: none;
@@ -686,7 +686,7 @@
 
 /* Base UI places the positioner above the button; the popup is the list. */
 /* Above the docked composer's layer (shell.css, 55) and a phone's full-screen composer (70): with 10
-   the menus beside Send and under More options opened behind the window (found in brief 23). */
+   the menus beside Send and under More options opened behind the window (found while building schedule send). */
 .compose-menu-positioner {
   z-index: 80;
 }
@@ -823,7 +823,7 @@
   }
 }
 
-/* ---- Schedule send (brief 23) ------------------------------------------------------------------ */
+/* ---- Schedule send ------------------------------------------------------------------ */
 
 .compose-schedule {
   width: min(24rem, calc(100vw - 2 * var(--space-4)));

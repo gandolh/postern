@@ -96,7 +96,7 @@ function attachments(): SeedEmail[] {
     ),
   );
 
-  // Brief 25: an iMIP REQUEST and a CANCEL between the two dev accounts, so a
+  // An iMIP REQUEST and a CANCEL between the two dev accounts, so a
   // REPLY reaches an organiser's mailbox the tests can read. The REQUEST's
   // times are in Lisbon's zone (10:00 there is 10:00 UTC in November).
   const planning = ics("REQUEST", {
@@ -282,7 +282,7 @@ const ALICE_PLAIN: Simple[] = [
   { slug: "dave-rates", from: P.dave, to: [P.alice], subject: "Day rates for 2027", text: "Hi Alice,\n\nMy day rate goes up 5% from January. Happy to talk it through.\n\nDave", date: daysBefore(33, 10, 0), mailboxes: ["label:Work"] },
 ];
 
-/** Alice writes to people she has no other mail from: Other contacts (brief 15). */
+/** Alice writes to people she has no other mail from: Other contacts. */
 const ALICE_SENT: Simple[] = [
   { slug: "to-erin-photos", from: P.alice, to: [P.erin], subject: "Lisbon photos", text: "Erin, my Lisbon photos are in the shared album now. The terrace sunset came out well.", date: daysBefore(130, 20, 0), mailboxes: ["sent"] },
   { slug: "to-marta-keys", from: P.alice, to: [P.marta], subject: "Spare keys", text: "Hi Marta, could you post the spare keys? The ones I have stick in the lock.", date: daysBefore(40, 8, 30), mailboxes: ["sent"] },

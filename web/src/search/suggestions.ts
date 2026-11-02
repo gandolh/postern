@@ -4,7 +4,7 @@
 // The box asks every source on each keystroke (sources may answer later: return
 // a promise), shows the answers grouped under each source's heading in source
 // order, and writes a chosen suggestion's `text` into the box (and searches
-// at once if `submit` is set). Brief 15 adds contacts by returning one more
+// at once if `submit` is set). The contacts work adds them by returning one more
 // source from `useSuggestionSources()` (suggestionSources.ts).
 //
 //   const contacts: SuggestionSource = {

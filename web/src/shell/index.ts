@@ -3,7 +3,7 @@
 //
 //   router    Route, parseRoute, formatRoute, useRoute, navigate, withConversation, ...
 //   toast     useToast().show({ message, action?, duration? })
-//   status    <TopBarStatus> (brief 11's "Reconnecting…")
+//   status    <TopBarStatus> (live updates' "Reconnecting…")
 //   states    <EmptyState>, <ListSkeleton>, <ConnectionLost>, emptyLabelMessage, useOnline
 //   controls  <IconButton>, <PosternMark>
 

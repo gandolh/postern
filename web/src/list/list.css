@@ -1,4 +1,4 @@
-/* The conversation list (brief 06): toolbar, select-all banner, the
+/* The conversation list: toolbar, select-all banner, the
    virtualised grid of rows. Tokens only (theme/tokens.css). Every row is
    exactly --row-height tall, so the virtualiser can place it by index.
 

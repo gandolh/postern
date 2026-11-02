@@ -24,8 +24,9 @@ corpus/
 1. Read `index.md` first and triage on the `summary:` lines.
 2. Open at most 2-3 wiki pages. Needing a fourth means a page straddles two
    topics or a summary is vague. Fix that instead of reading more.
-3. Don't read `briefs/` or `todos/` wholesale. `wiki/status.md` has one line
-   per brief. Open a brief only for the spec behind a specific piece of work.
+3. Don't read `briefs/` or `todos/` wholesale. `wiki/status.md` has a dated
+   line per area and the owner steps. Open a brief only for the spec behind a
+   specific piece of work.
 
 ## The corpus is the why, the code is the what
 
@@ -54,7 +55,13 @@ updated: <YYYY-MM-DD>
   outcome note added at move time. After that the file is immutable.
 - Work later undone moves to `briefs/superseded/` with a one-line note on top.
   Never renumber, never rewrite a done brief.
-- The order briefs run in is in `wiki/status.md`.
+- Briefs run in number order; `wiki/status.md` doesn't list them.
+- Numbering restarted at 01 on 2026-11-02. The twenty-seven briefs before that
+  were folded into the wiki and deleted; the last commit holding them is
+  `f471709` ([log.md](log.md), "Briefs reset").
+- Code comments don't cite brief numbers ("brief 17", "(brief 27)"), this
+  repo's or another's. Say what the code does and why; the history belongs in
+  `log.md`.
 
 ## Source of truth, when things disagree
 
@@ -109,7 +116,7 @@ updated: <YYYY-MM-DD>
 - **Deploys, git hooks and `npm link` are owner steps.** Write the exact
   commands down and hand them over.
 - **Never test against the real mailbox.** Development and tests use the
-  local Stalwart in `dev/` (brief 02), never mail.<domain>.
+  local Stalwart in `dev/`, never mail.<domain>.
 
 ## brief-board
 

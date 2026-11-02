@@ -1,5 +1,5 @@
 // Contacts in the search box: typing `from:bo` (or a bare word) offers saved
-// contacts by name or address. Brief 10's SuggestionSource interface.
+// contacts by name or address. The SuggestionSource interface.
 
 import type { JmapClient } from "@postern/jmap";
 import { quoteArg, replaceToken, type SuggestionSource } from "../search/suggestions";

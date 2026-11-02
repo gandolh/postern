@@ -1,6 +1,6 @@
 ---
-summary: How a message body is rendered, as built in brief 07 and hardened since (2026-10-20): DOMPurify in a detached document, the srcdoc frame and its exact sandbox flags, its own CSP and no-referrer, what is dropped on purpose (SVG, MathML, media, forms, remote fonts, fixed positioning), inline images as data: URLs, the estimated frame height, image and PDF previews, the review's hardening (CSS escapes, bidi, size budgets), and brief 17's look-alike hosts, DMARC-gated "always display images" and linear-time scanning. The rules behind it are in security.md.
-updated: 2026-10-28
+summary: How a message body is rendered, as built on 2026-10-20 and hardened since (2026-10-20): DOMPurify in a detached document, the srcdoc frame and its exact sandbox flags, its own CSP and no-referrer, what is dropped on purpose (SVG, MathML, media, forms, remote fonts, fixed positioning), inline images as data: URLs, the estimated frame height, image and PDF previews, the review's hardening (CSS escapes, bidi, size budgets), and the 2026-10-20 security hardening's look-alike hosts, DMARC-gated "always display images" and linear-time scanning. The rules behind it are in security.md.
+updated: 2026-11-02
 ---
 
 # Message rendering as built
@@ -9,7 +9,7 @@ Moved here from [security.md](security.md) on 2026-10-28, unchanged but for
 its heading. The rule it serves: message HTML renders only in the sandbox
 ([security.md](security.md)).
 
-## Brief 07 (2026-10-20) and after
+## As built (2026-10-20) and after
 
 - **Sanitiser:** DOMPurify 3.4.16 in a detached document
   (`web/src/render/sanitize.ts`), then a `srcdoc` frame with exactly
@@ -37,7 +37,7 @@ its heading. The rule it serves: message HTML renders only in the sandbox
   `!important` style, and message markup loses any `postern*` class or id.
   Image previews stop at 20 MB; inline images load up to 8 MB each and 16 MB
   per message on open, the rest on request.
-- **Brief 17 (2026-10-20):**
+- **The security hardening (2026-10-20):**
   - Look-alike hosts are decided in `web/src/render/idn.ts`: a label that
     mixes scripts (Japanese, Chinese and Korean mixes with Latin allowed),
     one whose letters all imitate Latin under a TLD of another script, or a

@@ -1,8 +1,8 @@
-// The pure parts of label work (brief 09): which labels a selection carries,
+// The pure parts of label work: which labels a selection carries,
 // label-name and nesting rules, and the patches that take a label out of
 // every message before it is deleted. No client, no React.
 //
-// Applying and moving labels themselves is brief 06's planLabels / planMove;
+// Applying and moving labels themselves is the planLabels / planMove;
 // this file only decides what to ask them for.
 
 import type { Id, PatchObject } from "@postern/jmap";

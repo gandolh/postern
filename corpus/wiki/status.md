@@ -1,75 +1,53 @@
 ---
-summary: Snapshot as of 2026-10-28. Briefs 01-27 are done (built and verified against the local Stalwart; brief 18 prepared the deploy in vps-deploy, 19 moved Postern to the root of postern.<domain>, 20-21 moved to Base UI, 22 added conversation view off, 23 schedule send, 24 snooze, 25 calendar invite cards, 26 a message row opening that message alone, 27 a reload keeping the session); none is todo; nothing is deployed yet. One line per brief in the order they ran, the parked todos, and the owner steps (deploy and smoke test, screen reader, Android install and reload, real push, production's token lifetimes).
-updated: 2026-10-28
+summary: Snapshot as of 2026-11-02, per area. Postern is built (foundations, reading, writing, live, settings, keyboard, PWA and security 2026-10-20; its own host 2026-10-22; Base UI 2026-10-23; conversation view off, schedule send, snooze, invite cards and a reload keeping the session 2026-10-27/28) and not deployed. The owner steps (deploy and smoke test, screen reader, Android install and reload, real push, production's token lifetimes).
+updated: 2026-11-02
 ---
 
-# Status (2026-10-28)
+# Status (2026-11-02)
 
-Postern is built: all 27 briefs are done, with 1,291 unit and integration
-tests and a 46-test browser suite (`npm run test:e2e`) that runs the
-production build behind Caddy with the final headers. Nothing is deployed.
-Brief 18 committed the stack and routes in `vps-deploy` (commit
-`85f0934` there); the deploy itself, and the checks only a person can do,
-are the owner steps at the end of this page. Neither repo is pushed.
+Postern is built, with 1,291 unit and integration tests and a 46-test browser
+suite (`npm run test:e2e`) that runs the production build behind Caddy with
+the final headers. Nothing is deployed. The stack and routes are committed in
+`vps-deploy` (since 2026-10-21; on Postern's own host since 2026-10-22); the
+deploy, and the checks only a person can do, are the owner steps below. `main`
+is pushed through `bf67619` (2026-11-01). No brief is open; brief numbering restarted at 01
+on 2026-11-02 (see [log.md](../log.md)).
 
-## Briefs, in the order they run
+## By area
 
-**Wave 1: foundations**
-- [01](../briefs/done/01-scaffold-the-workspaces.md): npm workspaces, house stack, Vite base `/webmail/`, lint, test, typecheck. **Done 2026-10-20.**
-- [02](../briefs/done/02-local-mail-server.md): a Stalwart in Docker with test accounts and seeded mail, hostile mail included. After 01. **Done 2026-10-20.**
-- [03](../briefs/done/03-jmap-client.md): the typed JMAP client: session and URL rebasing, batching, methods, blobs, changes. After 02. **Done 2026-10-20.**
-- [04](../briefs/done/04-sign-in.md): sign-in through Stalwart (OAuth + PKCE + TOTP), tokens in memory, sign-out. After 03. **Done 2026-10-20.**
-
-**Wave 2: reading**
-- [05](../briefs/done/05-app-shell.md): the Gmail layout: top bar, navigation with system labels and counts, routes, themes, the visual identity. After 04. **Done 2026-10-20.**
-- [06](../briefs/done/06-conversation-list.md): the conversation list: virtualised, selection, bulk actions, archive, star, read, undo. After 05. **Done 2026-10-20.**
-- [07](../briefs/done/07-read-a-conversation.md): reading a conversation: sandboxed HTML, blocked images, attachments, quoted text. After 06. **Done 2026-10-20.**
-
-**Wave 3: writing and organising**
-- [08](../briefs/done/08-compose-and-send.md): the composer: reply, forward, rich text, attachments, drafts, send, undo send, signatures. After 07. **Done 2026-10-20.**
-- [09](../briefs/done/09-labels.md): labels on mailboxes: apply, remove, move, create, nest, colours. After 06. **Done 2026-10-20.**
-- [10](../briefs/done/10-search.md): Gmail search operators, highlighted snippets, suggestions, advanced search. After 06. **Done 2026-10-20.**
-
-**Wave 4: live and settings**
-- [11](../briefs/done/11-live-updates.md): live updates by fetch-streamed event source, unread counts in the tab, desktop notifications. After 06. **Done 2026-10-20.**
-- [12](../briefs/done/12-settings.md): the settings pages: display, identities and signatures, vacation responder, storage. After 08. **Done 2026-10-20.**
-- [13](../briefs/done/13-filters-and-spam.md): filters as Sieve, block sender, report spam and not spam. After 09 and 12. **Done 2026-10-20.**
-- [14](../briefs/done/14-keyboard-and-accessibility.md): Gmail's keyboard shortcuts, the help sheet, accessibility pass. After 07 and 08. **Done 2026-10-20.**
-- [15](../briefs/done/15-contacts.md): contacts on JMAP Contacts, recipient autocomplete, sender cards. After 08. **Done 2026-10-20.**
-
-**Wave 5: hardening and deploy**
-- [16](../briefs/done/16-installable-and-mobile.md): installable app, Web Push, phone layout and gestures, the offline decision. After 11. **Done 2026-10-20.**
-- [17](../briefs/done/17-security-hardening.md): the CSP, the hostile-mail browser tests, a token and link review. After 07, 08 and 04. **Done 2026-10-20.**
-- [18](../briefs/done/18-deploy.md): deploy through `vps-deploy` (at /webmail when written; on `postern.<domain>` since 19). Owner steps. After 17. **Prepared 2026-10-21; the deploy is the owner's.**
-
-**Wave 6: its own origin**
-- [19](../briefs/done/19-served-at-the-root-of-postern-domain.md): served at the root of `postern.<domain>`, with Stalwart's API on the same host (`vps-deploy` brief 14). Revisits "Served at /webmail". **Done 2026-10-22**: base `/`, the e2e harness at the root with another estate app on a second origin, all 34 browser tests and 1135 unit tests passing.
-
-**Wave 7: Base UI**
-- [20](../briefs/done/20-base-ui-dialogs.md): the modal dialogs on Base UI `Dialog`/`AlertDialog` through `web/src/shell/Modal.tsx`; the composer window stays native. **Done 2026-10-23**: 1166 unit and 34 browser tests.
-- [21](../briefs/done/21-base-ui-menus-and-popovers.md): the menus and popovers on Base UI `Menu`/`Popover`; the comboboxes and the sender card stay hand-built. **Done 2026-10-23**: 1166 unit and 34 browser tests.
-
-**Wave 8: Gmail parity, from the parked todos (filed 2026-10-23)**
-- [22](../briefs/done/22-conversation-view-off.md): conversation view off, one row per message; a row is a one-message conversation, so the planners stay as they are. **Done 2026-10-27**: a per-device pref and switch, the list without `collapseThreads`, a message row opening its conversation at that message; 1186 unit and 34 browser tests.
-- [23](../briefs/done/23-schedule-send.md): schedule send. Step one checks the dev Stalwart honours a future `sendAt`; if it doesn't, the brief stops and is superseded. **Done 2026-10-27**: Stalwart holds a message with FUTURERELEASE `HOLDUNTIL` (not `sendAt`); the Send menu, a Scheduled page with Cancel send, and the client filing sent ones in Sent; 1211 unit and 34 browser tests.
-- [24](../briefs/done/24-snooze.md): snooze, run by the browser (the owner's call, 2026-10-23): a hidden Snoozed label plus a keyword holding the time; it wakes while Postern is open. **Done 2026-10-27**: Stalwart has no way of its own; Snoozed between Starred and Sent, the toolbar's Snooze menu, waking on time, on opening and on a reply, woken conversations sorted first in the Inbox; 1228 unit and 34 browser tests.
-- [25](../briefs/done/25-calendar-invite-card.md): a calendar invite's card and Yes / No / Maybe reply; no calendar in Postern (the owner's call, 2026-10-23). Step one checks what Stalwart does with an iMIP invite. **Done 2026-10-27**: Stalwart does nothing with one, so Postern parses the VEVENT, shows the card and sends the REPLY itself; the dev seed has bob's REQUEST and CANCEL and a hostile invite (reseeded: Inbox 2147, Hostile 18); 1240 unit and 36 browser tests.
-
-**Wave 9: what wave 8 left (filed 2026-10-28)**
-- [26](../briefs/done/26-conversation-view-off-opens-one-message.md): with conversation view off, a message row opens that message alone and marks only it read, as Gmail does (the owner's call, 2026-10-28); the copy says "message" with the pref off. **Done 2026-10-28**: the route names the message (`#inbox/<conversation>/<message>`), the reader shows it alone and acts on it, `j` / `k` step through the message rows, every toast and count says "message"; 1272 unit and 40 browser tests.
-- [27](../briefs/done/27-a-reload-keeps-the-session.md): a reload keeps the session through a refresh token in `sessionStorage`; closing the tab ends it (the owner's call, 2026-10-28, revisiting the memory-only rule). **Done 2026-10-28**: a `SessionStore` adapter the web app hands `AuthSession`, a quiet resume with one refresh grant, the idle clock across a reload; built on dev's default token lifetimes, the production-settings line skipped (coordinator's call), the Android line an owner step; 1291 unit and 46 browser tests.
-
-## Parked (todos)
-
-None. The last five became briefs 22–25 or were dropped (inbox category tabs) on 2026-10-23; the one filed 2026-10-28 became brief 26.
+- **Foundations** (2026-10-20). Workspaces, a local Stalwart with seeded and
+  hostile mail, the typed JMAP client, sign-in through Stalwart
+  ([architecture.md](architecture.md), [sign-in.md](sign-in.md)).
+- **Reading** (2026-10-20). The Gmail layout and visual system, the
+  virtualised conversation list, reading in a sandboxed frame
+  ([design.md](design.md), [rendering.md](rendering.md)).
+- **Writing and organising** (2026-10-20). The composer, labels, search with
+  Gmail's operators, filters as Sieve, spam, contacts
+  ([gmail-on-jmap.md](gmail-on-jmap.md)).
+- **Live, settings, keyboard** (2026-10-20). Live updates, desktop
+  notifications, the settings pages, every Gmail shortcut and an
+  accessibility pass ([keyboard-and-accessibility.md](keyboard-and-accessibility.md)).
+- **Installable and secure** (2026-10-20). The PWA, Web Push, the phone
+  layout; the CSP, the hostile-mail browser tests, the security review
+  ([security.md](security.md), [security-findings.md](security-findings.md)).
+- **Its own host** (2026-10-22). Served at the root of `postern.<domain>`,
+  Stalwart's API at `/webmail-api` on the same host.
+- **Base UI** (2026-10-23). Dialogs, menus and popovers; the composer window
+  stays native ([overlays.md](overlays.md)).
+- **Gmail parity** (2026-10-27, 2026-10-28). Conversation view off, a
+  message row opening that message alone, schedule send, snooze, calendar
+  invite cards. Inbox category tabs were dropped on 2026-10-23
+  ([todo](../todos/inbox-category-tabs.md)).
+- **A reload keeps the session** (2026-10-28). A refresh token in
+  `sessionStorage`; closing the tab ends it ([sign-in.md](sign-in.md)).
 
 ## Owner steps
 
 Things only the owner can do, collected from the briefs as they finished.
 
-- **Deploy** (brief 18, on its own host since brief 19). After
-  `vps-deploy` brief 14 (code done 2026-10-22). DNS is already in place: `postern.<domain>`
-  has its A record. Deploy Ward first, in `vps-deploy` brief 16's order. From a clean, committed
+- **Deploy** (prepared 2026-10-21, on its own host since 2026-10-22). After
+  `vps-deploy`'s hosts of their own (code done 2026-10-22). DNS is already in place: `postern.<domain>`
+  has its A record. Deploy Ward first, in the order `vps-deploy`'s status gives. From a clean, committed
   checkout of this repo (the build runs in it, and `npm ci` replaces its
   `node_modules`), in `vps-deploy`:
 
@@ -118,30 +96,31 @@ Things only the owner can do, collected from the briefs as they finished.
     host or the apex. The Application panel shows the worker active with
     scope `/`.
   - Then the Android install and the real push below.
-- **Screen reader by ear** (brief 14): the checklist is at the end of
-  [brief 14](../briefs/done/14-keyboard-and-accessibility.md).
-- **Install on Android** (brief 16, after the deploy): open `https://postern.<domain>/` in
+- **Screen reader by ear:** the checklist is in
+  [keyboard-and-accessibility.md](keyboard-and-accessibility.md#owner-check-by-ear).
+- **Install on Android** (after the deploy): open `https://postern.<domain>/` in
   Chrome, menu, "Install app", launch from the home screen; in airplane mode
   it opens to the sign-in page and says it is offline.
-- **A reload on Android** (brief 27, after the install): sign in in the
+- **A reload on Android** (after the install): sign in in the
   installed app, reload (pull down, or the menu's Reload): the Inbox comes
   back without the sign-in form. Close the app from the recent-apps screen
   and open it again: the sign-in form.
-- **Real push** (brief 16): Settings, General, "Notifications for new mail
+- **Real push:** Settings, General, "Notifications for new mail
   when Postern is closed", allow; close Postern; mail yourself from another
   account; the notification shows sender and subject and opens the
   conversation. iOS needs 16.4 or later and Postern added to the Home Screen
   first.
-- **Web Push on Stalwart** (brief 16, configured by brief 18): the mail plan
+- **Web Push on Stalwart** (configured 2026-10-21): the mail plan
   in `vps-deploy` now sets `webPushContact`, the VAPID subject Apple
   requires, to the domain's postmaster address. The VAPID key is the one in
   Stalwart's store and the plan leaves it alone; a lost store means a new
   key, and each device then re-subscribes at its next sign-in. If no push
   ever arrives, check that the mail container reaches `fcm.googleapis.com`,
   `updates.push.services.mozilla.com` and `web.push.apple.com` over HTTPS.
-- **Token lifetimes** (brief 04): decided 2026-10-28 (access 15 minutes,
+- **Token lifetimes:** decided 2026-10-28 (access 15 minutes,
   refresh about a day, a new refresh token on each refresh); applying them is
-  `vps-deploy` brief 20. After that deploy, brief 27's skipped check: on
+  `vps-deploy`'s `node cli.ts mail server`. After that deploy, the reload
+  check skipped on 2026-10-28: on
   `https://postern.<domain>/` sign in, reload a few times a minute or more
   apart, and in DevTools (Application, Session Storage) see `postern.session`
   hold a new refresh token after each refresh, with the reload still

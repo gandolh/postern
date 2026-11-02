@@ -1,4 +1,4 @@
-// Finds NEW Inbox mail (brief 11). Fed the newest Inbox messages after each
+// Finds NEW Inbox mail. Fed the newest Inbox messages after each
 // change, it reports the ones that arrived since the last look. Never the
 // first look (that is the baseline), never mail already seen, and never mail
 // older than the newest message seen at the baseline: archived mail moved

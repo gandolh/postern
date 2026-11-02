@@ -1,4 +1,4 @@
-// Brief 08 against the dev Stalwart: alice writes to bob with an attachment
+// Against the dev Stalwart: alice writes to bob with an attachment
 // and an inline image (multipart/mixed > alternative > related), the draft is
 // replaced on each save, the submission files it in Sent; bob receives it
 // with the same bytes, replies, alice forwards with the original's

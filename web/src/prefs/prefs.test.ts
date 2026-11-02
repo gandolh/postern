@@ -41,7 +41,7 @@ describe("normalise", () => {
   });
 });
 
-describe("conversation view (brief 22)", () => {
+describe("conversation view", () => {
   it("is on by default, and prefs saved before it existed read as on", () => {
     expect(getPrefs().conversationView).toBe(true);
     expect(normalise({ version: PREFS_VERSION, undoSendSeconds: 10 }).conversationView).toBe(true);
@@ -58,7 +58,7 @@ describe("conversation view (brief 22)", () => {
   });
 });
 
-describe("swipe actions (brief 16)", () => {
+describe("swipe actions", () => {
   it("default to archive both ways, as Gmail's do", () => {
     expect(getSwipeActions()).toEqual({ left: "archive", right: "archive" });
   });

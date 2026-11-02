@@ -1,11 +1,11 @@
-// The composer (brief 08). The shell imports:
+// The composer. The shell imports:
 //   <ComposerProvider>   around the shell
 //   <ComposerHost />     once, in the bottom-right layer
 //   useCompose()         { open(options?: ComposeOptions) }
 //
-// Brief 14's keys: composeNew (c), composeFromConversation (r / a / f),
+// The keys: composeNew (c), composeFromConversation (r / a / f),
 // sendFocusedComposer (Ctrl+Enter), isTypingInComposer, getComposer.
-// Brief 15: ./recipients.ts is the autocomplete seam.
+// Contacts: ./recipients.ts is the autocomplete seam.
 
 export {
   ComposerProvider,

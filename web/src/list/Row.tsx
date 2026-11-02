@@ -31,7 +31,7 @@ export interface RowContext {
   now: Date;
   canArchive: boolean;
   deleteForever: boolean;
-  /** Replace the subject and snippet (brief 10). */
+  /** Replace the subject and snippet. */
   renderSubject?: (row: ConversationRow) => ReactNode;
 }
 
@@ -142,7 +142,7 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
       important: isImportant(row, scope),
       senders: summarizeSenders(inList.length ? inList : shown, me, senderMode),
       chips: chipLabels(labelIdsOf(row, scope), labels, currentLabelId),
-      // Brief 24: a snoozed conversation says when it comes back.
+      // A snoozed conversation says when it comes back.
       snoozed: snoozedUntil(shown),
     };
   }, [row, scope, me, senderMode, matches, labels, currentLabelId]);
@@ -236,7 +236,7 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
               </span>
               {row.preview || row.snippet?.preview ? (
                 <span className="list-snippet">
-                  {/* Its own span so the phone row (brief 16, mobile.css), which puts the snippet on a line of its own, can drop it. */}
+                  {/* Its own span so the phone row (mobile.css), which puts the snippet on a line of its own, can drop it. */}
                   <span className="list-snippet-sep">{" – "}</span>
                   <Highlighted html={row.snippet?.preview} fallback={row.preview} />
                 </span>

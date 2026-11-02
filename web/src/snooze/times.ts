@@ -1,4 +1,4 @@
-// Snooze's choices (brief 24), in this browser's time zone (Postern keeps no
+// Snooze's choices, in this browser's time zone (Postern keeps no
 // time zone for the account): Later today (+3 h, to the nearest hour),
 // Tomorrow 08:00, This weekend (Saturday 08:00), Next week (Monday 08:00).
 // A choice that doesn't fit today is left out: Later today once it would fall

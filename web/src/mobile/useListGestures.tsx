@@ -1,5 +1,5 @@
 // Swipe a row to archive or delete, and pull the list down to refresh
-// (brief 16). Touch only: a mouse or a keyboard never meets these, and every
+// (the PWA work). Touch only: a mouse or a keyboard never meets these, and every
 // action here is also in the list's toolbar and keys.
 //
 // ConversationList calls the hook and renders what it returns inside

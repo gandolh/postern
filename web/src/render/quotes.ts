@@ -158,7 +158,7 @@ export function splitPlainQuote(text: string): SplitText {
     if (one.length < 500 && ATTRIBUTION.test(one)) start = i;
     else if (i > 0 && two.length < 1000 && ATTRIBUTION.test(two)) start = i - 1;
   }
-  // trimEnd(), not /\s+$/: the regex retries from every space of a long run (brief 17).
+  // trimEnd(), not /\s+$/: the regex retries from every space of a long run.
   const main = lines.slice(0, start).join("\n").trimEnd();
   if (main.trim() === "") return { main: text, quote: null };
   return { main, quote: lines.slice(start).join("\n") };

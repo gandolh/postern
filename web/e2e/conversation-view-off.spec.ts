@@ -1,4 +1,4 @@
-// Brief 26: with conversation view off, a message row opens that message
+// With conversation view off, a message row opens that message
 // alone and marks only it read; Reply, Archive and j / k act on it; the copy
 // counts messages. Against alice's "Q4 roadmap review", whose three newest
 // Inbox messages are made unread for the run and put back as they were after.
@@ -75,7 +75,7 @@ async function start(page: Page): Promise<void> {
   await expect(page.getByRole("grid", { name: "Messages in Inbox" })).toBeVisible();
 }
 
-/** After a reload: the session resumes (brief 27), the route with it, and the form never shows. */
+/** After a reload: the session resumes, the route with it, and the form never shows. */
 async function expectResumed(page: Page): Promise<void> {
   await expect(page.locator(".shell")).toBeVisible({ timeout: 20_000 });
   expect(await sawPasswordField(page), "the password field appeared during the reload").toBe(false);

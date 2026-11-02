@@ -1,4 +1,4 @@
-// Brief 14's `/` shortcut: focus the search box from anywhere.
+// The keyboard shortcuts' `/` shortcut: focus the search box from anywhere.
 //
 //   import { focusSearch } from "../search";
 //   focusSearch();   // true if the box is on screen and took focus

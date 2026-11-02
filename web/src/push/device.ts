@@ -1,5 +1,5 @@
 // Naming this browser's subscription to Stalwart without storing anything
-// (brief 16).
+// (the PWA work).
 //
 // PushSubscription/get never returns `url` or `keys` (Stalwart 0.16.25 refuses
 // to: "forbidden"), so a device finds its own subscription by deviceClientId.

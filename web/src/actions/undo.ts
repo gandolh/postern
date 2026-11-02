@@ -1,4 +1,4 @@
-// The undoable actions, for the toast's Undo and the `z` key (brief 14).
+// The undoable actions, for the toast's Undo and the `z` key.
 // Everything undoable registers here: the mail actions (./runner.ts, the
 // quiet ones without a toast too), Undo send (composer/store.ts) and Block
 // sender (filters/BlockSender.tsx).

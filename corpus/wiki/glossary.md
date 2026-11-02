@@ -20,7 +20,7 @@ _Avoid_: thread (in UI copy), chain.
 
 **Message row**:
 A row of the list with conversation view off: one message. It opens that
-message alone (brief 26), and the copy counts it as a message.
+message alone (2026-10-28), and the copy counts it as a message.
 _Avoid_: message line, single row.
 
 **Snippet**:
@@ -34,19 +34,19 @@ _Avoid_: unsent message.
 
 **Snoozed**:
 Put out of the Inbox until a chosen time: the conversation waits in the Snoozed
-label and an open Postern brings it back, unread and on top (brief 24).
+label and an open Postern brings it back, unread and on top (2026-10-27).
 _Avoid_: deferred, remind me, hidden until.
 
 **Invite**:
 A message carrying an iCalendar REQUEST or CANCEL. Postern shows it as a card
 above the body and answers it with a REPLY email; it keeps no calendar
-(brief 25).
+(2026-10-27).
 _Avoid_: invitation card, event email, RSVP mail.
 
 **Scheduled message**:
 A message handed to the server to send at a chosen time (Schedule send). It
 waits as a draft marked `$scheduled`, is listed under Scheduled, not Drafts,
-and is filed in Sent once it has gone (brief 23).
+and is filed in Sent once it has gone (2026-10-27).
 _Avoid_: delayed send, send later, queued message.
 
 ## Organising
@@ -108,6 +108,6 @@ _Avoid_: preview pane, split view.
 
 **Conversation view**:
 Gmail's setting for the list: on, one row per conversation; off, one row per
-message (brief 22). In code, `ConversationView` is the screen of an open
+message (2026-10-27). In code, `ConversationView` is the screen of an open
 conversation, a different thing; briefs call that the reading view.
 _Avoid_: threading, thread mode.

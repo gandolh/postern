@@ -605,7 +605,7 @@ describe("before sign-out hooks", () => {
   });
 });
 
-describe("the store: a reload keeps the session (brief 27)", () => {
+describe("the store: a reload keeps the session", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

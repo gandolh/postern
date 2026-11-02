@@ -121,7 +121,7 @@ describe("the composer window", () => {
   });
 
   // Many steps of user input: more than the default 5 s on a loaded machine.
-  it("schedules from the menu beside Send: a preset, or a picked date and time, after the same checks (brief 23)", { timeout: 20_000 }, async () => {
+  it("schedules from the menu beside Send: a preset, or a picked date and time, after the same checks", { timeout: 20_000 }, async () => {
     const { user, window } = await renderComposer({ maxDelayedSend: 2_592_000 });
     await user.click(within(window).getByRole("button", { name: "More send options" }));
     await user.click(await screen.findByRole("menuitem", { name: "Schedule send" }));

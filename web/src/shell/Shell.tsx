@@ -1,4 +1,4 @@
-// The app shell (brief 05): Gmail's arrangement in Postern's own face. A top
+// The app shell: Gmail's arrangement in Postern's own face. A top
 // bar, the navigation with Compose and the labels, and the main panel; the
 // composer layer bottom-right and the toast bottom-left.
 //
@@ -112,7 +112,7 @@ function ShellLayout() {
           <MainArea route={route} />
         </main>
       </div>
-      {/* Brief 16: phones have no navigation on screen, so Compose floats bottom-right. */}
+      {/* Phones have no navigation on screen, so Compose floats bottom-right. */}
       {phone && mode === "hidden" ? <PhoneComposeButton route={route} /> : null}
       <div className="shell-compose-layer">
         <ComposerHost />
