@@ -549,3 +549,11 @@ dates instead of brief numbers, and [status.md](wiki/status.md) is a per-area
 snapshot with the owner steps kept. Code comments no longer cite brief
 numbers.
 
+
+## [2026-11-05] check | Deployed, and the smoke test passed
+
+Postern has been live on its own host since `vps-deploy`'s rollout of
+2026-11-02; on 2026-11-05 the owner reported its smoke test passed.
+[status.md](wiki/status.md) says so and keeps the checks still open: the
+screen reader, the Android install and reload, real push and the token
+lifetimes' reload check.
