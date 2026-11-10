@@ -557,3 +557,16 @@ Postern has been live on its own host since `vps-deploy`'s rollout of
 [status.md](wiki/status.md) says so and keeps the checks still open: the
 screen reader, the Android install and reload, real push and the token
 lifetimes' reload check.
+
+## [2026-11-09] todo | Three briefs: house style, Base UI conventions, Tailwind
+
+Wrote briefs 01 (the house style and the quality harness), 02 (Base UI by
+the conventions) and 03 (the web app to Tailwind), from the owner's calls of
+2026-11-09. No bump brief: `@base-ui/react` is pinned `1.9.0` and the lockfile
+resolves it. No server brief: Postern has no Fastify server and its rules
+forbid a backend. Measured on 2026-11-09: Prettier churn is the largest in the
+estate (least at width 180, 2,870 diff lines in 160 files; 10,398 lines in 274
+files at 120), 536 non-null assertions (82 outside tests), 7 files import Base
+UI outside a `ui/` folder, and the 19 stylesheets (5,736 lines) are imported
+from 35 places. `npm run check` is green with the integration tests skipped
+when the local Stalwart is down. They wait on the grilling of 2026-11-10.
