@@ -44,9 +44,9 @@ on 2026-11-02 (see [log.md](../log.md)).
 - **Planned: house style, Base UI conventions, Tailwind** (2026-11-09).
   Three briefs, run in order: the formatter and quality harness, Base UI
   behind wrappers by the owner's conventions, and the whole web app to
-  Tailwind v4. No server brief: Postern has no backend of its own. Base UI is
-  already pinned at 1.9.0, so no bump is needed. They wait on the owner's
-  grilling of 2026-11-10.
+  Tailwind v4, then a fourth, the redesign with Hallmark. No server brief:
+  Postern has no backend of its own. Base UI is already pinned at 1.9.0, so no
+  bump is needed. Revised to the owner's grilling of 2026-11-10 (see the log).
 
 ## Owner steps
 

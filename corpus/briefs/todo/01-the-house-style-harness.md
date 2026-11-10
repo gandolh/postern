@@ -4,9 +4,10 @@
 
 - In Postern: nothing. This brief runs first.
 - In the owner's skills library:
-  - brief 27, *A house style, and a quality harness that enforces it*: the `house-style` package at `v1.0.0`, the `house-style` skill, and the plugin's `Stop` and `PostToolUse` hooks;
+  - brief 27, *A house style, and a quality harness that enforces it*: the `house-style` package at `v1.0.0`, **vendored** into this repo (a copy with a version header, decided 2026-11-10, Q6), the `house-style` skill, and the plugin's `Stop` and `PostToolUse` hooks;
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: how the convention checker is wired and when it runs `--warn-only`.
-- The owner's grilling of 2026-11-10, questions Q5-Q14 of the skills library's open questions, plus the new questions in the decisions below.
+- The owner's grilling of 2026-11-10, questions Q5-Q14 and Q47-Q51 of the skills library's open questions, answered on its grilling pages, plus the questions still open in the decisions below.
+- Release flow (decided 2026-11-10, owner, Q4 and Q31): every commit is made on `main`. No branch, no pull request; the owner reviews `main`. The push follows the repo's hard rules ([corpus/CLAUDE.md](../../CLAUDE.md)).
 
 **Runs before:** 02 and 03. The reformat touches most of the 342 TypeScript files, and those two briefs rewrite most of the web ones. Formatting first gives one clean reformat commit, and the formatter hook keeps every later diff formatted.
 
@@ -41,7 +42,7 @@ This brief adopts both layers in Postern. Briefs 02 and 03 then turn on their ow
   - there is no `format`, `format:check`, `check:fast` or `check:conventions`.
 - **No root `CLAUDE.md` and no `.claude/`.** The only `CLAUDE.md` is [corpus/CLAUDE.md](../../CLAUDE.md), which Claude Code loads only once an agent reads a file under `corpus/`. So an agent that never opens the corpus sees no commands and none of the hard rules (no secrets, no CI, no pushes, message HTML only in the sandbox).
 - **The gate can be green with nothing run.** `jmap/test/integration/live.ts:2` says its tests "skip (not fail) when the server or dev/.env is missing", and `describe.skipIf(!live)` guards them (for example `jmap/test/integration/read.test.ts:16`). `web/test/integration/` has three more files. `npm run check` with no local Stalwart up is green with those skipped. This is a gate that reports success while reaching nothing; step 1 counts the skips.
-- **No Docker image and no git hook.** The deploy is `vps-deploy`'s `postern` stack, an owner step. Whether that stack runs `npm ci` with `git` on the box is unknown (skills library question 1), which matters for decision 1.
+- **No Docker image and no git hook.** The deploy is `vps-deploy`'s `postern` stack, an owner step. Whether that stack runs `npm ci` with `git` on the box is unknown (skills library question 1); decision 1 (vendored) makes it moot.
 
 ### Measured on 2026-11-09
 
@@ -67,7 +68,7 @@ The command was `prettier --write` over the `git ls-files` list in a copy, then 
 Two things this shows, and they differ from Almanac's measurement:
 
 - **Postern is the most heavily reformatted repo.** There is no width under which fewer than 160 files change. The code is wrapped by hand at about 120 columns but tolerates long lines: 729 lines are over 140 characters and the longest is 389 (`awk 'length>140'` over the tracked source). Prettier at 130 would rewrap 243 files.
-- **The least churn is 180**, which is far from the estate's likely width. Brief 27 measured about 340 lines in 70 files for Almanac at 130, so Postern at 130 is more than twenty times larger. Decision 2 asks the owner.
+- **The least churn is 180**, which is far from the estate's width. Brief 27 measured about 340 lines in 70 files for Almanac at 130, so Postern at 130 is more than twenty times larger. The owner's estate width is 120 (Q8, Q51, decided 2026-11-10), so **the one-off cost is 10,398 diff lines in 274 files** (about 5,200 lines touched), against 2,870 in 160 files at 180. **At least 160 files change at any width.** Decision 2 records it.
 
 The other file types:
 
@@ -94,32 +95,37 @@ The other file types:
 | parameter properties | 4 | above |
 | `void` expressions | 179 | the code already marks discarded promises, which is what `no-floating-promises` wants |
 
-The non-null count is the finding that breaks the estate default. Q13's default is "all of them are errors, fixed not excepted". For 536 assertions that is a refactor, not a cleanup, and 454 of them are in tests where `list[0]!` is the idiom. Decision 6 asks.
+The non-null count is the finding that broke the estate default. Q13's default was "all of them are errors, fixed not excepted". For 536 assertions that is a refactor, not a cleanup, and 454 of them are in tests where `list[0]!` is the idiom. Q47 settled it (decision 6): an error in source, a warning in tests.
 
 **Not measured here:** the six typed rules' finding counts, lint time with `projectService` against `project`, knip's findings, and the vitest plugin's count. Each needs `node_modules`. Step 1 measures them.
 
 One typed-lint problem is visible without running anything. The root `tsconfig.json` has `files: []` and references only `jmap`; `jmap/tsconfig.json` includes `src` and excludes `jmap/src/**/*.test.ts`; the tests sit in `jmap/tsconfig.test.json`, `web/tsconfig.test.json`, `dev/tsconfig.json` and `web/e2e/tsconfig.json`. So `projectService`, which looks for the nearest `tsconfig.json`, will not find a project for `jmap/src/**/*.test.ts`, for `jmap/test/**`, or for `web/test/**`'s tsconfig-less neighbours. Step 1 decides between `projectService` with `allowDefaultProject` and an explicit `project` array.
 
-## Owner decisions (defaults this brief builds)
+## Owner decisions
 
-1. **Where the configs come from** (skills library Q6, brief 27 decision 1). Default: the `house-style` package, extended from Postern's configs, as a `devDependency` on the tagged GitHub tarball URL, which npm fetches without `git`. If the owner prefers `github:`, check first that `vps-deploy`'s stack has `git` on the box (Q1). If Q6 goes the other way (configs copied into the repo), the same rules land as local files with a version header. Steps 3-5 don't change.
-2. **Width** (Q8). Default: the estate's one width, whatever Q8 settles. **New question for the grilling:** Postern's least churn is 180, and 130 rewraps 243 files, so a Postern-specific number is worth a minute. If Q8 isn't settled when this runs, use 120, the width the code is already hand-wrapped to, and record the churn (10,398 diff lines in 274 files) in the log entry.
-3. **Markdown stays out of Prettier** (Q45). Default: `.prettierignore` lists `*.md`. The corpus is prose that `corpus/lint.sh` governs, and 13 of 26 files would change.
-4. **tsconfig** (Q11). Default: add `verbatimModuleSyntax` and `erasableSyntaxOnly` to `tsconfig.base.json`, and not `exactOptionalPropertyTypes`. `dev/` and `web/e2e/` then drop their own copy of `verbatimModuleSyntax`.
-5. **Typed lint** (Q12). Default: the six rules, through `projectService` if step 1 shows it finds a project for every file, else an explicit `project` array.
-6. **The house shapes as errors** (Q13). Default for every shape but one: error. **The exception, a new question for the grilling:** `@typescript-eslint/no-non-null-assertion`. Default: **error in non-test source** (the 82 are fixed in this brief, or each is rewritten with a narrowing check), and **off in `*.test.{ts,tsx}`**, where 454 assertions are `array[0]!`. Fixing all 536 would take longer than the rest of the brief. The alternative is `warn` everywhere until a later brief.
-   - `no-console` is an error outside `dev/**`, `web/e2e/**` and tests. The four `web/src` calls are error reports with no logger to hand, so the default is an `eslint-disable-next-line` with a reason on each, not a logger. *New question.*
-   - `no-default-export` allows `*.config.*`, `web/e2e/global-setup.ts` and the e2e config.
-7. **`check:fast`** (Q10). Default: `tsc -b` plus `tsc -p web --noEmit`, then ESLint on the changed files, under about 15 s warm with one changed file. The other four typecheck projects are tests, `dev/` and e2e: they run in `check`, not in `check:fast`. Step 5 times it.
-8. **The Claude Code layer** (Q7). Default: the plugin's hooks. If the owner chooses committed hooks instead, add them to `.claude/settings.json` here. Postern's rule is that git hooks are an owner step ([corpus/CLAUDE.md](../../CLAUDE.md), "Hard rules"); Claude Code hooks are not git hooks, but say so when handing over.
-9. **A root `CLAUDE.md`** (Q46). Default: create one, and move the repo-wide **Hard rules** and **brief-board** sections out of [corpus/CLAUDE.md](../../CLAUDE.md) into it, because they apply outside the corpus.
-10. **Integration tests that skip.** Default: leave the skip, and make the root `CLAUDE.md` say that `npm run check` is not the whole gate without `npm run dev:mail` running; step 1 records how many tests skip. The alternative is an environment variable, `POSTERN_REQUIRE_LIVE=1`, that turns the skip into a failure, set by the owner before a deploy. *New question.*
+Decided on 2026-11-10 (the owner's grilling; the technical calls are marked, and the owner may overrule them). An item no answer covers stays a default.
+
+1. **Where the configs come from** (Q6, decided 2026-11-10, technical call). `house-style` is **vendored**: a copy at `vendor/house-style/` with a version header, refreshed by a `house-style:sync` script (`npm run house-style:sync`) that finds the `house-style` checkout by name, the way Ward's library and the imbatranim kit are shared today. No `github:`, git or tarball dependency, so `vps-deploy`'s stack needs no `git` on the box (the Q1 doubt above no longer matters here). npm locks GitHub dependencies as git URLs, which is why the tagged-tarball and `github:` options are rejected.
+2. **Width: 120** (Q8 and Q51, decided 2026-11-10, technical call; the code is already hand-wrapped to about 120). **The one-off cost:** 10,398 diff lines in 274 files at 120 (measured 2026-11-09), against 2,870 in 160 files at 180. At least 160 files change at any width, and Postern is the most heavily reformatted repo in the estate. The reformat is one commit, listed in `.git-blame-ignore-revs`.
+3. **Markdown stays out of Prettier** (Q45, decided 2026-11-10, technical call). `.prettierignore` lists `*.md`. The corpus is prose that `corpus/lint.sh` governs, and 13 of 26 files would change.
+4. **tsconfig** (Q11, decided 2026-11-10, technical call). `verbatimModuleSyntax` and `erasableSyntaxOnly` now (the four parameter properties become declared fields); `exactOptionalPropertyTypes` after a count, so not here. `noUncheckedIndexedAccess` is already on in `tsconfig.base.json`, so Q50's deferral does not apply. `dev/` and `web/e2e/` drop their own copy of `verbatimModuleSyntax`.
+5. **Typed lint** (Q12 and Q48, decided 2026-11-10, technical call). The six typed rules, through `projectService` if step 1 shows it finds a project for every file, else an explicit `project` array. `switch-exhaustiveness-check` sets `considerDefaultExhaustiveForUnions: true`. (`no-floating-promises` needs no `allowForKnownSafeCalls` entry for `node:test`: Postern tests on vitest.)
+6. **The house shapes** (Q13, Q14 and Q47, decided 2026-11-10, technical call):
+   - **`no-non-null-assertion`**: an error in source and a **warning in tests**. There are 536 assertions: 82 in 23 non-test files, which this brief fixes (or rewrites each with a narrowing check), and **454 in tests, which become warnings** and stay (`list[0]!` is the idiom there). The reason is recorded in the config.
+   - `no-console` is an error outside `dev/**`, `web/e2e/**` and tests (scripts and CLIs may use `console`, Q13). The four `web/src` calls are error reports with no logger to hand, so each gets an `eslint-disable-next-line` with a reason, not a logger.
+   - `no-default-export` allows a default export where a framework needs one: `*.config.*`, `web/e2e/global-setup.ts` and the e2e config.
+   - Comments are prose, checked by the review gate rather than a rule (Q14).
+7. **`check:fast`** (Q10, decided 2026-11-10, technical call). `tsc -b` plus `tsc -p web --noEmit`, then ESLint on the changed files, built incrementally. Target 15 s warm with one changed file; up to about 30 s is accepted where `tsc` alone is slower. The other four typecheck projects (tests, `dev/`, e2e) run in `check`, not in `check:fast`. Step 5 times it.
+8. **The Claude Code layer** (Q7, decided 2026-11-10, technical call). It lives in the plugin: `Stop` runs `check:fast`, `PostToolUse` formats the saved file. No hooks are committed in `.claude/settings.json`. Postern's rule is that git hooks are an owner step ([corpus/CLAUDE.md](../../CLAUDE.md), "Hard rules"); Claude Code hooks are not git hooks, but say so when handing over.
+9. **A root `CLAUDE.md`** (Q46, decided 2026-11-10, technical call: a short root `CLAUDE.md` with the commands in every repo). Create one, and move the repo-wide **Hard rules** and **brief-board** sections out of [corpus/CLAUDE.md](../../CLAUDE.md) into it, because they apply outside the corpus.
+10. **Integration tests that skip.** Default: leave the skip, and make the root `CLAUDE.md` say that `npm run check` is not the whole gate without `npm run dev:mail` running; step 1 records how many tests skip. The alternative is an environment variable, `POSTERN_REQUIRE_LIVE=1`, that turns the skip into a failure, set by the owner before a deploy. *Still open for the owner.*
 
 ## Files you OWN
 
 - `tsconfig.base.json`; `dev/tsconfig.json` and `web/e2e/tsconfig.json` (only to drop the now-inherited flag); `web/tsconfig.json` (only to add `incremental` with a `tsBuildInfoFile`).
 - `eslint.config.js`.
-- New: the Prettier config, `.prettierignore`, `.git-blame-ignore-revs`.
+- New: `vendor/house-style/` (the vendored copy, with its version header) and `scripts/house-style-sync.mjs` behind `npm run house-style:sync`.
+- New: the Prettier config (width 120), `.prettierignore`, `.git-blame-ignore-revs`.
 - The root `package.json` (scripts, devDependencies) and `package-lock.json`.
 - The reformat itself: whitespace-only changes to every file Prettier covers.
 - The fixes the new rules ask for:
@@ -154,7 +160,8 @@ One commit per step, each with `npm run typecheck`, `npm test`, `npm run lint` a
 
    Any rule that finds more than about 20 real problems, or mostly false ones, goes back to the owner before it is turned on (brief 27's rule: bring it, don't loosen it). The non-null rule already does.
 2. **Prettier, and the reformat.**
-   1. Add `prettier` (pinned) and the config: `printWidth` per decision 2, `trailingComma: "all"`, the rest default.
+   0. **Vendor `house-style`** (decision 1): copy it to `vendor/house-style/` with its version header, add `scripts/house-style-sync.mjs` and the `house-style:sync` script (it finds the checkout by name, via `PROJECTS_DIR` or the usual sibling folders, and rewrites the copy and header), and run it twice to show it is idempotent. Add the folder to `.prettierignore`, ESLint's ignores and knip's ignore. Commit this alone.
+   1. Add `prettier` (pinned) and the config, extending the vendored copy: `printWidth: 120` (decision 2), `trailingComma: "all"`, the rest default.
    2. Add `.prettierignore`:
       - `*.md`;
       - `jmap/test/fixtures/`;
@@ -171,12 +178,12 @@ One commit per step, each with `npm run typecheck`, `npm test`, `npm run lint` a
    - Fix whatever `verbatimModuleSyntax` reports with inline `type` imports, the house's `import { type X }`.
    - Drop the now-duplicate `verbatimModuleSyntax` from `dev/tsconfig.json` and `web/e2e/tsconfig.json`.
    - Add `"incremental": true` and a `tsBuildInfoFile` under `node_modules/.tmp/` to `web/tsconfig.json` and the web test project.
-4. **ESLint.** Extend the house config (decision 1), passing Postern's roots (web is `web/src`, the CLIs are `dev/**`, e2e is `web/e2e/**`), and **keep the `jmap` import boundary exactly** as `eslint.config.js` has it today. The diff in effect:
+4. **ESLint.** Extend the vendored house config (decision 1), passing Postern's roots (web is `web/src`, the CLIs are `dev/**`, e2e is `web/e2e/**`), and **keep the `jmap` import boundary exactly** as `eslint.config.js` has it today. The diff in effect:
 
    | Rule | Today | After | Findings today |
    |---|---|---|---|
    | the six typed rules above | off | error | step 1 |
-   | `@typescript-eslint/no-non-null-assertion` | off | error outside tests, off in tests (decision 6) | 82 non-test, 454 test |
+   | `@typescript-eslint/no-non-null-assertion` | off | error in source, warning in tests (decision 6) | 82 non-test, 454 test |
    | `no-restricted-syntax` on `TSEnumDeclaration` | off | error | 0 |
    | `no-warning-comments` (`todo`, `fixme`), pointing at `corpus/todos/` | off | error | 0 |
    | `no-console` outside `dev/**`, `web/e2e/**` and tests | off | error | 4, each given a reasoned disable |
@@ -235,10 +242,11 @@ One commit per step, each with `npm run typecheck`, `npm test`, `npm run lint` a
 ## Acceptance
 
 - [ ] `npm run check` passes with the local Stalwart up. Its run time and `check:fast`'s, warm with one changed file, are in the outcome note, and `check:fast` is under about 15 s or the owner has accepted the time.
-- [ ] `npx prettier --check .` passes. The reformat is one commit that changes whitespace only (`git diff -w <hash>^ <hash>` shows nothing outside the reformat), and its hash is in `.git-blame-ignore-revs`.
+- [ ] `vendor/house-style/` has its version header, `npm run house-style:sync` run twice leaves no diff the second time, and no `package.json` carries a `house-style` dependency (`github:`, tarball or git).
+- [ ] `npx prettier --check .` passes at `printWidth` 120, and the reformat's size is in the outcome note beside the 10,398 diff lines in 274 files measured here. The reformat is one commit that changes whitespace only (`git diff -w <hash>^ <hash>` shows nothing outside the reformat), and its hash is in `.git-blame-ignore-revs`.
 - [ ] `grep -n "verbatimModuleSyntax\|erasableSyntaxOnly" tsconfig.base.json` prints both, and `npm run typecheck` passes.
 - [ ] ESLint reports zero errors with every rule in step 4's table. The counts before and after are in the outcome note, and so is every finding left with its reason.
-- [ ] A deliberate `enum`, `!` in `web/src`, `console.log` in `web/src`, `// TODO` and `export default` each fail `npm run lint`. A `react` import in `jmap/src` still fails it. Revert them after.
+- [ ] A deliberate `enum`, `!` in `web/src` (an error; the same `!` in a `*.test.ts` is a warning), `console.log` in `web/src`, `// TODO` and `export default` each fail `npm run lint`. A `react` import in `jmap/src` still fails it. Revert them after.
 - [ ] `.claude/rules/web.md` and `jmap.md` exist with `paths:` frontmatter. The root `CLAUDE.md` is under about 60 lines and lists `npm run check`.
 - [ ] With the plugin's hooks on, an agent's edit is formatted on save, and a type error stops it at `Stop`.
 - [ ] `bash corpus/lint.sh` ends clean.

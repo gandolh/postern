@@ -11,10 +11,11 @@
   - brief 07, *Postern's web app to Tailwind*, the estate draft this brief replaces.
 - The owner's grilling of 2026-11-10:
   - Q17 (token names);
-  - Q18 (dark mode);
+  - Q18 (the Light / Dark / System switch, light on a first visit);
   - Q19 (visual parity);
   - Q20 (the order of the migrations);
-  - the new questions in the decisions below.
+  - Q62 (type scale, breakpoints, tests by role);
+  - the questions still open in the decisions below.
 
 **Before you start:** run `brief-board guide` ([corpus/CLAUDE.md](../../CLAUDE.md)).
 
@@ -27,7 +28,7 @@ The owner's call of 2026-11-09: Base UI is styled with Tailwind v4, and whole ap
 The estate draft (skills library brief 07) was written from a survey. Measured again on 2026-11-09:
 
 - **95 custom properties:** not reproduced. `web/src/theme/tokens.css` declares **80 unique names in 90 declarations** (the rest are the density overrides and the reduced-motion block). `grep -oE "^\s*--[a-z0-9-]+:" web/src/theme/tokens.css | tr -d ' :' | sort -u | wc -l` prints 80.
-- **A dark variant through `@custom-variant dark`:** not needed, and the draft's selector would be wrong. Postern's theme is `data-theme` of `system`, `light` or `dark` (`web/src/theme/ThemeProvider.tsx:23`). The colours are `light-dark(<light>, <dark>)`: 37 of the 90 declarations, resolved by the element's `color-scheme`. `tokens.css:145-151` pins `color-scheme` for `light` and `dark`; with `system` or no attribute, `:root { color-scheme: light dark }` follows the OS live. Those two `[data-theme` selectors are the only ones in all 19 stylesheets (`grep -rn "data-theme" web/src --include=*.css`). No rule differs by theme except through a token, so there is nothing for a `dark:` variant to do. See decision 2.
+- **A dark variant through `@custom-variant dark`:** the draft's selector would be wrong, and no class needs it today, but Q18 (decision 2) has every app declare one keyed off `data-theme`. Postern's theme is `data-theme` of `system`, `light` or `dark` (`web/src/theme/ThemeProvider.tsx:23`). The colours are `light-dark(<light>, <dark>)`: 37 of the 90 declarations, resolved by the element's `color-scheme`. `tokens.css:145-151` pins `color-scheme` for `light` and `dark`; with `system` or no attribute, `:root { color-scheme: light dark }` follows the OS live. Those two `[data-theme` selectors are the only ones in all 19 stylesheets (`grep -rn "data-theme" web/src --include=*.css`). No rule differs by theme except through a token, so no class needs `dark:`. See decision 2, which also changes the no-attribute default to light.
 - **11 `@media` blocks:** confirmed (`grep -c "@media"` summed over the CSS). Four are `prefers-reduced-motion` (`web/src/composer/composer.css:820`, `web/src/list/list.css:541`, `web/src/theme/base.css:360`, `web/src/theme/tokens.css:167`); seven are width queries (`auth.css:213`, `composer.css:806`, `shell.css:828, 835`, `contacts.css:15`, `mobile.css:109`, `scheduled.css:82`). Plus **3 `@container` queries** the draft did not count: `web/src/list/list.css:510, 527` (named `list`, declared at `list.css:18-19`) and `web/src/conversation/conversation.css:629` (named `conv`, declared at `conversation.css:10-11`).
 - **`mobile.css` is not a whole phone layout in one block.** Of its 359 lines, lines 19-107 are touch-gesture rules that apply at every width (the swipe backdrop, the pull indicator), one `@media (max-width: 37.4375rem)` block runs from line 109 to about 331, and `.mobile-compose` closes the file (332-359). The phone layout is also spread through `shell.css:835`, `composer.css:806`, `auth.css:213` and `scheduled.css:82`. The draft's "fold it into responsive variants" is right; "last" is still right.
 - **5 `@keyframes`:** confirmed: `compose-in` (`composer.css:52`), `shell-pop` (`shell.css:236`), `shell-drawer-in` (`shell.css:544`), `shell-toast-in` (`shell.css:819`), `skeleton-shine` (`base.css:351`).
@@ -102,18 +103,24 @@ The estate draft (skills library brief 07) was written from a survey. Measured a
 - **The service worker and the integrity hash.** `web/vite.config.ts` bakes a SHA-256 of every shell file into `sw.js` (finding F1, [wiki/security-findings.md](../../wiki/security-findings.md)). The Tailwind output is an ordinary Vite CSS asset, so the hash covers it; `web/src/sw/shell.test.ts` and the e2e reload and CSP specs prove it.
 - **The CSP** (`style-src 'self' 'unsafe-inline'`, [wiki/security-headers.md](../../wiki/security-headers.md)): Tailwind adds no inline styles, and the eight `style={}` props set properties through the CSSOM. Nothing to loosen, and nothing to tighten here.
 
-## Owner decisions (defaults this brief builds)
+## Owner decisions
 
-1. **Token names** (Q17). Default: Postern's names, put in Tailwind's namespaces as the table shows. No estate vocabulary.
-2. **Dark mode** (Q18). Default: the `light-dark()` tokens and the `data-theme` switch stay exactly as they are, and there is **no** `@custom-variant dark` and no `dark:` in any class. The three-way preference (`system`, `light`, `dark`) is a `color-scheme` on the root, which a `dark:` variant keyed on a class or attribute cannot express without also reading the media query. If a non-token difference is ever needed, the variant is `@custom-variant dark (&:where(:root[data-theme=dark] *, :root:not([data-theme=light]):not([data-theme=dark]) *))` inside a `prefers-color-scheme` media, written then, not now.
-3. **Visual parity** (Q19). Default: screenshots in light and dark at 1280, 1024, 800 and 390 px (the 800 px and 1024 px widths are the rail and the tablet drawer, which 1280 and 390 skip), with density `default`, and `compact` for the list and nav only. Every difference is fixed or listed with its reason.
-4. **The shared classes** become components. Default: `.btn` (66 call sites in `className`, with `-primary`, `-quiet`, `-soft`), `.input` (43), and `.icon-btn` (the `IconButton` wrapper) become React components with variant props, in `web/src/components/` (`Button.tsx`, `Input.tsx`); `.chip` (3), `.kbd`, `.skeleton` (16) and `.visually-hidden` (15, which is Tailwind's `sr-only`) become utilities or a one-line component. The alternative, `@layer components` rules in `index.css`, keeps the class names but is what rule 5 says to avoid. *New question for the grilling.*
-5. **Tailwind's scale against Postern's tokens.** Default: clear the default `--color-*`, `--text-*`, `--radius-*`, `--shadow-*` and `--font-*` (`--color-*: initial;` and so on), so only Postern's names exist; keep Tailwind's numeric spacing, since all ten `--space-*` steps map exactly. The off-scale numbers (`p-7`, `p-9`, `p-11`) then exist and the lint doesn't forbid them; a reviewer does.
-6. **Preflight.** Default: Tailwind's, with what `base.css` adds beyond it ported to `@layer base`; the fallback is above.
+Decided on 2026-11-10 (the owner's grilling; the technical calls are marked, and the owner may overrule them). An item no answer covers stays a default.
+
+1. **Token names** (Q17, decided 2026-11-10, technical call). Postern keeps its names, put in Tailwind's namespaces as the table shows. Only the small-tools family (wicket, the-board, lantern) converges on `surface`, `ink`, `accent`, `line` and `danger`; other apps keep their names until their redesign (brief 04).
+2. **Light, Dark and System** (Q18, decided 2026-11-10, owner: a switch everywhere, light by default). Postern already has the switch, and the estate copies its method: `data-theme` on `<html>` is `system`, `light` or `dark`, the choice is kept in this browser with the other display settings, and the colours are `light-dark()` tokens resolved by `color-scheme`. Two things were not true yet, and step 4 makes them so:
+   - **A first visit shows the light theme, not the system's.** Today `DEFAULT_DISPLAY_SETTINGS.theme` is `"system"` (`web/src/theme/displaySettings.ts:33`), and with no `data-theme` on `<html>` the root's `color-scheme: light dark` follows the OS. The default becomes `"light"`, and the root without an attribute is `color-scheme: light`. A stored choice is never overwritten.
+   - **System is a visible choice.** The theme setting offers Light, Dark and System (today the third reads "Same as the device"), and System follows the OS live.
+   - **`dark:` keys off `data-theme` through `@custom-variant`**, as the estate's apps do: `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *))`, plus the same rule under `@media (prefers-color-scheme: dark)` for `data-theme=system`. No class needs `dark:` today, because the tokens already carry the difference; the variant is declared so a later non-token difference has a hook, and Postern's method is the one the other apps use.
+3. **Visual parity** (Q19, decided 2026-11-10, owner: close enough). Done means before and after screenshots at 1280 and 390 px show **no visible change to layout or colour**, in light and dark. Drift of a few pixels in spacing or rounding needn't be fixed or listed. The rail (800 px) and tablet-drawer (1024 px) widths are checked once, as layout thresholds: the right layout shows.
+4. **The shared classes** become components. Default: `.btn` (66 call sites in `className`, with `-primary`, `-quiet`, `-soft`), `.input` (43), and `.icon-btn` (the `IconButton` wrapper) become React components with variant props, in `web/src/components/` (`Button.tsx`, `Input.tsx`); `.chip` (3), `.kbd`, `.skeleton` (16) and `.visually-hidden` (15, which is Tailwind's `sr-only`) become utilities or a one-line component. The alternative, `@layer components` rules in `index.css`, keeps the class names but is what rule 5 says to avoid. *Still open for the owner.*
+5. **Tailwind's scale against Postern's tokens** (Q62, decided 2026-11-10, technical call: a named type scale in `@theme`; no `phone` variant). Clear the default `--color-*`, `--text-*`, `--radius-*`, `--shadow-*` and `--font-*` (`--color-*: initial;` and so on), so only Postern's names exist: the type scale is Postern's named `--text-xs` to `--text-2xl`. Keep Tailwind's numeric spacing, since all ten `--space-*` steps map exactly. The off-scale numbers (`p-7`, `p-9`, `p-11`) then exist and the lint doesn't forbid them; a reviewer does. There is **no `phone` variant**: the phone layout uses `max-sm:` with `--breakpoint-sm: 37.5rem`, and the one-pixel edge is accepted.
+6. **Preflight.** Default: Tailwind's, with what `base.css` adds beyond it ported to `@layer base`; the fallback is above. The root font size is already the browser's 16 px (Q44 needs no change here).
 7. **Motion** (rule 7). Default: parity. The five keyframes become `--animate-*` in `@theme`, under `motion-safe:`, and the four `prefers-reduced-motion` blocks go away because the durations already zero (`tokens.css:167`) and `motion-safe:` covers the animations. No new exit animations; Base UI's `data-starting-style` and `data-ending-style` come in only where a popup already animates.
-8. **Tests that selected by class.** Default: replace each with a role and name, or with visible text; where neither exists, add a `data-testid` and use `getByTestId`, never a new class hook. 9 unit sites and 51 e2e sites, listed above. The mail-body iframe selectors (`.conv-page iframe`) become `getByTestId("conversation")`-style hooks. *New question: is `data-testid` the convention?*
-9. **Where Postern falls in the estate's order** (Q20). Default: eighth, after the small apps and Almanac and Shelfmark, ahead of Newspapper. This brief depends on no other app's migration.
-10. **Every stylesheet at once, or in stages.** Default: stages, in the order below, committed one file at a time with the gate green, because the legacy layer (above) makes any intermediate state safe.
+8. **Tests that selected by class** (Q62, decided 2026-11-10, technical call). Its 60 class-based test selectors (9 unit sites and 51 e2e sites, listed above) **move to roles**: a role and name, or visible text. `data-testid` only where no role fits, and never a new class hook. The mail-body iframe selectors (`.conv-page iframe`) become `getByTestId("conversation")`-style hooks, since an iframe has no better role.
+9. **Where Postern falls in the estate's order** (Q20, decided 2026-11-10, technical call): ninth, after the todo app, wicket, the-board, lantern, Satchel, ward-auth, Almanac and Shelfmark, ahead of Newspapper. This brief depends on no other app's migration.
+10. **Every stylesheet at once, or in stages** (decided: the `layer(legacy)` method the estate adopted, kept). Stages, in the order below, committed one file at a time with the gate green, because the legacy layer (above) makes any intermediate state safe.
+11. **Release flow** (Q4 and Q31, decided 2026-11-10, owner). One commit per step on `main`. No branch, no pull request; the owner reviews `main`. The push follows the repo's hard rules ([corpus/CLAUDE.md](../../CLAUDE.md)).
 
 ## Files you OWN
 
@@ -122,6 +129,7 @@ The estate draft (skills library brief 07) was written from a survey. Measured a
 - The `className`s in `web/src/**/*.tsx`, and the 35 CSS imports.
 - `web/src/lib/cn.ts` (new), `web/src/components/Button.tsx` and `Input.tsx` (new, decision 4).
 - `web/package.json` (add `tailwindcss`, `@tailwindcss/vite`, `clsx` and `tailwind-merge`, pinned exactly; the lint plugin from brief 01), `web/vite.config.ts` (the plugin only) and `package-lock.json`.
+- The theme choice (step 4): `web/src/theme/displaySettings.ts` (the default and the order), its tests, the theme labels in `web/src/settings/GeneralSettings.tsx`, and, only if the first-paint measurement needs it, one external script under `web/public/` with its `<script>` tag in `web/index.html` (the `theme-color` metas stay).
 - The tests that select by class (decision 8) and `web/e2e/` selectors.
 - `web/src/shell/breakpoints.ts`: only to add the test that its numbers equal `index.css`'s `--breakpoint-*`.
 - `.claude/rules/web.md`: the Tailwind lines.
@@ -133,12 +141,12 @@ The estate draft (skills library brief 07) was written from a survey. Measured a
 - The composer window's native `<dialog>` behaviour (`web/src/composer/ComposerWindow.tsx`).
 - The mail body's rendering: `web/src/render/` and the generated CSS in `srcdoc.ts`. If a conversation selector styles sanitised mail, that selector stays.
 - `web/index.html`'s `theme-color` metas and the PWA manifest colour.
-- The theme switch and the tokens' `light-dark()` values: moved, not edited.
+- The tokens' `light-dark()` values: moved, not edited. The theme switch's mechanism stays; only its default and labels change (step 4).
 - Behaviour. A class that was a behaviour hook is brief 02's; no logic changes here beyond selectors in tests.
 
 ## What to do
 
-One commit per numbered step, and one per stylesheet in step 3. After each, `npm run check` passes with `check-base-ui` `--warn-only` until step 6, and the local Stalwart is up.
+One commit per numbered step, and one per stylesheet in step 3. After each, `npm run check` passes with `check-base-ui` `--warn-only` until the gate step, and the local Stalwart is up.
 
 1. **Screenshots before.** Bring the app up as [docs/getting-started.md](../../../docs/getting-started.md) describes (`npm run dev:mail`, `npm run dev:seed`, `npm run dev`), keep the images out of git (`web/e2e/screenshots/` is already ignored), and capture, in light and dark at 1280, 1024, 800 and 390 px:
    - the list, a conversation, the composer docked and full screen;
@@ -166,35 +174,44 @@ One commit per numbered step, and one per stylesheet in step 3. After each, `npm
    8. `web/src/mobile/mobile.css` last: lines 109-331 fold into `max-sm:` variants on the elements `shell`, `list`, `composer` and `auth` already style; the gesture rules (19-107) and `.mobile-compose` become utilities on their own elements.
 
    At each file, port the selectors that tests or e2e read (decision 8) in the same commit, so the suite stays green.
-4. **Lint.** Turn on `better-tailwindcss`'s correctness rules and its class order as errors, and fix what they find.
-5. **Screenshots after.**
-   - Take the same set. Compare each pair, light and dark.
-   - Fix every difference, or list it in the outcome note with its reason.
+4. **The theme choice** (decision 2, Q18). After the migration, so the tokens already sit in `index.css`.
+   1. `web/src/theme/displaySettings.ts`: `DEFAULT_DISPLAY_SETTINGS.theme` becomes `"light"`. Update the tests that assert the default. A stored choice is untouched.
+   2. `index.css`: `:root { color-scheme: light }`, `[data-theme="dark"] { color-scheme: dark }`, `[data-theme="system"] { color-scheme: light dark }`, and the `@custom-variant dark` of decision 2.
+   3. `web/src/settings/GeneralSettings.tsx`: the theme choice reads Light, Dark and System, in that order (`THEMES` in `displaySettings.ts` is reordered, and the title "Same as the device" becomes "System").
+   4. **No flash.** Today the stored choice is restored when `web/src/prefs/display.ts` loads and `ThemeProvider` sets the attribute in a layout effect. Measure the first paint with a stored `dark` choice. If it paints light first, add a small **external** classic script in `<head>` (`script-src 'self'` forbids an inline one, [wiki/security-headers.md](../../wiki/security-headers.md)) that sets `data-theme` from the stored choice, and check that the service worker's shell hash covers it (`web/src/sw/shell.test.ts`).
+   5. Tests: each of `light`, `dark` and `system` sets the root's computed `color-scheme` (system follows `matchMedia` and a live change); a first visit with no stored choice and an OS in dark mode is light.
+5. **Lint.** Turn on `better-tailwindcss`'s correctness rules and its class order as errors, and fix what they find.
+6. **Screenshots after.**
+   - Take the same set, in the light theme and in dark. Compare each pair at 1280 and 390 px: no visible change to layout or colour is the bar (decision 3), and a few pixels of drift is not listed. The rail and tablet widths are checked once, as thresholds.
+   - List only what is visible, with its reason.
    - Re-check the two stacking cases (the composer's menu over its window, the toast under a modal).
    - Record the CSS size and build time against step 1.
    - Run `npm run test:e2e`, which proves the CSP, the hostile-mail suite and the reload behaviour on the real build (it needs Docker; if the session has none, the owner runs it and the outcome note says so).
-6. **Corpus.**
+7. **Corpus.**
    - [wiki/design.md](../../wiki/design.md): the tokens section points at `web/src/styles/index.css`; the contrast table and the conformance checklist stay.
    - [wiki/decisions.md](../../wiki/decisions.md): revisit the Base UI entry, "Base UI under the overlays; the composer window stays native". Say what changed (Tailwind), what stayed (the native composer window, the two comboboxes, the sender card) and why (the owner's 2026-11-09 call), and keep shadcn as rejected for its own reasons.
    - [wiki/status.md](../../wiki/status.md), [log.md](../../log.md).
    - `.claude/rules/web.md`: Tailwind lines (semantic tokens only, no arbitrary colours, one stylesheet, `cn()`).
    - `bash corpus/lint.sh` clean.
-7. **The gate.** Drop `check-base-ui`'s `--warn-only` from `check:conventions`.
+8. **The gate.** Drop `check-base-ui`'s `--warn-only` from `check:conventions`.
 
 ## Acceptance
 
 - [ ] `find web/src -name '*.css'` prints only `web/src/styles/index.css`, and `grep -rn 'import ".*\.css"' web/src` prints only the one in `main.tsx`.
 - [ ] `grep -rn "\.module\.css" web/src` and `grep -rnE "className=.*-\[(#|rgb|hsl)" web/src` print nothing, and `check-base-ui` strict reports 0 for every rule.
-- [ ] `grep -rn "dark:" web/src` prints nothing, and the theme switch still works: a test sets `data-theme` to each of `system`, `light` and `dark` and asserts the root's computed `color-scheme` (the repo's tests already drive `ThemeProvider`).
+- [ ] The theme choice, with a test for each of the three: **Light** and **Dark** pin the root's computed `color-scheme`; **System** follows `prefers-color-scheme` and a live change of it. A **first visit** (no stored choice, the OS in dark mode) shows the light theme, and the default in `DEFAULT_DISPLAY_SETTINGS` is `"light"`. A stored choice survives a reload with no flash of the wrong theme. The setting reads Light, Dark and System. `@custom-variant dark` is declared in `index.css`, keyed off `data-theme`.
 - [ ] The breakpoints test passes: `breakpoints.ts` and `index.css` agree.
 - [ ] `cn("text-md", "text-text")` keeps both classes. A test.
 - [ ] No test or e2e spec selects by a styling class: `grep -rnE "(locator|querySelector(All)?|closest)\(['\"\`]\.[a-z]" web/src web/e2e --include=*.test.* --include=*.spec.* --include=*.ts` prints only selectors for the mail body's own content.
 - [ ] `npm run check` passes, and `npm run test:e2e` passes (or the owner has run it).
-- [ ] The before and after screenshots match, light and dark, at the four widths, with every difference listed and explained. The CSS size before and after is in the outcome note.
+- [ ] The before and after screenshots at 1280 and 390 px, light and dark, show no visible change to layout or colour; visible differences are listed with their reason, and drift of a few pixels is not. The rail and tablet widths are checked once as thresholds. The CSS size before and after is in the outcome note.
+- [ ] No test or e2e spec selects by a styling class: the 60 sites are on roles, with `data-testid` only where no role fits.
+- [ ] Every commit is on `main`; no branch or pull request.
 - [ ] The decision revisit and the `log.md` entry are done, and `bash corpus/lint.sh` ends clean.
 
 ## Interplay
 
 - Brief 02 puts the Base UI parts in `web/src/components/ui/`, so each is styled once, here, with `data-[open]:`, `data-starting-style:` and the positioner variables (`origin-(--transform-origin)`, `max-h-(--available-height)`).
 - Brief 01's reformat touches two of these files (`shell.css`, `tokens.css`) and this brief deletes them.
+- Brief 04 (the redesign) follows this one: it changes the token values, both themes and the layout on the Tailwind base left here.
 - The skills library's `better-tailwindcss` setup (brief 27) needs the entry point `web/src/styles/index.css` and Postern's custom names; give the plugin the `extendTailwindMerge` list from `cn.ts`.
