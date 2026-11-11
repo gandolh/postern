@@ -26,7 +26,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:conventions": "knip && depcruise web/src jmap/src && node vendor/house-style/bin/check-base-ui.mjs --warn-only",
-    "check:fast": "npm run typecheck && node scripts/check-fast.mjs"
+    "check:fast": "tsc -b && tsc -p web --noEmit && node scripts/check-fast.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

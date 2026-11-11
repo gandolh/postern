@@ -2,5 +2,3 @@
 # remove a line when its directory lands. All planned roots exist now
 # (brief 24 made web/src/snooze, brief 25 web/src/invites), so this file holds
 # only this note.
-scripts   # brief 01 creates scripts/ (the conventions file, the changed-files lint)
-vendor    # brief 01 creates vendor/house-style/
