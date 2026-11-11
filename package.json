@@ -21,10 +21,12 @@
     "test:e2e": "npm run build && playwright test -c web/e2e",
     "typecheck": "tsc -b && tsc -p jmap/tsconfig.test.json && tsc -p web --noEmit && tsc -p web/tsconfig.test.json && tsc -p dev && tsc -p web/e2e",
     "lint": "eslint .",
-    "check": "npm run typecheck && npm run lint && npm run test",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:conventions && npm test",
     "house-style:sync": "node vendor/house-style/bin/sync.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "check:conventions": "knip && depcruise web/src jmap/src && node vendor/house-style/bin/check-base-ui.mjs --warn-only",
+    "check:fast": "npm run typecheck && node scripts/check-fast.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
