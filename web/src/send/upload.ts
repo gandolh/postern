@@ -66,7 +66,7 @@ export function xhrUploadTransport(createXhr: () => XMLHttpRequest = () => new X
         };
         req.signal?.addEventListener("abort", abort, { once: true });
         req.onProgress?.({ loaded: 0, total });
-        xhr.send(req.body as XMLHttpRequestBodyInit);
+        xhr.send(req.body);
       });
     },
   };

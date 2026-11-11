@@ -112,7 +112,7 @@ describe("the search box", () => {
 
   it("Escape closes the list, then clears the box, then leaves it", async () => {
     const { user } = await setup(() => <SearchBox />);
-    const box = screen.getByRole("combobox", { name: "Search mail" }) as HTMLInputElement;
+    const box = screen.getByRole<HTMLInputElement>("combobox", { name: "Search mail" });
     await user.type(box, "wor");
     await screen.findByRole("listbox");
     await user.keyboard("{Escape}");
@@ -127,7 +127,7 @@ describe("the search box", () => {
 
   it("shows the search on screen", async () => {
     await setup(() => <SearchBox query="from:bob" />);
-    expect((screen.getByRole("combobox", { name: "Search mail" }) as HTMLInputElement).value).toBe("from:bob");
+    expect(screen.getByRole<HTMLInputElement>("combobox", { name: "Search mail" }).value).toBe("from:bob");
   });
 
   it("writes the advanced form back into the box and searches", async () => {
@@ -141,7 +141,7 @@ describe("the search box", () => {
     await user.click(within(form).getByLabelText("Has attachment"));
     await user.click(within(form).getByRole("button", { name: "Search" }));
     const expected = "from:bob roadmap -draft label:Work has:attachment";
-    expect((screen.getByRole("combobox", { name: "Search mail" }) as HTMLInputElement).value).toBe(expected);
+    expect(screen.getByRole<HTMLInputElement>("combobox", { name: "Search mail" }).value).toBe(expected);
     expect(window.location.hash).toBe(`#search/${encodeURIComponent(expected)}`);
     expect(screen.queryByRole("dialog", { name: "Advanced search" })).toBeNull();
   });

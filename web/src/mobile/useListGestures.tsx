@@ -138,11 +138,11 @@ export function useListGestures<Row extends { id: Id }>(options: ListGestureOpti
     };
 
     const onStart = (event: TouchEvent) => {
-      if (busy || event.touches.length !== 1) {
+      const touch = event.touches[0];
+      if (busy || event.touches.length !== 1 || !touch) {
         reset();
         return;
       }
-      const touch = event.touches[0]!;
       x0 = touch.clientX;
       y0 = touch.clientY;
       gesture = "pending";
@@ -151,8 +151,8 @@ export function useListGestures<Row extends { id: Id }>(options: ListGestureOpti
     };
 
     const onMove = (event: TouchEvent) => {
-      if (event.touches.length !== 1 || gesture === "scroll") return;
-      const touch = event.touches[0]!;
+      const touch = event.touches[0];
+      if (event.touches.length !== 1 || gesture === "scroll" || !touch) return;
       const dx = touch.clientX - x0;
       const dy = touch.clientY - y0;
       if (gesture === "pending") {

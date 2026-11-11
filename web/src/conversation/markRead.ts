@@ -29,6 +29,7 @@ export async function markReadOnOpen(
   } catch (err) {
     answered();
     publishMailChange({ kind: "patch", update: plan.inverse });
+    // eslint-disable-next-line no-console -- A failed background mark-read has no UI of its own to report through.
     if (!isQuietError(err)) console.warn("Couldn't mark the conversation as read", err);
   } finally {
     answered();

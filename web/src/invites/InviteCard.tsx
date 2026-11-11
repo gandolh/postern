@@ -36,11 +36,8 @@ export async function loadInvite(
   signal?: AbortSignal,
 ): Promise<Invite | null> {
   for (const part of calendarParts(parts).slice(0, 2)) {
-    if ((part.size ?? 0) > 256 * 1024) continue;
-    const res = await client.blob.download(
-      { blobId: part.blobId!, name: "invite.ics", type: "text/plain" },
-      { signal },
-    );
+    if (!part.blobId || (part.size ?? 0) > 256 * 1024) continue;
+    const res = await client.blob.download({ blobId: part.blobId, name: "invite.ics", type: "text/plain" }, { signal });
     const invite = parseInvite(await res.text());
     if (invite && (invite.method === "REQUEST" || invite.method === "CANCEL") && invite.uid) return invite;
   }
@@ -176,7 +173,7 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
         sentMailboxId: labels.mailboxIdForRole("sent"),
       });
       setAnswer(choice);
-      toast.show({ message: `Reply sent: ${ANSWERS.find((a) => a.answer === choice)!.label}.` });
+      toast.show({ message: `Reply sent: ${ANSWERS.find((a) => a.answer === choice)?.label ?? choice}.` });
       void labels.sync();
     } catch (err) {
       if (!isQuietError(err)) toast.show({ message: "Couldn't send your reply. Try again in a moment." });

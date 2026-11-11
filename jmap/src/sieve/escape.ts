@@ -34,7 +34,7 @@ export function quoteSieve(value: string): QuotedString {
   let dollar = false;
   let out = "";
   for (let i = 0; i < value.length; i++) {
-    const ch = value[i]!;
+    const ch = value.charAt(i);
     const code = ch.charCodeAt(0);
     if (ch === '"') {
       out += '\\"';
@@ -69,7 +69,7 @@ export function decodeSieveText(content: string): string {
   let out = "";
   let i = 0;
   while (i < content.length) {
-    const ch = content[i]!;
+    const ch = content.charAt(i);
     if (ch === "$" && content[i + 1] === "{") {
       const end = content.indexOf("}", i + 2);
       if (end < 0) throw new SieveStringError("An unfinished ${ in a string.");
@@ -81,8 +81,8 @@ export function decodeSieveText(content: string): string {
       }
       const m = /^(hex|unicode)\s*:\s*([0-9a-fA-F\s]*)$/i.exec(inner);
       if (!m) throw new SieveStringError(`A variable reference \${${inner}} where Postern writes plain text.`);
-      const kind = m[1]!.toLowerCase();
-      const parts = m[2]!.trim().split(/\s+/).filter(Boolean);
+      const kind = (m[1] ?? "").toLowerCase();
+      const parts = (m[2] ?? "").trim().split(/\s+/).filter(Boolean);
       if (parts.length === 0) throw new SieveStringError(`An empty \${${inner}}.`);
       if (kind === "hex") {
         if (parts.some((p) => p.length > 2)) throw new SieveStringError(`A bad hex sequence \${${inner}}.`);

@@ -96,7 +96,7 @@ function Toast({ toast, onClose: close }: { toast: Current; onClose: (id: number
       onPointerLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false);
+        if (!e.currentTarget.contains(e.relatedTarget)) setPaused(false);
       }}
     >
       <p className="shell-toast-message">{toast.message}</p>

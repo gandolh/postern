@@ -54,7 +54,7 @@ export function suggestionQuery(input: string): SuggestionQuery {
   let tokenStart = 0;
   let inQuote = false;
   for (let i = 0; i < input.length; i++) {
-    const ch = input[i]!;
+    const ch = input.charAt(i);
     if (ch === '"') inQuote = !inQuote;
     else if (/\s/.test(ch) && !inQuote) tokenStart = i + 1;
   }
@@ -62,8 +62,8 @@ export function suggestionQuery(input: string): SuggestionQuery {
   const negation = token.startsWith("-") ? "-" : "";
   const body = token.slice(negation.length);
   const match = /^([A-Za-z_][A-Za-z0-9_]*):(.*)$/s.exec(body);
-  const operator = match ? match[1]!.toLowerCase() : null;
-  const rest = (match ? match[2]! : body).replace(/"/g, "");
+  const operator = match?.[1]?.toLowerCase() ?? null;
+  const rest = (match?.[2] ?? body).replace(/"/g, "");
   return { input, token, tokenStart, negation, operator, rest };
 }
 

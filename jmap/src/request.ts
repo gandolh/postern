@@ -117,7 +117,7 @@ export class RequestBuilder {
 
   /** Add a typed method call. */
   call<N extends MethodName>(name: N, args: CallArgs<N>): CallHandle<N> {
-    return this.#add(name, args as Record<string, unknown>, capabilityOf(name));
+    return this.#add(name, args, capabilityOf(name));
   }
 
   /** Add a call to a method this package does not type. Name its capability if it is not core. */

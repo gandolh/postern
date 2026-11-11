@@ -72,7 +72,7 @@ function session(maxObjectsInSet: number, maxObjectsInGet: number): SessionObjec
     uploadUrl: "http://fake/upload/{accountId}/",
     eventSourceUrl: "http://fake/eventsource/?types={types}&closeafter={closeafter}&ping={ping}",
     state: "session-0",
-  } as unknown as SessionObject;
+  };
 }
 
 function clone<T>(value: T): T {

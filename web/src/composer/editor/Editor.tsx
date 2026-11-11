@@ -381,7 +381,7 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
     };
     if (!event.shiftKey && (key === "b" || key === "i" || key === "u")) {
       handled();
-      applyMark(key as Mark);
+      applyMark(key);
     } else if (!event.shiftKey && key === "k") {
       handled();
       openLink();

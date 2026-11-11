@@ -147,7 +147,10 @@ export function planFilterActions(
     const plan = step(current);
     current = current.map((c) => ({
       ...c,
-      messages: c.messages.map((m) => (plan.update[m.id] ? { ...m, ...applyPatch(m, plan.update[m.id]!) } : m)),
+      messages: c.messages.map((m) => {
+        const patch = plan.update[m.id];
+        return patch ? { ...m, ...applyPatch(m, patch) } : m;
+      }),
     }));
   }
   const final = new Map(current.flatMap((c) => c.messages.map((m) => [m.id, m] as const)));

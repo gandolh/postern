@@ -129,7 +129,7 @@ async function messagesIn(caller: MethodCaller, labelId: Id): Promise<{ id: Id; 
   const out: { id: Id; mailboxIds: Record<Id, true> }[] = [];
   for (let i = 0; i < ids.length; i += CHUNK) {
     const res = await caller.call("Email/get", { ids: ids.slice(i, i + CHUNK), properties: ["id", "mailboxIds"] });
-    for (const m of res.list) out.push({ id: m.id, mailboxIds: m.mailboxIds as Record<Id, true> });
+    for (const m of res.list) out.push({ id: m.id, mailboxIds: m.mailboxIds });
   }
   return out;
 }
@@ -152,9 +152,9 @@ export async function deleteLabel(deps: LabelEditDeps, id: Id): Promise<DeleteLa
   const needsArchive = messages.some((m) => Object.keys(m.mailboxIds).every((mb) => mb === id));
   const archiveId = needsArchive ? await ensureAllMail(deps.caller, deps.labels) : undefined;
   const removal = planLabelRemoval(messages, id, archiveId);
-  const ids = Object.keys(removal.update);
-  for (let i = 0; i < ids.length; i += CHUNK) {
-    const update = Object.fromEntries(ids.slice(i, i + CHUNK).map((m) => [m, removal.update[m]!]));
+  const entries = Object.entries(removal.update);
+  for (let i = 0; i < entries.length; i += CHUNK) {
+    const update = Object.fromEntries(entries.slice(i, i + CHUNK));
     const res = await deps.caller.call("Email/set", { update });
     const [failedId, failed] = Object.entries(res.notUpdated ?? {})[0] ?? [];
     if (failedId && failed) throw new JmapSetError("Email/set", failedId, failed);

@@ -50,7 +50,7 @@ export function SenderHoverCard({ address, children }: SenderHoverCardProps) {
       onMouseLeave={() => schedule(false, CLOSE_DELAY_MS)}
       onFocus={() => schedule(true, 0)}
       onBlur={(e: FocusEvent) => {
-        if (!e.relatedTarget || !root.current?.contains(e.relatedTarget as Node)) schedule(false, 0);
+        if (!e.relatedTarget || !root.current?.contains(e.relatedTarget)) schedule(false, 0);
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape" && open) {

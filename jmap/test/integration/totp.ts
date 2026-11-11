@@ -28,7 +28,7 @@ export function hotp(key: Uint8Array, counter: number, digits = 6): string {
   const message = Buffer.alloc(8);
   message.writeBigUInt64BE(BigInt(counter));
   const mac = createHmac("sha1", key).update(message).digest();
-  const offset = mac[mac.length - 1]! & 0x0f;
+  const offset = mac.readUInt8(mac.length - 1) & 0x0f;
   const code = (mac.readUInt32BE(offset) & 0x7fffffff) % 10 ** digits;
   return String(code).padStart(digits, "0");
 }

@@ -90,7 +90,7 @@ describe("Settings → Filters", () => {
     const { user } = await renderPage(io);
     await user.click(screen.getByRole("button", { name: "Edit filter 1" }));
     const form = screen.getByRole("form", { name: "Edit filter" });
-    expect((within(form).getByLabelText("From") as HTMLInputElement).value).toBe("bob@postern.test");
+    expect(within(form).getByLabelText<HTMLInputElement>("From").value).toBe("bob@postern.test");
     await user.click(within(form).getByLabelText("Mark as read"));
     await user.click(within(form).getByRole("button", { name: "Save filter" }));
     await screen.findByText(/Mark as read, Star it/);
@@ -115,9 +115,7 @@ describe("Settings → Filters", () => {
     expect(window.location.hash).toBe("#settings/filters");
     await renderPage(io);
     const form = screen.getByRole("form", { name: "Create a filter" });
-    expect((within(form).getByLabelText("From") as HTMLInputElement).value).toBe(
-      "bob@postern.test, carol@postern.test",
-    );
+    expect(within(form).getByLabelText<HTMLInputElement>("From").value).toBe("bob@postern.test, carol@postern.test");
   });
 
   it("applies a new filter to matching conversations too, with one Undo", async () => {
@@ -190,6 +188,6 @@ describe("Settings → Filters", () => {
     io.add("postern", 'require ["fileinto"];\r\nfileinto "X";\r\n', true);
     await renderPage(io);
     expect(screen.getByRole("alert").textContent).toContain("that Postern didn't write");
-    expect((screen.getByRole("button", { name: "Create a new filter" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Create a new filter" }).disabled).toBe(true);
   });
 });

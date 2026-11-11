@@ -125,7 +125,7 @@ export function SearchBox({ query }: SearchBoxProps) {
   }
 
   function onBlur(event: FocusEvent<HTMLDivElement>): void {
-    if (!rootRef.current?.contains(event.relatedTarget as Node | null)) {
+    if (!rootRef.current?.contains(event.relatedTarget)) {
       setFocused(false);
       setAdvanced(false);
     }

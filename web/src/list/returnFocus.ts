@@ -26,9 +26,11 @@ export function takeReturnFocus(rows: readonly { id: Id }[]): Id | null {
   if (!pending) return null;
   const { removed } = pending;
   pending = null;
-  if (!opened || rows.length === 0) return null;
-  const at = rows.findIndex((r) => r.id === opened!.id);
-  if (!removed && at >= 0) return rows[at]!.id;
-  const rest = rows.filter((r) => r.id !== opened!.id);
-  return rest[Math.min(removed && at >= 0 ? at : opened.index, rest.length - 1)]?.id ?? null;
+  const current = opened;
+  if (!current || rows.length === 0) return null;
+  const at = rows.findIndex((r) => r.id === current.id);
+  const row = rows[at];
+  if (!removed && row) return row.id;
+  const rest = rows.filter((r) => r.id !== current.id);
+  return rest[Math.min(removed && at >= 0 ? at : current.index, rest.length - 1)]?.id ?? null;
 }

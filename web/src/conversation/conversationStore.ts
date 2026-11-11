@@ -416,7 +416,7 @@ export class ConversationStore {
         },
         { signal },
       );
-      list = res.list as BodyEmail[];
+      list = res.list;
     } catch (err) {
       if (isAbortError(err) || this.#disposed) {
         // Unmounted mid-way (or StrictMode's rehearsal): ask again next time.

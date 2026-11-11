@@ -67,9 +67,9 @@ describe("Labels (apply and remove)", () => {
   it("shows a label some of the conversations carry as indeterminate, and the rest unchecked", async () => {
     const { user } = await renderMenu(two());
     await user.click(screen.getByRole("button", { name: "Labels" }));
-    const work = (await screen.findByRole("checkbox", { name: /Work/ })) as HTMLInputElement;
+    const work = await screen.findByRole<HTMLInputElement>("checkbox", { name: /Work/ });
     expect(work.indeterminate).toBe(true);
-    expect((screen.getByRole("checkbox", { name: /Receipts/ }) as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByRole<HTMLInputElement>("checkbox", { name: /Receipts/ }).checked).toBe(false);
     // Only user labels: no Inbox, Trash...
     expect(screen.queryByRole("checkbox", { name: /Inbox/ })).toBeNull();
   });
@@ -78,7 +78,7 @@ describe("Labels (apply and remove)", () => {
     const onDone = vi.fn();
     const { mail, user } = await renderMenu(two(), { onDone });
     await user.click(screen.getByRole("button", { name: "Labels" }));
-    const work = (await screen.findByRole("checkbox", { name: /Work/ })) as HTMLInputElement;
+    const work = await screen.findByRole<HTMLInputElement>("checkbox", { name: /Work/ });
     await user.click(work);
     await waitFor(() => expect(boxes(mail, "2")).toEqual(["a", "i"]));
     expect(work.checked).toBe(true);
@@ -116,7 +116,7 @@ describe("Labels (apply and remove)", () => {
     await screen.findByRole("checkbox", { name: /Work/ });
     await user.type(screen.getByRole("textbox", { name: "Search labels" }), "Travel");
     await user.click(screen.getByRole("button", { name: "Create new" }));
-    expect((screen.getByLabelText("Label name") as HTMLInputElement).value).toBe("Travel");
+    expect(screen.getByLabelText<HTMLInputElement>("Label name").value).toBe("Travel");
     await user.click(screen.getByRole("button", { name: "Create and apply" }));
     await waitFor(() => expect(labels.getSnapshot().labels.some((l) => l.title === "Travel")).toBe(true));
     const travel = labels.getSnapshot().labels.find((l) => l.title === "Travel")!;
@@ -136,7 +136,7 @@ describe("Labels (apply and remove)", () => {
 
   it("is disabled with nothing selected", async () => {
     await renderMenu(two(), { ids: [] });
-    expect((screen.getByRole("button", { name: "Labels" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Labels" }).disabled).toBe(true);
   });
 });
 

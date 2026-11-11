@@ -172,7 +172,7 @@ function fakeCaller(initial: ContactCard[]): {
       throw new Error("not used");
     },
   };
-  return { caller: caller as unknown as MethodCaller, calls };
+  return { caller, calls };
 }
 
 describe("contact calls", () => {

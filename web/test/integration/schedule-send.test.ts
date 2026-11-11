@@ -6,7 +6,7 @@
 // is destroyed afterwards and the counts are checked against
 // dev/seed/manifest.json.
 
-import { buildDraftEmail, JmapClient, type Email, type Id, type Mailbox } from "@postern/jmap";
+import { buildDraftEmail, JmapClient, type Email, type Id } from "@postern/jmap";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BASE, basicAuth, live, manifest } from "../../../jmap/test/integration/live";
 import { saveDraft } from "../../src/send/drafts";
@@ -32,7 +32,7 @@ interface Roles {
 }
 
 async function rolesOf(client: JmapClient): Promise<Roles> {
-  const list = (await client.call("Mailbox/get", { ids: null })).list as Mailbox[];
+  const list = (await client.call("Mailbox/get", { ids: null })).list;
   const by = (role: string) => list.find((m) => m.role === role)!.id;
   return { inbox: by("inbox"), drafts: by("drafts"), sent: by("sent") };
 }
@@ -77,6 +77,7 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
     ).list;
     const seeded = manifest.accounts.alice.labels;
     for (const role of ["inbox", "drafts", "sent"] as const)
+      // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
       expect(list.find((m) => m.role === role)?.totalEmails).toBe(seeded[role]!.messages);
   });
 

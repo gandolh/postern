@@ -292,9 +292,10 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && shown.length === 1 && ready) {
+            const [only] = shown;
+            if (e.key === "Enter" && shown.length === 1 && only !== undefined && ready) {
               e.preventDefault();
-              void choose(shown[0]!);
+              void choose(only);
             }
           }}
         />

@@ -14,7 +14,6 @@ import {
   notifyNewMail,
   setNotifyAccount,
   subscribeDesktopNotifications,
-  type InboxMessage,
 } from "../notify";
 import { getRoute, navigate } from "../shell/router";
 import { TopBarStatus } from "../shell/status";
@@ -79,7 +78,7 @@ export function LiveHost() {
             { filter: { inMailbox: inbox }, sort: [{ property: "receivedAt", isAscending: false }], limit: 10 },
             { properties: [...NOTIFY_PROPERTIES] },
           );
-          const fresh = detector.observe(list as unknown as InboxMessage[]);
+          const fresh = detector.observe(list);
           if (notify) {
             notifyNewMail(fresh, {
               create: (title, options) => {

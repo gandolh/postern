@@ -96,7 +96,8 @@ class Parser {
     const parts: Node[] = [];
     if (root) parts.push(root);
     if (!this.#anywhere && exclude.length > 0) parts.push({ t: "cond", c: { inMailboxOtherThan: exclude } });
-    const filter = toFilter(parts.length === 1 ? parts[0]! : { t: "and", kids: parts });
+    const [only] = parts;
+    const filter = toFilter(parts.length === 1 && only !== undefined ? only : { t: "and", kids: parts });
 
     let scope: ParsedSearch["scope"] = "normal";
     if (!this.#anywhere && this.#named.size === 1) {
@@ -167,13 +168,14 @@ class Parser {
       }
       items.push(alternatives.length === 1 ? first : { t: "or", kids: alternatives });
     }
-    if (items.length === 0) return null;
+    const [only] = items;
+    if (only === undefined) return null;
     return or
       ? items.length === 1
-        ? items[0]!
+        ? only
         : { t: "or", kids: items }
       : items.length === 1
-        ? items[0]!
+        ? only
         : { t: "and", kids: items };
   }
 
@@ -378,8 +380,9 @@ function toFilter(node: Node): EmailFilter | null {
         if (node.t === "and" && "operator" in f && f.operator === "AND") kids.push(...f.conditions);
         else kids.push(f);
       }
-      if (kids.length === 0) return null;
-      if (kids.length === 1) return kids[0]!;
+      const [only] = kids;
+      if (only === undefined) return null;
+      if (kids.length === 1) return only;
       return { operator: node.t === "and" ? "AND" : "OR", conditions: kids };
     }
   }

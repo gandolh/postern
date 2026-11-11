@@ -155,7 +155,7 @@ function zoneOffset(zone: Zone, month: number, day: number): number | null {
   const sorted = [...zone.rules].sort((a, b) => key(a) - key(b));
   const now = month * 100 + day;
   const before = sorted.filter((r) => key(r) <= now);
-  return (before.at(-1) ?? sorted.at(-1))!.offsetMinutes;
+  return (before.at(-1) ?? sorted.at(-1))?.offsetMinutes ?? null;
 }
 
 function eventTime(line: Line | undefined, zones: ReadonlyMap<string, Zone>): EventTime | null {
@@ -236,7 +236,7 @@ export function parseInvite(ics: string): Invite | null {
     }
   }
   if (!event) return null;
-  const one = (name: string) => event!.find((l) => l.name === name);
+  const one = (name: string) => event.find((l) => l.name === name);
   const sequence = Number.parseInt(one("SEQUENCE")?.value ?? "0", 10);
   return {
     method,

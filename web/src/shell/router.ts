@@ -89,7 +89,7 @@ export interface ScheduledRoute {
 
 export type Route = MailRoute | SettingsRoute | ContactsRoute | ScheduledRoute;
 
-export const INBOX: SystemLabelRoute = Object.freeze({ kind: "system", view: "inbox" }) as SystemLabelRoute;
+export const INBOX: SystemLabelRoute = Object.freeze({ kind: "system", view: "inbox" });
 export const DEFAULT_SETTINGS_SECTION = "general";
 
 const IS_SYSTEM_VIEW = new Set<string>(SYSTEM_VIEWS);
@@ -113,10 +113,10 @@ type Opened = { ok: true; id?: string; messageId?: string } | { ok: false };
 function conversationFrom(segments: readonly string[]): Opened {
   if (segments.length === 0) return { ok: true };
   if (segments.length > 2) return { ok: false };
-  const id = decode(segments[0]!);
+  const id = decode(segments[0] ?? "");
   if (!id) return { ok: false };
   if (segments.length === 1) return { ok: true, id };
-  const messageId = decode(segments[1]!);
+  const messageId = decode(segments[1] ?? "");
   return messageId ? { ok: true, id, messageId } : { ok: false };
 }
 

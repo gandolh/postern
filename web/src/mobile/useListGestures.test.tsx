@@ -66,7 +66,7 @@ beforeEach(() => {
     width: 360,
     height: 80,
     toJSON() {},
-  } as DOMRect);
+  });
 });
 
 afterEach(() => {

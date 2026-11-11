@@ -169,7 +169,7 @@ export function signatureHtml(identity: Identity | undefined): string | null {
   const html = identity.htmlSignature?.trim();
   const text = identity.textSignature?.trim();
   if (!html && !text) return null;
-  const inner = html ? html : textToHtml(text as string);
+  const inner = html ? html : textToHtml(text);
   return `<div class="${SIGNATURE_CLASS}">-- <br>${inner}</div>`;
 }
 
@@ -515,7 +515,7 @@ export class ComposeSession {
   // ---- Editing ---------------------------------------------------------------------------
 
   setRecipients(field: RecipientField, list: readonly Recipient[]): void {
-    this.#edit({ [field]: list } as Partial<ComposeSnapshot>);
+    this.#edit({ [field]: list });
   }
 
   /** Add typed or pasted text as chips (valid and invalid). */
@@ -737,7 +737,7 @@ export class ComposeSession {
   #patchFile(list: "files" | "inline", key: string, patch: Partial<FileItem>): void {
     this.#set({
       [list]: this.#state[list].map((f) => (f.key === key ? { ...f, ...patch } : f)),
-    } as Partial<ComposeSnapshot>);
+    });
   }
 
   async #upload(file: File, item: FileItem, list: "files" | "inline"): Promise<void> {

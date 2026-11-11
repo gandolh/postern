@@ -143,6 +143,8 @@ function fontSize(el: Element, inherited: number): number {
         return n * FRAME_FONT_SIZE;
       case "%":
         return (n / 100) * inherited;
+      default:
+        break;
     }
   }
   const scale = HEADING_SCALE[tag];

@@ -70,7 +70,7 @@ describe("the hostile seed set", () => {
     const html = fixture.html;
     if (html === null) continue;
 
-    describe(fixture.slug, () => {
+    describe(`${fixture.slug}`, () => {
       const clean = sanitizeMessageHtml(html);
       const srcdoc = srcdocOf(clean);
       const doc = frameDoc(srcdoc);

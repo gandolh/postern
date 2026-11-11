@@ -8,7 +8,7 @@
 // Opening a message fetches at most MAX_INLINE_TOTAL_BYTES of them (each at
 // most MAX_INLINE_IMAGE_BYTES); the rest wait for the reader's "Load images".
 
-import { cidParts, isAbortError, normalizeCid, type DownloadParams, type EmailBodyPart, type Id } from "@postern/jmap";
+import { cidParts, isAbortError, normalizeCid, type DownloadParams, type EmailBodyPart } from "@postern/jmap";
 import { sniffRaster } from "./kind";
 
 /** Inline images larger than this are not fetched on open (a data: URL is held in memory twice). */
@@ -97,13 +97,14 @@ export async function cidPartsToInline(
   await Promise.all(
     chosen.map(async ([cid, part]) => {
       try {
-        const blob = await fetchBlob({ blobId: part.blobId as Id, name: part.name ?? cid, type: part.type }, signal);
+        const blob = await fetchBlob({ blobId: part.blobId, name: part.name ?? cid, type: part.type }, signal);
         const url = rasterDataUrl(new Uint8Array(await blob.arrayBuffer()));
         if (url) {
           out.urls.set(cid, url);
           out.cids.add(cid);
         }
       } catch (err) {
+        // eslint-disable-next-line no-console -- A failed inline image has no UI of its own to report through.
         if (!isAbortError(err)) console.warn("Inline image not loaded", err);
       }
     }),

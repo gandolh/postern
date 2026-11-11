@@ -145,9 +145,9 @@ export function useImageAllowance(account: string): {
   allow: (sender: string) => void;
 } {
   const v = useSyncExternalStore(subscribe, getVersion, getVersion);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allows = useCallback(
     (sender: string, authResults: readonly string[]) => allowsImagesFrom(account, sender, authResults),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [account, v],
   );
   const allow = useCallback((sender: string) => allowImagesFrom(account, sender), [account]);

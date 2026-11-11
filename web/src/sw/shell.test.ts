@@ -26,7 +26,7 @@ const INDEX = '<!doctype html><title>Postern</title><script type="module" src="/
 const APP_JS = "console.log('postern')";
 const FORGED = "<!doctype html><title>Postern</title><script>window.__POSTERN_POISONED = true</script>";
 
-const bytes = (text: string) => enc.encode(text).buffer as ArrayBuffer;
+const bytes = (text: string) => enc.encode(text).buffer;
 
 class FakeCache {
   readonly entries = new Map<string, Response>();

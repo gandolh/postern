@@ -54,7 +54,7 @@ function Identities() {
           <select
             id={defaultId}
             className="input settings-select"
-            value={prefs.defaultIdentityId ?? identities[0]!.id}
+            value={prefs.defaultIdentityId ?? identities[0]?.id ?? ""}
             onChange={(e) => setPrefs({ defaultIdentityId: e.target.value })}
           >
             {identities.map((i) => (

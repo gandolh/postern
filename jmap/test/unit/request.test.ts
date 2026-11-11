@@ -216,7 +216,7 @@ describe("splitting to fit the limits", () => {
     let n = 0;
     apiAnswers(server, (name, args) => {
       n++;
-      const updated = Object.fromEntries(Object.keys((args["update"] ?? {}) as object).map((id) => [id, null]));
+      const updated = Object.fromEntries(Object.keys(args["update"] ?? {}).map((id) => [id, null]));
       return [
         name,
         { accountId: "b", oldState: `s${n - 1}`, newState: `s${n}`, updated, destroyed: args["destroy"] ?? [] },

@@ -16,7 +16,6 @@ import {
   threadingHeaders,
   type Email,
   type Id,
-  type Mailbox,
 } from "@postern/jmap";
 import { createHash } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -43,7 +42,7 @@ interface Roles {
 }
 
 async function rolesOf(client: JmapClient): Promise<Roles> {
-  const list = (await client.call("Mailbox/get", { ids: null })).list as Mailbox[];
+  const list = (await client.call("Mailbox/get", { ids: null })).list;
   const by = (role: string) => list.find((m) => m.role === role)!.id;
   return { inbox: by("inbox"), drafts: by("drafts"), sent: by("sent") };
 }
@@ -111,6 +110,7 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
     aliceIdentity = (await a.identity.get()).list.find((i) => i.email === alice.email)!.id;
     bobIdentity = (await b.identity.get()).list.find((i) => i.email === bob.email)!.id;
     const start = await counts(a, aRoles);
+    // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
     expect(start["inbox"]).toEqual({
       messages: manifest.accounts.alice.labels["inbox"]!.messages,
       threads: manifest.accounts.alice.labels["inbox"]!.threads,
@@ -130,9 +130,13 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       if (subs.list.length) await client.call("EmailSubmission/set", { destroy: subs.list.map((s) => s.id) });
       const now = await counts(client, roles);
       const seeded = manifest.accounts[account].labels;
+      // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
       expect(now["inbox"]?.messages).toBe(seeded["inbox"]!.messages);
+      // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
       expect(now["inbox"]?.threads).toBe(seeded["inbox"]!.threads);
+      // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
       expect(now["drafts"]?.messages).toBe(seeded["drafts"]!.messages);
+      // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
       expect(now["sent"]?.messages).toBe(seeded["sent"]!.messages);
     }
   });

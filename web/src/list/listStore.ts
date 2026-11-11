@@ -406,10 +406,10 @@ export class ListStore {
   }
 
   async #getMessages(ids: Id[]): Promise<GetResponse<RowMessage>> {
-    return (await this.#caller.call("Email/get", {
+    return await this.#caller.call("Email/get", {
       ids,
       properties: [...MESSAGE_PROPERTIES],
-    })) as unknown as GetResponse<RowMessage>;
+    });
   }
 
   /** Fetch rows that came into the list, and conversations that gained a message. One request. */
@@ -463,7 +463,7 @@ export class ListStore {
         : null;
       const res = await r.send();
       const got = res.get(g);
-      this.#messages.put(got as unknown as GetResponse<RowMessage>);
+      this.#messages.put(got);
       this.#addRows(got.list, [], s && !res.error(s) ? res.get(s).list : []);
     }
   }

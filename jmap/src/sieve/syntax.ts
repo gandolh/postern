@@ -28,7 +28,7 @@ export function tokenize(source: string): Token[] {
   const src = source.replace(/^\uFEFF/, "");
   const n = src.length;
   while (i < n) {
-    const ch = src[i]!;
+    const ch = src.charAt(i);
     if (ch === "\n") {
       line++;
       i++;
@@ -47,10 +47,10 @@ export function tokenize(source: string): Token[] {
       i++;
       for (;;) {
         if (i >= n) throw new SieveSyntaxError("A string is not closed.", start);
-        const c = src[i]!;
+        const c = src.charAt(i);
         if (c === "\\") {
           if (i + 1 >= n) throw new SieveSyntaxError("A string is not closed.", start);
-          raw += src[i + 1]!;
+          raw += src.charAt(i + 1);
           if (src[i + 1] === "\n") line++;
           i += 2;
         } else if (c === '"') {
@@ -69,16 +69,18 @@ export function tokenize(source: string): Token[] {
     } else if (ch === ":") {
       const m = /^:([A-Za-z_][A-Za-z0-9_]*)/.exec(src.slice(i, i + 200));
       if (!m) throw new SieveSyntaxError("A colon not followed by a tag name.", line);
-      tokens.push({ kind: "tag", value: m[1]!.toLowerCase(), line });
+      tokens.push({ kind: "tag", value: (m[1] ?? "").toLowerCase(), line });
       i += m[0].length;
     } else if (/[0-9]/.test(ch)) {
-      const m = /^([0-9]+)([KMGkmg]?)/.exec(src.slice(i, i + 40))!;
+      const m = /^([0-9]+)([KMGkmg]?)/.exec(src.slice(i, i + 40));
+      if (!m) throw new SieveSyntaxError("A malformed number.", line);
       const after = src[i + m[0].length];
       if (after !== undefined && /[A-Za-z0-9_]/.test(after)) throw new SieveSyntaxError("A malformed number.", line);
-      tokens.push({ kind: "number", value: Number(m[1]), unit: m[2]!.toUpperCase() as "" | "K", line });
+      tokens.push({ kind: "number", value: Number(m[1]), unit: (m[2] ?? "").toUpperCase() as "" | "K", line });
       i += m[0].length;
     } else if (/[A-Za-z_]/.test(ch)) {
-      const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(src.slice(i, i + 200))!;
+      const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(src.slice(i, i + 200));
+      if (!m) throw new SieveSyntaxError(`An unexpected character ${JSON.stringify(ch)}.`, line);
       if (m[0].toLowerCase() === "text" && src[i + m[0].length] === ":") {
         throw new SieveSyntaxError("A multi-line text: string, which Postern never writes.", line);
       }

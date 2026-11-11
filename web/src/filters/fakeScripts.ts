@@ -20,7 +20,7 @@ export class FakeScripts implements SieveIo {
     return this.scripts.map(({ source: _source, ...s }) => ({ ...s }));
   }
   async read(script: SieveScript) {
-    return this.scripts.find((s) => s.id === script.id)!.source;
+    return this.#byId(script.id).source;
   }
   async validate() {
     return this.invalid ? { type: "invalidScript", description: this.invalid } : null;
@@ -29,7 +29,7 @@ export class FakeScripts implements SieveIo {
     this.saves.push(args);
     let id = args.id;
     if (id === null) id = this.add(args.name, args.source);
-    else this.scripts.find((s) => s.id === id)!.source = args.source;
+    else this.#byId(id).source = args.source;
     if (args.activate) await this.activate(id);
     return id;
   }
@@ -40,6 +40,13 @@ export class FakeScripts implements SieveIo {
     return this.scripts.find((s) => s.isActive)?.name ?? null;
   }
   source(name: string) {
-    return this.scripts.find((s) => s.name === name)!.source;
+    const script = this.scripts.find((s) => s.name === name);
+    if (!script) throw new Error(`No script named ${name}.`);
+    return script.source;
+  }
+  #byId(id: string) {
+    const script = this.scripts.find((s) => s.id === id);
+    if (!script) throw new Error(`No script with id ${id}.`);
+    return script;
   }
 }

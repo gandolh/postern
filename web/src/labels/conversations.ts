@@ -5,7 +5,7 @@
 // anything else (a conversation open without its list, say) is fetched.
 
 import type { Id, MethodCaller } from "@postern/jmap";
-import type { Conversation, ConversationMessage, ConversationScope, MailboxRoles } from "../actions/conversation";
+import type { Conversation, ConversationScope, MailboxRoles } from "../actions/conversation";
 import { getActiveList } from "../list/registry";
 import type { LabelRoute } from "../shell/router";
 
@@ -88,7 +88,7 @@ export async function fetchConversations(caller: MethodCaller, threadIds: readon
                 mailboxIds: e.mailboxIds,
                 keywords: e.keywords ?? {},
                 receivedAt: e.receivedAt,
-              } as ConversationMessage,
+              },
             ]
           : [];
       });

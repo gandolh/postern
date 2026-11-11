@@ -62,7 +62,7 @@ function session(maxDelayedSend: number): SessionObject {
     uploadUrl: "http://fake/upload/{accountId}/",
     eventSourceUrl: "http://fake/eventsource/?types={types}&closeafter={closeafter}&ping={ping}",
     state: "session-0",
-  } as unknown as SessionObject;
+  };
 }
 
 function applyPatch(target: StoredEmail, patch: Record<string, unknown>): void {
@@ -204,7 +204,7 @@ export class ComposeTestServer {
       case "Mailbox/get": {
         const list = Object.entries(MAILBOXES).map(([role, id], i) => ({
           id,
-          name: role[0]!.toUpperCase() + role.slice(1),
+          name: role.charAt(0).toUpperCase() + role.slice(1),
           parentId: null,
           role,
           sortOrder: i,

@@ -102,7 +102,7 @@ describe("Block sender", () => {
     };
     await user.click(screen.getByRole("button", { name: "menu" }));
     await user.click(screen.getByRole("button", { name: "Block" }));
-    await screen.findByText("Couldn't block bob@postern.test: the script store is full");
+    expect(await screen.findByText("Couldn't block bob@postern.test: the script store is full")).toBeTruthy();
   });
 
   it("cancel does nothing", async () => {

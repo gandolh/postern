@@ -14,7 +14,7 @@ import { onBeforeSignOut } from "./beforeSignOut";
 import { browserPush } from "./browser";
 import { setSignedIn } from "./register";
 import { verificationInbox } from "./verification";
-import { EMAIL_PUSH_PROPERTIES, WebPush, type PushServer } from "./webPush";
+import { EMAIL_PUSH_PROPERTIES, WebPush } from "./webPush";
 
 export const WEB_PUSH_VAPID = "urn:ietf:params:jmap:webpush-vapid";
 export const EMAIL_PUSH = "urn:ietf:params:jmap:emailpush";
@@ -45,7 +45,7 @@ function makeWebPush(client: JmapClient, username: string, labels: LabelsStore):
   return new WebPush({
     username,
     vapidKey: vapidKeyOf(client),
-    server: client.pushSubscription as PushServer,
+    server: client.pushSubscription,
     browser: browserPush,
     inbox: verificationInbox,
     emailPush: () => emailPushConfig(client, labels),

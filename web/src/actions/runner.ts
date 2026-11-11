@@ -251,6 +251,7 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     try {
       plan = typeof make === "function" ? make() : make;
     } catch (err) {
+      // eslint-disable-next-line no-console -- The failure is toasted; the error itself is kept for the developer console.
       console.error(err);
       toast(copy.failed(1, noun));
       return "failed";

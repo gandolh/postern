@@ -21,7 +21,7 @@ export interface SettingsRoutesProps {
   section: string;
 }
 
-const SECTIONS: readonly { id: string; title: string }[] = [
+const SECTIONS: readonly [{ id: string; title: string }, ...{ id: string; title: string }[]] = [
   { id: "general", title: "General" },
   { id: "accounts", title: "Accounts" },
   { id: "labels", title: "Labels" },
@@ -29,7 +29,7 @@ const SECTIONS: readonly { id: string; title: string }[] = [
 ];
 
 export function SettingsRoutes({ section }: SettingsRoutesProps) {
-  const current = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0]!;
+  const current = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0];
   return (
     <section className="shell-page" aria-labelledby="settings-title">
       <PrefsHost />

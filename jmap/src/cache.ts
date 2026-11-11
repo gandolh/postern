@@ -260,11 +260,7 @@ export async function syncObjects<T extends { id: Id }>(
   const properties = options.properties;
 
   if (store.state === null) {
-    const res = (await caller.call(
-      getName,
-      { ids: null, properties } as CallArgs<MethodName>,
-      options,
-    )) as unknown as GetResponse<T>;
+    const res = (await caller.call(getName, { ids: null, properties }, options)) as unknown as GetResponse<T>;
     store.reset(res);
     return { status: "changed", state: res.state, created: res.list.map((o) => o.id), updated: [], destroyed: [] };
   }
@@ -278,7 +274,7 @@ export async function syncObjects<T extends { id: Id }>(
     try {
       changes = (await caller.call(
         changesName,
-        { sinceState: store.state, maxChanges: options.maxChanges ?? 256 } as CallArgs<MethodName>,
+        { sinceState: store.state, maxChanges: options.maxChanges ?? 256 },
         options,
       )) as unknown as ChangesResponse;
     } catch (err) {
@@ -289,11 +285,7 @@ export async function syncObjects<T extends { id: Id }>(
     const wanted = new Set(store.applyChanges(changes).fetch);
     if (options.includeCreated === false) for (const id of changes.created) wanted.delete(id);
     if (wanted.size > 0) {
-      const res = (await caller.call(
-        getName,
-        { ids: [...wanted], properties } as CallArgs<MethodName>,
-        options,
-      )) as unknown as GetResponse<T>;
+      const res = (await caller.call(getName, { ids: [...wanted], properties }, options)) as unknown as GetResponse<T>;
       store.put(res);
     }
     created.push(...changes.created);
@@ -351,7 +343,7 @@ export async function syncQuery<M extends QueryMethod>(
   try {
     res = (await caller.call(
       changesMethod,
-      { ...rest, sinceQueryState: queryState, upToId } as CallArgs<MethodName>,
+      { ...rest, sinceQueryState: queryState, upToId },
       options,
     )) as unknown as QueryChangesResponse;
   } catch (err) {

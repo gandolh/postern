@@ -43,6 +43,7 @@ export function publishMailChange(change: MailChange): void {
     try {
       listener(change);
     } catch (err) {
+      // eslint-disable-next-line no-console -- A throwing listener must not stop the others; the error has nowhere else to go.
       console.error(err);
     }
   }

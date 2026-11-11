@@ -49,6 +49,7 @@ describe.skipIf(!live)("against the dev Stalwart: the list and archive", () => {
       if (m) roles[role] = m.id;
     }
     work = mailboxes.find((m) => m.name === "Work" && m.parentId === null)!.id;
+    // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
     expect(await inboxThreads()).toBe(manifest.accounts.alice.labels["inbox"]!.threads);
     clearUndo();
   });
@@ -64,6 +65,7 @@ describe.skipIf(!live)("against the dev Stalwart: the list and archive", () => {
         update[id] = { mailboxIds: was.mailboxIds, keywords: was.keywords };
     }
     if (Object.keys(update).length) await client.call("Email/set", { update });
+    // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
     expect(await inboxThreads()).toBe(manifest.accounts.alice.labels["inbox"]!.threads);
   });
 

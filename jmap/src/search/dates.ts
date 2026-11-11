@@ -5,13 +5,13 @@ export function parseSearchDate(value: string, utcOffsetMinutes = 0): Date | nul
   let y: number, m: number, d: number;
   let match: RegExpExecArray | null;
   if ((match = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(value))) {
-    y = +match[1]!;
-    m = +match[2]!;
-    d = +match[3]!;
+    y = Number(match[1]);
+    m = Number(match[2]);
+    d = Number(match[3]);
   } else if ((match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value))) {
-    m = +match[1]!;
-    d = +match[2]!;
-    y = +match[3]!;
+    m = Number(match[1]);
+    d = Number(match[2]);
+    y = Number(match[3]);
   } else if (/^\d{9,11}$/.test(value)) {
     return new Date(Number(value) * 1000);
   } else {
@@ -27,7 +27,7 @@ export function subtractAge(now: Date, value: string): Date | null {
   const match = /^(\d{1,4})([dmy])$/i.exec(value);
   if (!match) return null;
   const count = Number(match[1]);
-  const unit = match[2]!.toLowerCase();
+  const unit = (match[2] ?? "").toLowerCase();
   if (unit === "d") return new Date(now.getTime() - count * 86_400_000);
   const months = unit === "y" ? count * 12 : count;
   const result = new Date(now.getTime());
@@ -43,7 +43,7 @@ export function subtractAge(now: Date, value: string): Date | null {
 export function parseSize(value: string): number | null {
   const match = /^(\d+(?:\.\d+)?)([kmg]?)b?$/i.exec(value);
   if (!match) return null;
-  const unit = match[2]!.toLowerCase();
+  const unit = (match[2] ?? "").toLowerCase();
   const factor = unit === "k" ? 1024 : unit === "m" ? 1024 ** 2 : unit === "g" ? 1024 ** 3 : 1;
   return Math.round(Number(match[1]) * factor);
 }

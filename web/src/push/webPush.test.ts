@@ -65,6 +65,7 @@ class FakeServer implements PushServer {
   calls: string[] = [];
   async get(args: { properties: (keyof PushSubscription)[] }) {
     this.calls.push("get");
+    // eslint-disable-next-line vitest/no-standalone-expect -- a fake server's own check on what the code under test sent.
     expect(args.properties).not.toContain("url");
     return {
       list: [...this.subs.values()].map(({ id, deviceClientId, types, emailPush, expires }) => ({
@@ -388,6 +389,8 @@ describe("VerificationInbox", () => {
     vi.useFakeTimers();
     const inbox = new VerificationInbox();
     const waiting = inbox.waitFor("s1", 500);
+    // The rejection handler must be attached before the timer fires and awaited after, so the assertion is held, not awaited here.
+    // eslint-disable-next-line vitest/valid-expect
     const check = expect(waiting).rejects.toThrow(/No verification code/);
     await vi.advanceTimersByTimeAsync(500);
     await check;

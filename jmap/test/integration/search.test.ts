@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   createLabelResolver,
   findByRole,
-  JmapClient,
+  type JmapClient,
   mailboxPath,
   parseSearch,
   type EmailFilter,

@@ -402,10 +402,7 @@ describe("messages that arrive while the conversation is open", () => {
   it("open, and are marked read at once (as Gmail does), without an undo", async () => {
     const { mail } = await renderConversation(T1);
     await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
-    await arrive(
-      mail,
-      message("e4", "T1", "2026-10-04T10:00:00Z", { text: "A NEW REPLY" }, { from: BOB, keywords: {} }),
-    );
+    arrive(mail, message("e4", "T1", "2026-10-04T10:00:00Z", { text: "A NEW REPLY" }, { from: BOB, keywords: {} }));
     expect(await screen.findByText(/A NEW REPLY/)).toBeTruthy();
     await waitFor(() => expect(mail.emails.get("e4")!.keywords["$seen"]).toBe(true));
     expect(peekUndo()).toBeNull();
@@ -415,10 +412,7 @@ describe("messages that arrive while the conversation is open", () => {
     const { mail } = await renderConversation(T1);
     await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
     setVisibility("hidden");
-    await arrive(
-      mail,
-      message("e5", "T1", "2026-10-05T10:00:00Z", { text: "WHILE AWAY" }, { from: BOB, keywords: {} }),
-    );
+    arrive(mail, message("e5", "T1", "2026-10-05T10:00:00Z", { text: "WHILE AWAY" }, { from: BOB, keywords: {} }));
     expect(await screen.findByText(/WHILE AWAY/)).toBeTruthy();
     await new Promise((r) => setTimeout(r, 50));
     expect(mail.emails.get("e5")!.keywords["$seen"]).toBeUndefined();
@@ -437,7 +431,7 @@ describe("a conversation opened from search results", () => {
     const gate = new Promise<void>((resolve) => (release = resolve));
     const fetch: FetchLike = async (input, init) => {
       if (typeof init?.body === "string" && init.body.includes('"Mailbox/get"')) await gate;
-      return mail.fetch(input, init as never);
+      return mail.fetch(input, init);
     };
     const client = new JmapClient({ baseUrl: "http://fake", auth: { authorization: () => "Basic test" }, fetch });
     await client.connect();

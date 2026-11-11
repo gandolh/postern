@@ -206,7 +206,7 @@ console.log("Verifying against dev/seed/manifest.json ...");
 let manifest: Manifest;
 try {
   const mod = await import("./seed/manifest.json", { with: { type: "json" } });
-  manifest = mod.default as Manifest;
+  manifest = mod.default;
 } catch {
   console.error("error: dev/seed/manifest.json is missing. Generate it with `node dev/seed.ts --write-manifest`.");
   process.exit(1);

@@ -2,11 +2,11 @@
 // sanitiser's tests and the security suite's. Vite inlines the files (?raw), so this
 // module must only be imported from tests: never from app code.
 
-const files = import.meta.glob("../../../dev/seed/hostile/*.eml", {
+const files = import.meta.glob<string>("../../../dev/seed/hostile/*.eml", {
   query: "?raw",
   import: "default",
   eager: true,
-}) as Record<string, string>;
+});
 
 export interface FixturePart {
   type: string;

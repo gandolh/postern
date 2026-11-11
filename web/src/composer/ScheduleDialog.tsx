@@ -42,7 +42,7 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
   const [picking, setPicking] = useState(false);
   /** Back from the picker: focus goes to the first choice again. */
   const [returned, setReturned] = useState(false);
-  const tomorrow = presets[0]!.at;
+  const tomorrow = presets[0]?.at ?? opened;
   const [date, setDate] = useState(dateValue(tomorrow));
   const [time, setTime] = useState("08:00");
   const [error, setError] = useState<string | null>(null);

@@ -191,7 +191,7 @@ describe("the sign-in page", () => {
     );
     await signIn(user, "wrong password");
     expect((await screen.findByRole("alert")).textContent).toMatch(/^Wrong email or password\. Try again\./);
-    expect((screen.getByLabelText("Password") as HTMLInputElement).value).toBe("");
+    expect(screen.getByLabelText<HTMLInputElement>("Password").value).toBe("");
     await new Promise((r) => setTimeout(r, 100));
     expect(server.signInPosts()).toHaveLength(1);
   });
@@ -242,7 +242,7 @@ describe("the sign-in page", () => {
     await signIn(user);
     expect((await screen.findByRole("alert")).textContent).toMatch(message);
     // Only a rejection empties the password.
-    expect((screen.getByLabelText("Password") as HTMLInputElement).value).toBe(PASSWORD);
+    expect(screen.getByLabelText<HTMLInputElement>("Password").value).toBe(PASSWORD);
   });
 });
 

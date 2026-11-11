@@ -54,9 +54,9 @@ function strings(arg: Argument | undefined, at: { line: number }): string[] {
 }
 
 function rawIs(arg: Argument | undefined, ...values: string[]): boolean {
-  if (arg?.kind === "string") return values.length === 1 && arg.raw.toLowerCase() === values[0]!.toLowerCase();
+  if (arg?.kind === "string") return values.length === 1 && arg.raw.toLowerCase() === values[0]?.toLowerCase();
   if (arg?.kind === "list")
-    return arg.raws.length === values.length && arg.raws.every((r, i) => r.toLowerCase() === values[i]!.toLowerCase());
+    return arg.raws.length === values.length && arg.raws.every((r, i) => r.toLowerCase() === values[i]?.toLowerCase());
   return false;
 }
 
@@ -70,7 +70,8 @@ function setTest(test: Test | undefined): { name: string; negated: boolean } | n
   if (test.name !== "string" || shape(test.args) !== ":is S S" || test.tests.length > 0) return null;
   const [, v, one] = test.args as [Argument, { raw: string }, { raw: string }];
   const m = /^\$\{([a-z0-9_]+)\}$/.exec(v.raw);
-  return m && one.raw === "1" ? { name: m[1]!, negated: false } : null;
+  const name = m?.[1];
+  return name !== undefined && one.raw === "1" ? { name, negated: false } : null;
 }
 
 // ---- Criteria --------------------------------------------------------------
@@ -140,8 +141,8 @@ function readCriterion(test: Test, c: FilterCriteria, seen: Set<string>): void {
   }
   // not anyof (header :contains "subject" L, body :text :contains L): "doesn't have".
   if (test.name === "not" && test.args.length === 0 && test.tests.length === 1) {
-    const inner = test.tests[0]!;
-    if (inner.name === "anyof" && inner.args.length === 0 && inner.tests.length === 2) {
+    const inner = test.tests[0];
+    if (inner?.name === "anyof" && inner.args.length === 0 && inner.tests.length === 2) {
       const [h, b] = inner.tests as [Test, Test];
       const hs = shape(h.args);
       if (
@@ -229,8 +230,8 @@ function isSpecialFileinto(cmd: Command | undefined, use: string, flags: string 
   const expected = flags === null ? ":specialuse S S" : ":flags S :specialuse S S";
   if (shape(cmd.args) !== expected) return false;
   const args = cmd.args as { raw: string }[];
-  if (flags !== null && args[1]!.raw !== flags) return false;
-  return args[flags === null ? 1 : 3]!.raw === use;
+  if (flags !== null && args[1]?.raw !== flags) return false;
+  return args[flags === null ? 1 : 3]?.raw === use;
 }
 
 function isPlain(cmd: Command | undefined, name: string): boolean {
@@ -266,13 +267,13 @@ export function parseFilterScript(source: string): FilterSet {
   const at = () => commands[i];
 
   // require [...];
-  if (at()?.name === "require") {
-    const r = at()!;
+  const r = at();
+  if (r?.name === "require") {
     if (
       r.block !== null ||
       r.tests.length > 0 ||
       r.args.length !== 1 ||
-      (r.args[0]!.kind !== "list" && r.args[0]!.kind !== "string")
+      (r.args[0]?.kind !== "list" && r.args[0]?.kind !== "string")
     )
       fail("A malformed require.", r);
     i++;
@@ -280,8 +281,7 @@ export function parseFilterScript(source: string): FilterSet {
 
   // State: set "postern_..." ""; and set "postern_dollar" "$";
   const declared = new Set<string>();
-  while (at()?.name === "set" && at()!.block === null) {
-    const s = at()!;
+  for (let s = at(); s?.name === "set" && s.block === null; s = at()) {
     const name = shape(s.args) === "S S" ? (s.args[0] as { raw: string }).raw : "";
     const value = shape(s.args) === "S S" ? (s.args[1] as { raw: string }).raw : null;
     const ok =
@@ -315,8 +315,8 @@ export function parseFilterScript(source: string): FilterSet {
 
   // Filters.
   const pending: PendingFilter[] = [];
-  while (at() && isFilterBlock(at()!)) {
-    pending.push(readFilterBlock(at()!, pending.length + 1));
+  for (let cmd = at(); cmd && isFilterBlock(cmd); cmd = at()) {
+    pending.push(readFilterBlock(cmd, pending.length + 1));
     i++;
   }
   if (pending.length > 0 && !declared.has(VAR.skip)) fail("The filters' state variables are missing.");
@@ -326,8 +326,7 @@ export function parseFilterScript(source: string): FilterSet {
   const forwards = new Map<number, string>();
   let sawFinal = false;
   let sawSpam = false;
-  while (at() && at()!.name === "if" && !sawFinal) {
-    const cmd = at()!;
+  for (let cmd = at(); cmd?.name === "if" && !sawFinal; cmd = at()) {
     const cond = cmd.tests[0];
     const v = setTest(cond);
     if (v && !v.negated && v.name === VAR.delete) {
@@ -345,9 +344,9 @@ export function parseFilterScript(source: string): FilterSet {
       setTest(cond.tests[0])?.name === VAR.nospam &&
       setTest(cond.tests[0])?.negated
     ) {
-      const spam = cond.tests[1]!;
+      const spam = cond.tests[1];
       const ok =
-        spam.name === "spamtest" &&
+        spam?.name === "spamtest" &&
         shape(spam.args) === ":percent :value S :comparator S S" &&
         (spam.args[2] as { raw: string }).raw === "ge" &&
         (spam.args[4] as { raw: string }).raw === "i;ascii-numeric" &&
@@ -366,15 +365,17 @@ export function parseFilterScript(source: string): FilterSet {
       const n = Number(v.name.slice("postern_label_".length));
       const b = cmd.block ?? [];
       const f = b[0];
+      const g = b[1];
       if (
         b.length !== 2 ||
         !f ||
         f.name !== "fileinto" ||
         shape(f.args) !== ":mailboxid S S" ||
-        b[1]!.name !== "set" ||
-        shape(b[1]!.args) !== "S S" ||
-        (b[1]!.args[0] as { raw: string }).raw !== VAR.filed ||
-        (b[1]!.args[1] as { raw: string }).raw !== "1"
+        !g ||
+        g.name !== "set" ||
+        shape(g.args) !== "S S" ||
+        (g.args[0] as { raw: string }).raw !== VAR.filed ||
+        (g.args[1] as { raw: string }).raw !== "1"
       ) {
         fail("A label rule was changed.", cmd);
       }
@@ -430,8 +431,7 @@ export function parseFilterScript(source: string): FilterSet {
     fail("Delivery rules without filters.");
 
   // include :personal :optional "name";
-  while (at()?.name === "include") {
-    const inc = at()!;
+  for (let inc = at(); inc?.name === "include"; inc = at()) {
     if (inc.block !== null || inc.tests.length > 0 || shape(inc.args) !== ":personal :optional S")
       fail("An include Postern doesn't write.", inc);
     const name = text((inc.args[2] as { raw: string }).raw, inc);
@@ -439,20 +439,21 @@ export function parseFilterScript(source: string): FilterSet {
     set.includes.push(name);
     i++;
   }
-  if (i < commands.length) fail(`A command Postern doesn't write here (${commands[i]!.name}).`, commands[i]);
+  const rest = commands[i];
+  if (rest) fail(`A command Postern doesn't write here (${rest.name}).`, rest);
 
   pending.forEach((p, index) => {
     const n = index + 1;
     if (p.wantsLabel) {
       const label = labels.get(n);
       if (!label) fail(`Filter ${n} applies a label but has no label rule.`);
-      p.filter.actions.label = label!;
+      p.filter.actions.label = label;
       labels.delete(n);
     }
     if (p.wantsForward) {
       const to = forwards.get(n);
       if (to === undefined) fail(`Filter ${n} forwards but has no forwarding rule.`);
-      p.filter.actions.forwardTo = to!;
+      p.filter.actions.forwardTo = to;
       forwards.delete(n);
     }
     set.filters.push(p.filter);

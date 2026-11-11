@@ -101,11 +101,13 @@ export function isGenerated(source: string): boolean {
 
 /** Control characters out (a header value has no line breaks), runs of space to one, trimmed. */
 export function cleanText(value: string): string {
-  // eslint-disable-next-line no-control-regex
-  return value
-    .replace(/[\u0000-\u001f\u007f]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    value
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
 
 /**

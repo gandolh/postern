@@ -121,6 +121,8 @@ describe("the navigation", () => {
     expect(within(nav).getByRole("button", { name: "Less" })).toBeTruthy();
   });
 
+  // A smoke test: the click must not throw.
+  // eslint-disable-next-line vitest/expect-expect
   it("calls the composer from Compose", async () => {
     const user = userEvent.setup();
     renderShell(session(loaded));
@@ -282,7 +284,9 @@ describe("the toast", () => {
       );
       act(() => screen.getByRole("button", { name: "Go" }).click());
       expect(screen.getByText("Saved")).toBeTruthy();
-      act(() => vi.advanceTimersByTime(1001));
+      act(() => {
+        vi.advanceTimersByTime(1001);
+      });
       expect(screen.queryByText("Saved")).toBeNull();
     } finally {
       vi.useRealTimers();

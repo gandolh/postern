@@ -203,7 +203,8 @@ export class KeyEngine {
     for (const shortcut of SHORTCUTS) {
       if (shortcut.external) continue;
       for (const keys of shortcut.keys) {
-        const first = keys[0]!;
+        const [first] = keys;
+        if (first === undefined) continue;
         this.firstKeys.set(first, [...(this.firstKeys.get(first) ?? []), shortcut]);
       }
     }

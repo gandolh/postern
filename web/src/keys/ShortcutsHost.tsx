@@ -30,7 +30,7 @@ interface MenuState {
 function currentLabelRoute(): LabelRoute | null {
   const route = getRoute();
   if (!isMailRoute(route) || route.kind === "search") return null;
-  return withoutConversation(route) as LabelRoute;
+  return withoutConversation<LabelRoute>(route);
 }
 
 /** `g` then a letter: a system view. */

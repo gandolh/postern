@@ -8,7 +8,7 @@
 // never opened in a composer, inline or in a window, so an edit cannot make a
 // second message while the server still holds the first.
 
-import { type Id, type Identity, type JmapClient } from "@postern/jmap";
+import type { Id, Identity, JmapClient } from "@postern/jmap";
 import { publishMailChange, type MailChange } from "../actions/bus";
 import { DRAFT } from "../actions/conversation";
 import { isQuietError } from "../actions/runner";

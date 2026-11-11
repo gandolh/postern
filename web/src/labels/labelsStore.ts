@@ -225,7 +225,10 @@ export function buildLabels(
 
   const flatten = (nodes: readonly LabelNode[]): Label[] => nodes.flatMap((n) => [n.label, ...flatten(n.children)]);
   const ordered = [
-    ...SYSTEM_VIEWS.flatMap((v) => (systemByView.get(v) ? [systemByView.get(v)!] : [])),
+    ...SYSTEM_VIEWS.flatMap((v) => {
+      const system = systemByView.get(v);
+      return system ? [system] : [];
+    }),
     ...flatten(tree),
     ...flatten(hidden),
   ];

@@ -38,7 +38,7 @@ export function tokenize(input: string): Tokenized {
     let text = "";
     let closed = false;
     while (i < n) {
-      const ch = input[i]!;
+      const ch = input.charAt(i);
       if (ch === '"') {
         closed = true;
         i++;
@@ -52,7 +52,7 @@ export function tokenize(input: string): Tokenized {
   }
 
   while (i < n) {
-    const ch = input[i]!;
+    const ch = input.charAt(i);
     if (SPACE.test(ch)) {
       i++;
       continue;
@@ -77,7 +77,7 @@ export function tokenize(input: string): Tokenized {
       i++;
       continue;
     }
-    if (ch === "-" && i + 1 < n && !SPACE.test(input[i + 1]!) && input[i + 1] !== "-") {
+    if (ch === "-" && i + 1 < n && !SPACE.test(input.charAt(i + 1)) && input[i + 1] !== "-") {
       tokens.push({ kind: "neg" });
       i++;
       continue;
@@ -95,7 +95,7 @@ export function tokenize(input: string): Tokenized {
     }
     // A word: up to a space, a bracket, or (after `name:`) the start of a quote.
     const start = i;
-    while (i < n && !SPACE.test(input[i]!) && !STOPS.has(input[i]!)) {
+    while (i < n && !SPACE.test(input.charAt(i)) && !STOPS.has(input.charAt(i))) {
       if (input[i] === '"') break;
       i++;
     }
