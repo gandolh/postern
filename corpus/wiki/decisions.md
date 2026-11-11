@@ -177,3 +177,20 @@ confirmation also stays: it is an inline box in a table cell, not an overlay.
 The two comboboxes (recipients, search) stay hand-built, and so does the sender
 card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
 card holds actions that keyboard users reach by Tab.
+
+## The house style, formatted and checked
+_2026-11-11_. The estate's house-style harness, vendored at 1.1.0 into
+`vendor/house-style/` (refreshed by `npm run house-style:sync`; no git or
+`github:` dependency): Prettier at width 120, the house tsconfig flags, a thin
+ESLint config with six typed rules, and `check` / `check:fast`.
+
+- **Width 120.** One reformat commit (279 files), listed in `.git-blame-ignore-revs`.
+  Rejected: 180, which changes fewer lines but is far from the estate's width.
+- **Markdown stays out of Prettier**: the corpus is prose that `corpus/lint.sh` governs.
+- **Typed lint through an explicit `project` list**: `projectService` found no project
+  for 165 files, whose tests sit in `tsconfig.test.json` files.
+- **`!`**: an error in source (83 narrowed), a warning in tests (453 left).
+- **The integration tests still skip without the local Stalwart**, so `check` is then
+  not the whole gate (the root `CLAUDE.md` says so). Rejected for now: an env variable
+  that turns the skip into a failure.
+- **No `check-structure`**: no server. `jmap` not importing `web` is ESLint's rule.

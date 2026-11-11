@@ -1,6 +1,6 @@
 ---
 summary: Snapshot as of 2026-11-02, per area. Postern is built (foundations, reading, writing, live, settings, keyboard, PWA and security 2026-10-20; its own host 2026-10-22; Base UI 2026-10-23; conversation view off, schedule send, snooze, invite cards and a reload keeping the session 2026-10-27/28) deployed on its own host since 2026-11-02, the owner's smoke test passed 2026-11-05. The owner steps left (screen reader, Android install and reload, real push, production's token lifetimes).
-updated: 2026-11-05
+updated: 2026-11-11
 ---
 
 # Status (2026-11-02)
@@ -47,10 +47,16 @@ on 2026-11-02 (see [log.md](../log.md)).
   Tailwind v4, then a fourth, the redesign with Hallmark. No server brief:
   Postern has no backend of its own. Base UI is already pinned at 1.9.0, so no
   bump is needed. Revised to the owner's grilling of 2026-11-10 (see the log).
+- **House style and the quality harness** (2026-11-11). Built, local on `main`,
+  not deployed: house-style 1.1.0 vendored, Prettier at 120, the tsconfig
+  flags, the house ESLint config, `npm run check` and `check:fast`, a root
+  `CLAUDE.md` and `.claude/rules/`. See [decisions.md](decisions.md).
 
 ## Owner steps
 
 Things only the owner can do, collected from the briefs as they finished.
+
+- **Blame ignore file** (2026-11-11): `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
 - **Deploy and smoke test:** done. Deployed 2026-11-02 by `vps-deploy`'s
   rollout; the smoke test (headers, the routes that must answer 404, sign-in

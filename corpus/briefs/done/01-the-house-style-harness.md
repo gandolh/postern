@@ -256,3 +256,42 @@ One commit per step, each with `npm run typecheck`, `npm test`, `npm run lint` a
 - Brief 02 adds nothing to the gate. Brief 03 adds `better-tailwindcss` and drops `check-base-ui`'s `--warn-only`.
 - The reformat changes 2 of the 19 CSS files (`shell.css`, `tokens.css`); brief 03 deletes them all.
 - No server brief follows this one, because Postern has no server. Its `check:conventions` is therefore only knip and the Base UI checker.
+
+## Outcome
+
+Built on 2026-11-11 on `main`, committed locally, not pushed. Where the skill
+and this brief differed, the skill won: the sync is the vendored
+`bin/sync.mjs` (no `scripts/house-style-sync.mjs`), `tsconfig.base.json` extends
+the vendored base, type-only imports are `import type`, and dependency-cruiser
+is in `check:conventions` (its `no-circular` is a warning for four composer
+cycles, to go when the composer's modules import one way).
+
+- **Reformat:** 279 files, 8,632 added and 1,832 removed lines (the brief measured
+  10,398 diff lines in 274 files). Bundle compare of every `.ts`, `.tsx`, `.js`,
+  `.mjs`, `.css` and `.json` file before and after: three differences, all JSX
+  text split by `{" "}` (`MessageBody.tsx`, `FiltersSettings.tsx`,
+  `ScheduledRoute.tsx`).
+- **Typed lint:** an explicit `project` list; `projectService` left 165 files
+  without a project. `eslint .` takes about 27 s either way.
+- **Rule counts, before then after:** `no-non-null-assertion` 83 source and 453 test
+  (source fixed, tests left as warnings); `no-unnecessary-type-assertion` 48 (fixed);
+  `vitest/no-standalone-expect` 10 (per-line disables, expects in hooks and a fake
+  server); `no-console` 4 (reasoned disables); `expect-expect` 3, `valid-expect` 1,
+  `valid-title` 1, `await-thenable` 2, `consistent-type-imports` 2,
+  `no-import-type-side-effects` 1, `switch-exhaustiveness-check` 1,
+  `no-floating-promises` 1, `n/no-process-env` 2 (test helper block). All fixed.
+  `no-misused-promises`, enum, TODO and default-export findings: 0.
+  The reformat displaced two `eslint-disable` comments, moved back.
+- **Left for the owner:** `Shell.test.tsx` "calls the composer from Compose"
+  asserts nothing (a disable marks it as a smoke test).
+- **Checkers:** knip 0 unused files and dependencies, 119 unused exports, 20
+  unused types, 1 duplicate (warnings). dependency-cruiser 0 errors, 4
+  warnings. `check-base-ui` `--warn-only`: 27 errors (rule-3 8, rule-5 19) and 2
+  warnings (rule-9 2). `check-structure` is not wired (no server); run against
+  `jmap/src` it reports 17 rule-11 warnings (files over 400 lines).
+- **Tests:** 1,259 passed, 32 skipped in 6 files with no local Stalwart (not
+  started here); the skip stays (decision 10).
+- **Timings (warm):** `check:fast` with one changed file 7.1-7.7 s; `check` 85 s.
+- **Hooks, by hand:** the formatter hook formatted a messy `toast.tsx`; the Stop
+  hook exited 2 with `TS2322` for a deliberate type error and 0 once reverted.
+  Live session check waits for the plugin update.

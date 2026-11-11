@@ -574,3 +574,17 @@ when the local Stalwart is down. They wait on the grilling of 2026-11-10.
 ## [2026-11-10] todo | Briefs 01-03 revised to the owner's grilling, and brief 04 added
 
 The owner's grilling of 2026-11-10 (and the technical calls beside it) changed the three briefs. **01** (the harness): `house-style` vendored with a `house-style:sync` script (Q6), width 120 (Q8, Q51) with the one-off cost stated (10,398 diff lines in 274 files; at least 160 files change at any width), and the 536 non-null assertions settled as an error in source and a warning in tests (Q47: 82 fixed, 454 left as warnings). **02** (Base UI): the 7 files behind wrappers in `web/src/components/ui/`, which stays the wrappers' home (Q15, Q59); the navigation drawer becomes Base UI's `Drawer`, closed by a swipe too (Q40); the invite answer a guarded `ToggleGroup`, the settings radios stay a `RadioGroup` (Q41, Q57); form dialogs set `disablePointerDismissal` (Q58); jsdom tests only for wrappers with logic (Q60). **03** (Tailwind): the `layer(legacy)` method kept; a first visit now shows the light theme and the theme setting reads Light, Dark and System, with a `data-theme` `@custom-variant dark` declared (Q18); parity "close enough" (Q19); the 60 class-based test selectors move to roles (Q62); Postern is ninth in the migration order (Q20). Every brief now says commits on `main`, no branch, no pull request (Q4, Q31). New: [brief 04](briefs/todo/04-a-redesign-with-hallmark-on-the-estate-board.md), a redesign with Hallmark on the estate board (Q39).
+
+## [2026-11-11] brief | 01 The house style and the quality harness
+
+Built on `main`, local. House-style 1.1.0 vendored, Prettier at width 120 (one
+reformat commit, 279 files, bundle compare: 3 JSX text splits, none else),
+`verbatimModuleSyntax` and `erasableSyntaxOnly` (4 parameter properties became
+declared fields), the house ESLint config with an explicit typed `project` list
+(`projectService` left 165 files without a project), 83 source `!` narrowed
+(453 in tests left as warnings), knip and dependency-cruiser in
+`check:conventions` (`no-circular` a warning for the composer's 4 cycles), the
+Base UI checker `--warn-only` (27 errors, 2 warnings), a root `CLAUDE.md` and
+`.claude/rules/`. 32 tests in 6 files skip without the local Stalwart (decision
+10 keeps the skip). `check:fast` takes about 7 s warm, `check` about 85 s.
+
