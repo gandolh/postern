@@ -23,8 +23,8 @@ services:
       STALWART_HEALTHCHECK_URL: http://127.0.0.1:8080/healthz/live
     ports:
       - "127.0.0.1:18080:8080" # HTTP: JMAP, web admin, OAuth
-      - "127.0.0.1:12525:25"   # SMTP, plain text
-      - "127.0.0.1:11143:143"  # IMAP, plain text
+      - "127.0.0.1:12525:25" # SMTP, plain text
+      - "127.0.0.1:11143:143" # IMAP, plain text
     volumes:
       - ./config.json:/etc/stalwart/config.json:ro
       - ./data/stalwart:/var/lib/stalwart

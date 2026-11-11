@@ -84,7 +84,8 @@ function sleep(ms: number, signal: AbortSignal): Promise<void> {
 /** Errors that end the reader instead of being retried. */
 function isFatal(err: unknown): boolean {
   if (err instanceof JmapUnauthorizedError) return true;
-  if (err instanceof JmapHttpError) return err.status >= 400 && err.status < 500 && err.status !== 408 && err.status !== 429;
+  if (err instanceof JmapHttpError)
+    return err.status >= 400 && err.status < 500 && err.status !== 408 && err.status !== 429;
   return false;
 }
 
@@ -196,7 +197,10 @@ export class PushReader {
         failures++;
         if (failures >= this.#fallbackAfter) continue;
         this.#setStatus("reconnecting");
-        await sleep(backoffDelay(failures - 1, { ...this.#backoff, initialMs: this.#retryMs ?? this.#backoff.initialMs }), signal);
+        await sleep(
+          backoffDelay(failures - 1, { ...this.#backoff, initialMs: this.#retryMs ?? this.#backoff.initialMs }),
+          signal,
+        );
       }
     } catch (err) {
       if (!isAbortError(err)) {
@@ -338,7 +342,8 @@ export class PushReader {
           this.#known.set(accountId, { ...known, ...moved });
         }
       }
-      if (Object.keys(changed).length > 0 && !signal.aborted) this.#emit(this.#onState, { "@type": "StateChange", changed });
+      if (Object.keys(changed).length > 0 && !signal.aborted)
+        this.#emit(this.#onState, { "@type": "StateChange", changed });
     } catch (err) {
       if (signal.aborted || isAbortError(err)) return;
       if (rethrowFatal && isFatal(err)) throw err;

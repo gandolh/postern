@@ -14,7 +14,13 @@ export interface ConfirmDialogProps {
 
 export function ConfirmDialog({ title, body, confirmLabel, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
-    <Modal alert className="list-confirm" labelledBy="list-confirm-title" describedBy="list-confirm-body" onClose={onCancel}>
+    <Modal
+      alert
+      className="list-confirm"
+      labelledBy="list-confirm-title"
+      describedBy="list-confirm-body"
+      onClose={onCancel}
+    >
       <h2 id="list-confirm-title" className="list-confirm-title">
         {title}
       </h2>

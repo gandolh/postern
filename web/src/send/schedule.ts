@@ -20,7 +20,14 @@
 //   listScheduled(client)                              the Scheduled view's rows
 //   new ScheduledSync(client, roles, onChange).start() files what went out
 
-import { escapePointer, JmapSetError, type EmailAddress, type Id, type JmapClient, type PatchObject } from "@postern/jmap";
+import {
+  escapePointer,
+  JmapSetError,
+  type EmailAddress,
+  type Id,
+  type JmapClient,
+  type PatchObject,
+} from "@postern/jmap";
 import { sentPatch } from "./submit";
 
 export const SCHEDULED = "$scheduled";
@@ -35,7 +42,10 @@ const OVERDUE_MAX_MS = 15 * 60_000;
 /** The furthest ahead the account may schedule, in ms; 0 when it cannot (no FUTURERELEASE). */
 export function maxDelayedSendMs(client: JmapClient): number {
   if (!client.hasSession) return 0;
-  const cap = client.session.accountCapability<{ maxDelayedSend?: number }>(SUBMISSION_CAPABILITY, client.session.accountIdFor(SUBMISSION_CAPABILITY));
+  const cap = client.session.accountCapability<{ maxDelayedSend?: number }>(
+    SUBMISSION_CAPABILITY,
+    client.session.accountIdFor(SUBMISSION_CAPABILITY),
+  );
   const seconds = cap?.maxDelayedSend;
   return typeof seconds === "number" && seconds > 0 ? seconds * 1000 : 0;
 }
@@ -69,14 +79,21 @@ export function schedulePresets(now: Date): SchedulePreset[] {
 
 /** "Wed, Oct 28, 8:00 AM": a send time, in this browser's time zone. */
 export function formatSendTime(at: Date | string, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(at));
+  return new Intl.DateTimeFormat(locale, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(at));
 }
 
 /** Why a picked time cannot be used, or null. At least a minute ahead, and no further than the server allows. */
 export function checkSendTime(at: Date, now: Date, maxMs: number): string | null {
   if (Number.isNaN(at.getTime())) return "Choose a date and a time.";
   if (at.getTime() < now.getTime() + 60_000) return "Choose a time at least a minute from now.";
-  if (maxMs > 0 && at.getTime() > now.getTime() + maxMs) return `Choose a time within ${Math.floor(maxMs / 86_400_000)} days.`;
+  if (maxMs > 0 && at.getTime() > now.getTime() + maxMs)
+    return `Choose a time within ${Math.floor(maxMs / 86_400_000)} days.`;
   return null;
 }
 
@@ -99,7 +116,11 @@ export interface Scheduled {
 }
 
 /** Every recipient of the draft, once each: an envelope given by the client must name them all, Bcc included. */
-function envelopeRecipients(email: { to?: EmailAddress[] | null; cc?: EmailAddress[] | null; bcc?: EmailAddress[] | null }): string[] {
+function envelopeRecipients(email: {
+  to?: EmailAddress[] | null;
+  cc?: EmailAddress[] | null;
+  bcc?: EmailAddress[] | null;
+}): string[] {
   const seen = new Map<string, string>();
   for (const a of [...(email.to ?? []), ...(email.cc ?? []), ...(email.bcc ?? [])]) {
     const address = a.email.trim();
@@ -115,9 +136,14 @@ function envelopeRecipients(email: { to?: EmailAddress[] | null; cc?: EmailAddre
 export async function scheduleDraft(client: JmapClient, args: ScheduleArgs, signal?: AbortSignal): Promise<Scheduled> {
   const got = await client.call("Email/get", { ids: [args.emailId], properties: ["to", "cc", "bcc"] }, { signal });
   const email = got.list[0];
-  if (!email) throw new JmapSetError("EmailSubmission/set", "send", { type: "notFound", description: "The draft is gone" });
+  if (!email)
+    throw new JmapSetError("EmailSubmission/set", "send", { type: "notFound", description: "The draft is gone" });
   const rcptTo = envelopeRecipients(email).map((address) => ({ email: address, parameters: null }));
-  if (rcptTo.length === 0) throw new JmapSetError("EmailSubmission/set", "send", { type: "noRecipients", description: "The message has no recipients" });
+  if (rcptTo.length === 0)
+    throw new JmapSetError("EmailSubmission/set", "send", {
+      type: "noRecipients",
+      description: "The message has no recipients",
+    });
   const res = await client.call(
     "EmailSubmission/set",
     {
@@ -135,7 +161,11 @@ export async function scheduleDraft(client: JmapClient, args: ScheduleArgs, sign
   const refused = res.notCreated?.["send"];
   if (refused) throw new JmapSetError("EmailSubmission/set", "send", refused);
   const created = res.created?.["send"];
-  if (!created?.id) throw new JmapSetError("EmailSubmission/set", "send", { type: "serverFail", description: "No submission came back" });
+  if (!created?.id)
+    throw new JmapSetError("EmailSubmission/set", "send", {
+      type: "serverFail",
+      description: "No submission came back",
+    });
   return { submissionId: created.id, emailId: args.emailId, sendAt: created.sendAt ?? holdUntil(args.at) };
 }
 
@@ -152,7 +182,9 @@ export async function cancelScheduled(client: JmapClient, submissionId: Id, emai
     if (refused.type === "cannotUnsend") return "sent";
     throw new JmapSetError("EmailSubmission/set", submissionId, refused);
   }
-  const unmark = await client.call("Email/set", { update: { [emailId]: { [`keywords/${escapePointer(SCHEDULED)}`]: null } } });
+  const unmark = await client.call("Email/set", {
+    update: { [emailId]: { [`keywords/${escapePointer(SCHEDULED)}`]: null } },
+  });
   const failed = unmark.notUpdated?.[emailId];
   if (failed && failed.type !== "notFound") throw new JmapSetError("Email/set", emailId, failed);
   return "canceled";
@@ -174,8 +206,14 @@ export interface ScheduledMessage {
 export async function listScheduled(client: JmapClient): Promise<ScheduledMessage[]> {
   const r = client.request();
   const q = r.call("EmailSubmission/query", { filter: { undoStatus: "pending" } });
-  const s = r.call("EmailSubmission/get", { ids: q.ref("/ids"), properties: ["emailId", "threadId", "sendAt", "undoStatus"] });
-  const e = r.call("Email/get", { ids: s.ref<Id[]>("/list/*/emailId"), properties: ["subject", "preview", "to", "cc", "bcc", "keywords"] });
+  const s = r.call("EmailSubmission/get", {
+    ids: q.ref("/ids"),
+    properties: ["emailId", "threadId", "sendAt", "undoStatus"],
+  });
+  const e = r.call("Email/get", {
+    ids: s.ref<Id[]>("/list/*/emailId"),
+    properties: ["subject", "preview", "to", "cc", "bcc", "keywords"],
+  });
   const res = await r.send();
   const emails = new Map(res.get(e).list.map((m) => [m.id, m]));
   const out: ScheduledMessage[] = [];
@@ -274,7 +312,12 @@ export class ScheduledSync {
   #started = false;
   #overdue = OVERDUE_FIRST_MS;
 
-  constructor(client: JmapClient, roles: () => ScheduledRoles, onChange: () => void, options: ScheduledSyncOptions = {}) {
+  constructor(
+    client: JmapClient,
+    roles: () => ScheduledRoles,
+    onChange: () => void,
+    options: ScheduledSyncOptions = {},
+  ) {
     this.#client = client;
     this.#roles = roles;
     this.#onChange = onChange;

@@ -32,13 +32,19 @@ describe("receiveWorkerMessage", () => {
 
   it("hands on a message from the controller", async () => {
     const receive = vi.spyOn(verificationInbox, "receive");
-    const handled = await receiveWorkerMessage({ data: verification, ports: [], source: ours as MessageEventSource }, { controller: () => ours, active: async () => ours, scriptUrl: SCRIPT });
+    const handled = await receiveWorkerMessage(
+      { data: verification, ports: [], source: ours as MessageEventSource },
+      { controller: () => ours, active: async () => ours, scriptUrl: SCRIPT },
+    );
     expect(handled).toBe(true);
     expect(receive).toHaveBeenCalledWith("s9", "code");
   });
 
   it("asks the registration when the page is not controlled yet", async () => {
-    const handled = await receiveWorkerMessage({ data: verification, ports: [], source: ours as MessageEventSource }, { controller: () => null, active: async () => ours, scriptUrl: SCRIPT });
+    const handled = await receiveWorkerMessage(
+      { data: verification, ports: [], source: ours as MessageEventSource },
+      { controller: () => null, active: async () => ours, scriptUrl: SCRIPT },
+    );
     expect(handled).toBe(true);
   });
 
@@ -46,8 +52,15 @@ describe("receiveWorkerMessage", () => {
     const receive = vi.spyOn(verificationInbox, "receive");
     const port = { postMessage: vi.fn() } as unknown as MessagePort;
     const lookup = { controller: () => ours, active: async () => ours, scriptUrl: SCRIPT };
-    expect(await receiveWorkerMessage({ data: verification, ports: [], source: another as MessageEventSource }, lookup)).toBe(false);
-    expect(await receiveWorkerMessage({ data: { type: "postern:will-notify" }, ports: [port], source: lookalike as MessageEventSource }, lookup)).toBe(false);
+    expect(
+      await receiveWorkerMessage({ data: verification, ports: [], source: another as MessageEventSource }, lookup),
+    ).toBe(false);
+    expect(
+      await receiveWorkerMessage(
+        { data: { type: "postern:will-notify" }, ports: [port], source: lookalike as MessageEventSource },
+        lookup,
+      ),
+    ).toBe(false);
     expect(receive).not.toHaveBeenCalled();
     expect(port.postMessage).not.toHaveBeenCalled();
   });

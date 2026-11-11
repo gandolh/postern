@@ -27,7 +27,12 @@ afterEach(() => {
 function Opener() {
   const compose = useCompose();
   return (
-    <button type="button" onClick={() => compose.open({ display: "inline", threadId: "T1", to: [{ name: "Bob Baker", email: "bob@postern.test" }] })}>
+    <button
+      type="button"
+      onClick={() =>
+        compose.open({ display: "inline", threadId: "T1", to: [{ name: "Bob Baker", email: "bob@postern.test" }] })
+      }
+    >
       Reply here
     </button>
   );
@@ -78,7 +83,9 @@ describe("the inline reply", () => {
     expect(within(dialog).getByRole("textbox", { name: "Message body" }).textContent).toBe("Typed just now");
     expect(screen.queryByRole("region", { name: "Reply" })).toBeNull();
     // The next autosave writes what is on screen.
-    await waitFor(() => expect([...server.emails.values()].some((e) => e.mailboxIds[MAILBOXES.drafts])).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect([...server.emails.values()].some((e) => e.mailboxIds[MAILBOXES.drafts])).toBe(true), {
+      timeout: 5000,
+    });
     const draft = [...server.emails.values()].find((e) => e.mailboxIds[MAILBOXES.drafts])!;
     expect((draft["bodyValues"] as Record<string, { value: string }>)["text"]?.value).toBe("Typed just now");
   }, 10_000);
@@ -87,7 +94,11 @@ describe("the inline reply", () => {
     const { body } = await renderInline();
     const html = `<div class="gmail_quote">I attached it<img src="x" onerror="window.__POSTERN_PWNED=1"></div><div class="postern_signature">-- <br>Mallory</div><script>window.__POSTERN_PWNED=2</script>`;
     const drop = createEvent.drop(body, {
-      dataTransfer: { types: ["text/html", "text/plain"], files: [], getData: (type: string) => (type === "text/html" ? html : "") },
+      dataTransfer: {
+        types: ["text/html", "text/plain"],
+        files: [],
+        getData: (type: string) => (type === "text/html" ? html : ""),
+      },
     });
     fireEvent(body, drop);
     expect(drop.defaultPrevented).toBe(true);

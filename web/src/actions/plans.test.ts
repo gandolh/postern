@@ -2,7 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { Conversation, ConversationMessage, ConversationScope } from "./conversation";
 import { isStarred, isUnread, shownMessages } from "./conversation";
 import { applyPatch } from "./patches";
-import { archiveNeedsAllMail, destroyIds, MissingLabelError, planArchive, planLabels, planMove, planRead, planStar, planTrash } from "./plans";
+import {
+  archiveNeedsAllMail,
+  destroyIds,
+  MissingLabelError,
+  planArchive,
+  planLabels,
+  planMove,
+  planRead,
+  planStar,
+  planTrash,
+} from "./plans";
 import { planNotSpam, planReportSpam } from "./spam";
 
 const roles = { inbox: "a", trash: "b", junk: "c", sent: "e", archive: "h" };
@@ -25,7 +35,10 @@ const conv = (id: string, ...messages: ConversationMessage[]): Conversation => (
 
 /** Apply a plan to conversations, as the server would. */
 function after(conversations: Conversation[], update: Record<string, Record<string, unknown>>): Conversation[] {
-  return conversations.map((c) => ({ ...c, messages: c.messages.map((x) => (update[x.id] ? applyPatch(x, update[x.id]!) : x)) }));
+  return conversations.map((c) => ({
+    ...c,
+    messages: c.messages.map((x) => (update[x.id] ? applyPatch(x, update[x.id]!) : x)),
+  }));
 }
 
 describe("archive", () => {
@@ -92,14 +105,22 @@ describe("trash", () => {
 
 describe("star", () => {
   it("stars the latest message shown", () => {
-    const c = conv("T", m("1", ["a"], [], "2026-10-01T00:00:00Z"), m("2", ["e"], [], "2026-10-03T00:00:00Z"), m("3", ["b"], [], "2026-10-05T00:00:00Z"));
+    const c = conv(
+      "T",
+      m("1", ["a"], [], "2026-10-01T00:00:00Z"),
+      m("2", ["e"], [], "2026-10-03T00:00:00Z"),
+      m("3", ["b"], [], "2026-10-05T00:00:00Z"),
+    );
     expect(planStar([c], normal, true).update).toEqual({ "2": { "keywords/$flagged": true } });
   });
 
   it("leaves a starred conversation alone, and unstar clears every star shown", () => {
     const c = conv("T", m("1", ["a"], ["$flagged"]), m("2", ["a"]), m("3", ["i"], ["$flagged"]));
     expect(planStar([c], normal, true).update).toEqual({});
-    expect(planStar([c], normal, false).update).toEqual({ "1": { "keywords/$flagged": null }, "3": { "keywords/$flagged": null } });
+    expect(planStar([c], normal, false).update).toEqual({
+      "1": { "keywords/$flagged": null },
+      "3": { "keywords/$flagged": null },
+    });
     expect(isStarred(after([c], planStar([c], normal, false).update)[0]!, normal)).toBe(false);
   });
 });
@@ -120,7 +141,10 @@ describe("labels and move", () => {
   it("adds and removes labels, sending a message with none left to All Mail", () => {
     const c = conv("T", m("1", ["i"]), m("2", ["a", "i"]));
     const plan = planLabels([c], normal, { add: ["x"], remove: ["i"] });
-    expect(plan.update).toEqual({ "1": { "mailboxIds/x": true, "mailboxIds/i": null }, "2": { "mailboxIds/x": true, "mailboxIds/i": null } });
+    expect(plan.update).toEqual({
+      "1": { "mailboxIds/x": true, "mailboxIds/i": null },
+      "2": { "mailboxIds/x": true, "mailboxIds/i": null },
+    });
     const removeOnly = planLabels([c], normal, { remove: ["i"] });
     expect(removeOnly.update["1"]).toEqual({ "mailboxIds/i": null, "mailboxIds/h": true });
     expect(after(after([c], removeOnly.update), removeOnly.inverse)).toEqual([c]);
@@ -130,7 +154,9 @@ describe("labels and move", () => {
     const c = conv("T", m("1", ["a", "i"]));
     expect(planMove([c], normal, "a", "x").update).toEqual({ "1": { "mailboxIds/x": true, "mailboxIds/a": null } });
     expect(planMove([c], normal, undefined, "x").update).toEqual({ "1": { "mailboxIds/x": true } });
-    expect(planMove([c], normal, "a", "b").update).toEqual({ "1": { "mailboxIds/b": true, "mailboxIds/a": null, "mailboxIds/i": null } });
+    expect(planMove([c], normal, "a", "b").update).toEqual({
+      "1": { "mailboxIds/b": true, "mailboxIds/a": null, "mailboxIds/i": null },
+    });
   });
 
   it("moves out of Trash keeping nothing of Trash", () => {
@@ -143,14 +169,22 @@ describe("spam", () => {
   it("report spam moves every message shown to Spam with $junk, and undoes exactly", () => {
     const c = conv("T", m("1", ["a", "i"], ["$notjunk"]));
     const plan = planReportSpam([c], normal);
-    expect(plan.update["1"]).toEqual({ "mailboxIds/c": true, "mailboxIds/a": null, "mailboxIds/i": null, "keywords/$junk": true, "keywords/$notjunk": null });
+    expect(plan.update["1"]).toEqual({
+      "mailboxIds/c": true,
+      "mailboxIds/a": null,
+      "mailboxIds/i": null,
+      "keywords/$junk": true,
+      "keywords/$notjunk": null,
+    });
     expect(after(after([c], plan.update), plan.inverse)).toEqual([c]);
   });
 
   it("not spam moves what is in Spam to the Inbox with $notjunk", () => {
     const c = conv("T", m("1", ["c"], ["$junk"]), m("2", ["e"]));
     const plan = planNotSpam([c], spamScope);
-    expect(plan.update).toEqual({ "1": { "mailboxIds/c": null, "mailboxIds/a": true, "keywords/$junk": null, "keywords/$notjunk": true } });
+    expect(plan.update).toEqual({
+      "1": { "mailboxIds/c": null, "mailboxIds/a": true, "keywords/$junk": null, "keywords/$notjunk": true },
+    });
   });
 });
 

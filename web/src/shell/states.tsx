@@ -49,7 +49,12 @@ export interface ListSkeletonProps {
 /** Placeholder conversation rows, `--row-height` tall, so they match the density. */
 export function ListSkeleton({ rows = 12, animated = true, label = "Loading conversations" }: ListSkeletonProps) {
   return (
-    <div className="shell-list-skeleton" data-animated={animated ? undefined : "false"} role={animated ? "status" : undefined} aria-label={animated ? label : undefined}>
+    <div
+      className="shell-list-skeleton"
+      data-animated={animated ? undefined : "false"}
+      role={animated ? "status" : undefined}
+      aria-label={animated ? label : undefined}
+    >
       {Array.from({ length: rows }, (_, i) => (
         <div className="shell-list-skeleton-row" key={i} aria-hidden="true">
           <span className="skeleton shell-skeleton-check" />
@@ -123,12 +128,24 @@ export function useOnline(): boolean {
 }
 
 /** A slim bar over the main area while the browser is offline or the server unreachable. */
-export function ConnectionBanner({ offline, unreachable, onRetry }: { offline: boolean; unreachable: boolean; onRetry?: () => void }) {
+export function ConnectionBanner({
+  offline,
+  unreachable,
+  onRetry,
+}: {
+  offline: boolean;
+  unreachable: boolean;
+  onRetry?: () => void;
+}) {
   if (!offline && !unreachable) return null;
   return (
     <div className="shell-banner" role="status">
       <WifiOff aria-hidden="true" />
-      <p>{offline ? "You're offline. Postern reconnects when your connection is back." : "Can't reach the mail server. Some counts may be out of date."}</p>
+      <p>
+        {offline
+          ? "You're offline. Postern reconnects when your connection is back."
+          : "Can't reach the mail server. Some counts may be out of date."}
+      </p>
       {!offline && onRetry ? (
         <button type="button" className="btn btn-quiet shell-banner-action" onClick={onRetry}>
           Try again

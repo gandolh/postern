@@ -15,7 +15,10 @@ let store: ConversationStore | null = null;
 async function open() {
   const mail = new FakeMail({
     mailboxes: MAILBOXES,
-    emails: [fakeEmail({ id: "e1", threadId: "T1", keywords: { $seen: true } }), fakeEmail({ id: "e2", threadId: "T1", keywords: { $seen: true }, receivedAt: "2026-10-09T00:00:00Z" })],
+    emails: [
+      fakeEmail({ id: "e1", threadId: "T1", keywords: { $seen: true } }),
+      fakeEmail({ id: "e2", threadId: "T1", keywords: { $seen: true }, receivedAt: "2026-10-09T00:00:00Z" }),
+    ],
   });
   const client = await mail.connect();
   const s = new ConversationStore(client, "T1");

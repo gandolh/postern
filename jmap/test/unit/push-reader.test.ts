@@ -53,7 +53,8 @@ class FakeSource implements PushSource {
     this.opens.push(params);
     const step = this.script.shift() ?? "stream";
     if (step instanceof Error) throw step;
-    if (typeof step === "number") return new Response("{}", { status: step, headers: { "content-type": "application/problem+json" } });
+    if (typeof step === "number")
+      return new Response("{}", { status: step, headers: { "content-type": "application/problem+json" } });
     const s = new FakeStream(signal);
     this.streams.push(s);
     return new Response(s.stream, { status: 200, headers: { "content-type": "text/event-stream" } });
@@ -106,7 +107,11 @@ describe("PushReader on the stream", () => {
     const { reader, statuses, changes } = startReader(source);
     await tick();
     expect(statuses).toEqual(["connecting", "open"]);
-    expect(source.opens[0]).toEqual({ types: ["Email", "Mailbox", "Thread", "EmailDelivery"], closeafter: "no", ping: 30 });
+    expect(source.opens[0]).toEqual({
+      types: ["Email", "Mailbox", "Thread", "EmailDelivery"],
+      closeafter: "no",
+      ping: 30,
+    });
 
     source.current.send(STATE.slice(0, 20));
     source.current.send(STATE.slice(20) + PING);
@@ -206,7 +211,10 @@ describe("PushReader polling fallback", () => {
   it("falls back to polling after repeated failures and emits only the types that moved", async () => {
     const source = new FakeSource();
     source.script.push(503, 503, 503);
-    source.polls.push(change({ Email: "e1", Mailbox: "m1", Thread: "t1" }), change({ Email: "e2", Mailbox: "m1", Thread: "t1" }));
+    source.polls.push(
+      change({ Email: "e1", Mailbox: "m1", Thread: "t1" }),
+      change({ Email: "e2", Mailbox: "m1", Thread: "t1" }),
+    );
     const { statuses, changes } = startReader(source, { fallbackAfter: 3, pollIntervalMs: 30_000 });
     await tick();
     await tick(1000);

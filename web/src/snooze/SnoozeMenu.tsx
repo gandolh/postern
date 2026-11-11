@@ -43,7 +43,13 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
       >
         <Menu.Trigger ref={button} render={<IconButton label="Snooze" icon={Clock} />} />
         <Menu.Portal>
-          <Menu.Positioner className="list-menu-positioner" side="bottom" align="start" sideOffset={4} collisionPadding={8}>
+          <Menu.Positioner
+            className="list-menu-positioner"
+            side="bottom"
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+          >
             <Menu.Popup
               className="list-menu-popup snooze-menu"
               aria-label="Snooze until"
@@ -115,18 +121,29 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-export function SnoozeDialog({ onSnooze, onCancel, now = () => new Date() }: { onSnooze: (at: Date) => void; onCancel: () => void; now?: () => Date }) {
+export function SnoozeDialog({
+  onSnooze,
+  onCancel,
+  now = () => new Date(),
+}: {
+  onSnooze: (at: Date) => void;
+  onCancel: () => void;
+  now?: () => Date;
+}) {
   const id = useId();
   const [opened] = useState(now);
   const tomorrow = new Date(opened.getFullYear(), opened.getMonth(), opened.getDate() + 1);
-  const [date, setDate] = useState(`${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`);
+  const [date, setDate] = useState(
+    `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`,
+  );
   const [time, setTime] = useState("08:00");
   const [error, setError] = useState<string | null>(null);
 
   const submit = () => {
     const [y, m, d] = date.split("-").map(Number);
     const [hh, mm] = time.split(":").map(Number);
-    const at = y && m && d && hh !== undefined && mm !== undefined ? new Date(y, m - 1, d, hh, mm, 0, 0) : new Date(NaN);
+    const at =
+      y && m && d && hh !== undefined && mm !== undefined ? new Date(y, m - 1, d, hh, mm, 0, 0) : new Date(NaN);
     const problem = checkSnoozeTime(at, now());
     if (problem) setError(problem);
     else onSnooze(at);

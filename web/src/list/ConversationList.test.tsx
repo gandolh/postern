@@ -46,7 +46,10 @@ async function renderList(emails: FakeEmail[], route: LabelRoute = INBOX) {
 }
 
 const toolbar = () => screen.getByRole("toolbar", { name: "Conversation actions" });
-const rowsOf = (grid: HTMLElement) => within(grid).getAllByRole("row").filter((r) => r.getAttribute("aria-busy") !== "true");
+const rowsOf = (grid: HTMLElement) =>
+  within(grid)
+    .getAllByRole("row")
+    .filter((r) => r.getAttribute("aria-busy") !== "true");
 
 beforeEach(() => {
   window.history.replaceState(null, "", "#inbox");
@@ -58,9 +61,29 @@ afterEach(() => cleanup());
 describe("the rows", () => {
   it("shows each conversation's senders, subject, snippet and date, unread ones marked", async () => {
     const { grid } = await renderList([
-      fakeEmail({ id: "1", threadId: "T1", receivedAt: "2026-10-03T10:00:00Z", subject: "Lunch?", preview: "Are you free" }),
-      fakeEmail({ id: "2", threadId: "T1", receivedAt: "2026-10-04T10:00:00Z", mailboxIds: { e: true }, keywords: { $seen: true }, from: [{ name: "Alice Archer", email: "alice@postern.test" }] }),
-      fakeEmail({ id: "3", threadId: "T2", receivedAt: "2026-10-02T10:00:00Z", keywords: { $seen: true }, hasAttachment: true, mailboxIds: { a: true, i: true } }),
+      fakeEmail({
+        id: "1",
+        threadId: "T1",
+        receivedAt: "2026-10-03T10:00:00Z",
+        subject: "Lunch?",
+        preview: "Are you free",
+      }),
+      fakeEmail({
+        id: "2",
+        threadId: "T1",
+        receivedAt: "2026-10-04T10:00:00Z",
+        mailboxIds: { e: true },
+        keywords: { $seen: true },
+        from: [{ name: "Alice Archer", email: "alice@postern.test" }],
+      }),
+      fakeEmail({
+        id: "3",
+        threadId: "T2",
+        receivedAt: "2026-10-02T10:00:00Z",
+        keywords: { $seen: true },
+        hasAttachment: true,
+        mailboxIds: { a: true, i: true },
+      }),
     ]);
     expect(grid.getAttribute("aria-label")).toBe("Conversations in Inbox");
     expect(grid.getAttribute("aria-rowcount")).toBe("2");
@@ -118,7 +141,12 @@ describe("selection and the toolbar", () => {
   it("selects by the select menu", async () => {
     const { user, grid } = await renderList([
       fakeEmail({ id: "1", threadId: "T1", receivedAt: "2026-10-03T00:00:00Z" }),
-      fakeEmail({ id: "2", threadId: "T2", receivedAt: "2026-10-02T00:00:00Z", keywords: { $seen: true, $flagged: true } }),
+      fakeEmail({
+        id: "2",
+        threadId: "T2",
+        receivedAt: "2026-10-02T00:00:00Z",
+        keywords: { $seen: true, $flagged: true },
+      }),
     ]);
     await user.click(screen.getByRole("button", { name: "Select" }));
     await user.click(await screen.findByRole("menuitem", { name: "Starred" }));
@@ -152,7 +180,14 @@ describe("selection and the toolbar", () => {
     const SNOOZED = { id: "z", name: "Snoozed", role: null, parentId: null };
     const mail = new FakeMail({
       mailboxes: [...MAILBOXES, SNOOZED],
-      emails: [fakeEmail({ id: "s1", threadId: "S1", mailboxIds: { z: true }, keywords: { $seen: true, "$snoozed-20261028T0700Z": true } })],
+      emails: [
+        fakeEmail({
+          id: "s1",
+          threadId: "S1",
+          mailboxIds: { z: true },
+          keywords: { $seen: true, "$snoozed-20261028T0700Z": true },
+        }),
+      ],
     });
     const client = await mail.connect();
     const labels = new LabelsStore(client, () => "A");
@@ -192,7 +227,10 @@ describe("row actions", () => {
   });
 
   it("asks before deleting forever in Trash", async () => {
-    const { mail, user, grid } = await renderList([fakeEmail({ id: "1", threadId: "T1", mailboxIds: { b: true } })], { kind: "system", view: "trash" });
+    const { mail, user, grid } = await renderList([fakeEmail({ id: "1", threadId: "T1", mailboxIds: { b: true } })], {
+      kind: "system",
+      view: "trash",
+    });
     await user.click(within(rowsOf(grid)[0]!).getByRole("button", { name: "Delete forever" }));
     const dialog = screen.getByRole("alertdialog", { name: "Delete forever?" });
     expect(dialog.textContent).toContain("This conversation will be deleted forever.");
@@ -234,9 +272,22 @@ describe("conversation view off", () => {
   /** A conversation of three messages in the Inbox (one read, one from me in Sent), and a single message. */
   const mail3 = () => [
     fakeEmail({ id: "1", threadId: "T1", receivedAt: "2026-10-01T09:00:00Z", subject: "Plans", preview: "first" }),
-    fakeEmail({ id: "2", threadId: "T1", receivedAt: "2026-10-02T09:00:00Z", subject: "Re: Plans", preview: "second", keywords: { $seen: true } }),
+    fakeEmail({
+      id: "2",
+      threadId: "T1",
+      receivedAt: "2026-10-02T09:00:00Z",
+      subject: "Re: Plans",
+      preview: "second",
+      keywords: { $seen: true },
+    }),
     fakeEmail({ id: "3", threadId: "T1", receivedAt: "2026-10-04T09:00:00Z", subject: "Re: Plans", preview: "third" }),
-    fakeEmail({ id: "4", threadId: "T1", receivedAt: "2026-10-03T09:00:00Z", mailboxIds: { e: true }, from: [{ name: "Alice Archer", email: "alice@postern.test" }] }),
+    fakeEmail({
+      id: "4",
+      threadId: "T1",
+      receivedAt: "2026-10-03T09:00:00Z",
+      mailboxIds: { e: true },
+      from: [{ name: "Alice Archer", email: "alice@postern.test" }],
+    }),
     fakeEmail({ id: "s", threadId: "T2", receivedAt: "2026-09-30T09:00:00Z", subject: "Single" }),
   ];
 
@@ -265,7 +316,9 @@ describe("conversation view off", () => {
     expect(mail.emails.get("4")!.mailboxIds).toEqual({ e: true });
 
     await user.click(screen.getByRole("button", { name: "Undo" }));
-    await waitFor(() => expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["3", "2", "1", "s"]));
+    await waitFor(() =>
+      expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["3", "2", "1", "s"]),
+    );
     expect(mail.emails.get("2")!.mailboxIds).toEqual({ a: true });
   });
 
@@ -319,7 +372,10 @@ describe("conversation view off", () => {
   });
 
   it("says an empty label has no messages", async () => {
-    const mail = new FakeMail({ mailboxes: MAILBOXES, emails: [fakeEmail({ id: "1", threadId: "T1", mailboxIds: { e: true } })] });
+    const mail = new FakeMail({
+      mailboxes: MAILBOXES,
+      emails: [fakeEmail({ id: "1", threadId: "T1", mailboxIds: { e: true } })],
+    });
     const client = await mail.connect();
     render(
       <SessionContext.Provider value={{ client, account: { username: "alice@postern.test" }, signOut: async () => {} }}>
@@ -337,7 +393,9 @@ describe("conversation view off", () => {
     const { grid } = await renderList(mail3());
     expect(rowsOf(grid)).toHaveLength(4);
     act(() => setPrefs({ conversationView: true }));
-    await waitFor(() => expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["T1", "T2"]));
+    await waitFor(() =>
+      expect(rowsOf(screen.getByRole("grid")).map((r) => r.getAttribute("data-row-id"))).toEqual(["T1", "T2"]),
+    );
     expect(rowsOf(screen.getByRole("grid"))[0]!.textContent).toContain("(4)");
     act(() => setPrefs({ conversationView: false }));
     await waitFor(() => expect(rowsOf(screen.getByRole("grid"))).toHaveLength(4));

@@ -68,7 +68,8 @@ class Secrets {
 function dumpOrigin(page: Page): Promise<Record<string, string>> {
   return page.evaluate(async () => {
     const out: Record<string, string> = {};
-    const storage = (s: Storage) => JSON.stringify(Array.from({ length: s.length }, (_, i) => [s.key(i), s.getItem(s.key(i) ?? "")]));
+    const storage = (s: Storage) =>
+      JSON.stringify(Array.from({ length: s.length }, (_, i) => [s.key(i), s.getItem(s.key(i) ?? "")]));
     out["localStorage"] = storage(localStorage);
     out["sessionStorage"] = storage(sessionStorage);
     out["document.cookie"] = document.cookie;
@@ -143,7 +144,14 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
     await goTo(page, hash);
     await page.waitForTimeout(400);
   }
-  expect([...secrets.kinds].sort()).toEqual(["ID token", "PKCE verifier", "access token", "authorization code", "password", "refresh token"]);
+  expect([...secrets.kinds].sort()).toEqual([
+    "ID token",
+    "PKCE verifier",
+    "access token",
+    "authorization code",
+    "password",
+    "refresh token",
+  ]);
 
   const probe = await context.newPage();
   await probe.goto(PROBE_URL);
@@ -167,7 +175,9 @@ test("no secret reaches storage, cookies, caches, URLs, the DOM or the console",
   expect(places["Postern's document.cookie"] === "", "no cookie").toBe(true);
   expect(places["Postern's IndexedDB"] === "[]", "IndexedDB is empty").toBe(true);
   // What Cache Storage does hold is the app shell, nothing from Stalwart.
-  expect(places["Postern's Cache Storage"]?.includes("/webmail-api/"), "no Stalwart response in Cache Storage").toBe(false);
+  expect(places["Postern's Cache Storage"]?.includes("/webmail-api/"), "no Stalwart response in Cache Storage").toBe(
+    false,
+  );
 });
 
 test("another estate app's page cannot reach Postern's window, worker or tokens", async ({ page, context }) => {
@@ -248,12 +258,18 @@ test("the idle timeout signs out after 8 hours without input, and the session is
 
   const authorized: string[] = [];
   page.on("request", async (r) => {
-    if (r.url().startsWith(`${ORIGIN}/webmail-api/`) && (await r.headerValue("authorization"))) authorized.push(r.url());
+    if (r.url().startsWith(`${ORIGIN}/webmail-api/`) && (await r.headerValue("authorization")))
+      authorized.push(r.url());
   });
   await page.clock.fastForward("07:00:01");
-  await expect(page.locator(".auth-notice")).toHaveText("You were signed out after a long time without activity. Sign in again to continue.");
+  await expect(page.locator(".auth-notice")).toHaveText(
+    "You were signed out after a long time without activity. Sign in again to continue.",
+  );
   expect((await page.locator("input[name=password]").inputValue()) === "", "the password field is empty").toBe(true);
-  expect(await page.evaluate(() => sessionStorage.getItem("postern.session") === null), "the kept session is gone").toBe(true);
+  expect(
+    await page.evaluate(() => sessionStorage.getItem("postern.session") === null),
+    "the kept session is gone",
+  ).toBe(true);
   const after = authorized.length;
   await goTo(page, "#inbox");
   await page.clock.fastForward("00:05:00");
@@ -286,7 +302,8 @@ test("sign-out forgets the session; Stalwart 0.16 cannot revoke the token", asyn
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.locator("input[name=username]")).toBeVisible();
   page.on("request", async (r) => {
-    if (r.url().startsWith(`${ORIGIN}/webmail-api/`) && (await r.headerValue("authorization"))) authorized.push(r.url());
+    if (r.url().startsWith(`${ORIGIN}/webmail-api/`) && (await r.headerValue("authorization")))
+      authorized.push(r.url());
   });
   // The live stream is closed, and nothing signed is sent again, wherever the app goes.
   const stream = streams[streams.length - 1]!;
@@ -298,9 +315,14 @@ test("sign-out forgets the session; Stalwart 0.16 cannot revoke the token", asyn
   expect(authorized, "authorized requests after sign-out").toEqual([]);
 
   // Known gap (security.md): a token copied before sign-out still works until it expires.
-  const copied = await request.get(`${ORIGIN}/webmail-api/jmap/session`, { headers: { authorization: `Bearer ${accessToken}` } });
+  const copied = await request.get(`${ORIGIN}/webmail-api/jmap/session`, {
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
   const session = (await copied.json()) as { accounts?: Record<string, unknown> };
-  expect(Object.keys(session.accounts ?? {}).length, "Stalwart 0.16.25 has no revocation: the copied token still opens the session").toBeGreaterThan(0);
+  expect(
+    Object.keys(session.accounts ?? {}).length,
+    "Stalwart 0.16.25 has no revocation: the copied token still opens the session",
+  ).toBeGreaterThan(0);
 });
 
 // ---- Finding F1 (corpus/wiki/security-findings.md), fixed ---------------------
@@ -321,7 +343,9 @@ async function installWorker(context: BrowserContext): Promise<void> {
   const app = await context.newPage();
   await app.goto(APP_URL);
   await app.evaluate(async () => navigator.serviceWorker.ready);
-  await expect.poll(() => app.evaluate(async () => (await caches.keys()).some((n) => n.startsWith("postern-shell-")))).toBe(true);
+  await expect
+    .poll(() => app.evaluate(async () => (await caches.keys()).some((n) => n.startsWith("postern-shell-"))))
+    .toBe(true);
   await app.close();
 }
 
@@ -354,12 +378,16 @@ function poison(writer: Page, path: RegExp, body: string, headers: Record<string
 }
 
 const FORGED_PAGE = "<!doctype html><title>Postern</title><script>window.__POSTERN_POISONED = true</script>";
-const poisoned = (p: Page) => p.evaluate(() => (window as unknown as { __POSTERN_POISONED?: boolean }).__POSTERN_POISONED).catch(() => undefined);
+const poisoned = (p: Page) =>
+  p.evaluate(() => (window as unknown as { __POSTERN_POISONED?: boolean }).__POSTERN_POISONED).catch(() => undefined);
 
 test("a script on the origin cannot replace what the service worker serves as Postern", async ({ context }) => {
   await installWorker(context);
   const writer = await writerPage(context);
-  expect(await poison(writer, /^\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" }), "cached copies replaced").toBeGreaterThan(0);
+  expect(
+    await poison(writer, /^\/index\.html$/, FORGED_PAGE, { "content-type": "text/html" }),
+    "cached copies replaced",
+  ).toBeGreaterThan(0);
 
   const next = await context.newPage();
   await next.goto(APP_URL);
@@ -368,13 +396,19 @@ test("a script on the origin cannot replace what the service worker serves as Po
   await expect(next.locator("input[name=username]")).toBeVisible();
 });
 
-test("a cached file with the right bytes but stripped headers is served with production's headers; a forged script never runs", async ({ context }) => {
+test("a cached file with the right bytes but stripped headers is served with production's headers; a forged script never runs", async ({
+  context,
+}) => {
   await installWorker(context);
   const writer = await writerPage(context);
   // The genuine page with no headers at all (no CSP), and a forged app script.
   const genuine = await writer.evaluate(async () => (await fetch("/index.html")).text());
   expect(await poison(writer, /^\/index\.html$/, genuine, {})).toBeGreaterThan(0);
-  expect(await poison(writer, /^\/assets\/index-[^/]+\.js$/, "window.__POSTERN_POISONED = true", { "content-type": "text/javascript" })).toBeGreaterThan(0);
+  expect(
+    await poison(writer, /^\/assets\/index-[^/]+\.js$/, "window.__POSTERN_POISONED = true", {
+      "content-type": "text/javascript",
+    }),
+  ).toBeGreaterThan(0);
 
   const next = await context.newPage();
   const response = await next.goto(APP_URL);
@@ -385,7 +419,9 @@ test("a cached file with the right bytes but stripped headers is served with pro
   expect(await poisoned(next), "a forged script ran").toBeUndefined();
 });
 
-test("offline, the installed app opens to the sign-in page from the verified cache; a forged copy never runs", async ({ context }) => {
+test("offline, the installed app opens to the sign-in page from the verified cache; a forged copy never runs", async ({
+  context,
+}) => {
   await installWorker(context);
   const writer = await writerPage(context);
   await context.setOffline(true);
@@ -406,7 +442,9 @@ test("offline, the installed app opens to the sign-in page from the verified cac
       (err: Error) => err.message.split("\n")[0] ?? "error",
     );
     expect(await poisoned(next), "a replaced shell ran offline").toBeUndefined();
-    expect(failed, "the forged copy is refused, and with the network down the page does not open").toMatch(/ERR_FAILED|ERR_INTERNET_DISCONNECTED/);
+    expect(failed, "the forged copy is refused, and with the network down the page does not open").toMatch(
+      /ERR_FAILED|ERR_INTERNET_DISCONNECTED/,
+    );
   } finally {
     await context.setOffline(false);
   }

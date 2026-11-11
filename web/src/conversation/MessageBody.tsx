@@ -49,7 +49,13 @@ export function MessageBody({ state, ...rest }: MessageBodyProps) {
 function LoadedBody({ body, ...rest }: Omit<MessageBodyProps, "state"> & { body: Body }) {
   return (
     <div className="conv-body">
-      {body.kind === "html" ? <HtmlBody body={body} {...rest} /> : body.kind === "text" ? <TextBody text={body.text} /> : <p className="conv-note">This message has no text.</p>}
+      {body.kind === "html" ? (
+        <HtmlBody body={body} {...rest} />
+      ) : body.kind === "text" ? (
+        <TextBody text={body.text} />
+      ) : (
+        <p className="conv-note">This message has no text.</p>
+      )}
       {body.kind !== "empty" && body.truncated ? (
         <p className="conv-note">
           This message is too long to show in full.{" "}
@@ -58,14 +64,23 @@ function LoadedBody({ body, ...rest }: Omit<MessageBodyProps, "state"> & { body:
           </button>
         </p>
       ) : null}
-      {body.kind !== "empty" && body.encodingProblem ? <p className="conv-note">Some characters in this message couldn't be read.</p> : null}
+      {body.kind !== "empty" && body.encodingProblem ? (
+        <p className="conv-note">Some characters in this message couldn't be read.</p>
+      ) : null}
     </div>
   );
 }
 
 function QuoteToggle({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   return (
-    <button type="button" className="conv-quote-toggle" aria-expanded={open} aria-label={open ? "Hide quoted text" : "Show quoted text"} data-tooltip={open ? "Hide quoted text" : "Show quoted text"} onClick={onToggle}>
+    <button
+      type="button"
+      className="conv-quote-toggle"
+      aria-expanded={open}
+      aria-label={open ? "Hide quoted text" : "Show quoted text"}
+      data-tooltip={open ? "Hide quoted text" : "Show quoted text"}
+      onClick={onToggle}
+    >
       <span aria-hidden="true">•••</span>
     </button>
   );
@@ -118,7 +133,10 @@ function HtmlBody({
   onLoadInlineImages,
 }: Omit<MessageBodyProps, "state" | "onShowOriginal"> & { body: Extract<Body, { kind: "html" }> }) {
   const [quoteOpen, setQuoteOpen] = useState(false);
-  const clean = useMemo(() => sanitizeMessageHtml(body.html, { allowRemote, cidUrls: body.cidUrls }), [body, allowRemote]);
+  const clean = useMemo(
+    () => sanitizeMessageHtml(body.html, { allowRemote, cidUrls: body.cidUrls }),
+    [body, allowRemote],
+  );
   // Whether anything was blocked is a property of the blocked rendering, so ask it even when showing.
   const blocked = useMemo(() => (allowRemote ? 0 : clean.blockedRemote), [allowRemote, clean]);
 
@@ -147,8 +165,10 @@ function HtmlBody({
         <div className="conv-banner" role="note">
           <ImageOff aria-hidden="true" />
           <p className="conv-banner-text">
-            {body.deferredCids.size === 1 ? "One large image in this message isn't loaded" : `${body.deferredCids.size} images in this message aren't loaded`} (
-            {formatSize(body.deferredBytes)}).{" "}
+            {body.deferredCids.size === 1
+              ? "One large image in this message isn't loaded"
+              : `${body.deferredCids.size} images in this message aren't loaded`}{" "}
+            ({formatSize(body.deferredBytes)}).{" "}
             <button type="button" className="conv-link-btn" onClick={onLoadInlineImages}>
               Load images
             </button>
@@ -156,7 +176,13 @@ function HtmlBody({
         </div>
       ) : null}
       <LinkWarnings links={clean.suspiciousLinks} />
-      <MessageFrame clean={clean} foldQuote={clean.hasQuote && !quoteOpen} theme={theme} allowRemote={allowRemote} title={`Message from ${senderName}`} />
+      <MessageFrame
+        clean={clean}
+        foldQuote={clean.hasQuote && !quoteOpen}
+        theme={theme}
+        allowRemote={allowRemote}
+        title={`Message from ${senderName}`}
+      />
       {clean.hasQuote ? <QuoteToggle open={quoteOpen} onToggle={() => setQuoteOpen((o) => !o)} /> : null}
     </>
   );

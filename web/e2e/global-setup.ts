@@ -12,7 +12,10 @@ import { APP_URL, CADDY_CONTAINER, CADDY_IMAGE, DIST_DIR, E2E_DIR, E2E_PORT, PRO
 const STALWART = process.env.POSTERN_DEV_API ?? "http://127.0.0.1:18080";
 
 function docker(args: string[], options: { quiet?: boolean } = {}): string {
-  return execFileSync("docker", args, { encoding: "utf8", stdio: options.quiet ? ["ignore", "pipe", "ignore"] : ["ignore", "pipe", "pipe"] });
+  return execFileSync("docker", args, {
+    encoding: "utf8",
+    stdio: options.quiet ? ["ignore", "pipe", "ignore"] : ["ignore", "pipe", "pipe"],
+  });
 }
 
 function removeContainer(): void {
@@ -47,10 +50,14 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   try {
     await fetch(`${STALWART}/healthz/live`);
   } catch {
-    throw new Error(`The dev Stalwart is not answering at ${STALWART}. Start it with \`npm run dev:mail\` (never reset it for this).`);
+    throw new Error(
+      `The dev Stalwart is not answering at ${STALWART}. Start it with \`npm run dev:mail\` (never reset it for this).`,
+    );
   }
   if (!existsSync(join(DIST_DIR, "index.html"))) {
-    throw new Error("web/dist is missing. `npm run test:e2e` builds first; run `npm run build` when calling Playwright directly.");
+    throw new Error(
+      "web/dist is missing. `npm run test:e2e` builds first; run `npm run build` when calling Playwright directly.",
+    );
   }
 
   const snapshot = await snapshotMail();
@@ -100,10 +107,14 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
         `Hostile ${after.hostile.messages}/${after.hostile.threads}/${after.hostile.unreadThreads} unread (messages/threads/unread threads).`,
     );
     if (report.unexpected.length > 0) {
-      throw new Error(`[e2e] the run created ${report.unexpected.length} message(s) that are not drafts; left in place: ${report.unexpected.join(", ")}`);
+      throw new Error(
+        `[e2e] the run created ${report.unexpected.length} message(s) that are not drafts; left in place: ${report.unexpected.join(", ")}`,
+      );
     }
     if (!sameCounts(after, snapshot.counts)) {
-      throw new Error(`[e2e] counts after the run ${JSON.stringify(after)} differ from before ${JSON.stringify(snapshot.counts)}`);
+      throw new Error(
+        `[e2e] counts after the run ${JSON.stringify(after)} differ from before ${JSON.stringify(snapshot.counts)}`,
+      );
     }
   };
 }

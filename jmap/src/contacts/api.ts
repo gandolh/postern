@@ -13,7 +13,10 @@ export const CONTACT_PAGE = 200;
 export const CONTACT_LIMIT = 5000;
 
 /** Every card in the account: contacts and groups, with the state to ask `changes` from. */
-export async function loadContactCards(caller: MethodCaller, signal?: AbortSignal): Promise<{ cards: ContactCard[]; state: string }> {
+export async function loadContactCards(
+  caller: MethodCaller,
+  signal?: AbortSignal,
+): Promise<{ cards: ContactCard[]; state: string }> {
   const q = await caller.call("ContactCard/query", { limit: CONTACT_LIMIT }, { signal });
   const cards: ContactCard[] = [];
   let state = q.queryState;
@@ -35,7 +38,10 @@ export async function defaultAddressBookId(caller: MethodCaller, signal?: AbortS
   return (r.list.find((b) => b.isDefault) ?? r.list[0])?.id ?? null;
 }
 
-function failure(r: Pick<SetResponse<ContactCard>, "notCreated" | "notUpdated" | "notDestroyed">, id: string): Error | null {
+function failure(
+  r: Pick<SetResponse<ContactCard>, "notCreated" | "notUpdated" | "notDestroyed">,
+  id: string,
+): Error | null {
   const e = r.notCreated?.[id] ?? r.notUpdated?.[id] ?? r.notDestroyed?.[id];
   return e ? new Error(e.description || e.type) : null;
 }
@@ -52,7 +58,12 @@ export async function createContact(caller: MethodCaller, draft: ContactDraft, s
   return id;
 }
 
-export async function updateContact(caller: MethodCaller, card: ContactCard, draft: ContactDraft, signal?: AbortSignal): Promise<void> {
+export async function updateContact(
+  caller: MethodCaller,
+  card: ContactCard,
+  draft: ContactDraft,
+  signal?: AbortSignal,
+): Promise<void> {
   const r = await caller.call("ContactCard/set", { update: { [card.id]: contactPatch(draft) } }, { signal });
   const err = failure(r, card.id);
   if (err) throw err;

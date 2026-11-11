@@ -15,7 +15,8 @@ import { fileName, imageDataUrl, saveAttachment, type AttachmentRef } from "./fi
 
 /** The viewer's page: the image centred and fitted. `dataUrl` is base64 (A-Z a-z 0-9 + / =), safe in an attribute. */
 export function viewerSrcdoc(dataUrl: string): string {
-  if (!/^data:image\/(png|jpeg|gif|webp|avif|bmp);base64,[A-Za-z0-9+/=]*$/.test(dataUrl)) throw new Error("not a raster data: URL");
+  if (!/^data:image\/(png|jpeg|gif|webp|avif|bmp);base64,[A-Za-z0-9+/=]*$/.test(dataUrl))
+    throw new Error("not a raster data: URL");
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'">
 <style>html,body{margin:0;height:100%}body{display:grid;place-items:center}img{display:block;max-width:100%;max-height:100vh;object-fit:contain}</style>
@@ -35,7 +36,10 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
       },
       (err: unknown) => {
         if (isAbortError(err)) return;
-        setState({ srcdoc: null, error: err instanceof Error && err.name === "NotPreviewableError" ? err.message : "This image didn't load." });
+        setState({
+          srcdoc: null,
+          error: err instanceof Error && err.name === "NotPreviewableError" ? err.message : "This image didn't load.",
+        });
       },
     );
     return () => abort.abort();
@@ -45,12 +49,22 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
     <Modal className="att-viewer" label={`Preview of ${name}`} onClose={onClose}>
       <header className="att-viewer-bar">
         <h2 className="att-viewer-title">{name}</h2>
-        <IconButton label={`Download ${name}`} icon={Download} onClick={() => void saveAttachment(client, part).catch(() => {})} />
+        <IconButton
+          label={`Download ${name}`}
+          icon={Download}
+          onClick={() => void saveAttachment(client, part).catch(() => {})}
+        />
         <IconButton label="Close preview" icon={X} onClick={onClose} tooltip="end" data-autofocus />
       </header>
       <div className="att-viewer-stage">
         {state.srcdoc ? (
-          <iframe className="att-viewer-frame" sandbox={VIEWER_FRAME_SANDBOX} srcDoc={state.srcdoc} title={`Preview of ${name}`} referrerPolicy="no-referrer" />
+          <iframe
+            className="att-viewer-frame"
+            sandbox={VIEWER_FRAME_SANDBOX}
+            srcDoc={state.srcdoc}
+            title={`Preview of ${name}`}
+            referrerPolicy="no-referrer"
+          />
         ) : state.error ? (
           <p className="att-viewer-note">{state.error}</p>
         ) : (

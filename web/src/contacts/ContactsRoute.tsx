@@ -34,7 +34,9 @@ export function filterCards(cards: readonly ContactCard[], query: string): Conta
     }),
   );
   if (!q) return list;
-  return list.filter((c) => [contactName(c), ...contactEmails(c), ...contactPhones(c), contactNote(c)].some((s) => s.toLowerCase().includes(q)));
+  return list.filter((c) =>
+    [contactName(c), ...contactEmails(c), ...contactPhones(c), contactNote(c)].some((s) => s.toLowerCase().includes(q)),
+  );
 }
 
 function lines(text: string): string[] {
@@ -86,7 +88,9 @@ export function ContactsRoute() {
         <h1 id="contacts-title" className="shell-page-title">
           Contacts
         </h1>
-        <span className="shell-page-meta">{status === "ready" ? `${cards.length} ${cards.length === 1 ? "entry" : "entries"}` : null}</span>
+        <span className="shell-page-meta">
+          {status === "ready" ? `${cards.length} ${cards.length === 1 ? "entry" : "entries"}` : null}
+        </span>
         <button type="button" className="btn btn-primary contacts-add" onClick={() => setEditing({ kind: "new" })}>
           <Plus aria-hidden="true" /> Add contact
         </button>
@@ -121,11 +125,17 @@ export function ContactsRoute() {
           ) : (
             <ul className="contacts-list" aria-label="Contacts">
               {shown.map((card) => (
-                <li key={card.id} className="contacts-item" data-selected={editing?.kind === "edit" && editing.card.id === card.id ? "true" : undefined}>
+                <li
+                  key={card.id}
+                  className="contacts-item"
+                  data-selected={editing?.kind === "edit" && editing.card.id === card.id ? "true" : undefined}
+                >
                   <button type="button" className="contacts-row" onClick={() => setEditing({ kind: "edit", card })}>
                     <span className="contacts-name">{contactName(card) || "(no name)"}</span>
                     <span className="contacts-sub">
-                      {isGroup(card) ? `Group, ${groupMembers(card, cards).length} members` : (contactEmails(card)[0] ?? contactPhones(card)[0] ?? "")}
+                      {isGroup(card)
+                        ? `Group, ${groupMembers(card, cards).length} members`
+                        : (contactEmails(card)[0] ?? contactPhones(card)[0] ?? "")}
                     </span>
                   </button>
                 </li>
@@ -213,19 +223,42 @@ function ContactForm({ editing, onSave, onCancel, onDelete }: FormProps) {
         {heading}
       </h2>
       {group ? (
-        <p className="contacts-note">This is a group. Its members are managed on your phone or other address book app; here it can only be deleted.</p>
+        <p className="contacts-note">
+          This is a group. Its members are managed on your phone or other address book app; here it can only be deleted.
+        </p>
       ) : null}
       <label className="contacts-field">
         <span>Name</span>
-        <input ref={nameRef} className="input" value={name} onChange={(e) => setName(e.target.value)} disabled={group} autoComplete="off" />
+        <input
+          ref={nameRef}
+          className="input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={group}
+          autoComplete="off"
+        />
       </label>
       <label className="contacts-field">
         <span>Email addresses</span>
-        <textarea className="input" rows={2} value={emails} onChange={(e) => setEmails(e.target.value)} disabled={group} placeholder="One per line" />
+        <textarea
+          className="input"
+          rows={2}
+          value={emails}
+          onChange={(e) => setEmails(e.target.value)}
+          disabled={group}
+          placeholder="One per line"
+        />
       </label>
       <label className="contacts-field">
         <span>Phone numbers</span>
-        <textarea className="input" rows={2} value={phones} onChange={(e) => setPhones(e.target.value)} disabled={group} placeholder="One per line" />
+        <textarea
+          className="input"
+          rows={2}
+          value={phones}
+          onChange={(e) => setPhones(e.target.value)}
+          disabled={group}
+          placeholder="One per line"
+        />
       </label>
       <label className="contacts-field">
         <span>Note</span>

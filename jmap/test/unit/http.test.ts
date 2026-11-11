@@ -12,7 +12,12 @@ import {
 import { BASE, FakeServer, json, problem, SESSION, setup } from "./helpers.js";
 
 // Bodies recorded from Stalwart 0.16.25 on 2026-10-20.
-const UNAUTHORIZED = { type: "about:blank", status: 401, title: "Unauthorized", detail: "You have to authenticate first." };
+const UNAUTHORIZED = {
+  type: "about:blank",
+  status: 401,
+  title: "Unauthorized",
+  detail: "You have to authenticate first.",
+};
 const LIMIT = {
   type: "urn:ietf:params:jmap:error:limit",
   status: 400,
@@ -111,7 +116,11 @@ describe("401 and the auth provider", () => {
     const server = new FakeServer();
     server.always("GET /jmap/session", () => problem(401, UNAUTHORIZED));
     const onUnauthorized = vi.fn(() => true);
-    const client = new JmapClient({ baseUrl: BASE, auth: { authorization: () => "Bearer x", onUnauthorized }, fetch: server.fetch });
+    const client = new JmapClient({
+      baseUrl: BASE,
+      auth: { authorization: () => "Bearer x", onUnauthorized },
+      fetch: server.fetch,
+    });
     await expect(client.connect()).rejects.toBeInstanceOf(JmapUnauthorizedError);
     expect(onUnauthorized).toHaveBeenCalledTimes(1);
     expect(server.requests).toHaveLength(2);
@@ -120,8 +129,14 @@ describe("401 and the auth provider", () => {
   it("asks the provider for the header on every request and never caches it", async () => {
     const { server } = setup();
     let n = 0;
-    const client = new JmapClient({ baseUrl: BASE, auth: { authorization: () => `Bearer t${++n}` }, fetch: server.fetch });
-    server.always("POST /jmap/", () => json({ methodResponses: [["Mailbox/get", {}, "0"]], sessionState: SESSION.state }));
+    const client = new JmapClient({
+      baseUrl: BASE,
+      auth: { authorization: () => `Bearer t${++n}` },
+      fetch: server.fetch,
+    });
+    server.always("POST /jmap/", () =>
+      json({ methodResponses: [["Mailbox/get", {}, "0"]], sessionState: SESSION.state }),
+    );
     await client.call("Mailbox/get", {});
     await client.call("Mailbox/get", {});
     expect(server.requests.map((r) => r.headers["authorization"])).toEqual(["Bearer t1", "Bearer t2", "Bearer t3"]);

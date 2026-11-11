@@ -93,7 +93,19 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-export function MessageCard({ message, expanded, last, me, body, theme, allowRemote, canReportSpam, senderBlocked = false, actions, onFocusCard }: MessageCardProps) {
+export function MessageCard({
+  message,
+  expanded,
+  last,
+  me,
+  body,
+  theme,
+  allowRemote,
+  canReportSpam,
+  senderBlocked = false,
+  actions,
+  onFocusCard,
+}: MessageCardProps) {
   const headingId = useId();
   const detailsId = useId();
   const [details, setDetails] = useState(false);
@@ -144,19 +156,34 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
     { label: "Mark unread from here", onSelect: actions.markUnreadFromHere },
     { label: "Delete this message", onSelect: actions.trash },
     ...(canReportSpam && !fromMe ? [{ label: "Report spam", onSelect: actions.reportSpam }] : []),
-    ...(from && !fromMe ? [{ label: `${senderBlocked ? "Unblock" : "Block"} "${name}"`, onSelect: actions.block }] : []),
+    ...(from && !fromMe
+      ? [{ label: `${senderBlocked ? "Unblock" : "Block"} "${name}"`, onSelect: actions.block }]
+      : []),
     { label: "Filter messages like these", onSelect: actions.filterLike },
     { label: "Show original", onSelect: actions.showOriginal },
   ];
 
   return (
-    <article id={messageCardId(message.id)} className="conv-msg" data-expanded="true" tabIndex={-1} aria-labelledby={headingId} onFocus={onFocusCard}>
+    <article
+      id={messageCardId(message.id)}
+      className="conv-msg"
+      data-expanded="true"
+      tabIndex={-1}
+      aria-labelledby={headingId}
+      onFocus={onFocusCard}
+    >
       <header className="conv-msg-head">
         <Avatar name={name} />
         <div className="conv-msg-who">
           <SenderHoverCard address={from}>
             <h2 className="conv-msg-heading" id={headingId}>
-              <button type="button" className="conv-msg-sender" aria-expanded={true} onClick={actions.toggle} title="Collapse this message">
+              <button
+                type="button"
+                className="conv-msg-sender"
+                aria-expanded={true}
+                onClick={actions.toggle}
+                title="Collapse this message"
+              >
                 <bdi className="conv-sender-name">{name}</bdi>
                 {from && displayName(from) ? (
                   <span className="conv-sender-address">
@@ -213,7 +240,12 @@ export function MessageCard({ message, expanded, last, me, body, theme, allowRem
         </div>
       </header>
       {/* A calendar invite's card, from parsed text only; the body below is untouched. */}
-      <InviteCard messageId={message.id} messageIdHeader={message.messageId} keywords={message.keywords} attachments={message.attachments} />
+      <InviteCard
+        messageId={message.id}
+        messageIdHeader={message.messageId}
+        keywords={message.keywords}
+        attachments={message.attachments}
+      />
       <MessageBody
         state={body}
         senderAddress={from?.email ?? null}

@@ -31,7 +31,10 @@ function draft(server: ComposeTestServer, id: string, extra: Record<string, unkn
     preview: `Preview ${id}`,
     to: [{ name: "Bob Baker", email: "bob@postern.test" }],
     cc: [{ name: null, email: "Carol@example.org" }],
-    bcc: [{ name: null, email: "carol@example.org" }, { name: null, email: "dave@example.org" }],
+    bcc: [
+      { name: null, email: "carol@example.org" },
+      { name: null, email: "dave@example.org" },
+    ],
     ...extra,
   });
 }
@@ -51,7 +54,9 @@ describe("choosing a time", () => {
       ["Monday morning", new Date(2026, 10, 2, 8, 0).toString()],
     ]);
     expect(schedulePresets(new Date(2026, 9, 26, 7, 0))[2]!.at.toString()).toBe(new Date(2026, 10, 2, 8, 0).toString());
-    expect(schedulePresets(new Date(2026, 10, 1, 22, 0))[2]!.at.toString()).toBe(new Date(2026, 10, 2, 8, 0).toString());
+    expect(schedulePresets(new Date(2026, 10, 1, 22, 0))[2]!.at.toString()).toBe(
+      new Date(2026, 10, 2, 8, 0).toString(),
+    );
   });
 
   it("refuses a time that has passed, is under a minute away, or is past the server's limit", () => {
@@ -80,7 +85,12 @@ describe("scheduling", () => {
   it("submits with HOLDUNTIL and every recipient once, and marks the draft $scheduled, still in Drafts", async () => {
     const { server, client } = await setup();
     draft(server, "M1");
-    const scheduled = await scheduleDraft(client, { emailId: "M1", identityId: "I1", from: "alice@postern.test", at: AT });
+    const scheduled = await scheduleDraft(client, {
+      emailId: "M1",
+      identityId: "I1",
+      from: "alice@postern.test",
+      at: AT,
+    });
     expect(scheduled).toMatchObject({ emailId: "M1", sendAt: "2026-10-28T08:00:00Z" });
     expect(server.submissions[0]).toEqual({
       identityId: "I1",
@@ -94,7 +104,10 @@ describe("scheduling", () => {
         ],
       },
     });
-    expect(server.emails.get("M1")).toMatchObject({ mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $seen: true, [SCHEDULED]: true } });
+    expect(server.emails.get("M1")).toMatchObject({
+      mailboxIds: { [MAILBOXES.drafts]: true },
+      keywords: { $draft: true, $seen: true, [SCHEDULED]: true },
+    });
   });
 
   it("cancels: the submission is canceled and the message a plain draft; once sent, says so", async () => {
@@ -117,16 +130,32 @@ describe("the Scheduled list and filing in Sent", () => {
     draft(server, "late");
     draft(server, "soon");
     draft(server, "now");
-    await scheduleDraft(client, { emailId: "late", identityId: "I1", from: "alice@postern.test", at: new Date("2026-11-02T08:00:00Z") });
+    await scheduleDraft(client, {
+      emailId: "late",
+      identityId: "I1",
+      from: "alice@postern.test",
+      at: new Date("2026-11-02T08:00:00Z"),
+    });
     await scheduleDraft(client, { emailId: "soon", identityId: "I1", from: "alice@postern.test", at: AT });
     // An ordinary send that is still pending for a moment carries no $scheduled.
-    server.held.set("S-now", { id: "S-now", emailId: "now", threadId: "T-now", sendAt: "2026-10-27T12:00:00Z", undoStatus: "pending" });
+    server.held.set("S-now", {
+      id: "S-now",
+      emailId: "now",
+      threadId: "T-now",
+      sendAt: "2026-10-27T12:00:00Z",
+      undoStatus: "pending",
+    });
     const list = await listScheduled(client);
     expect(list.map((m) => [m.emailId, m.sendAt, m.subject])).toEqual([
       ["soon", "2026-10-28T08:00:00Z", "Subject soon"],
       ["late", "2026-11-02T08:00:00Z", "Subject late"],
     ]);
-    expect(list[0]!.to.map((a) => a.email)).toEqual(["bob@postern.test", "Carol@example.org", "carol@example.org", "dave@example.org"]);
+    expect(list[0]!.to.map((a) => a.email)).toEqual([
+      "bob@postern.test",
+      "Carol@example.org",
+      "carol@example.org",
+      "dave@example.org",
+    ]);
   });
 
   it("files a sent one in Sent, makes a canceled one a plain draft, and waits for the rest", async () => {
@@ -134,14 +163,26 @@ describe("the Scheduled list and filing in Sent", () => {
     for (const id of ["gone", "kept", "waits", "orphan"]) draft(server, id);
     const gone = await scheduleDraft(client, { emailId: "gone", identityId: "I1", from: "alice@postern.test", at: AT });
     const kept = await scheduleDraft(client, { emailId: "kept", identityId: "I1", from: "alice@postern.test", at: AT });
-    await scheduleDraft(client, { emailId: "waits", identityId: "I1", from: "alice@postern.test", at: new Date("2026-10-29T13:00:00Z") });
+    await scheduleDraft(client, {
+      emailId: "waits",
+      identityId: "I1",
+      from: "alice@postern.test",
+      at: new Date("2026-10-29T13:00:00Z"),
+    });
     server.emails.get("orphan")!.keywords[SCHEDULED] = true;
     server.release(gone.submissionId);
     server.held.get(kept.submissionId)!.undoStatus = "canceled";
 
     const result = await reconcileScheduled(client, ROLES);
-    expect(result).toEqual({ filed: ["gone"], unscheduled: ["kept", "orphan"], next: Date.parse("2026-10-29T13:00:00Z") });
-    expect(server.emails.get("gone")).toMatchObject({ mailboxIds: { [MAILBOXES.sent]: true }, keywords: { $seen: true } });
+    expect(result).toEqual({
+      filed: ["gone"],
+      unscheduled: ["kept", "orphan"],
+      next: Date.parse("2026-10-29T13:00:00Z"),
+    });
+    expect(server.emails.get("gone")).toMatchObject({
+      mailboxIds: { [MAILBOXES.sent]: true },
+      keywords: { $seen: true },
+    });
     expect(server.emails.get("kept")!.keywords).toEqual({ $draft: true, $seen: true });
     expect(server.emails.get("kept")!.mailboxIds).toEqual({ [MAILBOXES.drafts]: true });
     expect(server.emails.get("waits")!.keywords[SCHEDULED]).toBe(true);
@@ -162,7 +203,12 @@ describe("ScheduledSync", () => {
     vi.setSystemTime(new Date("2026-10-28T07:59:00Z"));
     const { server, client } = await setup();
     draft(server, "M1");
-    const scheduled = await scheduleDraft(client, { emailId: "M1", identityId: "I1", from: "alice@postern.test", at: AT });
+    const scheduled = await scheduleDraft(client, {
+      emailId: "M1",
+      identityId: "I1",
+      from: "alice@postern.test",
+      at: AT,
+    });
     const changed = vi.fn();
     const sync = new ScheduledSync(client, () => ROLES, changed, { marginMs: 15_000 });
     sync.start();
@@ -184,7 +230,12 @@ describe("ScheduledSync", () => {
     const { server, client } = await setup();
     draft(server, "M1");
     await scheduleDraft(client, { emailId: "M1", identityId: "I1", from: "alice@postern.test", at: AT });
-    const sync = new ScheduledSync(client, () => ROLES, () => {}, { marginMs: 15_000 });
+    const sync = new ScheduledSync(
+      client,
+      () => ROLES,
+      () => {},
+      { marginMs: 15_000 },
+    );
     const looks = () => server.names().filter((n) => n === "EmailSubmission/query").length;
     sync.start();
     await vi.waitFor(() => expect(looks()).toBe(1));
@@ -202,7 +253,11 @@ describe("ScheduledSync", () => {
 
   it("looks again when the window regains focus", async () => {
     const { server, client } = await setup();
-    const sync = new ScheduledSync(client, () => ROLES, () => {});
+    const sync = new ScheduledSync(
+      client,
+      () => ROLES,
+      () => {},
+    );
     sync.start();
     await vi.waitFor(() => expect(server.names()).toEqual(["Email/query"]));
     window.dispatchEvent(new Event("focus"));

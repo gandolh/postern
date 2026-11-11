@@ -113,7 +113,11 @@ export function newContactUid(): string {
 }
 
 /** The object to pass as a `ContactCard/set` create. */
-export function newContactCard(draft: ContactDraft, addressBookId: Id, uid: string = newContactUid()): Omit<ContactCard, "id"> {
+export function newContactCard(
+  draft: ContactDraft,
+  addressBookId: Id,
+  uid: string = newContactUid(),
+): Omit<ContactCard, "id"> {
   const emails = clean(draft.emails);
   const phones = clean(draft.phones);
   const note = draft.note.trim();

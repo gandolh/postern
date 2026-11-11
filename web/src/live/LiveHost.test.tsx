@@ -37,7 +37,14 @@ function setup() {
     if (name === "Mailbox/get") return { accountId: "A", state: "m1", list: [], notFound: [] };
     throw new Error(`unexpected ${name}`);
   });
-  const client = { accountId: "A", call, push: vi.fn(() => reader), request: () => { throw new Error("no"); } } as unknown as JmapClient;
+  const client = {
+    accountId: "A",
+    call,
+    push: vi.fn(() => reader),
+    request: () => {
+      throw new Error("no");
+    },
+  } as unknown as JmapClient;
   const session: SignedInSession = { client, account: { username: "alice@postern.test" }, signOut: async () => {} };
   const store = new LabelsStore(client, () => "A");
   const applied = vi.spyOn(store, "applyStateChange");

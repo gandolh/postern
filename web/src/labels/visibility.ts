@@ -10,7 +10,11 @@ import type { LabelPrefs } from "./labelPrefs";
 export function visibleNodes(nodes: readonly LabelNode[], prefs: LabelPrefs, currentId: Id | undefined): LabelNode[] {
   return nodes.flatMap((node) => {
     const children = visibleNodes(node.children, prefs, currentId);
-    const hide = prefs[node.label.id]?.showIfUnread === true && node.label.unreadThreads === 0 && node.label.id !== currentId && children.length === 0;
+    const hide =
+      prefs[node.label.id]?.showIfUnread === true &&
+      node.label.unreadThreads === 0 &&
+      node.label.id !== currentId &&
+      children.length === 0;
     return hide ? [] : [{ ...node, children }];
   });
 }

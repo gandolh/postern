@@ -6,7 +6,18 @@ const host = (raw: string) => new URL(`https://${raw}/`).hostname;
 
 describe("decodePunycode", () => {
   it("decodes what the URL parser encodes, as Node's own decoder does", () => {
-    for (const name of ["аррӏе.test", "аpple.test", "раypal.test", "почта.test", "münchen.de", "пример.рф", "例え.jp", "bücher.example", "ελληνικά.gr", "한국.kr"]) {
+    for (const name of [
+      "аррӏе.test",
+      "аpple.test",
+      "раypal.test",
+      "почта.test",
+      "münchen.de",
+      "пример.рф",
+      "例え.jp",
+      "bücher.example",
+      "ελληνικά.gr",
+      "한국.kr",
+    ]) {
       const ascii = host(name);
       expect(hostToUnicode(ascii)).toBe(domainToUnicode(ascii));
     }
@@ -53,13 +64,25 @@ describe("lookalikeHost", () => {
   });
 
   it("does not flag ordinary internationalised names", () => {
-    for (const name of ["münchen.de", "bücher.example", "почта.test", "пример.рф", "例え.jp", "ドメイン名例.jp", "한국.kr", "ελληνικά.gr", "日本語abc.jp", "中文域名.cn"]) {
+    for (const name of [
+      "münchen.de",
+      "bücher.example",
+      "почта.test",
+      "пример.рф",
+      "例え.jp",
+      "ドメイン名例.jp",
+      "한국.kr",
+      "ελληνικά.gr",
+      "日本語abc.jp",
+      "中文域名.cn",
+    ]) {
       expect(lookalikeHost(host(name)), name).toBeNull();
     }
   });
 
   it("does not flag plain ASCII hosts", () => {
-    for (const name of ["example.com", "sub.evil.test", "localhost", "a-b.c-d.example"]) expect(lookalikeHost(name)).toBeNull();
+    for (const name of ["example.com", "sub.evil.test", "localhost", "a-b.c-d.example"])
+      expect(lookalikeHost(name)).toBeNull();
   });
 
   it("calls broken punycode unreadable", () => {

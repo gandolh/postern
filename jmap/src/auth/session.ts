@@ -15,7 +15,16 @@ import { normalizeBase } from "../url.js";
 import { SessionExpiredError, SignInError, SignedOutError, TokenEndpointError } from "./errors.js";
 import { IdleTimeout } from "./idle.js";
 import { createPkce } from "./pkce.js";
-import { DEFAULT_SCOPE, POSTERN_CLIENT_ID, exchangeCode, fetchUserInfo, refreshGrant, requestAuthCode, type TokenGrant, type UserInfo } from "./protocol.js";
+import {
+  DEFAULT_SCOPE,
+  POSTERN_CLIENT_ID,
+  exchangeCode,
+  fetchUserInfo,
+  refreshGrant,
+  requestAuthCode,
+  type TokenGrant,
+  type UserInfo,
+} from "./protocol.js";
 import type { SessionStore, StoredSession } from "./store.js";
 
 /** Refresh this long before the access token expires (or a quarter of its lifetime, if shorter). */
@@ -271,7 +280,10 @@ export class AuthSession implements AuthProvider {
         );
       } catch (err) {
         if (err instanceof TokenEndpointError) {
-          throw new SignInError("server", "The mail server refused the authorization code", { status: err.status, cause: err });
+          throw new SignInError("server", "The mail server refused the authorization code", {
+            status: err.status,
+            cause: err,
+          });
         }
         throw err;
       }
@@ -332,7 +344,10 @@ export class AuthSession implements AuthProvider {
     const overtaken = () => generation !== this.#generation || this.#status !== "signedOut";
     let grant: TokenGrant;
     try {
-      grant = await refreshGrant(this.#fetch, this.baseUrl, { refreshToken: kept.refreshToken, clientId: this.clientId });
+      grant = await refreshGrant(this.#fetch, this.baseUrl, {
+        refreshToken: kept.refreshToken,
+        clientId: this.clientId,
+      });
     } catch (err) {
       if (overtaken()) return "cancelled";
       if (err instanceof TokenEndpointError) {
@@ -569,7 +584,9 @@ export class AuthSession implements AuthProvider {
   #load(): StoredSession | undefined {
     try {
       const kept = this.#store?.load();
-      return kept && typeof kept.refreshToken === "string" && kept.refreshToken && typeof kept.username === "string" ? kept : undefined;
+      return kept && typeof kept.refreshToken === "string" && kept.refreshToken && typeof kept.username === "string"
+        ? kept
+        : undefined;
     } catch {
       return undefined;
     }

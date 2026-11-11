@@ -13,11 +13,18 @@ const inbox = labelListView({ view: "inbox", mailboxId: "a" }, ROLES)!.query;
 
 const stores: ListStore[] = [];
 
-async function setup(emails: FakeEmail[], query: ListQuery = inbox, options: { maxObjectsInGet?: number; conversationView?: boolean } = {}) {
+async function setup(
+  emails: FakeEmail[],
+  query: ListQuery = inbox,
+  options: { maxObjectsInGet?: number; conversationView?: boolean } = {},
+) {
   const { conversationView, ...server } = options;
   const mail = new FakeMail({ mailboxes: MAILBOXES, emails, ...server });
   const client = await mail.connect();
-  const store = new ListStore(client, query, { accountId: () => "A", ...(conversationView === undefined ? {} : { conversationView }) });
+  const store = new ListStore(client, query, {
+    accountId: () => "A",
+    ...(conversationView === undefined ? {} : { conversationView }),
+  });
   stores.push(store);
   return { mail, client, store };
 }
@@ -57,7 +64,12 @@ describe("loading pages", () => {
     expect(snap.rows).toHaveLength(50);
     expect(snap.total).toBe(120);
     expect(snap.complete).toBe(false);
-    expect(snap.rows[0]).toMatchObject({ id: "t0", emailId: "m0", subject: "Subject m0", messages: [expect.objectContaining({ id: "m0" })] });
+    expect(snap.rows[0]).toMatchObject({
+      id: "t0",
+      emailId: "m0",
+      subject: "Subject m0",
+      messages: [expect.objectContaining({ id: "m0" })],
+    });
   });
 
   it("makes one request per further page, and none past the end", async () => {
@@ -78,7 +90,13 @@ describe("loading pages", () => {
   it("shows a conversation's messages, oldest first, for senders and unread", async () => {
     const { store } = await setup([
       fakeEmail({ id: "1", threadId: "T", receivedAt: "2026-10-01T00:00:00Z" }),
-      fakeEmail({ id: "2", threadId: "T", mailboxIds: { e: true }, receivedAt: "2026-10-02T00:00:00Z", from: [{ name: "Alice", email: "alice@postern.test" }] }),
+      fakeEmail({
+        id: "2",
+        threadId: "T",
+        mailboxIds: { e: true },
+        receivedAt: "2026-10-02T00:00:00Z",
+        from: [{ name: "Alice", email: "alice@postern.test" }],
+      }),
     ]);
     store.start();
     await vi.waitFor(() => expect(store.getSnapshot().rows).toHaveLength(1));
@@ -87,7 +105,9 @@ describe("loading pages", () => {
   });
 
   it("fetches long conversations' messages in chunks when one get would pass maxObjectsInGet", async () => {
-    const emails = Array.from({ length: 8 }, (_, i) => fakeEmail({ id: `e${i}`, threadId: "T", receivedAt: `2026-10-01T00:00:0${i}Z` }));
+    const emails = Array.from({ length: 8 }, (_, i) =>
+      fakeEmail({ id: `e${i}`, threadId: "T", receivedAt: `2026-10-01T00:00:0${i}Z` }),
+    );
     const { mail, store } = await setup(emails, inbox, { maxObjectsInGet: 5 });
     store.start();
     await vi.waitFor(() => expect(store.getSnapshot().rows).toHaveLength(1));
@@ -170,7 +190,12 @@ describe("freshness", () => {
     await store.refresh();
     expect(store.getSnapshot().rows.map((r) => r.id)).toEqual(["tn", "t0", "t1", "t2"]);
     expect(store.getSnapshot().rows[1]).toBe(before[0]);
-    expect(mail.calls().slice(sent)).toEqual([["Email/changes"], ["Email/get"], ["Email/queryChanges"], ["Email/get", "Thread/get", "Email/get"]]);
+    expect(mail.calls().slice(sent)).toEqual([
+      ["Email/changes"],
+      ["Email/get"],
+      ["Email/queryChanges"],
+      ["Email/get", "Thread/get", "Email/get"],
+    ]);
   });
 
   it("refetches a conversation that gained a message outside the list (a reply in Sent)", async () => {
@@ -178,7 +203,10 @@ describe("freshness", () => {
     store.start();
     await settled(store);
     mail.mutate((emails) => {
-      emails.set("r", fakeEmail({ id: "r", threadId: "t1", mailboxIds: { e: true }, receivedAt: "2026-10-09T00:00:00Z" }));
+      emails.set(
+        "r",
+        fakeEmail({ id: "r", threadId: "t1", mailboxIds: { e: true }, receivedAt: "2026-10-09T00:00:00Z" }),
+      );
       return { created: ["r"] };
     });
     await store.refresh();
@@ -200,7 +228,10 @@ describe("freshness", () => {
     await store.refresh();
     expect(store.getSnapshot().rows).toHaveLength(70);
     expect(store.getSnapshot().rows[3]!.messages[0]!.keywords).toEqual({ $seen: true });
-    expect(mail.calls().slice(sent)).toEqual([["Email/changes"], ...Array(2).fill(["Email/query", "Email/get", "Thread/get", "Email/get"])]);
+    expect(mail.calls().slice(sent)).toEqual([
+      ["Email/changes"],
+      ...Array(2).fill(["Email/query", "Email/get", "Thread/get", "Email/get"]),
+    ]);
   });
 
   it("catches up when the list moved between two pages, without duplicates", async () => {
@@ -224,7 +255,10 @@ describe("freshness", () => {
     store.start();
     await settled(store);
     const sent = mail.posts.length;
-    await store.applyStateChange({ "@type": "StateChange", changed: { A: { Email: store.emailState!, Mailbox: "x" } } });
+    await store.applyStateChange({
+      "@type": "StateChange",
+      changed: { A: { Email: store.emailState!, Mailbox: "x" } },
+    });
     expect(mail.posts.length).toBe(sent);
     mail.mutate((emails) => {
       emails.get("m1")!.keywords = { $flagged: true };
@@ -237,10 +271,18 @@ describe("freshness", () => {
 
 describe("select all", () => {
   it("fetches every conversation in the list with its messages", async () => {
-    const { store } = await setup([...inboxThreads(120), fakeEmail({ id: "x", threadId: "t5", mailboxIds: { e: true } })]);
+    const { store } = await setup([
+      ...inboxThreads(120),
+      fakeEmail({ id: "x", threadId: "t5", mailboxIds: { e: true } }),
+    ]);
     const all = await store.allConversations();
     expect(all).toHaveLength(120);
-    expect(all.find((c) => c.id === "t5")!.messages.map((m) => m.id).sort()).toEqual(["m5", "x"]);
+    expect(
+      all
+        .find((c) => c.id === "t5")!
+        .messages.map((m) => m.id)
+        .sort(),
+    ).toEqual(["m5", "x"]);
   });
 });
 
@@ -248,7 +290,14 @@ describe("conversation view off", () => {
   /** One conversation of three messages in the Inbox, and one of a single message between them. */
   const threeAndOne = () => [
     fakeEmail({ id: "1", threadId: "T", receivedAt: "2026-10-01T09:00:00Z", subject: "Plans", preview: "first" }),
-    fakeEmail({ id: "2", threadId: "T", receivedAt: "2026-10-02T09:00:00Z", subject: "Re: Plans", preview: "second", keywords: { $seen: true } }),
+    fakeEmail({
+      id: "2",
+      threadId: "T",
+      receivedAt: "2026-10-02T09:00:00Z",
+      subject: "Re: Plans",
+      preview: "second",
+      keywords: { $seen: true },
+    }),
     fakeEmail({ id: "3", threadId: "T", receivedAt: "2026-10-04T09:00:00Z", subject: "Re: Plans", preview: "third" }),
     fakeEmail({ id: "s", threadId: "S", receivedAt: "2026-10-03T09:00:00Z", subject: "Single" }),
   ];
@@ -260,7 +309,19 @@ describe("conversation view off", () => {
     expect(mail.calls()).toEqual([["Email/query", "Email/get"]]);
     const [q, g] = mail.posts[0]!;
     expect(q![1]).toMatchObject({ filter: { inMailbox: "a" }, collapseThreads: false, position: 0, limit: 50 });
-    expect(g![1]["properties"]).toEqual(expect.arrayContaining(["threadId", "from", "to", "subject", "preview", "receivedAt", "keywords", "mailboxIds", "hasAttachment"]));
+    expect(g![1]["properties"]).toEqual(
+      expect.arrayContaining([
+        "threadId",
+        "from",
+        "to",
+        "subject",
+        "preview",
+        "receivedAt",
+        "keywords",
+        "mailboxIds",
+        "hasAttachment",
+      ]),
+    );
     const snap = store.getSnapshot();
     expect(snap.total).toBe(4);
     expect(snap.rows.map((r) => [r.id, r.conversationId, r.emailId])).toEqual([

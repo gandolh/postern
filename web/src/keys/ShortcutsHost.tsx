@@ -8,7 +8,15 @@ import { LabelMenuPopover } from "../labels/LabelMenu";
 import { getActiveList, undoLast } from "../list";
 import { getShortcutsEnabled, subscribeShortcutsEnabled } from "../prefs";
 import { focusSearch } from "../search";
-import { getRoute, isMailRoute, navigate, subscribeRoute, withoutConversation, type LabelRoute, type SystemView } from "../shell/router";
+import {
+  getRoute,
+  isMailRoute,
+  navigate,
+  subscribeRoute,
+  withoutConversation,
+  type LabelRoute,
+  type SystemView,
+} from "../shell/router";
 import { useHelpSheet } from "./helpSheet";
 import { KeyEngine, type KeyActions } from "./shortcuts";
 
@@ -56,7 +64,8 @@ export function ShortcutsHost() {
       const list = getActiveList();
       let conversationIds: string[];
       // One message shown alone is labelled alone, by its own id.
-      if (conversationFirst(lastTarget) && conversation) conversationIds = [conversation.messageId ?? conversation.conversationId];
+      if (conversationFirst(lastTarget) && conversation)
+        conversationIds = [conversation.messageId ?? conversation.conversationId];
       else {
         if (!list) return false;
         conversationIds = (await list.targets()).map((r) => r.id);
@@ -74,7 +83,10 @@ export function ShortcutsHost() {
     };
     // Conversation keys first; where there is none (or the key was pressed in the list pane) the list's.
     const either =
-      (conv: (c: NonNullable<ReturnType<typeof getActiveConversation>>) => unknown, list: (l: NonNullable<ReturnType<typeof getActiveList>>) => unknown) =>
+      (
+        conv: (c: NonNullable<ReturnType<typeof getActiveConversation>>) => unknown,
+        list: (l: NonNullable<ReturnType<typeof getActiveList>>) => unknown,
+      ) =>
       () => {
         const c = getActiveConversation();
         if (c && conversationFirst(lastTarget)) {
@@ -87,16 +99,14 @@ export function ShortcutsHost() {
         return true;
       };
     // In a reader showing one message alone, `j` / `k` open the next / previous message row.
-    const readerRowOr =
-      (delta: 1 | -1, otherwise: () => boolean | void) =>
-      (): boolean | void => {
-        const c = getActiveConversation();
-        if (c?.openRow && conversationFirst(lastTarget)) {
-          c.openRow(delta);
-          return true;
-        }
-        return otherwise();
-      };
+    const readerRowOr = (delta: 1 | -1, otherwise: () => boolean | void) => (): boolean | void => {
+      const c = getActiveConversation();
+      if (c?.openRow && conversationFirst(lastTarget)) {
+        c.openRow(delta);
+        return true;
+      }
+      return otherwise();
+    };
     const conversationOnly = (run: (c: NonNullable<ReturnType<typeof getActiveConversation>>) => unknown) => () => {
       const c = getActiveConversation();
       if (!c) return false;
@@ -116,8 +126,14 @@ export function ShortcutsHost() {
         void undoLast();
         return true;
       },
-      next: readerRowOr(1, onList((l) => l.moveFocus(1))),
-      previous: readerRowOr(-1, onList((l) => l.moveFocus(-1))),
+      next: readerRowOr(
+        1,
+        onList((l) => l.moveFocus(1)),
+      ),
+      previous: readerRowOr(
+        -1,
+        onList((l) => l.moveFocus(-1)),
+      ),
       select: onList((l) => l.toggleSelect()),
       star: onList((l) => l.toggleStar()),
       markRead: onList((l) => l.markRead()),
@@ -140,10 +156,22 @@ export function ShortcutsHost() {
       reply: () => composeFromConversation("reply"),
       replyAll: () => composeFromConversation("replyAll"),
       forward: () => composeFromConversation("forward"),
-      archive: either((c) => c.archive(), (l) => l.archive()),
-      trash: either((c) => c.trash(), (l) => l.trash()),
-      reportSpam: either((c) => c.reportSpam(), (l) => l.reportSpam()),
-      markUnread: either((c) => c.markUnread(), (l) => l.markUnread()),
+      archive: either(
+        (c) => c.archive(),
+        (l) => l.archive(),
+      ),
+      trash: either(
+        (c) => c.trash(),
+        (l) => l.trash(),
+      ),
+      reportSpam: either(
+        (c) => c.reportSpam(),
+        (l) => l.reportSpam(),
+      ),
+      markUnread: either(
+        (c) => c.markUnread(),
+        (l) => l.markUnread(),
+      ),
       label: () => openMenu("label"),
       move: () => openMenu("move"),
       goInbox: () => go("inbox"),

@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { forgetLabelPrefs, getLabelPref, getLabelPrefs, resetLabelPrefsCache, setLabelPref, storageKey, subscribeLabelPrefs } from "./labelPrefs";
+import {
+  forgetLabelPrefs,
+  getLabelPref,
+  getLabelPrefs,
+  resetLabelPrefsCache,
+  setLabelPref,
+  storageKey,
+  subscribeLabelPrefs,
+} from "./labelPrefs";
 
 const USER = "alice@postern.test";
 
@@ -14,7 +22,9 @@ describe("labelPrefs", () => {
   it("keeps a colour and show-if-unread per account in localStorage", () => {
     setLabelPref(USER, "w", { color: "blue", showIfUnread: true });
     setLabelPref("bob@postern.test", "w", { color: "red" });
-    expect(JSON.parse(window.localStorage.getItem(storageKey(USER))!)).toEqual({ w: { color: "blue", showIfUnread: true } });
+    expect(JSON.parse(window.localStorage.getItem(storageKey(USER))!)).toEqual({
+      w: { color: "blue", showIfUnread: true },
+    });
     expect(getLabelPref("bob@postern.test", "w")).toEqual({ color: "red" });
     expect(storageKey(USER)).toBe("postern:alice@postern.test:labels");
   });

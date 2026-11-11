@@ -4,7 +4,14 @@
 import { useState } from "react";
 import { publishMailChange, publishPending } from "../actions/bus";
 import { isQuietError } from "../actions/runner";
-import { emptyConfirmText, emptyDoneText, emptyLabel, listEmptyable, type EmptyableLabel, type EmptyPlan } from "../actions/spam";
+import {
+  emptyConfirmText,
+  emptyDoneText,
+  emptyLabel,
+  listEmptyable,
+  type EmptyableLabel,
+  type EmptyPlan,
+} from "../actions/spam";
 import { rolesFrom } from "../actions/useMailActions";
 import { useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
@@ -29,7 +36,8 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
       else setPlan(p);
     } catch (e) {
       // Session trouble is the sign-in layer's to show.
-      if (!isQuietError(e)) toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
+      if (!isQuietError(e))
+        toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
     } finally {
       setBusy(false);
     }
@@ -46,7 +54,8 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
       toast.show({ message: emptyDoneText(label, result) });
     } catch (e) {
       answered();
-      if (!isQuietError(e)) toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
+      if (!isQuietError(e))
+        toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
     } finally {
       answered();
       setBusy(false);
@@ -58,10 +67,23 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
   const text = plan ? emptyConfirmText(plan) : null;
   return (
     <>
-      <button type="button" className="btn btn-quiet list-text-btn filters-empty-btn" disabled={busy} onClick={() => void ask()}>
+      <button
+        type="button"
+        className="btn btn-quiet list-text-btn filters-empty-btn"
+        disabled={busy}
+        onClick={() => void ask()}
+      >
         {label === "junk" ? "Delete all spam messages now" : "Empty Trash now"}
       </button>
-      {plan && text ? <ConfirmDialog title={text.title} body={text.body} confirmLabel={text.confirm} onConfirm={() => void run(plan)} onCancel={() => setPlan(null)} /> : null}
+      {plan && text ? (
+        <ConfirmDialog
+          title={text.title}
+          body={text.body}
+          confirmLabel={text.confirm}
+          onConfirm={() => void run(plan)}
+          onCancel={() => setPlan(null)}
+        />
+      ) : null}
     </>
   );
 }

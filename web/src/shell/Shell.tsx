@@ -72,7 +72,15 @@ function ShellLayout() {
   const navRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
 
-  const mode: NavProps["mode"] = wide ? (railOnWide ? "rail" : "expanded") : drawerOpen ? "drawer" : phone ? "hidden" : "rail";
+  const mode: NavProps["mode"] = wide
+    ? railOnWide
+      ? "rail"
+      : "expanded"
+    : drawerOpen
+      ? "drawer"
+      : phone
+        ? "hidden"
+        : "rail";
 
   function toggleNav(): void {
     if (wide) setRailOnWide((r) => !r);
@@ -101,7 +109,9 @@ function ShellLayout() {
       <div ref={navRef} className="shell-nav-frame">
         <Nav route={route} mode={mode} onNavigate={() => setDrawerOpen(false)} />
       </div>
-      {mode === "drawer" ? <div className="shell-scrim" aria-hidden="true" onClick={() => setDrawerOpen(false)} /> : null}
+      {mode === "drawer" ? (
+        <div className="shell-scrim" aria-hidden="true" onClick={() => setDrawerOpen(false)} />
+      ) : null}
       <div className="shell-main-column" inert={mode === "drawer"}>
         <ConnectionBanner
           offline={!online}

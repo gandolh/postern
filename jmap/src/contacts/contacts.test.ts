@@ -86,7 +86,9 @@ describe("JSContact helpers", () => {
       name: { full: "Ann" },
       emails: { e1: { "@type": "EmailAddress", address: "a@x.test" } },
     });
-    expect(newContactCard({ name: "N", emails: [], phones: [], note: "" }, "b").uid).toMatch(/^urn:uuid:[0-9a-f-]{36}$/);
+    expect(newContactCard({ name: "N", emails: [], phones: [], note: "" }, "b").uid).toMatch(
+      /^urn:uuid:[0-9a-f-]{36}$/,
+    );
   });
 
   it("patches whole maps, and nulls the emptied ones", () => {

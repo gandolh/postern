@@ -73,7 +73,11 @@ export function HelpSheet() {
                         {i > 0 ? <span className="keys-or"> or </span> : null}
                         {alt.map((token, j) => (
                           <Fragment key={j}>
-                            {j > 0 ? <span className="keys-then">{alt[0] === "Shift" || alt[0] === "Ctrl" ? "+" : "then"}</span> : null}
+                            {j > 0 ? (
+                              <span className="keys-then">
+                                {alt[0] === "Shift" || alt[0] === "Ctrl" ? "+" : "then"}
+                              </span>
+                            ) : null}
                             <kbd className="kbd">{token}</kbd>
                           </Fragment>
                         ))}

@@ -25,7 +25,8 @@ export const SessionContext = createContext<SignedInSession | null>(null);
 
 function useSignedIn(hook: string): SignedInSession {
   const value = useContext(SessionContext);
-  if (!value) throw new Error(`${hook} must be used inside <SessionProvider>, which renders its children only when signed in`);
+  if (!value)
+    throw new Error(`${hook} must be used inside <SessionProvider>, which renders its children only when signed in`);
   return value;
 }
 

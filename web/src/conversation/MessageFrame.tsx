@@ -52,16 +52,28 @@ export function MessageFrame({ clean, foldQuote, theme, allowRemote, title }: Me
     return () => observer.disconnect();
   }, []);
 
-  const estimate = useMemo(() => (width > 0 ? estimateFrameHeight(clean.body, { width, foldQuote }) : 160), [clean, width, foldQuote]);
+  const estimate = useMemo(
+    () => (width > 0 ? estimateFrameHeight(clean.body, { width, foldQuote }) : 160),
+    [clean, width, foldQuote],
+  );
   const cap = frameCap(viewport);
   const capped = !full && estimate > cap;
   const height = capped ? cap : estimate;
-  const srcdoc = useMemo(() => buildSrcdoc(clean, { foldQuote, theme, allowRemote }), [clean, foldQuote, theme, allowRemote]);
+  const srcdoc = useMemo(
+    () => buildSrcdoc(clean, { foldQuote, theme, allowRemote }),
+    [clean, foldQuote, theme, allowRemote],
+  );
 
   return (
     <>
       <div ref={wrapRef} className="conv-frame-wrap" style={{ height }}>
-        <iframe className="conv-frame" sandbox={MESSAGE_FRAME_SANDBOX} srcDoc={srcdoc} title={title} referrerPolicy="no-referrer" />
+        <iframe
+          className="conv-frame"
+          sandbox={MESSAGE_FRAME_SANDBOX}
+          srcDoc={srcdoc}
+          title={title}
+          referrerPolicy="no-referrer"
+        />
       </div>
       {capped ? (
         <button type="button" className="btn btn-quiet conv-frame-more" onClick={() => setFull(true)}>

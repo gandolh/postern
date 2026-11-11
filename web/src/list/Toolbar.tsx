@@ -84,11 +84,24 @@ export function Toolbar(props: ToolbarProps) {
     ...(props.someStarred ? [{ label: "Remove star", onSelect: () => props.onStar(false) }] : []),
     {
       label: "Filter messages like these",
-      onSelect: () => void getActiveList()?.targets().then((rows) => filterMessagesLike(rows.flatMap((r) => r.messages), me)),
+      onSelect: () =>
+        void getActiveList()
+          ?.targets()
+          .then((rows) =>
+            filterMessagesLike(
+              rows.flatMap((r) => r.messages),
+              me,
+            ),
+          ),
     },
   ];
   const route = props.labelRoute;
-  const emptyable = route?.kind === "system" && (route.view === "spam" || route.view === "trash") ? (route.view === "spam" ? "junk" : "trash") : null;
+  const emptyable =
+    route?.kind === "system" && (route.view === "spam" || route.view === "trash")
+      ? route.view === "spam"
+        ? "junk"
+        : "trash"
+      : null;
 
   return (
     <div className="list-toolbar" role="toolbar" aria-label="Conversation actions">
@@ -135,8 +148,20 @@ export function Toolbar(props: ToolbarProps) {
           </div>
           <span className="list-toolbar-divider" aria-hidden="true" />
           <div className="list-toolbar-group">
-            <LabelMenu conversationIds={props.conversationIds} emailIds={props.emailIds} current={props.labelRoute} mode="move" onDone={props.onMoveDone} />
-            <LabelMenu conversationIds={props.conversationIds} emailIds={props.emailIds} current={props.labelRoute} mode="label" onDone={props.onLabelsDone} />
+            <LabelMenu
+              conversationIds={props.conversationIds}
+              emailIds={props.emailIds}
+              current={props.labelRoute}
+              mode="move"
+              onDone={props.onMoveDone}
+            />
+            <LabelMenu
+              conversationIds={props.conversationIds}
+              emailIds={props.emailIds}
+              current={props.labelRoute}
+              mode="label"
+              onDone={props.onLabelsDone}
+            />
             <MenuButton label="More" icon={EllipsisVertical} items={moreItems} />
           </div>
         </>

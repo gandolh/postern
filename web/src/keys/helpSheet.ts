@@ -14,7 +14,10 @@ const HelpSheetContext = createContext<HelpSheetApi | null>(null);
 /** Wraps the shell. */
 export function KeysProvider({ children }: { children: ReactNode }) {
   const [isOpen, setOpen] = useState(false);
-  const api = useMemo<HelpSheetApi>(() => ({ isOpen, open: () => setOpen(true), close: () => setOpen(false) }), [isOpen]);
+  const api = useMemo<HelpSheetApi>(
+    () => ({ isOpen, open: () => setOpen(true), close: () => setOpen(false) }),
+    [isOpen],
+  );
   return createElement(HelpSheetContext.Provider, { value: api }, children);
 }
 

@@ -159,6 +159,9 @@ export class JmapNoAccountError extends JmapError {}
 /** True for an AbortSignal abort, which this package rethrows untouched. */
 export function isAbortError(err: unknown): boolean {
   return (
-    typeof err === "object" && err !== null && "name" in err && (err.name === "AbortError" || err.name === "TimeoutError")
+    typeof err === "object" &&
+    err !== null &&
+    "name" in err &&
+    (err.name === "AbortError" || err.name === "TimeoutError")
   );
 }

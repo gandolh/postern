@@ -22,7 +22,9 @@ export const EMAIL_PUSH = "urn:ietf:params:jmap:emailpush";
 /** The session's VAPID public key (base64url), or null when the server has none. */
 export function vapidKeyOf(client: JmapClient): string | null {
   const capability = client.session?.capabilities?.[WEB_PUSH_VAPID] as { applicationServerKey?: unknown } | undefined;
-  return typeof capability?.applicationServerKey === "string" && capability.applicationServerKey !== "" ? capability.applicationServerKey : null;
+  return typeof capability?.applicationServerKey === "string" && capability.applicationServerKey !== ""
+    ? capability.applicationServerKey
+    : null;
 }
 
 /** Ask Stalwart to put sender and subject in the push for new Inbox mail, when it can. */

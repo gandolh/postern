@@ -1,7 +1,15 @@
 // Email (RFC 8621 §4) and SearchSnippet (§5).
 
 import type { CallArgs } from "../request.js";
-import type { ChangesResponse, GetResponse, Id, PatchObject, QueryChangesResponse, QueryResponse, SetResponse } from "../types/core.js";
+import type {
+  ChangesResponse,
+  GetResponse,
+  Id,
+  PatchObject,
+  QueryChangesResponse,
+  QueryResponse,
+  SetResponse,
+} from "../types/core.js";
 import type { Email, EmailImportResponse, SearchSnippetGetResponse } from "../types/mail.js";
 import type { CallOptions, ChangesOptions, MethodCaller } from "./caller.js";
 
@@ -57,9 +65,14 @@ export class EmailMethods {
    * `setKeywords(ids, { $flagged: true })` stars, `{ $seen: false }` marks
    * unread. Inspect `notUpdated` for per-message failures.
    */
-  setKeywords(ids: readonly Id[], keywords: Record<string, boolean>, options?: CallOptions): Promise<SetResponse<Email>> {
+  setKeywords(
+    ids: readonly Id[],
+    keywords: Record<string, boolean>,
+    options?: CallOptions,
+  ): Promise<SetResponse<Email>> {
     const patch: PatchObject = {};
-    for (const [keyword, on] of Object.entries(keywords)) patch[`keywords/${escapePointer(keyword)}`] = on ? true : null;
+    for (const [keyword, on] of Object.entries(keywords))
+      patch[`keywords/${escapePointer(keyword)}`] = on ? true : null;
     const update: Record<Id, PatchObject> = {};
     for (const id of ids) update[id] = patch;
     return this.set({ update }, options);

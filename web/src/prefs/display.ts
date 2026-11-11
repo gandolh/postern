@@ -2,7 +2,13 @@
 // anyone signs in, so they are not keyed by account). The theme store itself
 // (the shell) holds no storage; this restores and saves it.
 
-import { DEFAULT_DISPLAY_SETTINGS, getDisplaySettings, setDisplaySettings, subscribeDisplaySettings, type DisplaySettings } from "../theme/displaySettings";
+import {
+  DEFAULT_DISPLAY_SETTINGS,
+  getDisplaySettings,
+  setDisplaySettings,
+  subscribeDisplaySettings,
+  type DisplaySettings,
+} from "../theme/displaySettings";
 import { isRecord, readRaw, writeRaw } from "./storage";
 
 export const DISPLAY_KEY = "postern.display";
@@ -14,7 +20,11 @@ export function loadDisplaySettings(): Partial<DisplaySettings> {
   const raw = readRaw(DISPLAY_KEY);
   if (!isRecord(raw) || raw["version"] !== DISPLAY_VERSION) return {};
   // setDisplaySettings ignores values it does not know.
-  return { theme: raw["theme"] as DisplaySettings["theme"], density: raw["density"] as DisplaySettings["density"], readingPane: raw["readingPane"] as DisplaySettings["readingPane"] };
+  return {
+    theme: raw["theme"] as DisplaySettings["theme"],
+    density: raw["density"] as DisplaySettings["density"],
+    readingPane: raw["readingPane"] as DisplaySettings["readingPane"],
+  };
 }
 
 export function saveDisplaySettings(settings: DisplaySettings = getDisplaySettings()): void {

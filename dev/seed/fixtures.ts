@@ -27,7 +27,19 @@ export function allEmails(): SeedEmail[] {
 
 /** The labels the manifest reports, per account: roles, then user-label paths. */
 const LABELS: Record<SeedEmail["account"], MailboxRef[]> = {
-  alice: ["inbox", "sent", "drafts", "junk", "trash", "archive", "label:Work", "label:Work/Clients", "label:Receipts", "label:Travel", `label:${HOSTILE_LABEL}`],
+  alice: [
+    "inbox",
+    "sent",
+    "drafts",
+    "junk",
+    "trash",
+    "archive",
+    "label:Work",
+    "label:Work/Clients",
+    "label:Receipts",
+    "label:Travel",
+    `label:${HOSTILE_LABEL}`,
+  ],
   bob: ["inbox", "sent", "drafts", "junk", "trash", "archive"],
 };
 

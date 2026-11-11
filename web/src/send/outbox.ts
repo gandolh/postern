@@ -55,7 +55,12 @@ export class Outbox {
   /** Hold a message for `delayMs`, then send it. A second hold for the same key replaces nothing: it is refused. */
   hold<T>(options: HoldOptions<T>): boolean {
     if (this.#items.has(options.key)) return false;
-    const entry: OutboxEntry = { key: options.key, label: options.label, status: "held", sendAt: this.#now() + Math.max(0, options.delayMs) };
+    const entry: OutboxEntry = {
+      key: options.key,
+      label: options.label,
+      status: "held",
+      sendAt: this.#now() + Math.max(0, options.delayMs),
+    };
     const held: Held = {
       entry,
       timer: null,

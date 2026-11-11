@@ -31,7 +31,8 @@ export function threadingHeaders(original: ThreadingSource): ThreadingHeaders {
     seen.add(id);
     all.push(id);
   }
-  const references = all.length > MAX_REFERENCES ? [all[0] as string, ...all.slice(all.length - (MAX_REFERENCES - 1))] : all;
+  const references =
+    all.length > MAX_REFERENCES ? [all[0] as string, ...all.slice(all.length - (MAX_REFERENCES - 1))] : all;
   return {
     inReplyTo: own.length ? [own[0] as string] : null,
     references: references.length ? references : null,

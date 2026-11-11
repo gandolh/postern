@@ -22,15 +22,25 @@ import "./invites.css";
 
 /** The parts that can carry an invite: a text/calendar alternative first, then an .ics file. */
 export function calendarParts(parts: readonly EmailBodyPart[]): EmailBodyPart[] {
-  const isCalendar = (p: EmailBodyPart) => /^(text\/calendar|application\/ics|text\/x-vcalendar)$/i.test(p.type ?? "") || /\.ics$/i.test(p.name ?? "");
-  return parts.filter((p) => p.blobId && isCalendar(p)).sort((a, b) => Number(/^text\/calendar$/i.test(b.type ?? "")) - Number(/^text\/calendar$/i.test(a.type ?? "")));
+  const isCalendar = (p: EmailBodyPart) =>
+    /^(text\/calendar|application\/ics|text\/x-vcalendar)$/i.test(p.type ?? "") || /\.ics$/i.test(p.name ?? "");
+  return parts
+    .filter((p) => p.blobId && isCalendar(p))
+    .sort((a, b) => Number(/^text\/calendar$/i.test(b.type ?? "")) - Number(/^text\/calendar$/i.test(a.type ?? "")));
 }
 
 /** The invite a message carries, if any: REQUEST or CANCEL only. */
-export async function loadInvite(client: JmapClient, parts: readonly EmailBodyPart[], signal?: AbortSignal): Promise<Invite | null> {
+export async function loadInvite(
+  client: JmapClient,
+  parts: readonly EmailBodyPart[],
+  signal?: AbortSignal,
+): Promise<Invite | null> {
   for (const part of calendarParts(parts).slice(0, 2)) {
     if ((part.size ?? 0) > 256 * 1024) continue;
-    const res = await client.blob.download({ blobId: part.blobId!, name: "invite.ics", type: "text/plain" }, { signal });
+    const res = await client.blob.download(
+      { blobId: part.blobId!, name: "invite.ics", type: "text/plain" },
+      { signal },
+    );
     const invite = parseInvite(await res.text());
     if (invite && (invite.method === "REQUEST" || invite.method === "CANCEL") && invite.uid) return invite;
   }
@@ -56,15 +66,36 @@ function identitiesOf(client: JmapClient): Promise<readonly Identity[]> {
 function formatWhen(start: EventTime | null, end: EventTime | null): string {
   if (!start) return "Time not given";
   if (start.allDay) {
-    const day = new Intl.DateTimeFormat(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+    const day = new Intl.DateTimeFormat(undefined, {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
     const last = end?.allDay ? new Date(end.at.getTime() - 86_400_000) : null;
-    return last && last.getTime() > start.at.getTime() ? `${day.format(start.at)} – ${day.format(last)} (all day)` : `${day.format(start.at)} (all day)`;
+    return last && last.getTime() > start.at.getTime()
+      ? `${day.format(start.at)} – ${day.format(last)} (all day)`
+      : `${day.format(start.at)} (all day)`;
   }
-  const full = new Intl.DateTimeFormat(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const full = new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
   const time = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
   const sameDay = end && !end.allDay && end.at.toDateString() === start.at.toDateString();
-  let out = end && !end.allDay ? (sameDay ? `${full.format(start.at)} – ${time.format(end.at)}` : `${full.format(start.at)} – ${full.format(end.at)}`) : full.format(start.at);
-  if (!(end && !end.allDay && sameDay)) out += ` (${new Intl.DateTimeFormat(undefined, { timeZoneName: "short" }).formatToParts(start.at).find((p) => p.type === "timeZoneName")?.value ?? ""})`;
+  let out =
+    end && !end.allDay
+      ? sameDay
+        ? `${full.format(start.at)} – ${time.format(end.at)}`
+        : `${full.format(start.at)} – ${full.format(end.at)}`
+      : full.format(start.at);
+  if (!(end && !end.allDay && sameDay))
+    out += ` (${new Intl.DateTimeFormat(undefined, { timeZoneName: "short" }).formatToParts(start.at).find((p) => p.type === "timeZoneName")?.value ?? ""})`;
   if (start.floating) out += `, time zone “${start.tzid ?? ""}” unknown: shown as your local time`;
   return out;
 }
@@ -125,7 +156,9 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
   const { invite, identities } = state;
   const cancelled = invite.method === "CANCEL";
   const mine = cancelled ? null : myAttendance(invite, identities);
-  const current = answer ?? (mine && ["ACCEPTED", "DECLINED", "TENTATIVE"].includes(mine.me.partstat) ? (mine.me.partstat as Answer) : null);
+  const current =
+    answer ??
+    (mine && ["ACCEPTED", "DECLINED", "TENTATIVE"].includes(mine.me.partstat) ? (mine.me.partstat as Answer) : null);
   const link = placeLink(invite.location);
 
   const reply = async (choice: Answer) => {
@@ -204,7 +237,14 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
               Going?
             </span>
             {ANSWERS.map(({ answer: a, label }) => (
-              <button key={a} type="button" className="btn invite-answer-btn" aria-pressed={current === a} disabled={busy} onClick={() => void reply(a)}>
+              <button
+                key={a}
+                type="button"
+                className="btn invite-answer-btn"
+                aria-pressed={current === a}
+                disabled={busy}
+                onClick={() => void reply(a)}
+              >
                 {label}
               </button>
             ))}

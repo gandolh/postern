@@ -16,7 +16,8 @@
 export const QUOTE_ATTR = "data-postern-quote";
 
 /** "On Tue, 6 Oct 2026, Bob <bob@x> wrote:" and its usual translations. */
-export const ATTRIBUTION = /(?:^|\n|\s)(?:On|Le|Am|El|Il|În|In data|Op)\b[\s\S]{0,400}?(?:wrote|a écrit|schrieb|escribió|ha scritto|a scris|scrisse|schreef)\s*:\s*$/i;
+export const ATTRIBUTION =
+  /(?:^|\n|\s)(?:On|Le|Am|El|Il|În|In data|Op)\b[\s\S]{0,400}?(?:wrote|a écrit|schrieb|escribió|ha scritto|a scris|scrisse|schreef)\s*:\s*$/i;
 
 function textOf(node: Node | null): string {
   return (node?.textContent ?? "").replace(/\s+/g, " ").trim();
@@ -39,7 +40,11 @@ function somethingBefore(node: Node, root: Node): boolean {
   for (let n: Node | null = node; n && n !== root; n = n.parentNode) {
     for (let s = n.previousSibling; s; s = s.previousSibling) {
       if (textOf(s) !== "") return true;
-      if (s.nodeType === 1 && ((s as Element).nodeName.toLowerCase() === "img" || (s as Element).querySelector?.("img"))) return true;
+      if (
+        s.nodeType === 1 &&
+        ((s as Element).nodeName.toLowerCase() === "img" || (s as Element).querySelector?.("img"))
+      )
+        return true;
     }
   }
   return false;
@@ -136,7 +141,9 @@ export interface SplitText {
 export function splitPlainQuote(text: string): SplitText {
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
 
-  const original = lines.findIndex((l) => /^\s*-{2,}\s*(Original Message|Forwarded message|Mesaj original|Ursprüngliche Nachricht)\s*-{2,}\s*$/i.test(l));
+  const original = lines.findIndex((l) =>
+    /^\s*-{2,}\s*(Original Message|Forwarded message|Mesaj original|Ursprüngliche Nachricht)\s*-{2,}\s*$/i.test(l),
+  );
   let start: number;
   if (original > 0) {
     start = original;

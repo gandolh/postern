@@ -120,9 +120,17 @@ export interface ConversationSnapshot {
   bodies: ReadonlyMap<Id, BodyState>;
 }
 
-const INITIAL: ConversationSnapshot = Object.freeze({ status: "loading", error: null, messages: [], bodies: new Map() });
+const INITIAL: ConversationSnapshot = Object.freeze({
+  status: "loading",
+  error: null,
+  messages: [],
+  bodies: new Map(),
+});
 
-type MetaEmail = Pick<Email, (typeof MESSAGE_META_PROPERTIES)[number] extends infer K ? Extract<K, keyof Email> : never> &
+type MetaEmail = Pick<
+  Email,
+  (typeof MESSAGE_META_PROPERTIES)[number] extends infer K ? Extract<K, keyof Email> : never
+> &
   Record<string, unknown>;
 
 function toMessage(e: MetaEmail): ConvMessage {
@@ -149,7 +157,11 @@ function toMessage(e: MetaEmail): ConvMessage {
     hasAttachment: e.hasAttachment ?? false,
     preview: e.preview ?? "",
     attachments: e.attachments ?? [],
-    authResults: Array.isArray(auth) ? auth.filter((v): v is string => typeof v === "string") : typeof auth === "string" ? [auth] : [],
+    authResults: Array.isArray(auth)
+      ? auth.filter((v): v is string => typeof v === "string")
+      : typeof auth === "string"
+        ? [auth]
+        : [],
   };
 }
 
@@ -165,15 +177,24 @@ export interface ConversationStoreOptions {
   fetchBlob?: BlobFetcher;
 }
 
-function partText(email: BodyEmail, part: EmailBodyPart): { value: string; truncated: boolean; encodingProblem: boolean } {
+function partText(
+  email: BodyEmail,
+  part: EmailBodyPart,
+): { value: string; truncated: boolean; encodingProblem: boolean } {
   const value = part.partId ? email.bodyValues?.[part.partId] : undefined;
-  return { value: value?.value ?? "", truncated: value?.isTruncated ?? false, encodingProblem: value?.isEncodingProblem ?? false };
+  return {
+    value: value?.value ?? "",
+    truncated: value?.isTruncated ?? false,
+    encodingProblem: value?.isEncodingProblem ?? false,
+  };
 }
 
 /** The renderable body of a message: its HTML parts (text parts escaped in), else its text parts. */
 export function bodyOf(
   email: BodyEmail,
-): Omit<Extract<MessageBody, { kind: "html" }>, "cidUrls" | "inlineCids" | "deferredCids" | "deferredBytes"> | Extract<MessageBody, { kind: "text" | "empty" }> {
+):
+  | Omit<Extract<MessageBody, { kind: "html" }>, "cidUrls" | "inlineCids" | "deferredCids" | "deferredBytes">
+  | Extract<MessageBody, { kind: "text" | "empty" }> {
   const html = email.htmlBody ?? [];
   const text = email.textBody ?? [];
   if (html.some((p) => p.type === "text/html")) {
@@ -185,7 +206,9 @@ export function bodyOf(
       const t = partText(email, part);
       truncated ||= t.truncated;
       encodingProblem ||= t.encodingProblem;
-      chunks.push(part.type === "text/html" ? t.value : `<div style="white-space:pre-wrap">${escapeHtml(t.value)}</div>`);
+      chunks.push(
+        part.type === "text/html" ? t.value : `<div style="white-space:pre-wrap">${escapeHtml(t.value)}</div>`,
+      );
     }
     return { kind: "html", html: chunks.join("\n"), truncated, encodingProblem };
   }
@@ -216,7 +239,10 @@ function overlay(messages: ConvMessage[], updates: readonly Readonly<Record<Id, 
 }
 
 function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
+  return text.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
+  );
 }
 
 export class ConversationStore {
@@ -341,7 +367,11 @@ export class ConversationStore {
       let emails: GetResponse<Email>;
       if (res.error(g)) {
         // A very long conversation can pass maxObjectsInGet in one back-referenced get.
-        emails = await this.#caller.call("Email/get", { ids: thread.emailIds, properties: [...MESSAGE_META_PROPERTIES] }, { signal });
+        emails = await this.#caller.call(
+          "Email/get",
+          { ids: thread.emailIds, properties: [...MESSAGE_META_PROPERTIES] },
+          { signal },
+        );
       } else {
         emails = res.get(g);
       }
@@ -410,7 +440,13 @@ export class ConversationStore {
         const inline = await cidPartsToInline(email, findCids(body.html), this.#fetchBlob, signal);
         this.#bodies.set(email.id, {
           status: "ready",
-          body: { ...body, cidUrls: inline.urls, inlineCids: inline.cids, deferredCids: inline.deferred, deferredBytes: inline.deferredBytes },
+          body: {
+            ...body,
+            cidUrls: inline.urls,
+            inlineCids: inline.cids,
+            deferredCids: inline.deferred,
+            deferredBytes: inline.deferredBytes,
+          },
         });
       }),
     );

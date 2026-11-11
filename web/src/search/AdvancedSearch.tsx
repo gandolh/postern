@@ -95,12 +95,30 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
         <input id={field("not")} className="input" value={notWords} onChange={(e) => setNotWords(e.target.value)} />
         <label htmlFor={field("size")}>Size</label>
         <div className="search-advanced-row">
-          <select aria-label="Larger or smaller" className="input" value={comparison} onChange={(e) => setComparison(e.target.value as "larger" | "smaller")}>
+          <select
+            aria-label="Larger or smaller"
+            className="input"
+            value={comparison}
+            onChange={(e) => setComparison(e.target.value as "larger" | "smaller")}
+          >
             <option value="larger">greater than</option>
             <option value="smaller">less than</option>
           </select>
-          <input id={field("size")} className="input search-advanced-amount" type="number" min="0" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <select aria-label="Size unit" className="input" value={unit} onChange={(e) => setUnit(e.target.value as "B" | "K" | "M")}>
+          <input
+            id={field("size")}
+            className="input search-advanced-amount"
+            type="number"
+            min="0"
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <select
+            aria-label="Size unit"
+            className="input"
+            value={unit}
+            onChange={(e) => setUnit(e.target.value as "B" | "K" | "M")}
+          >
             <option value="M">MB</option>
             <option value="K">KB</option>
             <option value="B">Bytes</option>
@@ -115,7 +133,14 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
               </option>
             ))}
           </select>
-          <input aria-label="Of this date" className="input" type="date" value={date} placeholder={today()} onChange={(e) => setDate(e.target.value)} />
+          <input
+            aria-label="Of this date"
+            className="input"
+            type="date"
+            value={date}
+            placeholder={today()}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
         <label htmlFor={field("place")}>Search</label>
         <select id={field("place")} className="input" value={place} onChange={(e) => setPlace(e.target.value)}>

@@ -217,18 +217,17 @@ export interface EmailFilterCondition {
 
 export type EmailFilter = Filter<EmailFilterCondition>;
 
-export interface EmailComparator
-  extends Comparator<
-    | "receivedAt"
-    | "size"
-    | "from"
-    | "to"
-    | "subject"
-    | "sentAt"
-    | "hasKeyword"
-    | "allInThreadHaveKeyword"
-    | "someInThreadHaveKeyword"
-  > {
+export interface EmailComparator extends Comparator<
+  | "receivedAt"
+  | "size"
+  | "from"
+  | "to"
+  | "subject"
+  | "sentAt"
+  | "hasKeyword"
+  | "allInThreadHaveKeyword"
+  | "someInThreadHaveKeyword"
+> {
   /** Required with the keyword sorts. */
   keyword?: string;
 }

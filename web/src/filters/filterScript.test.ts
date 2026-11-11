@@ -1,18 +1,37 @@
 // Postern's one script among the account's others: what it refuses, what it
 // keeps running, and the vacation responder (a fake server of scripts).
 
-import { emptyActions, emptyCriteria, generateSieve, parseFilterScript, withBlocked, type FilterSet, type MailFilter } from "@postern/jmap";
+import {
+  emptyActions,
+  emptyCriteria,
+  generateSieve,
+  parseFilterScript,
+  withBlocked,
+  type FilterSet,
+  type MailFilter,
+} from "@postern/jmap";
 import { describe, expect, it } from "vitest";
 import { activateFilters, FilterScriptError, loadFilters, saveFilters } from "./filterScript";
 import { FakeScripts } from "./fakeScripts";
 
-const bobFilter: MailFilter = { criteria: { ...emptyCriteria(), from: ["bob@postern.test"] }, actions: { ...emptyActions(), label: { id: "i", name: "Work" }, archive: true } };
-const addFilter = (f: MailFilter) => (s: FilterSet): FilterSet => ({ ...s, filters: [...s.filters, f] });
+const bobFilter: MailFilter = {
+  criteria: { ...emptyCriteria(), from: ["bob@postern.test"] },
+  actions: { ...emptyActions(), label: { id: "i", name: "Work" }, archive: true },
+};
+const addFilter =
+  (f: MailFilter) =>
+  (s: FilterSet): FilterSet => ({ ...s, filters: [...s.filters, f] });
 
 describe("loading", () => {
   it("an account with no scripts has no filters", async () => {
     const io = new FakeScripts();
-    expect(await loadFilters(io)).toEqual({ set: { filters: [], blocked: [], includes: [] }, scriptId: null, active: false, otherActive: null, problem: null });
+    expect(await loadFilters(io)).toEqual({
+      set: { filters: [], blocked: [], includes: [] },
+      scriptId: null,
+      active: false,
+      otherActive: null,
+      problem: null,
+    });
   });
 
   it("reads Postern's script back", async () => {
@@ -33,7 +52,7 @@ describe("loading", () => {
 
   it("says which other script is active, and whether it is the vacation responder", async () => {
     const io = new FakeScripts();
-    io.add("vacation", "require \"vacation\";", true);
+    io.add("vacation", 'require "vacation";', true);
     expect((await loadFilters(io)).otherActive).toMatchObject({ name: "vacation", vacation: true });
   });
 });

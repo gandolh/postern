@@ -7,7 +7,18 @@ import { allowsImagesFrom } from "../render/allowance";
 import { getUndoSendDelay } from "../send/undoDelay";
 import { resetDisplaySettings, getDisplaySettings, setTheme, setDensity } from "../theme/displaySettings";
 import { DISPLAY_KEY, loadDisplaySettings, startDisplayPersistence } from "./display";
-import { PREFS_VERSION, getPrefs, getShortcutsEnabled, getSwipeActions, normalise, resetPrefs, setPrefs, setPrefsAccount, startPrefs, subscribeShortcutsEnabled } from "./prefs";
+import {
+  PREFS_VERSION,
+  getPrefs,
+  getShortcutsEnabled,
+  getSwipeActions,
+  normalise,
+  resetPrefs,
+  setPrefs,
+  setPrefsAccount,
+  startPrefs,
+  subscribeShortcutsEnabled,
+} from "./prefs";
 import { clearMemory } from "./storage";
 
 beforeEach(() => {
@@ -25,11 +36,27 @@ describe("normalise", () => {
     expect(normalise(null)).toEqual(getPrefs());
     expect(normalise({ version: 99, undoSendSeconds: 30 }).undoSendSeconds).toBe(5);
     expect(normalise("x").images).toBe("ask");
-    const n = normalise({ version: PREFS_VERSION, undoSendSeconds: 7, images: "sometimes", shortcuts: "yes", defaultIdentityId: 4 });
-    expect(n).toEqual({ undoSendSeconds: 5, images: "ask", shortcuts: true, defaultIdentityId: null, swipeLeft: "archive", swipeRight: "archive", conversationView: true });
+    const n = normalise({
+      version: PREFS_VERSION,
+      undoSendSeconds: 7,
+      images: "sometimes",
+      shortcuts: "yes",
+      defaultIdentityId: 4,
+    });
+    expect(n).toEqual({
+      undoSendSeconds: 5,
+      images: "ask",
+      shortcuts: true,
+      defaultIdentityId: null,
+      swipeLeft: "archive",
+      swipeRight: "archive",
+      conversationView: true,
+    });
   });
   it("keeps valid fields", () => {
-    expect(normalise({ version: 1, undoSendSeconds: 20, images: "always", shortcuts: false, defaultIdentityId: "I2" })).toEqual({
+    expect(
+      normalise({ version: 1, undoSendSeconds: 20, images: "always", shortcuts: false, defaultIdentityId: "I2" }),
+    ).toEqual({
       undoSendSeconds: 20,
       images: "always",
       shortcuts: false,
@@ -50,7 +77,10 @@ describe("conversation view", () => {
   it("is saved per account", () => {
     setPrefsAccount("alice@postern.test");
     setPrefs({ conversationView: false });
-    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({ version: PREFS_VERSION, conversationView: false });
+    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({
+      version: PREFS_VERSION,
+      conversationView: false,
+    });
     setPrefsAccount("bob@postern.test");
     expect(getPrefs().conversationView).toBe(true);
     setPrefsAccount("alice@postern.test");
@@ -63,14 +93,23 @@ describe("swipe actions", () => {
     expect(getSwipeActions()).toEqual({ left: "archive", right: "archive" });
   });
   it("keep a valid choice per direction and refuse anything else", () => {
-    expect(normalise({ version: PREFS_VERSION, swipeLeft: "delete", swipeRight: "none" })).toMatchObject({ swipeLeft: "delete", swipeRight: "none" });
-    expect(normalise({ version: PREFS_VERSION, swipeLeft: "explode", swipeRight: 3 })).toMatchObject({ swipeLeft: "archive", swipeRight: "archive" });
+    expect(normalise({ version: PREFS_VERSION, swipeLeft: "delete", swipeRight: "none" })).toMatchObject({
+      swipeLeft: "delete",
+      swipeRight: "none",
+    });
+    expect(normalise({ version: PREFS_VERSION, swipeLeft: "explode", swipeRight: 3 })).toMatchObject({
+      swipeLeft: "archive",
+      swipeRight: "archive",
+    });
   });
   it("are saved per account and read at once", () => {
     setPrefsAccount("alice@postern.test");
     setPrefs({ swipeLeft: "read", swipeRight: "delete" });
     expect(getSwipeActions()).toEqual({ left: "read", right: "delete" });
-    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({ swipeLeft: "read", swipeRight: "delete" });
+    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({
+      swipeLeft: "read",
+      swipeRight: "delete",
+    });
     setPrefsAccount("bob@postern.test");
     expect(getSwipeActions()).toEqual({ left: "archive", right: "archive" });
     setPrefsAccount("alice@postern.test");
@@ -82,7 +121,11 @@ describe("per account, per device", () => {
   it("saves under the account and loads it back", () => {
     setPrefsAccount("Alice@Postern.test");
     setPrefs({ undoSendSeconds: 20, shortcuts: false });
-    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({ version: 1, undoSendSeconds: 20, shortcuts: false });
+    expect(JSON.parse(localStorage.getItem("postern.prefs.alice@postern.test")!)).toMatchObject({
+      version: 1,
+      undoSendSeconds: 20,
+      shortcuts: false,
+    });
     setPrefsAccount("bob@postern.test");
     expect(getPrefs().undoSendSeconds).toBe(5);
     setPrefsAccount("alice@postern.test");
@@ -160,7 +203,10 @@ describe("display settings persistence", () => {
     expect(loadDisplaySettings()).toEqual({});
     localStorage.setItem(DISPLAY_KEY, JSON.stringify({ version: 2, theme: "dark" }));
     expect(loadDisplaySettings()).toEqual({});
-    localStorage.setItem(DISPLAY_KEY, JSON.stringify({ version: 1, theme: "dark", density: "weird", readingPane: "right" }));
+    localStorage.setItem(
+      DISPLAY_KEY,
+      JSON.stringify({ version: 1, theme: "dark", density: "weird", readingPane: "right" }),
+    );
     startDisplayPersistence();
     expect(getDisplaySettings()).toEqual({ theme: "dark", density: "default", readingPane: "right" });
   });
@@ -168,6 +214,10 @@ describe("display settings persistence", () => {
     startDisplayPersistence();
     setTheme("light");
     setDensity("compact");
-    expect(JSON.parse(localStorage.getItem(DISPLAY_KEY)!)).toMatchObject({ version: 1, theme: "light", density: "compact" });
+    expect(JSON.parse(localStorage.getItem(DISPLAY_KEY)!)).toMatchObject({
+      version: 1,
+      theme: "light",
+      density: "compact",
+    });
   });
 });

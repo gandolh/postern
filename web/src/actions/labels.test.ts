@@ -20,7 +20,13 @@ const roles = { inbox: "a", trash: "b", junk: "c", sent: "e", archive: "h" };
 const normal: ConversationScope = { kind: "normal", roles };
 
 function m(id: string, mailboxIds: string[]): ConversationMessage {
-  return { id, threadId: "T", receivedAt: "2026-10-01T00:00:00Z", mailboxIds: Object.fromEntries(mailboxIds.map((x) => [x, true as const])), keywords: {} };
+  return {
+    id,
+    threadId: "T",
+    receivedAt: "2026-10-01T00:00:00Z",
+    mailboxIds: Object.fromEntries(mailboxIds.map((x) => [x, true as const])),
+    keywords: {},
+  };
 }
 const conv = (id: string, ...messages: ConversationMessage[]): Conversation => ({ id, messages });
 
@@ -88,8 +94,19 @@ describe("filterLabels", () => {
   });
 });
 
-const L = (id: string, name: string, parentId: string | null = null, role: string | null = null): LabelShape => ({ id, name, parentId, role });
-const labels = [L("a", "Inbox", null, "inbox"), L("w", "Work"), L("c", "Clients", "w"), L("p", "Projects", "c"), L("r", "Receipts")];
+const L = (id: string, name: string, parentId: string | null = null, role: string | null = null): LabelShape => ({
+  id,
+  name,
+  parentId,
+  role,
+});
+const labels = [
+  L("a", "Inbox", null, "inbox"),
+  L("w", "Work"),
+  L("c", "Clients", "w"),
+  L("p", "Projects", "c"),
+  L("r", "Receipts"),
+];
 
 describe("label names", () => {
   it("cleans whitespace", () => expect(cleanLabelName("  Big   Deal ")).toBe("Big Deal"));

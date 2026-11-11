@@ -54,7 +54,10 @@ export function FiltersSettings() {
     [],
   );
 
-  const labelChoices = useMemo<LabelChoice[]>(() => labels.labels.filter((l) => !l.system).map((l) => ({ id: l.id, title: l.path })), [labels.labels]);
+  const labelChoices = useMemo<LabelChoice[]>(
+    () => labels.labels.filter((l) => !l.system).map((l) => ({ id: l.id, title: l.path })),
+    [labels.labels],
+  );
   const labelTitle = (labelId: string) => labelChoices.find((l) => l.id === labelId)?.title;
 
   const { status, loaded, error, saving, store } = filters;
@@ -68,7 +71,8 @@ export function FiltersSettings() {
       held = (await store.save(change, options)).heldByVacation;
     });
     // A newly included script shows in the list of scripts that run after the filters.
-    if (ok) setNotice(held ? `Saved, but ${FILTERS_OFF_NOTE.charAt(0).toLowerCase()}${FILTERS_OFF_NOTE.slice(1)}` : null);
+    if (ok)
+      setNotice(held ? `Saved, but ${FILTERS_OFF_NOTE.charAt(0).toLowerCase()}${FILTERS_OFF_NOTE.slice(1)}` : null);
     return ok;
   };
 
@@ -81,7 +85,10 @@ export function FiltersSettings() {
         // The script falls back to a label named Archive, then the Inbox.
       }
     }
-    const ok = await runSave((s) => ({ ...s, filters: index === null ? [...s.filters, filter] : s.filters.map((f, i) => (i === index ? filter : f)) }));
+    const ok = await runSave((s) => ({
+      ...s,
+      filters: index === null ? [...s.filters, filter] : s.filters.map((f, i) => (i === index ? filter : f)),
+    }));
     if (!ok) return;
     setEditing(null);
     if (applyExisting) await applyToExisting(filter);
@@ -119,7 +126,8 @@ export function FiltersSettings() {
           Filters
         </h2>
         <p className="settings-hint">
-          Filters sort new mail as it arrives. Postern keeps them on your mail server, so they work on every device, even with Postern closed.
+          Filters sort new mail as it arrives. Postern keeps them on your mail server, so they work on every device,
+          even with Postern closed.
         </p>
 
         {loaded.problem?.kind === "foreign-name" ? (
@@ -140,7 +148,8 @@ export function FiltersSettings() {
         {off && loaded.otherActive?.vacation ? (
           <div className="filters-banner" role="status">
             <p>
-              {FILTERS_OFF_NOTE} Your mail server runs one filter script at a time, and the vacation responder is using it.
+              {FILTERS_OFF_NOTE} Your mail server runs one filter script at a time, and the vacation responder is using
+              it.
             </p>
             <button type="button" className="btn" disabled={saving} onClick={() => void save(() => store.turnOn())}>
               Turn filters on and the vacation responder off
@@ -156,8 +165,9 @@ export function FiltersSettings() {
         ) : null}
         {loaded.otherActive && !loaded.otherActive.vacation ? (
           <p className="filters-banner" role="status">
-            Your own filter script &ldquo;{loaded.otherActive.name}&rdquo; is the one running now. When you save here, Postern&rsquo;s filters take over and run
-            &ldquo;{loaded.otherActive.name}&rdquo; after them, so nothing it does is lost.
+            Your own filter script &ldquo;{loaded.otherActive.name}&rdquo; is the one running now. When you save here,
+            Postern&rsquo;s filters take over and run &ldquo;{loaded.otherActive.name}&rdquo; after them, so nothing it
+            does is lost.
           </p>
         ) : null}
 
@@ -169,17 +179,31 @@ export function FiltersSettings() {
               <li key={i} className="filters-item">
                 <div className="filters-item-text">
                   <p className="filters-item-line">
-                    <span className="filters-item-key">Matches:</span> <span className="filters-item-value">{describeCriteria(f.criteria)}</span>
+                    <span className="filters-item-key">Matches:</span>{" "}
+                    <span className="filters-item-value">{describeCriteria(f.criteria)}</span>
                   </p>
                   <p className="filters-item-line">
-                    <span className="filters-item-key">Do this:</span> {describeActions(f.actions, labelTitle).join(", ")}
+                    <span className="filters-item-key">Do this:</span>{" "}
+                    {describeActions(f.actions, labelTitle).join(", ")}
                   </p>
                 </div>
                 <div className="filters-item-actions">
-                  <button type="button" className="btn btn-quiet" disabled={saving || blockedWrite} aria-label={`Edit filter ${i + 1}`} onClick={() => setEditing({ index: i, initial: f })}>
+                  <button
+                    type="button"
+                    className="btn btn-quiet"
+                    disabled={saving || blockedWrite}
+                    aria-label={`Edit filter ${i + 1}`}
+                    onClick={() => setEditing({ index: i, initial: f })}
+                  >
                     Edit
                   </button>
-                  <button type="button" className="btn btn-quiet" disabled={saving || blockedWrite} aria-label={`Delete filter ${i + 1}`} onClick={() => setConfirmDelete(i)}>
+                  <button
+                    type="button"
+                    className="btn btn-quiet"
+                    disabled={saving || blockedWrite}
+                    aria-label={`Delete filter ${i + 1}`}
+                    onClick={() => setConfirmDelete(i)}
+                  >
                     Delete
                   </button>
                 </div>
@@ -200,7 +224,12 @@ export function FiltersSettings() {
           />
         ) : (
           <div>
-            <button type="button" className="btn" disabled={saving || blockedWrite} onClick={() => setEditing({ index: null, initial: { criteria: emptyCriteria() } })}>
+            <button
+              type="button"
+              className="btn"
+              disabled={saving || blockedWrite}
+              onClick={() => setEditing({ index: null, initial: { criteria: emptyCriteria() } })}
+            >
               Create a new filter
             </button>
           </div>
@@ -209,7 +238,8 @@ export function FiltersSettings() {
         {set.includes.length > 0 ? (
           <div className="filters-includes">
             <p className="settings-hint">
-              After these filters your mail server also runs {set.includes.length === 1 ? "your own script" : "your own scripts"}{" "}
+              After these filters your mail server also runs{" "}
+              {set.includes.length === 1 ? "your own script" : "your own scripts"}{" "}
               {set.includes.map((n) => `“${n}”`).join(", ")}.
             </p>
             {set.includes.map((name) => (
@@ -237,7 +267,9 @@ export function FiltersSettings() {
         <h2 id={`${id}-blocked`} className="settings-heading">
           Blocked addresses
         </h2>
-        <p className="settings-hint">New messages from these addresses go to Spam. Block someone from the menu on one of their messages.</p>
+        <p className="settings-hint">
+          New messages from these addresses go to Spam. Block someone from the menu on one of their messages.
+        </p>
         {set.blocked.length === 0 ? (
           <p className="settings-hint">You haven&rsquo;t blocked anyone.</p>
         ) : (
@@ -265,8 +297,8 @@ export function FiltersSettings() {
           Spam
         </h2>
         <p className="settings-hint">
-          When you report a message as spam, or mark one as not spam, your mail server&rsquo;s spam filter learns from it. It retrains a few times a day, once it has
-          seen enough of both kinds.
+          When you report a message as spam, or mark one as not spam, your mail server&rsquo;s spam filter learns from
+          it. It retrains a few times a day, once it has seen enough of both kinds.
         </p>
       </section>
 

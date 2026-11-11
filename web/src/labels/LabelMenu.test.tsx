@@ -16,8 +16,14 @@ import { LabelsStoreProvider } from "./useLabels";
 
 const INBOX: LabelRoute = { kind: "system", view: "inbox" };
 
-async function renderMenu(emails: FakeEmail[], props: { mode?: "label" | "move"; ids?: string[]; current?: LabelRoute | null; onDone?: () => void } = {}) {
-  const mail = new FakeMail({ mailboxes: [...MAILBOXES, { id: "j", name: "Receipts", role: null, parentId: null }], emails });
+async function renderMenu(
+  emails: FakeEmail[],
+  props: { mode?: "label" | "move"; ids?: string[]; current?: LabelRoute | null; onDone?: () => void } = {},
+) {
+  const mail = new FakeMail({
+    mailboxes: [...MAILBOXES, { id: "j", name: "Receipts", role: null, parentId: null }],
+    emails,
+  });
   // The fake has no Mailbox/changes: have the store reload every mailbox instead.
   mail.failWith = (name) => (name === "Mailbox/changes" ? ["error", { type: "cannotCalculateChanges" }] : undefined);
   const client = await mail.connect();
@@ -87,7 +93,9 @@ describe("Labels (apply and remove)", () => {
   });
 
   it("removing the only label puts the message in All Mail", async () => {
-    const { mail, user } = await renderMenu([fakeEmail({ id: "1", threadId: "T1", mailboxIds: { i: true } })], { current: { kind: "label", labelId: "i" } });
+    const { mail, user } = await renderMenu([fakeEmail({ id: "1", threadId: "T1", mailboxIds: { i: true } })], {
+      current: { kind: "label", labelId: "i" },
+    });
     await user.click(screen.getByRole("button", { name: "Labels" }));
     await user.click(await screen.findByRole("checkbox", { name: /Work/ }));
     await waitFor(() => expect(boxes(mail, "1")).toEqual(["h"]));

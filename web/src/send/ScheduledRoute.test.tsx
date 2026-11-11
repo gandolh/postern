@@ -16,7 +16,9 @@ import { ComposeTestServer, MAILBOXES } from "./testServer";
 
 afterEach(cleanup);
 
-async function renderPage(setup: (server: ComposeTestServer, client: Awaited<ReturnType<ComposeTestServer["connect"]>>) => Promise<void>) {
+async function renderPage(
+  setup: (server: ComposeTestServer, client: Awaited<ReturnType<ComposeTestServer["connect"]>>) => Promise<void>,
+) {
   const server = new ComposeTestServer({ maxDelayedSend: 2_592_000 });
   const client = await server.connect();
   await setup(server, client);
@@ -37,7 +39,14 @@ async function renderPage(setup: (server: ComposeTestServer, client: Awaited<Ret
 }
 
 function draft(server: ComposeTestServer, id: string, subject: string) {
-  server.add({ id, mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $seen: true }, subject, preview: `About ${subject}`, to: [{ name: "Bob Baker", email: "bob@postern.test" }] });
+  server.add({
+    id,
+    mailboxIds: { [MAILBOXES.drafts]: true },
+    keywords: { $draft: true, $seen: true },
+    subject,
+    preview: `About ${subject}`,
+    to: [{ name: "Bob Baker", email: "bob@postern.test" }],
+  });
 }
 
 const SOON = "2026-11-03T08:00:00Z";
@@ -63,7 +72,9 @@ describe("the Scheduled page", () => {
     expect(first.getAttribute("aria-expanded")).toBe("true");
     await user.click(within(items[0]!).getByRole("button", { name: "Cancel send" }));
     expect(await screen.findByText("Send canceled. The message is in Drafts.")).toBeTruthy();
-    await waitFor(() => expect(within(screen.getByRole("list", { name: "Scheduled" })).getAllByRole("listitem")).toHaveLength(1));
+    await waitFor(() =>
+      expect(within(screen.getByRole("list", { name: "Scheduled" })).getAllByRole("listitem")).toHaveLength(1),
+    );
     expect(server.emails.get("M2")!.keywords).toEqual({ $draft: true, $seen: true });
     expect(server.emails.get("M2")!.mailboxIds).toEqual({ [MAILBOXES.drafts]: true });
   });
@@ -71,7 +82,12 @@ describe("the Scheduled page", () => {
   it("files a message that went out in Sent, and says when nothing waits", async () => {
     const { server } = await renderPage(async (server, client) => {
       draft(server, "M1", "Gone");
-      const s = await scheduleDraft(client, { emailId: "M1", identityId: "I1", from: "alice@postern.test", at: new Date(SOON) });
+      const s = await scheduleDraft(client, {
+        emailId: "M1",
+        identityId: "I1",
+        from: "alice@postern.test",
+        at: new Date(SOON),
+      });
       server.release(s.submissionId);
     });
     expect(await screen.findByText("No scheduled messages")).toBeTruthy();

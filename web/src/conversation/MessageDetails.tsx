@@ -23,7 +23,8 @@ function Addresses({ list }: { list: readonly EmailAddress[] | null | undefined 
 
 export function MessageDetails({ message, id }: { message: ConvMessage; id: string }) {
   const auth = readAuthenticationResults(message.authResults);
-  const replyTo = message.replyTo?.filter((r) => !message.from?.some((f) => f.email.toLowerCase() === r.email.toLowerCase())) ?? [];
+  const replyTo =
+    message.replyTo?.filter((r) => !message.from?.some((f) => f.email.toLowerCase() === r.email.toLowerCase())) ?? [];
   return (
     <dl id={id} className="conv-details">
       <dt>from:</dt>

@@ -20,7 +20,9 @@ describe("wrappers send the right calls", () => {
 
   it("queryAndGet returns messages in query order from one request", async () => {
     const { server, client } = setup();
-    const recorded = fixture<{ methodResponses: [string, Record<string, unknown>, string][] }>("conversation-list.response.json");
+    const recorded = fixture<{ methodResponses: [string, Record<string, unknown>, string][] }>(
+      "conversation-list.response.json",
+    );
     const [, query, get] = recorded.methodResponses;
     server.always("POST /jmap/", () =>
       json({
@@ -31,7 +33,10 @@ describe("wrappers send the right calls", () => {
         sessionState: "1af6e809",
       }),
     );
-    const res = await client.email.queryAndGet({ filter: { inMailbox: "a" }, collapseThreads: true, limit: 3 }, { properties: ["threadId"] });
+    const res = await client.email.queryAndGet(
+      { filter: { inMailbox: "a" }, collapseThreads: true, limit: 3 },
+      { properties: ["threadId"] },
+    );
     expect(server.posts()).toHaveLength(1);
     expect(res.list.map((e) => e.id)).toEqual(res.query.ids);
     expect(res.query.total).toBe(2035);
@@ -42,10 +47,15 @@ describe("wrappers send the right calls", () => {
     apiAnswers(server, (name) =>
       name === "VacationResponse/get"
         ? [name, { accountId: "b", state: "n", list: [{ id: "singleton", isEnabled: false }], notFound: [] }]
-        : [name, { accountId: "b", notUpdated: { singleton: { type: "invalidProperties", properties: ["fromDate"] } } }],
+        : [
+            name,
+            { accountId: "b", notUpdated: { singleton: { type: "invalidProperties", properties: ["fromDate"] } } },
+          ],
     );
     expect((await client.vacationResponse.get()).id).toBe("singleton");
-    await expect(client.vacationResponse.set({ isEnabled: true, fromDate: "nope" })).rejects.toBeInstanceOf(JmapSetError);
+    await expect(client.vacationResponse.set({ isEnabled: true, fromDate: "nope" })).rejects.toBeInstanceOf(
+      JmapSetError,
+    );
     expect(server.posts()[1]?.methodCalls[0]).toEqual([
       "VacationResponse/set",
       { accountId: "b", update: { singleton: { isEnabled: true, fromDate: "nope" } } },
@@ -74,23 +84,32 @@ describe("wrappers send the right calls", () => {
     expect(calls[0]?.[1]).not.toHaveProperty("accountId");
     expect(calls[1]?.[1]).toEqual({ update: { P1: { verificationCode: "code-123" } } });
     expect(calls[2]?.[1]).toEqual({ destroy: ["P1"] });
-    expect(isPushVerification({ "@type": "PushVerification", pushSubscriptionId: "P1", verificationCode: "x" })).toBe(true);
+    expect(isPushVerification({ "@type": "PushVerification", pushSubscriptionId: "P1", verificationCode: "x" })).toBe(
+      true,
+    );
     expect(isPushVerification({ "@type": "StateChange", changed: {} })).toBe(false);
   });
 
   it("pushSubscription.create throws the SetError", async () => {
     const { server, client } = setup();
     apiAnswers(server, (name) => [name, { notCreated: { sub: { type: "invalidProperties", properties: ["url"] } } }]);
-    const err = await client.pushSubscription.create({ deviceClientId: "d", url: "http://insecure" }).catch((e: unknown) => e);
+    const err = await client.pushSubscription
+      .create({ deviceClientId: "d", url: "http://insecure" })
+      .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(JmapSetError);
     expect((err as JmapSetError).type).toBe("invalidProperties");
   });
 
   it("sieveScript.validateSource uploads the script then validates the blob", async () => {
     const { server, client } = setup();
-    server.always("POST /jmap/upload/b/", () => json({ accountId: "b", blobId: "Gs1", type: "application/sieve", size: 9 }));
+    server.always("POST /jmap/upload/b/", () =>
+      json({ accountId: "b", blobId: "Gs1", type: "application/sieve", size: 9 }),
+    );
     // Recorded: Stalwart's answer to "if foo bar".
-    apiAnswers(server, (name) => [name, { accountId: "b", error: { type: "invalidScript", description: "Unexpected end of file at line 1, column 9." } }]);
+    apiAnswers(server, (name) => [
+      name,
+      { accountId: "b", error: { type: "invalidScript", description: "Unexpected end of file at line 1, column 9." } },
+    ]);
     const error = await client.sieveScript.validateSource("if foo bar");
     expect(error?.type).toBe("invalidScript");
     const upload = server.requests.find((r) => r.url.includes("/upload/"));

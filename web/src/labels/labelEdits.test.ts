@@ -1,7 +1,15 @@
 import type { MethodCaller } from "@postern/jmap";
 import { describe, expect, it, vi } from "vitest";
 import type { LabelShape } from "../actions/labels";
-import { createLabel, deleteLabel, LabelEditError, nestLabel, renameLabel, setLabelSubscribed, type LabelEditDeps } from "./labelEdits";
+import {
+  createLabel,
+  deleteLabel,
+  LabelEditError,
+  nestLabel,
+  renameLabel,
+  setLabelSubscribed,
+  type LabelEditDeps,
+} from "./labelEdits";
 
 type Args = Record<string, unknown>;
 
@@ -25,16 +33,25 @@ function makeServer(initial: { labels: LabelShape[]; emails: Record<string, stri
             labels.push({ id, name: m.name ?? "", parentId: m.parentId ?? null, role: m.role ?? null });
             created[key] = { id };
           }
-          for (const [id, patch] of Object.entries((args["update"] as Record<string, Partial<LabelShape>> | undefined) ?? {})) {
-            Object.assign(labels.find((l) => l.id === id)!, patch);
+          for (const [id, patch] of Object.entries(
+            (args["update"] as Record<string, Partial<LabelShape>> | undefined) ?? {},
+          )) {
+            Object.assign(
+              labels.find((l) => l.id === id)!,
+              patch,
+            );
           }
           const notDestroyed: Record<string, { type: string }> = {};
           const destroyed: string[] = [];
           for (const id of (args["destroy"] as string[] | undefined) ?? []) {
             if (labels.some((l) => l.parentId === id)) notDestroyed[id] = { type: "mailboxHasChild" };
-            else if ([...emails.values()].some((boxes) => boxes.has(id))) notDestroyed[id] = { type: "mailboxHasEmail" };
+            else if ([...emails.values()].some((boxes) => boxes.has(id)))
+              notDestroyed[id] = { type: "mailboxHasEmail" };
             else {
-              labels.splice(labels.findIndex((l) => l.id === id), 1);
+              labels.splice(
+                labels.findIndex((l) => l.id === id),
+                1,
+              );
               destroyed.push(id);
             }
           }
@@ -46,7 +63,12 @@ function makeServer(initial: { labels: LabelShape[]; emails: Record<string, stri
           return { ids, total: ids.length };
         }
         case "Email/get":
-          return { list: (args["ids"] as string[]).map((id) => ({ id, mailboxIds: Object.fromEntries([...emails.get(id)!].map((b) => [b, true])) })) };
+          return {
+            list: (args["ids"] as string[]).map((id) => ({
+              id,
+              mailboxIds: Object.fromEntries([...emails.get(id)!].map((b) => [b, true])),
+            })),
+          };
         case "Email/set": {
           for (const [id, patch] of Object.entries(args["update"] as Record<string, Record<string, true | null>>)) {
             for (const [path, value] of Object.entries(patch)) {
@@ -156,7 +178,10 @@ describe("deleteLabel never leaves a message with no label", () => {
   });
 
   it("changes nothing when a sublabel would clash one level up", async () => {
-    const s = makeServer({ labels: [...base, { id: "x", name: "Clients", parentId: null, role: null }], emails: { e1: ["w"] } });
+    const s = makeServer({
+      labels: [...base, { id: "x", name: "Clients", parentId: null, role: null }],
+      emails: { e1: ["w"] },
+    });
     await expect(deleteLabel(s.deps, "w")).rejects.toThrow(/already exists/);
     expect(s.sent).toEqual([]);
     expect([...s.emails.get("e1")!]).toEqual(["w"]);

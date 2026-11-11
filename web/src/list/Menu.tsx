@@ -33,7 +33,13 @@ export function MenuButton({ label, icon, items, align = "start", className }: M
       <Menu.Root modal={false}>
         <Menu.Trigger ref={buttonRef} render={<IconButton label={label} icon={icon} />} />
         <Menu.Portal>
-          <Menu.Positioner className="list-menu-positioner" side="bottom" align={align} sideOffset={4} collisionPadding={8}>
+          <Menu.Positioner
+            className="list-menu-positioner"
+            side="bottom"
+            align={align}
+            sideOffset={4}
+            collisionPadding={8}
+          >
             <Menu.Popup
               className="list-menu-popup"
               aria-label={label}

@@ -40,12 +40,24 @@ export function SettingsRoutes({ section }: SettingsRoutesProps) {
       </header>
       <nav className="settings-tabs" aria-label="Settings sections">
         {SECTIONS.map((s) => (
-          <a key={s.id} href={formatRoute({ kind: "settings", section: s.id })} aria-current={s.id === current.id ? "page" : undefined}>
+          <a
+            key={s.id}
+            href={formatRoute({ kind: "settings", section: s.id })}
+            aria-current={s.id === current.id ? "page" : undefined}
+          >
             {s.title}
           </a>
         ))}
       </nav>
-      {current.id === "general" ? <GeneralSettings /> : current.id === "accounts" ? <AccountsSettings /> : current.id === "labels" ? <LabelManager /> : <FiltersSettings />}
+      {current.id === "general" ? (
+        <GeneralSettings />
+      ) : current.id === "accounts" ? (
+        <AccountsSettings />
+      ) : current.id === "labels" ? (
+        <LabelManager />
+      ) : (
+        <FiltersSettings />
+      )}
     </section>
   );
 }

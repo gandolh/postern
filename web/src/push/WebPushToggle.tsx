@@ -33,7 +33,8 @@ export function WebPushToggle() {
     return (
       <div className="settings-field">
         <p className="settings-hint">
-          To get notifications when Postern is closed on an iPhone or iPad, add Postern to the Home Screen (Share, then Add to Home Screen) and turn them on there.
+          To get notifications when Postern is closed on an iPhone or iPad, add Postern to the Home Screen (Share, then
+          Add to Home Screen) and turn them on there.
         </p>
       </div>
     );

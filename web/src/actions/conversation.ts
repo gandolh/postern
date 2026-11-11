@@ -32,7 +32,14 @@ export interface MailboxRoles {
   drafts?: Id;
 }
 
-export const ROLE_NAMES: readonly (keyof MailboxRoles & MailboxRole)[] = ["inbox", "archive", "trash", "junk", "sent", "drafts"];
+export const ROLE_NAMES: readonly (keyof MailboxRoles & MailboxRole)[] = [
+  "inbox",
+  "archive",
+  "trash",
+  "junk",
+  "sent",
+  "drafts",
+];
 
 /** Which messages of a conversation a view shows: the usual ones, or only those in Trash or Spam. */
 export type ScopeKind = "normal" | "trash" | "spam";
@@ -61,7 +68,10 @@ export function inScope(message: Pick<MessageState, "mailboxIds">, scope: Conver
  * the scope (a search hit in Trash, say), all of them: the row is there, so
  * something of it is shown.
  */
-export function shownMessages<M extends ConversationMessage>(conversation: Conversation<M>, scope: ConversationScope): readonly M[] {
+export function shownMessages<M extends ConversationMessage>(
+  conversation: Conversation<M>,
+  scope: ConversationScope,
+): readonly M[] {
   const shown = conversation.messages.filter((m) => inScope(m, scope));
   return shown.length > 0 ? shown : conversation.messages;
 }

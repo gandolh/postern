@@ -6,7 +6,14 @@
 import type { Id } from "@postern/jmap";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { useAccount } from "../auth";
-import { getLabelPrefs, setLabelPref, subscribeLabelPrefs, type LabelColor, type LabelPrefPatch, type LabelPrefs } from "./labelPrefs";
+import {
+  getLabelPrefs,
+  setLabelPref,
+  subscribeLabelPrefs,
+  type LabelColor,
+  type LabelPrefPatch,
+  type LabelPrefs,
+} from "./labelPrefs";
 
 export function useLabelPrefs(): { prefs: LabelPrefs; setPref: (labelId: Id, patch: LabelPrefPatch) => void } {
   const { username } = useAccount();
@@ -15,7 +22,10 @@ export function useLabelPrefs(): { prefs: LabelPrefs; setPref: (labelId: Id, pat
     () => getLabelPrefs(username),
     () => getLabelPrefs(username),
   );
-  const setPref = useCallback((labelId: Id, patch: LabelPrefPatch) => setLabelPref(username, labelId, patch), [username]);
+  const setPref = useCallback(
+    (labelId: Id, patch: LabelPrefPatch) => setLabelPref(username, labelId, patch),
+    [username],
+  );
   return useMemo(() => ({ prefs, setPref }), [prefs, setPref]);
 }
 

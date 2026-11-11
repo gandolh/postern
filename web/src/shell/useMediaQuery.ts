@@ -12,6 +12,9 @@ export function useMediaQuery(query: string, serverValue = false): boolean {
     },
     [query],
   );
-  const get = useCallback(() => (typeof window.matchMedia === "function" ? window.matchMedia(query).matches : serverValue), [query, serverValue]);
+  const get = useCallback(
+    () => (typeof window.matchMedia === "function" ? window.matchMedia(query).matches : serverValue),
+    [query, serverValue],
+  );
   return useSyncExternalStore(subscribe, get, () => serverValue);
 }

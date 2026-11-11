@@ -36,7 +36,13 @@ export function AccountMenu() {
           </span>
         </Popover.Trigger>
         <Popover.Portal>
-          <Popover.Positioner className="shell-account-positioner" side="bottom" align="end" sideOffset={8} collisionPadding={8}>
+          <Popover.Positioner
+            className="shell-account-positioner"
+            side="bottom"
+            align="end"
+            sideOffset={8}
+            collisionPadding={8}
+          >
             <Popover.Popup
               className="shell-account-panel"
               onBlur={(event) => {
@@ -50,7 +56,12 @@ export function AccountMenu() {
               <Popover.Title render={<p className="shell-account-name" />}>{name}</Popover.Title>
               {account.name ? <p className="shell-account-address">{account.username}</p> : null}
               {STALWART_ACCOUNT_URL ? (
-                <a className="btn shell-account-manage" href={STALWART_ACCOUNT_URL} target="_blank" rel="noopener noreferrer">
+                <a
+                  className="btn shell-account-manage"
+                  href={STALWART_ACCOUNT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Manage your account
                   <ExternalLink aria-hidden="true" />
                   <span className="visually-hidden">(opens in a new tab)</span>

@@ -27,7 +27,11 @@ describe("back-references", () => {
     expect(body?.using).toEqual(["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"]);
     expect(body?.methodCalls).toEqual([
       ["Email/query", { accountId: "b", filter: { inMailbox: "a" }, collapseThreads: true, limit: 3 }, "0"],
-      ["Email/get", { accountId: "b", "#ids": { resultOf: "0", name: "Email/query", path: "/ids" }, properties: ["threadId"] }, "1"],
+      [
+        "Email/get",
+        { accountId: "b", "#ids": { resultOf: "0", name: "Email/query", path: "/ids" }, properties: ["threadId"] },
+        "1",
+      ],
       ["Thread/get", { accountId: "b", "#ids": { resultOf: "1", name: "Email/get", path: "/list/*/threadId" } }, "2"],
     ]);
   });
@@ -58,7 +62,12 @@ describe("back-references", () => {
     server.always("POST /jmap/", () => json(fixture("conversation-list.response.json")));
     const r = client.request();
     const inbox = r.call("Mailbox/query", { filter: { role: "inbox" } });
-    const q = r.call("Email/query", { filter: { inMailbox: "a" }, collapseThreads: true, limit: 3, calculateTotal: true });
+    const q = r.call("Email/query", {
+      filter: { inMailbox: "a" },
+      collapseThreads: true,
+      limit: 3,
+      calculateTotal: true,
+    });
     const g = r.call("Email/get", { ids: q.ref("/ids"), properties: ["threadId", "subject"] });
     const t = r.call("Thread/get", { ids: g.ref("/list/*/threadId") });
     const res = await r.send();
@@ -123,11 +132,16 @@ describe("method errors", () => {
     const { server, client } = setup();
     server.always("POST /jmap/", () =>
       json({
-        methodResponses: [["error", { type: "invalidArguments", description: "invalid JMAP State at line 1 column 303" }, "0"]],
+        methodResponses: [
+          ["error", { type: "invalidArguments", description: "invalid JMAP State at line 1 column 303" }, "0"],
+        ],
         sessionState: "1af6e809",
       }),
     );
-    await expect(client.email.changes("garbage")).rejects.toMatchObject({ type: "invalidArguments", method: "Email/changes" });
+    await expect(client.email.changes("garbage")).rejects.toMatchObject({
+      type: "invalidArguments",
+      method: "Email/changes",
+    });
   });
 
   it("reports a missing response as a protocol error", async () => {
@@ -140,7 +154,10 @@ describe("method errors", () => {
 describe("splitting to fit the limits", () => {
   it("splits 20 independent calls over two POSTs of at most 16", async () => {
     const { server, client } = setup();
-    apiAnswers(server, (name, args) => [name, { accountId: "b", state: "s", list: [], notFound: [], ids: args["ids"] }]);
+    apiAnswers(server, (name, args) => [
+      name,
+      { accountId: "b", state: "s", list: [], notFound: [], ids: args["ids"] },
+    ]);
     const r = client.request();
     const handles = Array.from({ length: 20 }, (_, i) => r.call("Mailbox/get", { ids: [`m${i}`] }));
     const res = await r.send();
@@ -180,7 +197,10 @@ describe("splitting to fit the limits", () => {
     const { server, client } = setup();
     apiAnswers(server, (name, args) => {
       const ids = args["ids"] as string[];
-      return [name, { accountId: "b", state: "s1", list: ids.slice(1).map((id) => ({ id })), notFound: ids.slice(0, 1) }];
+      return [
+        name,
+        { accountId: "b", state: "s1", list: ids.slice(1).map((id) => ({ id })), notFound: ids.slice(0, 1) },
+      ];
     });
     const ids = Array.from({ length: 1201 }, (_, i) => `e${i}`);
     const res = await client.email.get({ ids, properties: ["id"] });
@@ -197,7 +217,10 @@ describe("splitting to fit the limits", () => {
     apiAnswers(server, (name, args) => {
       n++;
       const updated = Object.fromEntries(Object.keys((args["update"] ?? {}) as object).map((id) => [id, null]));
-      return [name, { accountId: "b", oldState: `s${n - 1}`, newState: `s${n}`, updated, destroyed: args["destroy"] ?? [] }];
+      return [
+        name,
+        { accountId: "b", oldState: `s${n - 1}`, newState: `s${n}`, updated, destroyed: args["destroy"] ?? [] },
+      ];
     });
     const ids = Array.from({ length: 700 }, (_, i) => `e${i}`);
     const res = await client.email.setKeywords(ids, { $flagged: true });
@@ -229,10 +252,17 @@ describe("splitting to fit the limits", () => {
     let post = 0;
     server.always("POST /jmap/", (req) => {
       post++;
-      const body = req.json as { methodCalls: [string, Record<string, unknown>, string][]; createdIds: Record<string, string> };
+      const body = req.json as {
+        methodCalls: [string, Record<string, unknown>, string][];
+        createdIds: Record<string, string>;
+      };
       const created = post === 1 ? { draft: "M1" } : {};
       return json({
-        methodResponses: body.methodCalls.map(([n, , id]) => [n, { created: post === 1 && n === "Email/set" ? { draft: { id: "M1" } } : null }, id]),
+        methodResponses: body.methodCalls.map(([n, , id]) => [
+          n,
+          { created: post === 1 && n === "Email/set" ? { draft: { id: "M1" } } : null },
+          id,
+        ]),
         createdIds: { ...body.createdIds, ...created },
         sessionState: "1af6e809",
       });
@@ -286,7 +316,9 @@ describe("the builder", () => {
     const { server, client } = setup();
     apiAnswers(server, (name) => [name, {}]);
     await client.call("Email/changes", { sinceState: "s1", maxChanges: 5 });
-    expect(server.requests.at(-1)?.body).toContain('["Email/changes",{"accountId":"b","sinceState":"s1","maxChanges":5},"0"]');
+    expect(server.requests.at(-1)?.body).toContain(
+      '["Email/changes",{"accountId":"b","sinceState":"s1","maxChanges":5},"0"]',
+    );
   });
 
   it("keeps an explicit accountId", async () => {

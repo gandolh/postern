@@ -18,7 +18,8 @@ import "../list/list.css";
 import { serverHas } from "./capability";
 import { useSaved } from "./useSaved";
 
-export const FILTERS_STOP_WARNING = "Your filters stop while the vacation responder is on: Stalwart runs one script at a time.";
+export const FILTERS_STOP_WARNING =
+  "Your filters stop while the vacation responder is on: Stalwart runs one script at a time.";
 
 const CAPABILITY = "urn:ietf:params:jmap:vacationresponse";
 
@@ -86,7 +87,11 @@ export function VacationForm() {
 
   // Postern's filter script with something in it: the responder would stop it.
   const loaded = filters.loaded;
-  const hasFilters = loaded !== null && loaded.scriptId !== null && loaded.problem === null && loaded.set.filters.length + loaded.set.blocked.length + loaded.set.includes.length > 0;
+  const hasFilters =
+    loaded !== null &&
+    loaded.scriptId !== null &&
+    loaded.problem === null &&
+    loaded.set.filters.length + loaded.set.blocked.length + loaded.set.includes.length > 0;
 
   const turnOn = async () => {
     setConfirmOn(false);
@@ -105,7 +110,9 @@ export function VacationForm() {
       await filters.store.turnOn();
       setFiltersNote("Your filters are on again.");
     } catch (e) {
-      setFiltersNote(`The vacation responder is off, but your filters didn't come back on (${e instanceof Error ? e.message : "unknown error"}). Turn them on in Settings, under Filters.`);
+      setFiltersNote(
+        `The vacation responder is off, but your filters didn't come back on (${e instanceof Error ? e.message : "unknown error"}). Turn them on in Settings, under Filters.`,
+      );
     }
   };
 
@@ -124,7 +131,11 @@ export function VacationForm() {
         <input type="checkbox" checked={value.isEnabled} onChange={(e) => toggle(e.target.checked)} />
         Vacation responder on
       </label>
-      {hasFilters ? <p className="settings-hint">{value.isEnabled ? "Your filters are off while the vacation responder is on." : FILTERS_STOP_WARNING}</p> : null}
+      {hasFilters ? (
+        <p className="settings-hint">
+          {value.isEnabled ? "Your filters are off while the vacation responder is on." : FILTERS_STOP_WARNING}
+        </p>
+      ) : null}
       {filtersNote ? (
         <p className="settings-hint" role="status">
           {filtersNote}
@@ -144,17 +155,41 @@ export function VacationForm() {
           <label htmlFor={`${id}-from`} className="settings-label">
             First day
           </label>
-          <input id={`${id}-from`} type="date" className="input" value={dateOnly(value.fromDate)} onChange={(e) => void commit({ fromDate: toUtc(e.target.value, "start") })} />
+          <input
+            id={`${id}-from`}
+            type="date"
+            className="input"
+            value={dateOnly(value.fromDate)}
+            onChange={(e) => void commit({ fromDate: toUtc(e.target.value, "start") })}
+          />
         </div>
         <div className="settings-field">
           <label htmlFor={`${id}-to`} className="settings-label">
             Last day
           </label>
-          <input id={`${id}-to`} type="date" className="input" value={dateOnly(value.toDate)} min={dateOnly(value.fromDate)} onChange={(e) => void commit({ toDate: toUtc(e.target.value, "end") })} />
+          <input
+            id={`${id}-to`}
+            type="date"
+            className="input"
+            value={dateOnly(value.toDate)}
+            min={dateOnly(value.fromDate)}
+            onChange={(e) => void commit({ toDate: toUtc(e.target.value, "end") })}
+          />
         </div>
       </div>
-      <TextField id={`${id}-subject`} label="Subject" value={value.subject ?? ""} onCommit={(subject) => void commit({ subject: subject || null })} />
-      <TextField id={`${id}-body`} label="Message" multiline value={value.textBody ?? ""} onCommit={(textBody) => void commit({ textBody: textBody || null })} />
+      <TextField
+        id={`${id}-subject`}
+        label="Subject"
+        value={value.subject ?? ""}
+        onCommit={(subject) => void commit({ subject: subject || null })}
+      />
+      <TextField
+        id={`${id}-body`}
+        label="Message"
+        multiline
+        value={value.textBody ?? ""}
+        onCommit={(textBody) => void commit({ textBody: textBody || null })}
+      />
       {note}
     </section>
   );
@@ -186,9 +221,23 @@ export function TextField({ id, label, value, multiline, onCommit }: TextFieldPr
         {label}
       </label>
       {multiline ? (
-        <textarea id={id} className="input settings-textarea" rows={5} value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} />
+        <textarea
+          id={id}
+          className="input settings-textarea"
+          rows={5}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+        />
       ) : (
-        <input id={id} type="text" className="input" value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} />
+        <input
+          id={id}
+          type="text"
+          className="input"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+        />
       )}
     </div>
   );

@@ -51,7 +51,14 @@ const SYSTEM_IN = new Map<string, keyof SearchRoles | "starred" | "important" | 
   ["all", "anywhere"],
 ]);
 
-const ROLE_WORDS: Record<string, string> = { junk: "Spam", trash: "Trash", sent: "Sent", drafts: "Drafts", inbox: "Inbox", archive: "All Mail" };
+const ROLE_WORDS: Record<string, string> = {
+  junk: "Spam",
+  trash: "Trash",
+  sent: "Sent",
+  drafts: "Drafts",
+  inbox: "Inbox",
+  archive: "All Mail",
+};
 
 export function parseSearch(input: string, options: ParseSearchOptions): ParsedSearch {
   return new Parser(input, options).run();
@@ -77,7 +84,11 @@ class Parser {
 
   run(): ParsedSearch {
     for (const raw of this.#unterminated) {
-      this.#warn("unterminated-quote", raw, "A quotation mark was never closed; the rest of the search is taken as quoted.");
+      this.#warn(
+        "unterminated-quote",
+        raw,
+        "A quotation mark was never closed; the rest of the search is taken as quoted.",
+      );
     }
     const root = this.#sequence("eof", false, null);
     const roles = this.#opts.roles;
@@ -113,7 +124,12 @@ class Parser {
     for (;;) {
       const tok = this.#peek();
       if (!tok) {
-        if (until !== "eof") this.#warn("unbalanced-parenthesis", until === "rparen" ? "(" : "{", `A ${until === "rparen" ? "parenthesis" : "brace"} was never closed.`);
+        if (until !== "eof")
+          this.#warn(
+            "unbalanced-parenthesis",
+            until === "rparen" ? "(" : "{",
+            `A ${until === "rparen" ? "parenthesis" : "brace"} was never closed.`,
+          );
         break;
       }
       if (tok.kind === "rparen" || tok.kind === "rbrace") {
@@ -123,7 +139,11 @@ class Parser {
         }
         // A closer for something that is not open here.
         this.#pos++;
-        this.#warn("unbalanced-parenthesis", tok.kind === "rparen" ? ")" : "}", `A stray ${tok.kind === "rparen" ? "parenthesis" : "brace"} was ignored.`);
+        this.#warn(
+          "unbalanced-parenthesis",
+          tok.kind === "rparen" ? ")" : "}",
+          `A stray ${tok.kind === "rparen" ? "parenthesis" : "brace"} was ignored.`,
+        );
         continue;
       }
       if (tok.kind === "or") {
@@ -148,7 +168,13 @@ class Parser {
       items.push(alternatives.length === 1 ? first : { t: "or", kids: alternatives });
     }
     if (items.length === 0) return null;
-    return or ? (items.length === 1 ? items[0]! : { t: "or", kids: items }) : items.length === 1 ? items[0]! : { t: "and", kids: items };
+    return or
+      ? items.length === 1
+        ? items[0]!
+        : { t: "or", kids: items }
+      : items.length === 1
+        ? items[0]!
+        : { t: "and", kids: items };
   }
 
   /** One atom with its `-`. Null when it says nothing. */
@@ -205,7 +231,23 @@ class Parser {
       return this.#text(raw, false, negated);
     };
     if (!/^[a-z_][a-z0-9_]*$/.test(name)) return this.#text(raw, false, negated);
-    const KNOWN = ["from", "to", "cc", "bcc", "subject", "has", "is", "in", "label", "before", "after", "older_than", "newer_than", "larger", "smaller"];
+    const KNOWN = [
+      "from",
+      "to",
+      "cc",
+      "bcc",
+      "subject",
+      "has",
+      "is",
+      "in",
+      "label",
+      "before",
+      "after",
+      "older_than",
+      "newer_than",
+      "larger",
+      "smaller",
+    ];
     if (!KNOWN.includes(name)) {
       if (v.startsWith("//") && !UNSUPPORTED.has(name)) return this.#text(raw, false, negated); // a URL
       const why = UNSUPPORTED.get(name);
@@ -229,7 +271,8 @@ class Parser {
         if (!negated) this.#terms.push(v);
         return { t: "cond", c: { subject: quoted ? `"${v}"` : v } };
       case "has":
-        if (v.toLowerCase() === "attachment" || v.toLowerCase() === "attachments") return { t: "cond", c: { hasAttachment: true } };
+        if (v.toLowerCase() === "attachment" || v.toLowerCase() === "attachments")
+          return { t: "cond", c: { hasAttachment: true } };
         return asText("unsupported", `has:${v} isn't supported; searched as plain words.`);
       case "is": {
         switch (v.toLowerCase()) {
@@ -294,7 +337,11 @@ class Parser {
     if (sys) {
       const id = roles[sys];
       if (id === undefined) {
-        this.#warn("missing-mailbox", raw, `This account has no ${ROLE_WORDS[sys] ?? sys} label; nothing matches ${raw}.`);
+        this.#warn(
+          "missing-mailbox",
+          raw,
+          `This account has no ${ROLE_WORDS[sys] ?? sys} label; nothing matches ${raw}.`,
+        );
         return { t: "nothing" };
       }
       if (!negated) this.#named.add(id);

@@ -38,12 +38,20 @@ export function shortName(address: EmailAddress, me: string): string {
 }
 
 /** The short names of everyone a message went to (to, then cc). */
-export function recipientNames(to: readonly EmailAddress[] | null | undefined, cc: readonly EmailAddress[] | null | undefined, me: string): string[] {
+export function recipientNames(
+  to: readonly EmailAddress[] | null | undefined,
+  cc: readonly EmailAddress[] | null | undefined,
+  me: string,
+): string[] {
   return [...(to ?? []), ...(cc ?? [])].map((a) => shortName(a, me));
 }
 
 /** "to me, Carol, dave@x.test" — the recipients line under a sender, as text. */
-export function recipientsLine(to: readonly EmailAddress[] | null | undefined, cc: readonly EmailAddress[] | null | undefined, me: string): string {
+export function recipientsLine(
+  to: readonly EmailAddress[] | null | undefined,
+  cc: readonly EmailAddress[] | null | undefined,
+  me: string,
+): string {
   const names = recipientNames(to, cc, me);
   return names.length === 0 ? "to undisclosed recipients" : `to ${names.join(", ")}`;
 }
@@ -74,14 +82,19 @@ export interface AuthenticationSummary {
 export function readAuthenticationResults(headers: readonly string[]): AuthenticationSummary | null {
   const header = headers[0];
   if (!header) return null;
-  const parts = header.replace(/\([^)]*\)/g, " ").split(";").map((p) => p.trim()).filter(Boolean);
+  const parts = header
+    .replace(/\([^)]*\)/g, " ")
+    .split(";")
+    .map((p) => p.trim())
+    .filter(Boolean);
   const checkedBy = parts[0] && !/=/.test(parts[0]) ? (parts[0].split(/\s+/)[0] ?? null) : null;
   const result = (method: string): { result: string; props: Record<string, string> } | null => {
     for (const p of parts) {
       const m = new RegExp(`^${method}\\s*=\\s*(\\w+)(.*)$`, "i").exec(p);
       if (!m) continue;
       const props: Record<string, string> = {};
-      for (const kv of (m[2] as string).matchAll(/([\w.-]+)\s*=\s*("[^"]*"|[^\s;]+)/g)) props[(kv[1] as string).toLowerCase()] = (kv[2] as string).replace(/^"|"$/g, "");
+      for (const kv of (m[2] as string).matchAll(/([\w.-]+)\s*=\s*("[^"]*"|[^\s;]+)/g))
+        props[(kv[1] as string).toLowerCase()] = (kv[2] as string).replace(/^"|"$/g, "");
       return { result: (m[1] as string).toLowerCase(), props };
     }
     return null;
@@ -89,7 +102,8 @@ export function readAuthenticationResults(headers: readonly string[]): Authentic
   const spf = result("spf");
   const dkim = result("dkim");
   const dmarc = result("dmarc");
-  const domainOf = (value: string | undefined) => (value ? (value.includes("@") ? (value.split("@").pop() ?? value) : value).toLowerCase() : null);
+  const domainOf = (value: string | undefined) =>
+    value ? (value.includes("@") ? (value.split("@").pop() ?? value) : value).toLowerCase() : null;
   return {
     checkedBy,
     mailedBy: spf?.result === "pass" ? domainOf(spf.props["smtp.mailfrom"] ?? spf.props["smtp.helo"]) : null,

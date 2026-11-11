@@ -8,9 +8,7 @@ import { DRAFT, SEEN, type ConversationMessage } from "../actions/conversation";
 
 /** One name in the senders column. */
 export type SenderPart =
-  | { kind: "name"; text: string; unread: boolean; me: boolean }
-  | { kind: "draft"; text: "Draft" }
-  | { kind: "more" };
+  { kind: "name"; text: string; unread: boolean; me: boolean } | { kind: "draft"; text: "Draft" } | { kind: "more" };
 
 export interface SenderSummary {
   parts: SenderPart[];
@@ -59,7 +57,12 @@ function participants(messages: readonly ConversationMessage[], mode: SenderMode
     const addresses = (mode === "from" ? m.from : m.to) ?? [];
     const list = mode === "from" ? addresses.slice(0, 1) : addresses;
     if (list.length === 0 && mode === "from") {
-      const p = byKey.get("\u0000unknown") ?? { key: "\u0000unknown", address: { name: "(no sender)", email: "" }, draft: false, unread };
+      const p = byKey.get("\u0000unknown") ?? {
+        key: "\u0000unknown",
+        address: { name: "(no sender)", email: "" },
+        draft: false,
+        unread,
+      };
       p.unread ||= unread;
       byKey.set(p.key, p);
     }
@@ -81,7 +84,11 @@ function participants(messages: readonly ConversationMessage[], mode: SenderMode
  * and the message count when more than one: "me, Bob (3)". "me" is `me`, the
  * signed-in address. In "to" mode (Sent) the recipients, after "To:".
  */
-export function summarizeSenders(messages: readonly ConversationMessage[], me: string, mode: SenderMode = "from"): SenderSummary {
+export function summarizeSenders(
+  messages: readonly ConversationMessage[],
+  me: string,
+  mode: SenderMode = "from",
+): SenderSummary {
   const people = participants(messages, mode, me);
   const many = people.length > 1;
   const named = (p: Participant): SenderPart => {
@@ -100,7 +107,10 @@ export function summarizeSenders(messages: readonly ConversationMessage[], me: s
   }
   const count = messages.length > 1 ? messages.length : null;
   const prefix = mode === "to" ? "To:" : null;
-  const names = parts.map((p) => (p.kind === "more" ? "…" : p.text)).join(", ").replace(", …,", " …");
+  const names = parts
+    .map((p) => (p.kind === "more" ? "…" : p.text))
+    .join(", ")
+    .replace(", …,", " …");
   const text = `${prefix ? `${prefix} ` : ""}${names || (mode === "to" ? "(no recipients)" : "(no sender)")}${count ? ` (${count})` : ""}`;
   return { parts, count, text, prefix };
 }
@@ -128,8 +138,10 @@ export function formatListDate(iso: string, now: Date, options: DateOptions = {}
   const { locale, timeZone } = options;
   const today = dayKey(now, timeZone);
   const day = dayKey(date, timeZone);
-  if (day === today) return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone }).format(date);
-  if (day.slice(0, 4) === today.slice(0, 4)) return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone }).format(date);
+  if (day === today)
+    return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone }).format(date);
+  if (day.slice(0, 4) === today.slice(0, 4))
+    return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone }).format(date);
   return new Intl.DateTimeFormat(locale, { year: "numeric", month: "numeric", day: "numeric", timeZone }).format(date);
 }
 
@@ -137,7 +149,11 @@ export function formatListDate(iso: string, now: Date, options: DateOptions = {}
 export function formatFullDate(iso: string, options: DateOptions = {}): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(options.locale, { dateStyle: "full", timeStyle: "short", timeZone: options.timeZone }).format(date);
+  return new Intl.DateTimeFormat(options.locale, {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: options.timeZone,
+  }).format(date);
 }
 
 // ---- Label chips -------------------------------------------------------------
@@ -155,7 +171,11 @@ export interface ChipLabel {
  * viewed. System labels are hidden, except the Inbox outside the Inbox (as
  * Gmail shows it in All Mail and under a label). Ordered as `labels` is.
  */
-export function chipLabels(labelIds: readonly Id[], labels: readonly ChipLabel[], currentId: Id | undefined): ChipLabel[] {
+export function chipLabels(
+  labelIds: readonly Id[],
+  labels: readonly ChipLabel[],
+  currentId: Id | undefined,
+): ChipLabel[] {
   const ids = new Set(labelIds);
   return labels.filter((l) => ids.has(l.id) && l.id !== currentId && (l.system === null || l.system === "inbox"));
 }

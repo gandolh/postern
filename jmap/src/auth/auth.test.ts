@@ -47,12 +47,25 @@ function stalwart(options: { mfa?: boolean; sub?: string } = {}) {
     const params = form(req);
     issued++;
     if (params["grant_type"] === "authorization_code") {
-      return json({ access_token: `A${issued}`, refresh_token: "R1", expires_in: 3600, token_type: "bearer", id_token: "ID" });
+      return json({
+        access_token: `A${issued}`,
+        refresh_token: "R1",
+        expires_in: 3600,
+        token_type: "bearer",
+        id_token: "ID",
+      });
     }
-    return json({ access_token: `A${issued}`, expires_in: 3600, token_type: "bearer" } satisfies Grant & { token_type: string });
+    return json({ access_token: `A${issued}`, expires_in: 3600, token_type: "bearer" } satisfies Grant & {
+      token_type: string;
+    });
   });
   server.always("GET /auth/userinfo", () =>
-    json({ sub: options.sub ?? "1", name: "Alice Archer", preferred_username: "alice@postern.test", email: "alice@postern.test" }),
+    json({
+      sub: options.sub ?? "1",
+      name: "Alice Archer",
+      preferred_username: "alice@postern.test",
+      email: "alice@postern.test",
+    }),
   );
   return server;
 }
@@ -62,11 +75,15 @@ function session(server: FakeServer, extra: Partial<ConstructorParameters<typeof
 }
 
 const tokenRequests = (server: FakeServer) => server.requests.filter((r) => r.url.endsWith("/auth/token"));
-const refreshes = (server: FakeServer) => tokenRequests(server).filter((r) => form(r)["grant_type"] === "refresh_token");
+const refreshes = (server: FakeServer) =>
+  tokenRequests(server).filter((r) => form(r)["grant_type"] === "refresh_token");
 
 describe("PKCE", () => {
   it("matches RFC 7636 appendix B", async () => {
-    const octets = [116, 24, 223, 180, 151, 153, 224, 37, 79, 250, 96, 125, 216, 173, 187, 186, 22, 212, 37, 77, 105, 214, 191, 240, 91, 88, 5, 88, 83, 132, 141, 121];
+    const octets = [
+      116, 24, 223, 180, 151, 153, 224, 37, 79, 250, 96, 125, 216, 173, 187, 186, 22, 212, 37, 77, 105, 214, 191, 240,
+      91, 88, 5, 88, 83, 132, 141, 121,
+    ];
     const verifier = base64Url(new Uint8Array(octets));
     expect(verifier).toBe("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk");
     expect(await pkceChallenge(verifier)).toBe("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
@@ -82,7 +99,13 @@ describe("PKCE", () => {
 });
 
 describe("requestAuthCode", () => {
-  const request = { accountName: "alice@postern.test", accountSecret: PASSWORD, clientId: "postern", redirectUri: REDIRECT, codeChallenge: "C" };
+  const request = {
+    accountName: "alice@postern.test",
+    accountSecret: PASSWORD,
+    clientId: "postern",
+    redirectUri: REDIRECT,
+    codeChallenge: "C",
+  };
 
   it("posts Stalwart's authCode body and reads the snake-case code", async () => {
     const server = stalwart();
@@ -117,7 +140,9 @@ describe("requestAuthCode", () => {
   });
 
   it("maps a fetch failure to network", async () => {
-    const err = await requestAuthCode(() => Promise.reject(new TypeError("fetch failed")), BASE, request).catch((e: unknown) => e);
+    const err = await requestAuthCode(() => Promise.reject(new TypeError("fetch failed")), BASE, request).catch(
+      (e: unknown) => e,
+    );
     expect((err as SignInError).reason).toBe("network");
   });
 });
@@ -139,7 +164,12 @@ describe("AuthSession: signing in", () => {
     const challenge = (login?.json as { codeChallenge: string; accountName: string }).codeChallenge;
     expect((login?.json as { accountName: string }).accountName).toBe("alice@postern.test");
     const params = form(token!);
-    expect(params).toMatchObject({ grant_type: "authorization_code", code: "CODE", client_id: "postern", redirect_uri: REDIRECT });
+    expect(params).toMatchObject({
+      grant_type: "authorization_code",
+      code: "CODE",
+      client_id: "postern",
+      redirect_uri: REDIRECT,
+    });
     expect(await pkceChallenge(params["code_verifier"]!)).toBe(challenge);
     expect(userinfo?.headers["authorization"]).toBe("Bearer A1");
     await auth.signOut();
@@ -150,9 +180,13 @@ describe("AuthSession: signing in", () => {
     const auth = session(server);
     expect(await auth.signIn("alice@postern.test", PASSWORD)).toBe("mfaRequired");
     expect(auth.status).toBe("signedOut");
-    await expect(auth.signIn("alice@postern.test", PASSWORD, { mfaToken: "000000" })).rejects.toMatchObject({ reason: "rejected" });
+    await expect(auth.signIn("alice@postern.test", PASSWORD, { mfaToken: "000000" })).rejects.toMatchObject({
+      reason: "rejected",
+    });
     expect(await auth.signIn("alice@postern.test", PASSWORD, { mfaToken: " 123456 " })).toBe("signedIn");
-    const posts = server.requests.filter((r) => r.url.endsWith("/api/auth")).map((r) => (r.json as { mfaToken?: string }).mfaToken);
+    const posts = server.requests
+      .filter((r) => r.url.endsWith("/api/auth"))
+      .map((r) => (r.json as { mfaToken?: string }).mfaToken);
     expect(posts).toEqual([undefined, "000000", "123456"]);
     await auth.signOut();
   });
@@ -202,7 +236,11 @@ describe("AuthSession: refresh", () => {
     expect(refreshes(server)).toHaveLength(0);
     await vi.advanceTimersByTimeAsync(60_000);
     expect(refreshes(server)).toHaveLength(1);
-    expect(form(refreshes(server)[0]!)).toEqual({ grant_type: "refresh_token", refresh_token: "R1", client_id: "postern" });
+    expect(form(refreshes(server)[0]!)).toEqual({
+      grant_type: "refresh_token",
+      refresh_token: "R1",
+      client_id: "postern",
+    });
     expect(await auth.authorization()).toBe("Bearer A2");
     await vi.advanceTimersByTimeAsync(55 * 60_000);
     expect(refreshes(server).map((r) => form(r)["refresh_token"])).toEqual(["R1", "R1"]);
@@ -225,7 +263,12 @@ describe("AuthSession: refresh", () => {
     const auth = session(server);
     await auth.signIn("alice@postern.test", PASSWORD);
     vi.setSystemTime(Date.now() + 60 * 60_000); // the access token has expired
-    const results = await Promise.all([auth.authorization(), auth.authorization(), auth.refresh(), auth.onUnauthorized()]);
+    const results = await Promise.all([
+      auth.authorization(),
+      auth.authorization(),
+      auth.refresh(),
+      auth.onUnauthorized(),
+    ]);
     expect(refreshes(server)).toHaveLength(1);
     expect(results).toEqual(["Bearer A2", "Bearer A2", true, true]);
     await auth.signOut();
@@ -240,7 +283,9 @@ describe("AuthSession: refresh", () => {
     server.once("GET /jmap/session", () => json(SESSION));
     const client = new JmapClient({ baseUrl: BASE, auth, fetch: server.fetch });
     await client.connect();
-    const sessions = server.requests.filter((r) => r.url.endsWith("/jmap/session")).map((r) => r.headers["authorization"]);
+    const sessions = server.requests
+      .filter((r) => r.url.endsWith("/jmap/session"))
+      .map((r) => r.headers["authorization"]);
     expect(sessions).toEqual(["Bearer A1", "Bearer A2"]);
     await auth.signOut();
   });
@@ -341,7 +386,11 @@ describe("AuthSession: signing out", () => {
     const auth = session(server);
     await auth.signIn("alice@postern.test", PASSWORD);
     let release!: () => void;
-    server.once("POST /auth/token", () => new Promise<Response>((resolve) => (release = () => resolve(json({ access_token: "LATE", expires_in: 3600 })))));
+    server.once(
+      "POST /auth/token",
+      () =>
+        new Promise<Response>((resolve) => (release = () => resolve(json({ access_token: "LATE", expires_in: 3600 })))),
+    );
     const pending = auth.refresh();
     await vi.advanceTimersByTimeAsync(0);
     await auth.signOut();
@@ -477,7 +526,10 @@ describe("security review fixes", () => {
     let release!: () => void;
     server.once(
       "POST /api/auth",
-      () => new Promise<Response>((resolve) => (release = () => resolve(json({ type: "authenticated", client_code: "CODE", iss: "x" })))),
+      () =>
+        new Promise<Response>(
+          (resolve) => (release = () => resolve(json({ type: "authenticated", client_code: "CODE", iss: "x" }))),
+        ),
     );
     const pending = auth.signIn("alice@postern.test", PASSWORD).catch((e: unknown) => e);
     await vi.waitFor(() => expect(server.requests).toHaveLength(1));
@@ -620,7 +672,12 @@ describe("the store: a reload keeps the session", () => {
     const store = memorySessionStore();
     const auth = session(server, { store });
     await auth.signIn("alice@postern.test", PASSWORD);
-    expect(store.current).toEqual({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer", lastActivity: Date.now() });
+    expect(store.current).toEqual({
+      refreshToken: "R1",
+      username: "alice@postern.test",
+      name: "Alice Archer",
+      lastActivity: Date.now(),
+    });
     expect(JSON.stringify(store.current)).not.toContain("A1");
     await auth.signOut();
   });
@@ -692,7 +749,12 @@ describe("the store: a reload keeps the session", () => {
   it("resumes with one refresh grant and no password, and the idle clock goes on from the stored activity", async () => {
     const server = stalwart();
     const lastActivity = Date.now() - 2 * 60 * 60_000;
-    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer", lastActivity });
+    const store = memorySessionStore({
+      refreshToken: "R1",
+      username: "alice@postern.test",
+      name: "Alice Archer",
+      lastActivity,
+    });
     const auth = session(server, { store });
     const events: AuthStatusEvent[] = [];
     auth.onStatus((e) => events.push(e));
@@ -705,7 +767,12 @@ describe("the store: a reload keeps the session", () => {
     expect(tokenRequests(server)).toHaveLength(1);
     expect(passwordPosts(server)).toHaveLength(0);
     expect(await auth.authorization()).toBe("Bearer A1");
-    expect(store.current).toEqual({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer", lastActivity });
+    expect(store.current).toEqual({
+      refreshToken: "R1",
+      username: "alice@postern.test",
+      name: "Alice Archer",
+      lastActivity,
+    });
     // Six hours left on the clock, not eight.
     await vi.advanceTimersByTimeAsync(IDLE_TIMEOUT_MS - 2 * 60 * 60_000 - 1000);
     expect(auth.status).toBe("active");
@@ -726,7 +793,11 @@ describe("the store: a reload keeps the session", () => {
 
   it("does not resume after the idle deadline passed: it clears, without a request", async () => {
     const server = stalwart();
-    const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() - 61_000 });
+    const store = memorySessionStore({
+      refreshToken: "R1",
+      username: "alice@postern.test",
+      lastActivity: Date.now() - 61_000,
+    });
     const auth = session(server, { store, idleTimeoutMs: 60_000 });
     expect(await auth.resume()).toBe("idle");
     expect(auth.status).toBe("signedOut");
@@ -762,7 +833,11 @@ describe("the store: a reload keeps the session", () => {
     const store = memorySessionStore({ refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() });
     const auth = session(server, { store });
     let release!: () => void;
-    server.once("POST /auth/token", () => new Promise<Response>((resolve) => (release = () => resolve(json({ access_token: "LATE", expires_in: 3600 })))));
+    server.once(
+      "POST /auth/token",
+      () =>
+        new Promise<Response>((resolve) => (release = () => resolve(json({ access_token: "LATE", expires_in: 3600 })))),
+    );
     const first = auth.resume();
     expect(auth.resume()).toBe(first);
     await vi.advanceTimersByTimeAsync(0);

@@ -96,7 +96,12 @@ describe("search: operators", () => {
   });
 
   it("shifts dates by the user's UTC offset", () => {
-    const p = parseSearch("after:2026/01/05 in:anywhere", { now: NOW, labels: () => undefined, roles: ROLES, utcOffsetMinutes: 120 });
+    const p = parseSearch("after:2026/01/05 in:anywhere", {
+      now: NOW,
+      labels: () => undefined,
+      roles: ROLES,
+      utcOffsetMinutes: 120,
+    });
     expect(p.filter).toEqual({ after: "2026-01-04T22:00:00Z" });
   });
 
@@ -113,7 +118,12 @@ describe("search: operators", () => {
   });
 
   it("substitutes me for the user's address", () => {
-    const p = parseSearch("from:me in:anywhere", { now: NOW, labels: () => undefined, roles: ROLES, me: "alice@x.test" });
+    const p = parseSearch("from:me in:anywhere", {
+      now: NOW,
+      labels: () => undefined,
+      roles: ROLES,
+      me: "alice@x.test",
+    });
     expect(p.filter).toEqual({ from: "alice@x.test" });
   });
 });
@@ -125,7 +135,10 @@ describe("search: text, quoting, negation, OR, groups", () => {
   });
 
   it("keeps an exact phrase together", () => {
-    expect(core('"q4 roadmap" review')).toEqual({ operator: "AND", conditions: [{ text: '"q4 roadmap"' }, { text: "review" }] });
+    expect(core('"q4 roadmap" review')).toEqual({
+      operator: "AND",
+      conditions: [{ text: '"q4 roadmap"' }, { text: "review" }],
+    });
   });
 
   it("negates words, phrases and operators", () => {
@@ -155,7 +168,10 @@ describe("search: text, quoting, negation, OR, groups", () => {
 
   it("reads braces as OR", () => {
     expect(core("{from:a from:b}")).toEqual({ operator: "OR", conditions: [{ from: "a" }, { from: "b" }] });
-    expect(core("-{a b}")).toEqual({ operator: "NOT", conditions: [{ operator: "OR", conditions: [{ text: "a" }, { text: "b" }] }] });
+    expect(core("-{a b}")).toEqual({
+      operator: "NOT",
+      conditions: [{ operator: "OR", conditions: [{ text: "a" }, { text: "b" }] }],
+    });
   });
 
   it("reads parentheses as a group", () => {
@@ -163,12 +179,18 @@ describe("search: text, quoting, negation, OR, groups", () => {
       operator: "AND",
       conditions: [{ operator: "OR", conditions: [{ text: "a" }, { text: "b" }] }, { text: "c" }],
     });
-    expect(core("-(a b)")).toEqual({ operator: "NOT", conditions: [{ operator: "AND", conditions: [{ text: "a" }, { text: "b" }] }] });
+    expect(core("-(a b)")).toEqual({
+      operator: "NOT",
+      conditions: [{ operator: "AND", conditions: [{ text: "a" }, { text: "b" }] }],
+    });
     expect(core("((a))")).toEqual({ text: "a" });
   });
 
   it("applies an operator to a parenthesised group", () => {
-    expect(core("subject:(dinner movie)")).toEqual({ operator: "AND", conditions: [{ subject: "dinner" }, { subject: "movie" }] });
+    expect(core("subject:(dinner movie)")).toEqual({
+      operator: "AND",
+      conditions: [{ subject: "dinner" }, { subject: "movie" }],
+    });
     expect(core("from:(a OR b)")).toEqual({ operator: "OR", conditions: [{ from: "a" }, { from: "b" }] });
   });
 
@@ -186,12 +208,18 @@ describe("search: default scope", () => {
   });
 
   it("lifts the exclusion for a place that is named", () => {
-    expect(parse("in:trash").filter).toEqual({ operator: "AND", conditions: [{ inMailbox: "b" }, { inMailboxOtherThan: ["c"] }] });
+    expect(parse("in:trash").filter).toEqual({
+      operator: "AND",
+      conditions: [{ inMailbox: "b" }, { inMailboxOtherThan: ["c"] }],
+    });
     expect(parse("in:spam from:x").filter).toEqual({
       operator: "AND",
       conditions: [{ inMailbox: "c" }, { from: "x" }, { inMailboxOtherThan: ["b"] }],
     });
-    expect(parse("in:trash OR in:spam").filter).toEqual({ operator: "OR", conditions: [{ inMailbox: "b" }, { inMailbox: "c" }] });
+    expect(parse("in:trash OR in:spam").filter).toEqual({
+      operator: "OR",
+      conditions: [{ inMailbox: "b" }, { inMailbox: "c" }],
+    });
   });
 
   it("keeps the exclusion when the place is negated or is an ordinary label", () => {
@@ -251,7 +279,10 @@ describe("search: unknown input", () => {
     const p = parse("label:nope in:anywhere");
     expect(p.filter).toEqual({ operator: "OR", conditions: [] });
     expect(kinds(p)).toEqual(["unknown-label"]);
-    expect(parse("-label:nope in:anywhere").filter).toEqual({ operator: "NOT", conditions: [{ operator: "OR", conditions: [] }] });
+    expect(parse("-label:nope in:anywhere").filter).toEqual({
+      operator: "NOT",
+      conditions: [{ operator: "OR", conditions: [] }],
+    });
   });
 
   it("matches nothing for a role the account lacks, and says so", () => {
@@ -261,7 +292,15 @@ describe("search: unknown input", () => {
   });
 
   it("leaves out a bad date, size or age, with a warning", () => {
-    for (const q of ["after:yesterday", "before:2026/13/01", "after:2026/02/30", "older_than:abc", "newer_than:5w", "larger:big", "smaller:-1"]) {
+    for (const q of [
+      "after:yesterday",
+      "before:2026/13/01",
+      "after:2026/02/30",
+      "older_than:abc",
+      "newer_than:5w",
+      "larger:big",
+      "smaller:-1",
+    ]) {
       const p = parse(`${q} in:anywhere`);
       expect(p.filter, q).toBeNull();
       expect(kinds(p), q).toEqual(["bad-value"]);
@@ -309,11 +348,36 @@ describe("search: malformed input never throws", () => {
   });
 
   it("never throws on odd input", () => {
-    const nasty = ['"', '""', "(", ")", "{", "}", "-", ":", "::", ":x", "a::b", '-"', '-(', "\u0000", "from:(", "from:(a", 'subject:("x', "OR OR OR", "{(})", "\n\t ", "x".repeat(10_000), "(".repeat(500) + ")".repeat(500)];
+    const nasty = [
+      '"',
+      '""',
+      "(",
+      ")",
+      "{",
+      "}",
+      "-",
+      ":",
+      "::",
+      ":x",
+      "a::b",
+      '-"',
+      "-(",
+      "\u0000",
+      "from:(",
+      "from:(a",
+      'subject:("x',
+      "OR OR OR",
+      "{(})",
+      "\n\t ",
+      "x".repeat(10_000),
+      "(".repeat(500) + ")".repeat(500),
+    ];
     for (const input of nasty) {
       expect(() => parse(input), JSON.stringify(input.slice(0, 20))).not.toThrow();
     }
-    expect(() => parseSearch(undefined as unknown as string, { now: NOW, labels: () => undefined, roles: {} })).not.toThrow();
+    expect(() =>
+      parseSearch(undefined as unknown as string, { now: NOW, labels: () => undefined, roles: {} }),
+    ).not.toThrow();
   });
 
   it("never emits an empty AND, which Stalwart reads as no match", () => {
@@ -366,7 +430,9 @@ describe("formatSearch", () => {
         size: { comparison: "larger", amount: 5, unit: "M" },
         dateWithin: { days: 3, date: "2026-01-10" },
       }),
-    ).toBe('from:bob to:alice@x.test subject:"q4 plan" roadmap "launch day" -draft -old label:Work/Clients has:attachment larger:5M after:2026/01/07 before:2026/01/14');
+    ).toBe(
+      'from:bob to:alice@x.test subject:"q4 plan" roadmap "launch day" -draft -old label:Work/Clients has:attachment larger:5M after:2026/01/07 before:2026/01/14',
+    );
   });
 
   it("writes nothing for empty fields", () => {
@@ -380,7 +446,13 @@ describe("formatSearch", () => {
   });
 
   it("reads back through the parser", () => {
-    const text = formatSearch({ from: "bob", subject: "q4 plan", notWords: "old", label: "My Label", size: { comparison: "smaller", amount: 2, unit: "K" } });
+    const text = formatSearch({
+      from: "bob",
+      subject: "q4 plan",
+      notWords: "old",
+      label: "My Label",
+      size: { comparison: "smaller", amount: 2, unit: "K" },
+    });
     const p = parse(text);
     expect(p.warnings).toEqual([]);
     expect(p.filter).toEqual({

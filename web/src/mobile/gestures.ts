@@ -89,7 +89,11 @@ export class SwipeTracker {
     if (!direction || !this.#allowed[direction]) return false;
     const distance = Math.abs(this.#offset);
     if (distance >= this.#width * this.#o.commitFraction) return true;
-    return distance >= this.#o.flingDistance && Math.sign(this.#velocity) === Math.sign(this.#offset) && Math.abs(this.#velocity) >= this.#o.flingVelocity;
+    return (
+      distance >= this.#o.flingDistance &&
+      Math.sign(this.#velocity) === Math.sign(this.#offset) &&
+      Math.abs(this.#velocity) >= this.#o.flingVelocity
+    );
   }
 
   /** Letting go: the direction to act on, or null to spring back. */
@@ -150,7 +154,11 @@ export interface SwipeContext {
 }
 
 /** The action a swipe in `direction` performs here, or null when it does nothing (Archive in Trash, say). */
-export function swipeOutcome(direction: Direction, actions: Readonly<Record<Direction, SwipeAction>>, context: SwipeContext): Exclude<SwipeAction, "none"> | null {
+export function swipeOutcome(
+  direction: Direction,
+  actions: Readonly<Record<Direction, SwipeAction>>,
+  context: SwipeContext,
+): Exclude<SwipeAction, "none"> | null {
   const action = actions[direction];
   if (action === "none") return null;
   if (action === "archive" && !context.canArchive) return null;

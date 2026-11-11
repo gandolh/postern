@@ -67,10 +67,21 @@ export function LabelMenu({ conversationIds, emailIds, current, mode = "label", 
       >
         <Popover.Trigger
           disabled={conversationIds.length === 0}
-          render={<IconButton label={mode === "move" ? "Move to" : "Labels"} icon={mode === "move" ? ArrowRightToLine : Tag} />}
+          render={
+            <IconButton
+              label={mode === "move" ? "Move to" : "Labels"}
+              icon={mode === "move" ? ArrowRightToLine : Tag}
+            />
+          }
         />
         <Popover.Portal>
-          <Popover.Positioner className="labels-positioner" side="bottom" align="start" sideOffset={4} collisionPadding={8}>
+          <Popover.Positioner
+            className="labels-positioner"
+            side="bottom"
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+          >
             <Popover.Popup
               className="labels-popup"
               aria-label={mode === "move" ? "Move to" : "Labels"}
@@ -78,7 +89,14 @@ export function LabelMenu({ conversationIds, emailIds, current, mode = "label", 
               initialFocus={false}
               finalFocus={() => refocus.current}
             >
-              <LabelMenuPanel conversationIds={conversationIds} emailIds={emailIds} current={current} mode={mode} onDone={onDone} onClose={close} />
+              <LabelMenuPanel
+                conversationIds={conversationIds}
+                emailIds={emailIds}
+                current={current}
+                mode={mode}
+                onDone={onDone}
+                onClose={close}
+              />
             </Popover.Popup>
           </Popover.Positioner>
         </Popover.Portal>
@@ -165,7 +183,14 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
     return current.kind === "label" ? current.labelId : labels.system[current.view].label?.id;
   }, [current, labels.system]);
   const options = useMemo(() => optionsFor(labels.labels, mode, currentId), [labels.labels, mode, currentId]);
-  const shown = useMemo(() => filterLabels(options.map((l) => ({ ...l, title: l.title, path: l.system ? l.title : l.path })), query), [options, query]);
+  const shown = useMemo(
+    () =>
+      filterLabels(
+        options.map((l) => ({ ...l, title: l.title, path: l.system ? l.title : l.path })),
+        query,
+      ),
+    [options, query],
+  );
   const all = isAllSelected(conversationIds);
 
   // What the selection carries now (the label menu's checkboxes).
@@ -177,7 +202,13 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
       (conversations) => {
         if (!live) return;
         const roles = rolesFrom(labels.store);
-        setChecks(labelChecks(conversations, scopeFor(current, roles), options.map((l) => l.id)));
+        setChecks(
+          labelChecks(
+            conversations,
+            scopeFor(current, roles),
+            options.map((l) => l.id),
+          ),
+        );
         setReady(true);
       },
       () => live && setReady(true),
@@ -268,7 +299,12 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
           }}
         />
       </label>
-      <div ref={listRef} className="labels-options" role={mode === "move" ? "menu" : "group"} aria-label={mode === "move" ? "Destinations" : "Labels"}>
+      <div
+        ref={listRef}
+        className="labels-options"
+        role={mode === "move" ? "menu" : "group"}
+        aria-label={mode === "move" ? "Destinations" : "Labels"}
+      >
         {!ready ? (
           <p className="labels-note">Loading…</p>
         ) : shown.length === 0 ? (
@@ -276,10 +312,15 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
         ) : (
           shown.map((label) =>
             mode === "label" ? (
-              <CheckOption key={label.id} label={label} check={checks.get(label.id) ?? "unchecked"} onToggle={() => void choose(label)} />
+              <CheckOption
+                key={label.id}
+                label={label}
+                check={checks.get(label.id) ?? "unchecked"}
+                onToggle={() => void choose(label)}
+              />
             ) : (
               <MoveOption key={label.id} label={label} onChoose={() => void choose(label)} />
-            )
+            ),
           )
         )}
       </div>
@@ -296,7 +337,15 @@ function Swatch({ id }: { id: Id }) {
   return <Tag className="labels-swatch" aria-hidden="true" data-label-color={color} />;
 }
 
-function CheckOption({ label, check, onToggle }: { label: Pick<Label, "id" | "path">; check: LabelCheck; onToggle: () => void }) {
+function CheckOption({
+  label,
+  check,
+  onToggle,
+}: {
+  label: Pick<Label, "id" | "path">;
+  check: LabelCheck;
+  onToggle: () => void;
+}) {
   return (
     <label className="labels-option">
       <input
@@ -316,7 +365,13 @@ function CheckOption({ label, check, onToggle }: { label: Pick<Label, "id" | "pa
 
 function MoveOption({ label, onChoose }: { label: Pick<Label, "id" | "path">; onChoose: () => void }) {
   return (
-    <button type="button" role="menuitem" data-label-option="" className="labels-option labels-option-button" onClick={onChoose}>
+    <button
+      type="button"
+      role="menuitem"
+      data-label-option=""
+      className="labels-option labels-option-button"
+      onClick={onChoose}
+    >
       <Swatch id={label.id} />
       <span className="labels-option-name">{label.path}</span>
     </button>
@@ -358,7 +413,14 @@ function CreateForm({ initialName, mode, onCancel, onCreate }: CreateFormProps) 
     <form className="labels-create-form" onSubmit={(e) => void submit(e)}>
       <p className="labels-heading">New label</p>
       <label htmlFor={nameId}>Label name</label>
-      <input id={nameId} className="input" autoFocus value={name} onChange={(e) => (setName(e.target.value), setError(null))} autoComplete="off" />
+      <input
+        id={nameId}
+        className="input"
+        autoFocus
+        value={name}
+        onChange={(e) => (setName(e.target.value), setError(null))}
+        autoComplete="off"
+      />
       <label htmlFor={parentFieldId}>Nest label under</label>
       <select id={parentFieldId} className="input" value={parentId} onChange={(e) => setParentId(e.target.value)}>
         <option value="">(none)</option>

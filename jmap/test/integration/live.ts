@@ -49,7 +49,10 @@ interface LabelCounts {
 
 /** dev/seed/manifest.json: the seeded counts per label. */
 export const manifest = JSON.parse(readFileSync(new URL("dev/seed/manifest.json", ROOT), "utf8")) as {
-  accounts: Record<DevAccount, { email: string; totalMessages: number; totalThreads: number; labels: Record<string, LabelCounts> }>;
+  accounts: Record<
+    DevAccount,
+    { email: string; totalMessages: number; totalThreads: number; labels: Record<string, LabelCounts> }
+  >;
 };
 
 /** Wait until `check` returns a value, or fail after `timeoutMs`. */

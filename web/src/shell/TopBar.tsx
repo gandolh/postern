@@ -21,7 +21,14 @@ export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
   return (
     <header className="shell-topbar">
       <div className="shell-topbar-start">
-        <IconButton label="Main menu" icon={Menu} tooltip="start" aria-expanded={navExpanded} aria-controls="shell-nav" onClick={onToggleNav} />
+        <IconButton
+          label="Main menu"
+          icon={Menu}
+          tooltip="start"
+          aria-expanded={navExpanded}
+          aria-controls="shell-nav"
+          onClick={onToggleNav}
+        />
         <a className="shell-brand" href={formatRoute(INBOX)} aria-label="Postern, go to Inbox">
           <PosternMark />
           <span className="shell-wordmark" aria-hidden="true">
@@ -36,7 +43,12 @@ export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
         <StatusSlot />
         {/* shell-help: hidden on phones (mobile.css), where the shortcuts it lists don't apply. */}
         <IconButton className="shell-help" label="Help" icon={CircleHelp} onClick={help.open} />
-        <IconButton label="Settings" icon={Settings} tooltip="end" href={formatRoute({ kind: "settings", section: "general" })} />
+        <IconButton
+          label="Settings"
+          icon={Settings}
+          tooltip="end"
+          href={formatRoute({ kind: "settings", section: "general" })}
+        />
         <AccountMenu />
       </div>
     </header>

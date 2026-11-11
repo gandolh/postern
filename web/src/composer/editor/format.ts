@@ -22,15 +22,48 @@ const MARK_TAGS: Record<Mark, readonly string[]> = {
   s: ["s", "strike", "del"],
 };
 /** Inline formatting that Remove formatting takes off (links are content, not formatting). */
-const INLINE_FORMAT = new Set(["b", "strong", "i", "em", "u", "s", "strike", "del", "span", "font", "code", "sub", "sup", "mark", "small", "big", "tt"]);
+const INLINE_FORMAT = new Set([
+  "b",
+  "strong",
+  "i",
+  "em",
+  "u",
+  "s",
+  "strike",
+  "del",
+  "span",
+  "font",
+  "code",
+  "sub",
+  "sup",
+  "mark",
+  "small",
+  "big",
+  "tt",
+]);
 /** Elements that hold one line of text. */
 const LINE_TAGS = new Set(["div", "p", "li", "h1", "h2", "h3", "h4", "h5", "h6", "pre"]);
 const LINE_SELECTOR = [...LINE_TAGS].join(",");
-const BLOCK_TAGS = new Set([...LINE_TAGS, "ul", "ol", "blockquote", "table", "thead", "tbody", "tfoot", "tr", "td", "th", "hr", "caption"]);
+const BLOCK_TAGS = new Set([
+  ...LINE_TAGS,
+  "ul",
+  "ol",
+  "blockquote",
+  "table",
+  "thead",
+  "tbody",
+  "tfoot",
+  "tr",
+  "td",
+  "th",
+  "hr",
+  "caption",
+]);
 const ZWSP = "\u200b";
 
 const doc = (node: Node): Document => node.ownerDocument as Document;
-const tagOf = (n: Node | null | undefined): string => (n && n.nodeType === Node.ELEMENT_NODE ? n.nodeName.toLowerCase() : "");
+const tagOf = (n: Node | null | undefined): string =>
+  n && n.nodeType === Node.ELEMENT_NODE ? n.nodeName.toLowerCase() : "";
 
 // ---- Selection ------------------------------------------------------------------
 
@@ -78,7 +111,12 @@ function closestWithin(node: Node, root: Element, test: (el: Element) => boolean
   return null;
 }
 
-function outermostWithin(node: Node, root: Element, test: (el: Element) => boolean, stop?: Element | null): Element | null {
+function outermostWithin(
+  node: Node,
+  root: Element,
+  test: (el: Element) => boolean,
+  stop?: Element | null,
+): Element | null {
   let found: Element | null = null;
   let el: Element | null = node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement;
   while (el && el !== root && el !== stop && root.contains(el)) {
@@ -94,7 +132,9 @@ function unwrap(el: Element): void {
 
 function hasContent(node: Node): boolean {
   if ((node.textContent ?? "").replace(/\u200b/g, "") !== "") return true;
-  return node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? !!(node as Element).querySelector?.("img, br, hr") : false;
+  return node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+    ? !!(node as Element).querySelector?.("img, br, hr")
+    : false;
 }
 
 /**
@@ -192,7 +232,13 @@ function tidy(root: Element): void {
       continue;
     }
     let next = el.nextSibling;
-    while (next && next.nodeType === Node.ELEMENT_NODE && tagOf(next) === tagOf(el) && (next as Element).getAttribute("href") === el.getAttribute("href") && (next as Element).attributes.length === el.attributes.length) {
+    while (
+      next &&
+      next.nodeType === Node.ELEMENT_NODE &&
+      tagOf(next) === tagOf(el) &&
+      (next as Element).getAttribute("href") === el.getAttribute("href") &&
+      (next as Element).attributes.length === el.attributes.length
+    ) {
       el.append(...Array.from(next.childNodes));
       const gone = next;
       next = next.nextSibling;
@@ -354,12 +400,17 @@ function lastText(node: Node): Text | null {
 }
 
 function savePoints(range: Range): { start: Point; end: Point } {
-  return { start: textPoint(range.startContainer, range.startOffset, true), end: textPoint(range.endContainer, range.endOffset, false) };
+  return {
+    start: textPoint(range.startContainer, range.startOffset, true),
+    end: textPoint(range.endContainer, range.endOffset, false),
+  };
 }
 
 function restorePoints(root: Element, points: { start: Point; end: Point }): Range {
   const range = doc(root).createRange();
-  const ok = (p: Point) => root.contains(p.node) && p.offset <= (p.node.nodeType === Node.TEXT_NODE ? (p.node as Text).length : p.node.childNodes.length);
+  const ok = (p: Point) =>
+    root.contains(p.node) &&
+    p.offset <= (p.node.nodeType === Node.TEXT_NODE ? (p.node as Text).length : p.node.childNodes.length);
   if (ok(points.start) && ok(points.end)) {
     range.setStart(points.start.node, points.start.offset);
     range.setEnd(points.end.node, points.end.offset);
@@ -371,7 +422,8 @@ function restorePoints(root: Element, points: { start: Point; end: Point }): Ran
 /** The line elements a range touches, in document order: list items, else the innermost line blocks. */
 function linesIn(root: Element, range: Range): Element[] {
   const lineOf = (node: Node): Element | null =>
-    closestWithin(node, root, (el) => tagOf(el) === "li") ?? closestWithin(node, root, (el) => LINE_TAGS.has(tagOf(el)));
+    closestWithin(node, root, (el) => tagOf(el) === "li") ??
+    closestWithin(node, root, (el) => LINE_TAGS.has(tagOf(el)));
   const out: Element[] = [];
   const add = (el: Element | null) => {
     if (el && !out.includes(el)) out.push(el);
@@ -423,7 +475,9 @@ export function isListActive(root: Element, range: Range, kind: ListKind): boole
 export function toggleList(root: Element, range: Range, kind: ListKind): Range {
   const points = savePoints(range);
   normalizeLines(root);
-  const lines = linesIn(root, restorePoints(root, points)).filter((l) => !closestWithin(l, root, (el) => tagOf(el) === "td" || tagOf(el) === "th"));
+  const lines = linesIn(root, restorePoints(root, points)).filter(
+    (l) => !closestWithin(l, root, (el) => tagOf(el) === "td" || tagOf(el) === "th"),
+  );
   if (lines.length === 0) return restorePoints(root, points);
   const off = lines.every((l) => tagOf(l) === "li" && tagOf(l.parentElement) === kind);
   if (off) {
@@ -439,7 +493,8 @@ export function toggleList(root: Element, range: Range, kind: ListKind): Range {
   } else {
     for (const li of lines) {
       const list = li.parentElement;
-      if (tagOf(li) === "li" && list && (tagOf(list) === "ul" || tagOf(list) === "ol") && tagOf(list) !== kind) renameElement(list, kind);
+      if (tagOf(li) === "li" && list && (tagOf(list) === "ul" || tagOf(list) === "ol") && tagOf(list) !== kind)
+        renameElement(list, kind);
     }
     const items: Element[] = [];
     for (const line of lines) {
@@ -605,7 +660,16 @@ export interface ActiveFormats {
   link: boolean;
 }
 
-export const NO_FORMATS: ActiveFormats = { b: false, i: false, u: false, s: false, ul: false, ol: false, quote: false, link: false };
+export const NO_FORMATS: ActiveFormats = {
+  b: false,
+  i: false,
+  u: false,
+  s: false,
+  ul: false,
+  ol: false,
+  quote: false,
+  link: false,
+};
 
 export function activeFormats(root: Element, range: Range | null): ActiveFormats {
   if (!range) return NO_FORMATS;

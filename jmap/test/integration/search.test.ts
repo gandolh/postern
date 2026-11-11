@@ -3,7 +3,15 @@
 // the parser emits.
 
 import { beforeAll, describe, expect, it } from "vitest";
-import { createLabelResolver, findByRole, JmapClient, mailboxPath, parseSearch, type EmailFilter, type Mailbox } from "../../src/index.js";
+import {
+  createLabelResolver,
+  findByRole,
+  JmapClient,
+  mailboxPath,
+  parseSearch,
+  type EmailFilter,
+  type Mailbox,
+} from "../../src/index.js";
 import { devClient, live } from "./live.js";
 
 describe.skipIf(!live)("against the dev Stalwart: search", () => {
@@ -17,7 +25,9 @@ describe.skipIf(!live)("against the dev Stalwart: search", () => {
   const parse = (q: string) =>
     parseSearch(q, {
       now,
-      labels: createLabelResolver(mailboxes.filter((m) => !m.role).map((m) => ({ id: m.id, path: mailboxPath(m, mailboxes) }))),
+      labels: createLabelResolver(
+        mailboxes.filter((m) => !m.role).map((m) => ({ id: m.id, path: mailboxPath(m, mailboxes) })),
+      ),
       roles: {
         inbox: findByRole(mailboxes, "inbox")?.id,
         sent: findByRole(mailboxes, "sent")?.id,
@@ -29,7 +39,15 @@ describe.skipIf(!live)("against the dev Stalwart: search", () => {
     });
 
   async function ids(filter: EmailFilter | null): Promise<string[]> {
-    const r = await alice.email.query({ filter, collapseThreads: true, limit: 500, sort: [{ property: "receivedAt", isAscending: false }, { property: "size", isAscending: true }] });
+    const r = await alice.email.query({
+      filter,
+      collapseThreads: true,
+      limit: 500,
+      sort: [
+        { property: "receivedAt", isAscending: false },
+        { property: "size", isAscending: true },
+      ],
+    });
     return r.ids;
   }
 
@@ -43,7 +61,10 @@ describe.skipIf(!live)("against the dev Stalwart: search", () => {
   });
 
   it("from:bob has:attachment equals the hand-built filter", async () => {
-    const hand: EmailFilter = { operator: "AND", conditions: [{ from: "bob" }, { hasAttachment: true }, { inMailboxOtherThan: [junk, trash] }] };
+    const hand: EmailFilter = {
+      operator: "AND",
+      conditions: [{ from: "bob" }, { hasAttachment: true }, { inMailboxOtherThan: [junk, trash] }],
+    };
     const parsed = parse("from:bob has:attachment");
     expect(parsed.warnings).toEqual([]);
     expect(parsed.filter).toEqual(hand);
@@ -53,7 +74,10 @@ describe.skipIf(!live)("against the dev Stalwart: search", () => {
   });
 
   it("is:unread label:Work equals the hand-built filter", async () => {
-    const hand: EmailFilter = { operator: "AND", conditions: [{ notKeyword: "$seen" }, { inMailbox: work }, { inMailboxOtherThan: [junk, trash] }] };
+    const hand: EmailFilter = {
+      operator: "AND",
+      conditions: [{ notKeyword: "$seen" }, { inMailbox: work }, { inMailboxOtherThan: [junk, trash] }],
+    };
     const parsed = parse("is:unread label:work");
     expect(parsed.warnings).toEqual([]);
     expect(parsed.filter).toEqual(hand);
@@ -71,7 +95,8 @@ describe.skipIf(!live)("against the dev Stalwart: search", () => {
   });
 
   it("honours OR, NOT, text, sizes, dates and the address conditions", async () => {
-    const total = async (q: string) => (await alice.email.query({ filter: parse(`${q} in:anywhere`).filter, calculateTotal: true, limit: 1 })).total!;
+    const total = async (q: string) =>
+      (await alice.email.query({ filter: parse(`${q} in:anywhere`).filter, calculateTotal: true, limit: 1 })).total!;
     const bob = await total("from:bob");
     const toBob = await total("to:bob");
     const either = await total("from:bob OR to:bob");

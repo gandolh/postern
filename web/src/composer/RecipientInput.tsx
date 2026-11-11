@@ -4,7 +4,17 @@
 
 import { formatAddress } from "@postern/jmap";
 import { X } from "lucide-react";
-import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, type ClipboardEvent, type KeyboardEvent, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import type { RecipientSuggestion, RecipientSource } from "./recipients";
 import type { ComposeSession, Recipient, RecipientField } from "./session";
 
@@ -29,7 +39,10 @@ function chipText(r: Recipient): string {
   return r.name?.trim() || r.email;
 }
 
-export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputProps>(function RecipientInput({ session, source, field, label, recipients, trailing }, ref) {
+export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputProps>(function RecipientInput(
+  { session, source, field, label, recipients, trailing },
+  ref,
+) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [suggestions, setSuggestions] = useState<RecipientSuggestion[]>([]);
@@ -164,11 +177,21 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
       <ul className="compose-chips" aria-label={`${label} recipients`}>
         {recipients.map((r) => (
           <li key={r.key} className="compose-chip" data-invalid={r.valid ? undefined : "true"}>
-            <button type="button" className="compose-chip-text" title={r.valid ? formatAddress(r) : `“${r.raw}” isn't a valid email address`} onClick={() => edit(r)}>
+            <button
+              type="button"
+              className="compose-chip-text"
+              title={r.valid ? formatAddress(r) : `“${r.raw}” isn't a valid email address`}
+              onClick={() => edit(r)}
+            >
               {chipText(r)}
               {r.valid ? null : <span className="visually-hidden"> (not a valid email address)</span>}
             </button>
-            <button type="button" className="compose-chip-remove" aria-label={`Remove ${chipText(r)}`} onClick={() => remove(r)}>
+            <button
+              type="button"
+              className="compose-chip-remove"
+              aria-label={`Remove ${chipText(r)}`}
+              onClick={() => remove(r)}
+            >
               <X aria-hidden="true" />
             </button>
           </li>
@@ -202,7 +225,13 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
         </span>
       ) : null}
       {trailing}
-      <ul id={listId} role="listbox" aria-label={`Suggestions for ${label}`} className="compose-suggestions" hidden={!open}>
+      <ul
+        id={listId}
+        role="listbox"
+        aria-label={`Suggestions for ${label}`}
+        className="compose-suggestions"
+        hidden={!open}
+      >
         {open
           ? suggestions.map((p, i) => (
               <li

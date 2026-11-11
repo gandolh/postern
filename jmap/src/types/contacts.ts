@@ -32,7 +32,8 @@ export interface AddressBookSetArgs extends SetArgs<AddressBook, AddressBookCrea
 
 /** RFC 9553 NameComponent. */
 export interface NameComponent {
-  kind: "title" | "given" | "given2" | "surname" | "surname2" | "credential" | "generation" | "separator" | (string & {});
+  kind:
+    "title" | "given" | "given2" | "surname" | "surname2" | "credential" | "generation" | "separator" | (string & {});
   value: string;
 }
 

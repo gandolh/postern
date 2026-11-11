@@ -5,7 +5,19 @@
 
 import { describe, expect, it } from "vitest";
 import { APP_HEADERS } from "./headers";
-import { buildResponse, cacheNameFor, cleanupCaches, contentTypeFor, installShell, integrityOf, pick, readVerified, serve, shellFiles, type ShellDeps } from "./shell";
+import {
+  buildResponse,
+  cacheNameFor,
+  cleanupCaches,
+  contentTypeFor,
+  installShell,
+  integrityOf,
+  pick,
+  readVerified,
+  serve,
+  shellFiles,
+  type ShellDeps,
+} from "./shell";
 
 const SCOPE = "https://estate.example/webmail/";
 const enc = new TextEncoder();
@@ -53,7 +65,10 @@ function server(files: Record<string, string>, online = true) {
     const key = typeof input !== "string" && input.mode === "navigate" ? "/webmail/index.html" : url.pathname;
     const body = files[key];
     // Node's Response has type "default"; the worker sees "basic" for its own origin.
-    const response = body === undefined ? new Response("not found", { status: 404 }) : new Response(body, { headers: { "content-type": "text/plain", "x-from": "network" } });
+    const response =
+      body === undefined
+        ? new Response("not found", { status: 404 })
+        : new Response(body, { headers: { "content-type": "text/plain", "x-from": "network" } });
     Object.defineProperty(response, "type", { value: "basic" });
     return response;
   };
@@ -92,7 +107,8 @@ describe("the build's list", () => {
   });
 
   it("knows the type of every file the build precaches", () => {
-    for (const path of ["a.html", "a.js", "a.css", "a.png", "a.svg", "a.woff2", "manifest.webmanifest"]) expect(contentTypeFor(path), path).not.toBeNull();
+    for (const path of ["a.html", "a.js", "a.css", "a.png", "a.svg", "a.woff2", "manifest.webmanifest"])
+      expect(contentTypeFor(path), path).not.toBeNull();
     expect(contentTypeFor("a.txt")).toBeNull();
   });
 
@@ -127,14 +143,20 @@ describe("pick", () => {
 describe("install", () => {
   it("stores each file whose bytes are the build's", async () => {
     const { files, caches, deps, name } = await setup();
-    expect(await installShell(files, name, deps)).toEqual({ stored: ["/webmail/assets/index-a.js", "/webmail/index.html"], skipped: [] });
+    expect(await installShell(files, name, deps)).toEqual({
+      stored: ["/webmail/assets/index-a.js", "/webmail/index.html"],
+      skipped: [],
+    });
     expect(caches.byName.get(name)?.entries.size).toBe(2);
   });
 
   it("skips, without failing, a file the server serves differently (a newer deploy)", async () => {
     const { files, caches, name } = await setup();
     const net = server({ "/webmail/index.html": "<!doctype html>newer", "/webmail/assets/index-a.js": APP_JS });
-    expect(await installShell(files, name, { caches, fetch: net.fetch, scopeUrl: SCOPE })).toEqual({ stored: ["/webmail/assets/index-a.js"], skipped: ["/webmail/index.html"] });
+    expect(await installShell(files, name, { caches, fetch: net.fetch, scopeUrl: SCOPE })).toEqual({
+      stored: ["/webmail/assets/index-a.js"],
+      skipped: ["/webmail/index.html"],
+    });
   });
 });
 
@@ -167,13 +189,17 @@ describe("serving from the cache", () => {
   it("refills the cache from the network, but only with the build's bytes", async () => {
     const { files, caches, deps, name } = await setup();
     const work: Promise<unknown>[] = [];
-    await serve(files.get("/webmail/assets/index-a.js")!, new Request(`${SCOPE}assets/index-a.js`), name, deps, (p) => work.push(p));
+    await serve(files.get("/webmail/assets/index-a.js")!, new Request(`${SCOPE}assets/index-a.js`), name, deps, (p) =>
+      work.push(p),
+    );
     await Promise.all(work);
     expect(await (await caches.open(name)).match(`${SCOPE}assets/index-a.js`).then((r) => r?.text())).toBe(APP_JS);
 
     const wrong = server({ "/webmail/index.html": FORGED });
     const work2: Promise<unknown>[] = [];
-    await serve(files.get("/webmail/index.html")!, navigation(SCOPE), name, { ...deps, fetch: wrong.fetch }, (p) => work2.push(p));
+    await serve(files.get("/webmail/index.html")!, navigation(SCOPE), name, { ...deps, fetch: wrong.fetch }, (p) =>
+      work2.push(p),
+    );
     await Promise.all(work2);
     expect(await (await caches.open(name)).match(`${SCOPE}index.html`)).toBeUndefined();
   });
@@ -204,9 +230,21 @@ describe("serving from the cache", () => {
 describe("cleanup", () => {
   it("deletes only this worker's old caches and the PWA work's workbox cache", async () => {
     const { caches, deps, name } = await setup();
-    for (const n of [name, "postern-shell-deadbeef", `workbox-precache-v2-${SCOPE}`, "workbox-precache-v2-https://estate.example/satchel/", "atrium-cache"]) await caches.open(n);
-    expect((await cleanupCaches(name, deps)).sort()).toEqual(["postern-shell-deadbeef", `workbox-precache-v2-${SCOPE}`]);
-    expect((await caches.keys()).sort()).toEqual(["atrium-cache", name, "workbox-precache-v2-https://estate.example/satchel/"].sort());
+    for (const n of [
+      name,
+      "postern-shell-deadbeef",
+      `workbox-precache-v2-${SCOPE}`,
+      "workbox-precache-v2-https://estate.example/satchel/",
+      "atrium-cache",
+    ])
+      await caches.open(n);
+    expect((await cleanupCaches(name, deps)).sort()).toEqual([
+      "postern-shell-deadbeef",
+      `workbox-precache-v2-${SCOPE}`,
+    ]);
+    expect((await caches.keys()).sort()).toEqual(
+      ["atrium-cache", name, "workbox-precache-v2-https://estate.example/satchel/"].sort(),
+    );
   });
 });
 

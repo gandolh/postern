@@ -58,12 +58,21 @@ class FakeServer implements PushServer {
   subs = new Map<Id, Partial<PushSubscription> & { code: string; verified: boolean; url: string }>();
   next = 1;
   /** How the worker would hand the code to the page; null = the push never arrives. */
-  deliver: ((id: Id, code: string) => void) | null = (id, code) => handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: code }, []);
+  deliver: ((id: Id, code: string) => void) | null = (id, code) =>
+    handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: code }, []);
   calls: string[] = [];
   async get(args: { properties: (keyof PushSubscription)[] }) {
     this.calls.push("get");
     expect(args.properties).not.toContain("url");
-    return { list: [...this.subs.values()].map(({ id, deviceClientId, types, emailPush, expires }) => ({ id, deviceClientId, types, emailPush, expires })) };
+    return {
+      list: [...this.subs.values()].map(({ id, deviceClientId, types, emailPush, expires }) => ({
+        id,
+        deviceClientId,
+        types,
+        emailPush,
+        expires,
+      })),
+    };
   }
   async set(args: { destroy: Id[] }) {
     this.calls.push(`destroy ${args.destroy.join(",")}`);
@@ -74,7 +83,16 @@ class FakeServer implements PushServer {
     const id = `s${this.next++}`;
     const code = `code-${id}`;
     this.calls.push(`create ${id}`);
-    this.subs.set(id, { id, deviceClientId: sub.deviceClientId, types: sub.types ?? null, emailPush: sub.emailPush ?? null, expires: sub.expires ?? null, url: sub.url, code, verified: false });
+    this.subs.set(id, {
+      id,
+      deviceClientId: sub.deviceClientId,
+      types: sub.types ?? null,
+      emailPush: sub.emailPush ?? null,
+      expires: sub.expires ?? null,
+      url: sub.url,
+      code,
+      verified: false,
+    });
     // Stalwart pushes the code to the endpoint right away; the worker posts it to the page.
     const deliver = this.deliver;
     if (deliver) queueMicrotask(() => deliver(id, code));
@@ -83,7 +101,11 @@ class FakeServer implements PushServer {
   async verify(id: Id, code: string) {
     this.calls.push(`verify ${id}`);
     const sub = this.subs.get(id);
-    if (!sub || sub.code !== code) throw new JmapSetError("PushSubscription/set", id, { type: "invalidProperties", description: "Verification code does not match." });
+    if (!sub || sub.code !== code)
+      throw new JmapSetError("PushSubscription/set", id, {
+        type: "invalidProperties",
+        description: "Verification code does not match.",
+      });
     sub.verified = true;
   }
   async update(id: Id, patch: { expires: string }) {
@@ -140,7 +162,9 @@ describe("turning it on", () => {
     expect(sub?.verified).toBe(true);
     expect(sub?.url).toBe("https://fcm.googleapis.com/fcm/send/endpoint-1");
     expect(sub?.types).toEqual(["EmailDelivery"]);
-    expect(sub?.emailPush).toEqual({ A: { filter: { inMailbox: "a" }, properties: ["id", "threadId", "from", "subject"] } });
+    expect(sub?.emailPush).toEqual({
+      A: { filter: { inMailbox: "a" }, properties: ["id", "threadId", "from", "subject"] },
+    });
     expect(sub?.expires).toBe(new Date(NOW + EXPIRES_MS).toISOString().replace(".000Z", "Z"));
     expect(sub?.deviceClientId).toBe(await deviceClientId(USER, "https://fcm.googleapis.com/fcm/send/endpoint-1"));
     expect(readChoice(USER)).toEqual({ on: true, verified: sub?.deviceClientId });
@@ -162,7 +186,11 @@ describe("turning it on", () => {
 
   it("stays off when permission is refused", async () => {
     const push = webPush({
-      browser: { pushManager: async () => manager, permission: () => "default", requestPermission: async () => "denied" },
+      browser: {
+        pushManager: async () => manager,
+        permission: () => "default",
+        requestPermission: async () => "denied",
+      },
     });
     await push.enable();
     expect(push.getSnapshot()).toEqual({ on: false, busy: false, problem: "denied" });
@@ -172,7 +200,13 @@ describe("turning it on", () => {
 
   it("says unavailable without a service worker", async () => {
     permission = "granted";
-    const push = webPush({ browser: { pushManager: async () => null, permission: () => permission, requestPermission: async () => permission } });
+    const push = webPush({
+      browser: {
+        pushManager: async () => null,
+        permission: () => permission,
+        requestPermission: async () => permission,
+      },
+    });
     await push.enable();
     expect(push.getSnapshot().problem).toBe("unavailable");
   });
@@ -196,7 +230,10 @@ describe("turning it on", () => {
   it("skips a stale code for a reused id and takes the next one", async () => {
     server.deliver = (id, code) => {
       handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: "stale" }, []);
-      setTimeout(() => handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: code }, []), 20);
+      setTimeout(
+        () => handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: code }, []),
+        20,
+      );
     };
     const push = webPush();
     await push.enable();
@@ -205,7 +242,8 @@ describe("turning it on", () => {
   });
 
   it("gives up when only wrong codes come, and leaves nothing behind", async () => {
-    server.deliver = (id) => handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: "wrong" }, []);
+    server.deliver = (id) =>
+      handleWorkerMessage({ type: PUSH_VERIFICATION, pushSubscriptionId: id, verificationCode: "wrong" }, []);
     const push = webPush();
     await push.enable();
     expect(push.getSnapshot().problem).toBe("timeout");
@@ -214,7 +252,9 @@ describe("turning it on", () => {
 
   it("replaces a browser subscription made for another server key", async () => {
     permission = "granted";
-    manager.current = new FakeSubscription("https://fcm.googleapis.com/fcm/send/old", { applicationServerKey: new Uint8Array([1, 2, 3]).buffer });
+    manager.current = new FakeSubscription("https://fcm.googleapis.com/fcm/send/old", {
+      applicationServerKey: new Uint8Array([1, 2, 3]).buffer,
+    });
     const old = manager.current;
     await webPush().enable();
     expect(old.unsubscribed).toBe(true);
@@ -234,7 +274,9 @@ describe("signing in again", () => {
     const later = webPush({ now: () => NOW + 86_400_000 });
     await later.refresh();
     expect(server.calls).toEqual(["get", "update s1"]);
-    expect(server.subs.get("s1")?.expires).toBe(new Date(NOW + 86_400_000 + EXPIRES_MS).toISOString().replace(".000Z", "Z"));
+    expect(server.subs.get("s1")?.expires).toBe(
+      new Date(NOW + 86_400_000 + EXPIRES_MS).toISOString().replace(".000Z", "Z"),
+    );
   });
 
   it("makes a new one when the browser re-subscribed, and drops the old one", async () => {

@@ -49,7 +49,11 @@ async function makeStore(): Promise<ComposerStore> {
     viewportWidth: () => 2000,
     session: {
       autosaveDelayMs: 20,
-      upload: async (_client, file) => ({ blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type), type: file.type, size: file.size }),
+      upload: async (_client, file) => ({
+        blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type),
+        type: file.type,
+        size: file.size,
+      }),
     },
   });
 }
@@ -106,7 +110,12 @@ describe("a new message", () => {
     await vi.waitFor(() => expect(s.state.save).toBe("saved"));
     const saved = drafts();
     expect(saved).toHaveLength(1);
-    expect(saved[0]).toMatchObject({ subject: "Plans for Thursday", to: [bob], keywords: { $draft: true, $seen: true }, from: [alice] });
+    expect(saved[0]).toMatchObject({
+      subject: "Plans for Thursday",
+      to: [bob],
+      keywords: { $draft: true, $seen: true },
+      from: [alice],
+    });
     // The invalid chip stays on screen but is never written to the draft.
     expect(s.state.to.map((r) => r.valid)).toEqual([true, false]);
     expect(syncs).toBeGreaterThan(0);
@@ -172,7 +181,10 @@ describe("sending", () => {
   });
 
   it("keeps the draft and explains when the server refuses", async () => {
-    server.failWith = (name) => (name === "EmailSubmission/set" ? ["EmailSubmission/set", { accountId: "A", notCreated: { send: { type: "forbiddenFrom" } } }] : undefined);
+    server.failWith = (name) =>
+      name === "EmailSubmission/set"
+        ? ["EmailSubmission/set", { accountId: "A", notCreated: { send: { type: "forbiddenFrom" } } }]
+        : undefined;
     const s = await written();
     await store.send(s.key);
     await vi.waitFor(() => expect(s.state.sendError).toMatch(/won't send from this address/));
@@ -217,7 +229,13 @@ describe("schedule send", () => {
     const s = await written();
     await store.schedule(s.key, new Date("2026-10-28T08:00:00Z"));
     expect(server.submissions).toHaveLength(1);
-    expect(server.submissions[0]).toMatchObject({ emailId: s.draftId, envelope: { mailFrom: { parameters: { HOLDUNTIL: "2026-10-28T08:00:00Z" } }, rcptTo: [{ email: "bob@postern.test" }] } });
+    expect(server.submissions[0]).toMatchObject({
+      emailId: s.draftId,
+      envelope: {
+        mailFrom: { parameters: { HOLDUNTIL: "2026-10-28T08:00:00Z" } },
+        rcptTo: [{ email: "bob@postern.test" }],
+      },
+    });
     const email = server.emails.get(s.draftId!)!;
     expect(email.mailboxIds).toEqual({ [MAILBOXES.drafts]: true });
     expect(email.keywords).toMatchObject({ $draft: true, $scheduled: true });
@@ -237,7 +255,10 @@ describe("schedule send", () => {
   });
 
   it("keeps the window and explains when the server refuses", async () => {
-    server.failWith = (name) => (name === "EmailSubmission/set" ? ["EmailSubmission/set", { accountId: "A", notCreated: { send: { type: "forbiddenFrom" } } }] : undefined);
+    server.failWith = (name) =>
+      name === "EmailSubmission/set"
+        ? ["EmailSubmission/set", { accountId: "A", notCreated: { send: { type: "forbiddenFrom" } } }]
+        : undefined;
     const s = await written();
     await store.schedule(s.key, new Date("2026-10-28T08:00:00Z"));
     expect(s.state.sending).toBe(false);
@@ -248,8 +269,18 @@ describe("schedule send", () => {
 
   it("never opens a scheduled message as a draft to edit", async () => {
     server.add({ id: "O1", threadId: "T1", mailboxIds: { [MAILBOXES.inbox]: true } });
-    server.add({ id: "R1", threadId: "T1", mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $scheduled: true } });
-    server.add({ id: "N1", threadId: "T2", mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $scheduled: true } });
+    server.add({
+      id: "R1",
+      threadId: "T1",
+      mailboxIds: { [MAILBOXES.drafts]: true },
+      keywords: { $draft: true, $scheduled: true },
+    });
+    server.add({
+      id: "N1",
+      threadId: "T2",
+      mailboxIds: { [MAILBOXES.drafts]: true },
+      keywords: { $draft: true, $scheduled: true },
+    });
     expect((await store.threadDrafts("T1")).messages.map((m) => [m.id, m.draft])).toEqual([
       ["O1", false],
       ["R1", false],
@@ -292,7 +323,12 @@ describe("reply, reply all and forward", () => {
     s.setText("Yes");
     await store.close(s.key);
     const [draft] = drafts();
-    expect(draft).toMatchObject({ inReplyTo: ["o1@x"], references: ["r0@x", "o1@x"], threadId: "T1", subject: "Re: Plans" });
+    expect(draft).toMatchObject({
+      inReplyTo: ["o1@x"],
+      references: ["r0@x", "o1@x"],
+      threadId: "T1",
+      subject: "Re: Plans",
+    });
     const values = draft!["bodyValues"] as Record<string, { value: string }>;
     expect(values["text"]?.value).toMatch(/> Shall we meet\?/);
     expect(values["html"]?.value).toContain('class="gmail_quote postern_quote"');
@@ -337,13 +373,35 @@ describe("drafts", () => {
       bodyStructure: {
         type: "multipart/mixed",
         subParts: [
-          { type: "multipart/alternative", subParts: [{ partId: "1", blobId: "t", type: "text/plain" }, { type: "multipart/related", subParts: [{ partId: "2", blobId: "h", type: "text/html" }, { partId: "3", blobId: "B-img", type: "image/png", cid: "pic@postern", disposition: "inline", name: "pic.png" }] }] },
+          {
+            type: "multipart/alternative",
+            subParts: [
+              { partId: "1", blobId: "t", type: "text/plain" },
+              {
+                type: "multipart/related",
+                subParts: [
+                  { partId: "2", blobId: "h", type: "text/html" },
+                  {
+                    partId: "3",
+                    blobId: "B-img",
+                    type: "image/png",
+                    cid: "pic@postern",
+                    disposition: "inline",
+                    name: "pic.png",
+                  },
+                ],
+              },
+            ],
+          },
           { partId: "4", blobId: "B-doc", type: "text/plain", name: "notes.txt", disposition: "attachment", size: 5 },
         ],
       },
       textBody: [{ partId: "1", type: "text/plain" }],
       htmlBody: [{ partId: "2", type: "text/html" }],
-      bodyValues: { "1": { value: "Hello [image: pic.png]" }, "2": { value: '<div>Hello <img src="cid:pic@postern" alt="pic.png"></div>' } },
+      bodyValues: {
+        "1": { value: "Hello [image: pic.png]" },
+        "2": { value: '<div>Hello <img src="cid:pic@postern" alt="pic.png"></div>' },
+      },
     });
     server.blobs.set("B-img", { type: "image/png", bytes: new Uint8Array([137, 80, 78, 71]) });
   });
@@ -351,7 +409,13 @@ describe("drafts", () => {
   it("reopens a draft with everything in place, and only once", async () => {
     const s = store.open({ draftId: "D1" });
     await ready(s.key);
-    expect(s.state).toMatchObject({ subject: "Half written", draftId: "D1", showCc: true, save: "saved", plain: false });
+    expect(s.state).toMatchObject({
+      subject: "Half written",
+      draftId: "D1",
+      showCc: true,
+      save: "saved",
+      plain: false,
+    });
     expect(s.state.to.map((r) => r.email)).toEqual(["bob@postern.test"]);
     expect(s.state.files.map((f) => f.name)).toEqual(["notes.txt"]);
     expect(s.state.inline.map((f) => [f.cid, f.blobId])).toEqual([["pic@postern", "B-img"]]);
@@ -398,13 +462,33 @@ describe("plain text and signatures", () => {
 
   it("puts the identity's signature under a new message, and swaps it with the From address", async () => {
     server.identities = [
-      { id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "Alice\nPostern", htmlSignature: "", mayDelete: false },
-      { id: "I2", name: "Alice at work", email: "alice@work.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: '<b>Alice</b> <img src="https://evil.test/x.png" onerror="alert(1)">', mayDelete: true },
+      {
+        id: "I1",
+        name: "Alice Archer",
+        email: "alice@postern.test",
+        replyTo: null,
+        bcc: null,
+        textSignature: "Alice\nPostern",
+        htmlSignature: "",
+        mayDelete: false,
+      },
+      {
+        id: "I2",
+        name: "Alice at work",
+        email: "alice@work.test",
+        replyTo: null,
+        bcc: null,
+        textSignature: "",
+        htmlSignature: '<b>Alice</b> <img src="https://evil.test/x.png" onerror="alert(1)">',
+        mayDelete: true,
+      },
     ];
     store = await makeStore();
     const s = store.open();
     await ready(s.key);
-    expect(s.state.html).toContain('<div class="gmail_signature postern_signature">-- <br><div>Alice</div><div>Postern</div></div>');
+    expect(s.state.html).toContain(
+      '<div class="gmail_signature postern_signature">-- <br><div>Alice</div><div>Postern</div></div>',
+    );
     expect(s.content()!.text).toBe("-- \nAlice\nPostern");
     s.setIdentity("I2");
     const content = s.content()!;
@@ -415,11 +499,42 @@ describe("plain text and signatures", () => {
 
   it("replies from the address the message was sent to", async () => {
     server.identities = [
-      { id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false },
-      { id: "I2", name: "Alice at work", email: "alice@work.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: true },
+      {
+        id: "I1",
+        name: "Alice Archer",
+        email: "alice@postern.test",
+        replyTo: null,
+        bcc: null,
+        textSignature: "",
+        htmlSignature: "",
+        mayDelete: false,
+      },
+      {
+        id: "I2",
+        name: "Alice at work",
+        email: "alice@work.test",
+        replyTo: null,
+        bcc: null,
+        textSignature: "",
+        htmlSignature: "",
+        mayDelete: true,
+      },
     ];
     store = await makeStore();
-    server.add({ id: "W1", threadId: "TW", from: [bob], to: [{ name: null, email: "alice@work.test" }], cc: null, replyTo: null, subject: "Work", messageId: ["w1@x"], receivedAt: "2026-10-20T10:00:00Z", textBody: [], htmlBody: [], bodyValues: {} });
+    server.add({
+      id: "W1",
+      threadId: "TW",
+      from: [bob],
+      to: [{ name: null, email: "alice@work.test" }],
+      cc: null,
+      replyTo: null,
+      subject: "Work",
+      messageId: ["w1@x"],
+      receivedAt: "2026-10-20T10:00:00Z",
+      textBody: [],
+      htmlBody: [],
+      bodyValues: {},
+    });
     const s = store.open({ mode: "reply", emailId: "W1", threadId: "TW" });
     await ready(s.key);
     expect(s.state.identityId).toBe("I2");
@@ -463,7 +578,12 @@ describe("review fixes", () => {
 
   it("opens a reply whose original was deleted as a draft on its own, but not in Trash's view", async () => {
     server.add({ id: "O1", threadId: "TX", mailboxIds: { [MAILBOXES.trash]: true }, keywords: { $seen: true } });
-    server.add({ id: "D9", threadId: "TX", mailboxIds: { [MAILBOXES.drafts]: true }, keywords: { $draft: true, $seen: true } });
+    server.add({
+      id: "D9",
+      threadId: "TX",
+      mailboxIds: { [MAILBOXES.drafts]: true },
+      keywords: { $draft: true, $seen: true },
+    });
     expect(await store.draftOnlyConversation("TX", null)).toBe("D9");
     expect(await store.draftOnlyConversation("TX", "trash")).toBeNull();
     server.add({ id: "O2", threadId: "TX", mailboxIds: { [MAILBOXES.inbox]: true }, keywords: {} });
@@ -487,7 +607,11 @@ describe("review fixes", () => {
         autosaveDelayMs: 20,
         upload: async (_c, file) => {
           await new Promise<void>((resolve) => (finish = resolve));
-          return { blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type), type: file.type, size: file.size };
+          return {
+            blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type),
+            type: file.type,
+            size: file.size,
+          };
         },
       },
     });
@@ -518,7 +642,10 @@ describe("review fixes", () => {
       hasInlineSlot: () => false,
       viewportWidth: () => 2000,
       publish: () => {},
-      session: { autosaveDelayMs: 20, upload: () => new Promise((_resolve, reject) => (fail = () => reject(new Error("no")))) },
+      session: {
+        autosaveDelayMs: 20,
+        upload: () => new Promise((_resolve, reject) => (fail = () => reject(new Error("no")))),
+      },
     });
     const s = store.open({ to: [bob], subject: "With file" });
     await ready(s.key);
@@ -547,7 +674,11 @@ describe("review fixes", () => {
         autosaveDelayMs: 20,
         upload: async (_c, file) => {
           await new Promise<void>((resolve) => (finish = resolve));
-          return { blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type), type: file.type, size: file.size };
+          return {
+            blobId: server.upload(new Uint8Array(await file.arrayBuffer()), file.type),
+            type: file.type,
+            size: file.size,
+          };
         },
       },
     });
@@ -576,8 +707,26 @@ describe("review fixes", () => {
 
   it("starts a new message from the default identity, and a reply from the address it was sent to", async () => {
     server.identities = [
-      { id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false },
-      { id: "I2", name: "Alice at work", email: "alice@work.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: true },
+      {
+        id: "I1",
+        name: "Alice Archer",
+        email: "alice@postern.test",
+        replyTo: null,
+        bcc: null,
+        textSignature: "",
+        htmlSignature: "",
+        mayDelete: false,
+      },
+      {
+        id: "I2",
+        name: "Alice at work",
+        email: "alice@work.test",
+        replyTo: null,
+        bcc: null,
+        textSignature: "",
+        htmlSignature: "",
+        mayDelete: true,
+      },
     ];
     store.dispose();
     const client = await server.connect();
@@ -594,7 +743,20 @@ describe("review fixes", () => {
     const fresh = store.open();
     await ready(fresh.key);
     expect(fresh.state.identityId).toBe("I2");
-    server.add({ id: "P1", threadId: "TP", from: [bob], to: [alice], cc: null, replyTo: null, subject: "Personal", messageId: ["p1@x"], receivedAt: "2026-10-20T10:00:00Z", textBody: [], htmlBody: [], bodyValues: {} });
+    server.add({
+      id: "P1",
+      threadId: "TP",
+      from: [bob],
+      to: [alice],
+      cc: null,
+      replyTo: null,
+      subject: "Personal",
+      messageId: ["p1@x"],
+      receivedAt: "2026-10-20T10:00:00Z",
+      textBody: [],
+      htmlBody: [],
+      bodyValues: {},
+    });
     const reply = store.open({ mode: "reply", emailId: "P1", threadId: "TP" });
     await ready(reply.key);
     expect(reply.state.identityId).toBe("I1");
@@ -604,7 +766,7 @@ describe("review fixes", () => {
 describe("signing out (user or idle) while the tokens still work", () => {
   beforeEach(() => clearUndo());
 
-  it("submits a message held for Undo at once: the user already saw \"Message sent\"", async () => {
+  it('submits a message held for Undo at once: the user already saw "Message sent"', async () => {
     setUndoSendDelay(60_000);
     const s = store.open({ to: [bob], subject: "Before I go" });
     await ready(s.key);

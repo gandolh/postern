@@ -48,9 +48,47 @@ export interface MeasureOptions {
 }
 
 const BLOCK = new Set([
-  "address", "article", "aside", "blockquote", "center", "dd", "details", "div", "dl", "dt", "fieldset", "figcaption",
-  "figure", "footer", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "li", "main", "nav", "ol", "p",
-  "pre", "section", "summary", "table", "ul", "body", "caption", "tr", "tbody", "thead", "tfoot", "td", "th",
+  "address",
+  "article",
+  "aside",
+  "blockquote",
+  "center",
+  "dd",
+  "details",
+  "div",
+  "dl",
+  "dt",
+  "fieldset",
+  "figcaption",
+  "figure",
+  "footer",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "header",
+  "hgroup",
+  "hr",
+  "li",
+  "main",
+  "nav",
+  "ol",
+  "p",
+  "pre",
+  "section",
+  "summary",
+  "table",
+  "ul",
+  "body",
+  "caption",
+  "tr",
+  "tbody",
+  "thead",
+  "tfoot",
+  "td",
+  "th",
 ]);
 
 /** A <br> in a run of text (a private-use character, so whitespace collapsing leaves it alone). */
@@ -243,7 +281,14 @@ function tableHeight(table: Element, width: number, size: number, bold: boolean,
     let rowHeight = 0;
     for (const [i, cell] of cells.entries()) {
       const cellWidth = Math.max(16, Math.min(fixed[i] ?? share, inner) - 2 * padding);
-      const content = flowHeight(cell, cellWidth, fontSize(cell, size), bold || cell.nodeName.toLowerCase() === "th", ctx, false);
+      const content = flowHeight(
+        cell,
+        cellWidth,
+        fontSize(cell, size),
+        bold || cell.nodeName.toLowerCase() === "th",
+        ctx,
+        false,
+      );
       rowHeight = Math.max(rowHeight, content + 2 * padding, pxAttr(cell, "height") ?? 0);
     }
     height += rowHeight + spacing;
@@ -253,7 +298,16 @@ function tableHeight(table: Element, width: number, size: number, bold: boolean,
 
 /** A block's vertical margin, counted once: adjacent margins collapse, so n blocks show about n + 1 of them. */
 function margins(tag: string, size: number): number {
-  if (tag === "p" || tag === "blockquote" || tag === "ul" || tag === "ol" || tag === "dl" || tag === "pre" || tag === "figure") return size;
+  if (
+    tag === "p" ||
+    tag === "blockquote" ||
+    tag === "ul" ||
+    tag === "ol" ||
+    tag === "dl" ||
+    tag === "pre" ||
+    tag === "figure"
+  )
+    return size;
   const scale = HEADING_SCALE[tag];
   if (scale) return size * (tag === "h1" ? 0.67 : tag === "h2" ? 0.83 : 1);
   if (tag === "hr") return 8;

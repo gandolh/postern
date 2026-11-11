@@ -42,7 +42,9 @@ async function findOrCreate(caller: MethodCaller): Promise<Id> {
   const existing = mailboxes.find((m) => m.role === "archive");
   if (existing) return existing.id;
 
-  const folder = mailboxes.find((m) => m.role === null && m.parentId === null && m.name.toLowerCase() === ALL_MAIL_NAME.toLowerCase());
+  const folder = mailboxes.find(
+    (m) => m.role === null && m.parentId === null && m.name.toLowerCase() === ALL_MAIL_NAME.toLowerCase(),
+  );
   if (folder) {
     const res = await caller.call("Mailbox/set", { update: { [folder.id]: { role: "archive" } } });
     const error = res.notUpdated?.[folder.id];

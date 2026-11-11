@@ -18,12 +18,21 @@ describe("labelListView", () => {
     expect(inbox.query.scope.kind).toBe("normal");
     expect(inbox.query.matches!(msg(["a", "i"]))).toBe(true);
     expect(inbox.query.matches!(msg(["i"]))).toBe(false);
-    expect(inbox.presentation).toEqual({ currentLabelId: "a", senderMode: "from", canArchive: true, deleteForever: false, notSpam: false });
+    expect(inbox.presentation).toEqual({
+      currentLabelId: "a",
+      senderMode: "from",
+      canArchive: true,
+      deleteForever: false,
+      notSpam: false,
+    });
   });
 
   it("lists Drafts without the messages waiting to be sent", () => {
     const drafts = labelListView({ view: "drafts", mailboxId: "d" }, roles)!;
-    expect(drafts.query.filter).toEqual({ operator: "AND", conditions: [{ inMailbox: "d" }, { notKeyword: "$scheduled" }] });
+    expect(drafts.query.filter).toEqual({
+      operator: "AND",
+      conditions: [{ inMailbox: "d" }, { notKeyword: "$scheduled" }],
+    });
     expect(drafts.query.matches!(msg(["d"], ["$draft"]))).toBe(true);
     expect(drafts.query.matches!(msg(["d"], ["$draft", "$scheduled"]))).toBe(false);
     expect(drafts.presentation.senderMode).toBe("to");
@@ -38,14 +47,19 @@ describe("labelListView", () => {
   });
 
   it("lists All Mail even when the account has no archive mailbox yet", () => {
-    expect(labelListView({ view: "all", mailboxId: undefined }, { inbox: "a", trash: "b", junk: "c" })!.query.filter).toEqual({
+    expect(
+      labelListView({ view: "all", mailboxId: undefined }, { inbox: "a", trash: "b", junk: "c" })!.query.filter,
+    ).toEqual({
       inMailboxOtherThan: ["c", "b"],
     });
   });
 
   it("lists Starred as starred messages outside Spam and Trash", () => {
     const starred = labelListView({ view: "starred", mailboxId: undefined }, roles)!;
-    expect(starred.query.filter).toEqual({ operator: "AND", conditions: [{ hasKeyword: "$flagged" }, { inMailboxOtherThan: ["c", "b"] }] });
+    expect(starred.query.filter).toEqual({
+      operator: "AND",
+      conditions: [{ hasKeyword: "$flagged" }, { inMailboxOtherThan: ["c", "b"] }],
+    });
     expect(starred.query.matches!(msg(["a"], ["$flagged"]))).toBe(true);
     expect(starred.query.matches!(msg(["a"]))).toBe(false);
     expect(starred.query.matches!(msg(["b"], ["$flagged"]))).toBe(false);

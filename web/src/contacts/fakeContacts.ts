@@ -24,7 +24,11 @@ export class FakeContacts {
   } as unknown as JmapClient;
 
   get session(): SignedInSession {
-    return { client: this.client, account: { username: "alice@postern.test", name: "Alice Archer" }, signOut: vi.fn(async () => {}) };
+    return {
+      client: this.client,
+      account: { username: "alice@postern.test", name: "Alice Archer" },
+      signOut: vi.fn(async () => {}),
+    };
   }
 
   names(): string[] {
@@ -43,7 +47,11 @@ export class FakeContacts {
         return { state: "s", list: this.cards.filter((c) => ids.includes(c.id)) };
       }
       case "ContactCard/set": {
-        const set = args as { create?: Record<string, Omit<ContactCard, "id">>; update?: Record<string, Record<string, unknown>>; destroy?: string[] };
+        const set = args as {
+          create?: Record<string, Omit<ContactCard, "id">>;
+          update?: Record<string, Record<string, unknown>>;
+          destroy?: string[];
+        };
         const created: Record<string, { id: string }> = {};
         for (const [k, v] of Object.entries(set.create ?? {})) {
           const id = String(this.#next++);
@@ -62,7 +70,14 @@ export class FakeContacts {
           });
         }
         this.cards = this.cards.filter((c) => !(set.destroy ?? []).includes(c.id));
-        return { created, notCreated: null, updated: {}, notUpdated: null, destroyed: set.destroy ?? [], notDestroyed: null };
+        return {
+          created,
+          notCreated: null,
+          updated: {},
+          notUpdated: null,
+          destroyed: set.destroy ?? [],
+          notDestroyed: null,
+        };
       }
       case "Mailbox/query":
         return { ids: [] };

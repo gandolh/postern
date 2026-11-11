@@ -13,7 +13,8 @@ import { hotp, newTotpSecret, totp } from "./totp.js";
 const REDIRECT = "http://localhost:5173/webmail/";
 const STALWART = "urn:stalwart:jmap";
 
-const password = (account: "alice" | "bob"): string => process.env[account === "alice" ? "ALICE_PASSWORD" : "BOB_PASSWORD"] ?? "";
+const password = (account: "alice" | "bob"): string =>
+  process.env[account === "alice" ? "ALICE_PASSWORD" : "BOB_PASSWORD"] ?? "";
 const newSession = (): AuthSession => new AuthSession({ baseUrl: BASE, redirectUri: REDIRECT });
 
 /** GET /jmap/session with a raw Authorization value: the status and how many accounts it shows. */
@@ -29,9 +30,14 @@ async function setAccountPassword(auth: AuthProvider, patch: Record<string, unkn
   const client = new JmapClient({ baseUrl: BASE, auth });
   const request = client.request().using(STALWART);
   const handle = request.callRaw("x:AccountPassword/set", { update: { singleton: patch } }, STALWART);
-  const result = (await request.send()).get(handle) as { updated?: Record<string, unknown>; notUpdated?: Record<string, { description?: string }> };
+  const result = (await request.send()).get(handle) as {
+    updated?: Record<string, unknown>;
+    notUpdated?: Record<string, { description?: string }>;
+  };
   if (!result.updated || !("singleton" in result.updated)) {
-    throw new Error(`x:AccountPassword/set failed: ${result.notUpdated?.["singleton"]?.description ?? "no reason given"}`);
+    throw new Error(
+      `x:AccountPassword/set failed: ${result.notUpdated?.["singleton"]?.description ?? "no reason given"}`,
+    );
   }
 }
 
@@ -126,7 +132,9 @@ describe.skipIf(!live)("against the dev Stalwart: signing in", () => {
     // A crashed earlier run could have left TOTP on; Basic then answers 402.
     const start = await probe(basicValue);
     if (start.status !== 200) {
-      throw new Error(`bob's Basic auth answers ${start.status}: TOTP is probably still on from an earlier run. Turn it off in the admin UI (dev/README.md).`);
+      throw new Error(
+        `bob's Basic auth answers ${start.status}: TOTP is probably still on from an earlier run. Turn it off in the admin UI (dev/README.md).`,
+      );
     }
     expect(await otpAuthOf(basic)).toEqual({});
 
@@ -141,7 +149,9 @@ describe.skipIf(!live)("against the dev Stalwart: signing in", () => {
       expect(await auth.signIn(bob, password("bob"))).toBe("mfaRequired");
       await expect(auth.signIn(bob, "not-bobs-password")).rejects.toMatchObject({ reason: "rejected" });
       const wrong = totp(key) === "000000" ? "111111" : "000000";
-      await expect(auth.signIn(bob, password("bob"), { mfaToken: wrong })).rejects.toMatchObject({ reason: "rejected" });
+      await expect(auth.signIn(bob, password("bob"), { mfaToken: wrong })).rejects.toMatchObject({
+        reason: "rejected",
+      });
       expect(await auth.signIn(bob, password("bob"), { mfaToken: totp(key) })).toBe("signedIn");
       expect(auth.account?.username).toBe(bob);
 
@@ -154,7 +164,10 @@ describe.skipIf(!live)("against the dev Stalwart: signing in", () => {
         owner = newSession();
         await owner.signIn(bob, password("bob"), { mfaToken: totp(key) });
       }
-      await setAccountPassword(owner, { currentSecret: password("bob"), otpAuth: { otpUrl: null, otpCode: totp(key) } });
+      await setAccountPassword(owner, {
+        currentSecret: password("bob"),
+        otpAuth: { otpUrl: null, otpCode: totp(key) },
+      });
       // Changing TOTP does not touch the credential version: the session survives.
       expect((await probe(await owner.authorization())).status).toBe(200);
       await owner.signOut();

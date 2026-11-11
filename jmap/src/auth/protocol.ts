@@ -11,7 +11,8 @@ import { SignInError, TokenEndpointError } from "./errors.js";
 export const POSTERN_CLIENT_ID = "postern";
 
 /** What Postern asks for. Stalwart's tokens carry no scope, so this is advisory. */
-export const DEFAULT_SCOPE = "openid offline_access urn:ietf:params:oauth:scope:mail urn:ietf:params:oauth:scope:contacts";
+export const DEFAULT_SCOPE =
+  "openid offline_access urn:ietf:params:oauth:scope:mail urn:ietf:params:oauth:scope:contacts";
 
 /** The body of `POST /api/auth` for the authorization-code flow. */
 export interface AuthCodeRequest {
@@ -113,7 +114,8 @@ export async function requestAuthCode(
   const answer = (await readJson(res)) as { type?: unknown; client_code?: unknown } | undefined;
   switch (answer?.type) {
     case "authenticated":
-      if (typeof answer.client_code === "string" && answer.client_code) return { type: "authenticated", code: answer.client_code };
+      if (typeof answer.client_code === "string" && answer.client_code)
+        return { type: "authenticated", code: answer.client_code };
       break;
     case "mfaRequired":
       return { type: "mfaRequired" };
@@ -127,7 +129,12 @@ function form(params: Record<string, string>): string {
   return new URLSearchParams(params).toString();
 }
 
-async function tokenRequest(fetchImpl: FetchLike, baseUrl: string, params: Record<string, string>, signal?: AbortSignal): Promise<TokenGrant> {
+async function tokenRequest(
+  fetchImpl: FetchLike,
+  baseUrl: string,
+  params: Record<string, string>,
+  signal?: AbortSignal,
+): Promise<TokenGrant> {
   const res = await post(fetchImpl, `${baseUrl}/auth/token`, {
     headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
     body: form(params),
@@ -142,8 +149,7 @@ async function tokenRequest(fetchImpl: FetchLike, baseUrl: string, params: Recor
     throw new SignInError("blocked", "This network is blocked after too many failed sign-ins", { status: 403 });
   }
   const answer = (await readJson(res)) as
-    | { access_token?: unknown; refresh_token?: unknown; expires_in?: unknown; error?: unknown }
-    | undefined;
+    { access_token?: unknown; refresh_token?: unknown; expires_in?: unknown; error?: unknown } | undefined;
   if (res.status === 400 || res.status === 401) {
     throw new TokenEndpointError(res.status, typeof answer?.error === "string" ? answer.error : "unknown_error");
   }
@@ -195,14 +201,24 @@ export function refreshGrant(
   params: { refreshToken: string; clientId: string },
   signal?: AbortSignal,
 ): Promise<TokenGrant> {
-  return tokenRequest(fetchImpl, baseUrl, { grant_type: "refresh_token", refresh_token: params.refreshToken, client_id: params.clientId }, signal);
+  return tokenRequest(
+    fetchImpl,
+    baseUrl,
+    { grant_type: "refresh_token", refresh_token: params.refreshToken, client_id: params.clientId },
+    signal,
+  );
 }
 
 /**
  * The signed-in account: `GET {baseUrl}/auth/userinfo`.
  * @throws SignInError (network, server)
  */
-export async function fetchUserInfo(fetchImpl: FetchLike, baseUrl: string, accessToken: string, signal?: AbortSignal): Promise<UserInfo> {
+export async function fetchUserInfo(
+  fetchImpl: FetchLike,
+  baseUrl: string,
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<UserInfo> {
   let res: Response;
   try {
     res = await fetchImpl(`${baseUrl}/auth/userinfo`, {
@@ -217,8 +233,15 @@ export async function fetchUserInfo(fetchImpl: FetchLike, baseUrl: string, acces
     await res.body?.cancel().catch(() => undefined);
     throw new SignInError("server", `Account lookup failed with HTTP ${res.status}`, { status: res.status });
   }
-  const info = (await readJson(res)) as { sub?: unknown; email?: unknown; preferred_username?: unknown; name?: unknown } | undefined;
-  const email = typeof info?.email === "string" ? info.email : typeof info?.preferred_username === "string" ? info.preferred_username : undefined;
-  if (typeof info?.sub !== "string" || !email) throw new SignInError("server", "Unexpected answer from the account lookup", { status: res.status });
+  const info = (await readJson(res)) as
+    { sub?: unknown; email?: unknown; preferred_username?: unknown; name?: unknown } | undefined;
+  const email =
+    typeof info?.email === "string"
+      ? info.email
+      : typeof info?.preferred_username === "string"
+        ? info.preferred_username
+        : undefined;
+  if (typeof info?.sub !== "string" || !email)
+    throw new SignInError("server", "Unexpected answer from the account lookup", { status: res.status });
   return { sub: info.sub, email, name: typeof info.name === "string" && info.name ? info.name : undefined };
 }

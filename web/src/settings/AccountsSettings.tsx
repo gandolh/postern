@@ -51,7 +51,12 @@ function Identities() {
           <label htmlFor={defaultId} className="settings-label">
             Default identity on this device
           </label>
-          <select id={defaultId} className="input settings-select" value={prefs.defaultIdentityId ?? identities[0]!.id} onChange={(e) => setPrefs({ defaultIdentityId: e.target.value })}>
+          <select
+            id={defaultId}
+            className="input settings-select"
+            value={prefs.defaultIdentityId ?? identities[0]!.id}
+            onChange={(e) => setPrefs({ defaultIdentityId: e.target.value })}
+          >
             {identities.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name ? `${i.name} <${i.email}>` : i.email}
@@ -60,7 +65,9 @@ function Identities() {
           </select>
         </div>
       ) : null}
-      {identities?.map((identity) => <IdentityEditor key={identity.id} identity={identity} />)}
+      {identities?.map((identity) => (
+        <IdentityEditor key={identity.id} identity={identity} />
+      ))}
     </section>
   );
 }
@@ -73,7 +80,9 @@ function AccountLinks() {
       <h2 id={headingId} className="settings-heading">
         Security
       </h2>
-      <p className="settings-hint">Your password, 2-step verification and app passwords are managed on the mail server&rsquo;s account page.</p>
+      <p className="settings-hint">
+        Your password, 2-step verification and app passwords are managed on the mail server&rsquo;s account page.
+      </p>
       <ul className="settings-links">
         <li>
           <a href={STALWART_ACCOUNT_URL} target="_blank" rel="noopener noreferrer">

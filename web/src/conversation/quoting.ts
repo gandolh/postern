@@ -18,7 +18,14 @@ export interface QuotedMessage {
 function when(message: QuotedMessage, locale?: string): string {
   const date = new Date(message.sentAt ?? message.receivedAt);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(locale ?? "en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat(locale ?? "en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
 /** "On Tue, Oct 20, 2026, 10:05 AM, Bob Baker <bob@x.test> wrote:" */
@@ -39,7 +46,12 @@ export function quotePlainText(text: string): string {
 /** The block Gmail puts above a forwarded message. */
 export function forwardHeaderText(message: QuotedMessage, locale?: string): string {
   const list = (addresses: readonly EmailAddress[] | null | undefined) => (addresses ?? []).map(fullAddress).join(", ");
-  const lines = ["---------- Forwarded message ---------", `From: ${list(message.from)}`, `Date: ${when(message, locale)}`, `Subject: ${message.subject ?? ""}`];
+  const lines = [
+    "---------- Forwarded message ---------",
+    `From: ${list(message.from)}`,
+    `Date: ${when(message, locale)}`,
+    `Subject: ${message.subject ?? ""}`,
+  ];
   if (message.to?.length) lines.push(`To: ${list(message.to)}`);
   if (message.cc?.length) lines.push(`Cc: ${list(message.cc)}`);
   return lines.join("\n");

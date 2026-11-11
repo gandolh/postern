@@ -13,7 +13,20 @@ const alice = { name: "Alice Archer", email: "alice@postern.test" };
 const bob = { name: "Bob Baker", email: "bob@postern.test" };
 
 function draft(text: string) {
-  return buildDraftEmail({ from: alice, to: [bob], cc: [], bcc: [], subject: "Hi", html: null, text, attachments: [], messageId: "m1@postern.test" }, { draftsMailboxId: MAILBOXES.drafts });
+  return buildDraftEmail(
+    {
+      from: alice,
+      to: [bob],
+      cc: [],
+      bcc: [],
+      subject: "Hi",
+      html: null,
+      text,
+      attachments: [],
+      messageId: "m1@postern.test",
+    },
+    { draftsMailboxId: MAILBOXES.drafts },
+  );
 }
 
 describe("saving a draft", () => {
@@ -42,7 +55,10 @@ describe("saving a draft", () => {
   it("throws when the server refuses the draft", async () => {
     const server = new ComposeTestServer();
     const client = await server.connect();
-    server.failWith = (name) => (name === "Email/set" ? ["Email/set", { accountId: "A", notCreated: { draft: { type: "overQuota" } } }] : undefined);
+    server.failWith = (name) =>
+      name === "Email/set"
+        ? ["Email/set", { accountId: "A", notCreated: { draft: { type: "overQuota" } } }]
+        : undefined;
     const err = await saveDraft(client, draft("x"), []).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(JmapSetError);
     expect(explainSaveError(err)).toBe("Not saved: your mailbox is full.");
@@ -62,10 +78,17 @@ describe("sending", () => {
     const server = new ComposeTestServer();
     const client = await server.connect();
     const saved = await saveDraft(client, draft("hello"), []);
-    await submitDraft(client, { emailId: saved.id, identityId: "I1", draftsMailboxId: MAILBOXES.drafts, sentMailboxId: MAILBOXES.sent });
+    await submitDraft(client, {
+      emailId: saved.id,
+      identityId: "I1",
+      draftsMailboxId: MAILBOXES.drafts,
+      sentMailboxId: MAILBOXES.sent,
+    });
     const call = server.calls.find((c) => c[0] === "EmailSubmission/set")!;
     expect(call[1]["create"]).toEqual({ send: { identityId: "I1", emailId: saved.id } });
-    expect(call[1]["onSuccessUpdateEmail"]).toEqual({ "#send": { "keywords/$draft": null, "mailboxIds/e": true, "mailboxIds/d": null } });
+    expect(call[1]["onSuccessUpdateEmail"]).toEqual({
+      "#send": { "keywords/$draft": null, "mailboxIds/e": true, "mailboxIds/d": null },
+    });
     const sent = server.emails.get(saved.id)!;
     expect(sent.mailboxIds).toEqual({ e: true });
     expect(sent.keywords).toEqual({ $seen: true });
@@ -79,10 +102,25 @@ describe("sending", () => {
     const server = new ComposeTestServer();
     const client = await server.connect();
     server.failWith = (name) =>
-      name === "EmailSubmission/set" ? ["EmailSubmission/set", { accountId: "A", notCreated: { send: { type: "invalidRecipients", invalidRecipients: ["x@nowhere.invalid"] } } }] : undefined;
-    const err = await submitDraft(client, { emailId: "M1", identityId: "I1", draftsMailboxId: "d", sentMailboxId: "e" }).catch((e: unknown) => e);
+      name === "EmailSubmission/set"
+        ? [
+            "EmailSubmission/set",
+            {
+              accountId: "A",
+              notCreated: { send: { type: "invalidRecipients", invalidRecipients: ["x@nowhere.invalid"] } },
+            },
+          ]
+        : undefined;
+    const err = await submitDraft(client, {
+      emailId: "M1",
+      identityId: "I1",
+      draftsMailboxId: "d",
+      sentMailboxId: "e",
+    }).catch((e: unknown) => e);
     expect(explainSendError(err)).toBe("The mail server refused these addresses: x@nowhere.invalid.");
-    expect(explainSendError(new JmapSetError("EmailSubmission/set", "send", { type: "forbiddenFrom" }))).toMatch(/won't send from this address/);
+    expect(explainSendError(new JmapSetError("EmailSubmission/set", "send", { type: "forbiddenFrom" }))).toMatch(
+      /won't send from this address/,
+    );
     expect(explainSendError(new JmapNetworkError("down"))).toMatch(/Can't reach the mail server/);
     expect(explainUploadError(new JmapLimitError("maxSizeUpload", "big"))).toBe("Too large for the mail server.");
   });
@@ -238,12 +276,19 @@ describe("uploading", () => {
           first = false;
           return { status: 401, body: "", contentType: null };
         }
-        return { status: 201, body: JSON.stringify({ blobId: "B9", type: "text/plain", size: 3 }), contentType: "application/json" };
+        return {
+          status: 201,
+          body: JSON.stringify({ blobId: "B9", type: "text/plain", size: 3 }),
+          contentType: "application/json",
+        };
       },
     };
     (client.auth as { onUnauthorized?: () => boolean }).onUnauthorized = () => true;
     const progress: number[] = [];
-    const res = await uploadFile(client, new Blob(["abc"], { type: "text/plain" }), { transport, onProgress: (p) => progress.push(p.loaded) });
+    const res = await uploadFile(client, new Blob(["abc"], { type: "text/plain" }), {
+      transport,
+      onProgress: (p) => progress.push(p.loaded),
+    });
     expect(res).toEqual({ blobId: "B9", type: "text/plain", size: 3 });
     expect(seen).toHaveLength(2);
     expect(seen[0]?.authorization).toBe("Basic test");
@@ -255,7 +300,9 @@ describe("uploading", () => {
     const server = new ComposeTestServer();
     const client = await server.connect();
     const transport = { send: vi.fn() };
-    await expect(uploadFile(client, new Blob([new Uint8Array(2000)]), { transport })).rejects.toBeInstanceOf(JmapLimitError);
+    await expect(uploadFile(client, new Blob([new Uint8Array(2000)]), { transport })).rejects.toBeInstanceOf(
+      JmapLimitError,
+    );
     expect(transport.send).not.toHaveBeenCalled();
   });
 
@@ -295,7 +342,13 @@ describe("uploading", () => {
     };
     const transport = xhrUploadTransport(() => fake as unknown as XMLHttpRequest);
     const progress: [number, number][] = [];
-    const res = await transport.send({ url: "http://fake/upload/A/", body: "0123456789", contentType: "text/plain", authorization: "Bearer t", onProgress: (p) => progress.push([p.loaded, p.total]) });
+    const res = await transport.send({
+      url: "http://fake/upload/A/",
+      body: "0123456789",
+      contentType: "text/plain",
+      authorization: "Bearer t",
+      onProgress: (p) => progress.push([p.loaded, p.total]),
+    });
     expect(res.status).toBe(201);
     expect(fake.headers).toEqual({ Authorization: "Bearer t", "Content-Type": "text/plain" });
     expect(progress).toEqual([

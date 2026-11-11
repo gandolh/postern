@@ -8,7 +8,9 @@ function arg(value: string): string {
 
 /** Splits free text into words and "quoted phrases", dropping stray quotes. */
 function pieces(text: string): string[] {
-  return [...text.matchAll(/"([^"]*)"|(\S+)/g)].map((m) => (m[1] !== undefined ? (m[1].trim() ? `"${m[1].trim()}"` : "") : m[2]!.replace(/"/g, ""))).filter((p) => p !== "");
+  return [...text.matchAll(/"([^"]*)"|(\S+)/g)]
+    .map((m) => (m[1] !== undefined ? (m[1].trim() ? `"${m[1].trim()}"` : "") : m[2]!.replace(/"/g, "")))
+    .filter((p) => p !== "");
 }
 
 function ymd(date: Date): string {
@@ -45,7 +47,10 @@ export function formatSearch(fields: AdvancedSearchFields): string {
     if (match) {
       const centre = Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!);
       if (Number.isFinite(centre)) {
-        out.push(`after:${ymd(new Date(centre - days * 86_400_000))}`, `before:${ymd(new Date(centre + (days + 1) * 86_400_000))}`);
+        out.push(
+          `after:${ymd(new Date(centre - days * 86_400_000))}`,
+          `before:${ymd(new Date(centre + (days + 1) * 86_400_000))}`,
+        );
       }
     }
   }

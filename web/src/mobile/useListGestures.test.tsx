@@ -50,9 +50,23 @@ beforeEach(() => {
   resetPrefs();
   setPrefsAccount("alice@postern.test");
   // A phone: PHONE_QUERY matches; no reduced motion.
-  vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("max-width"), addEventListener() {}, removeEventListener() {} }));
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: query.includes("max-width"),
+    addEventListener() {},
+    removeEventListener() {},
+  }));
   // jsdom lays nothing out: give rows a width.
-  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({ x: 0, y: 0, top: 0, left: 0, right: 360, bottom: 80, width: 360, height: 80, toJSON() {} } as DOMRect);
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    x: 0,
+    y: 0,
+    top: 0,
+    left: 0,
+    right: 360,
+    bottom: 80,
+    width: 360,
+    height: 80,
+    toJSON() {},
+  } as DOMRect);
 });
 
 afterEach(() => {
@@ -66,7 +80,15 @@ afterEach(() => {
 function setup() {
   const actFn = vi.fn();
   const refresh = vi.fn(async () => {});
-  render(<Harness rows={ROWS} context={{ canArchive: true, deleteForever: false }} isUnread={() => true} act={actFn} refresh={refresh} />);
+  render(
+    <Harness
+      rows={ROWS}
+      context={{ canArchive: true, deleteForever: false }}
+      isUnread={() => true}
+      act={actFn}
+      refresh={refresh}
+    />,
+  );
   return { actFn, refresh };
 }
 

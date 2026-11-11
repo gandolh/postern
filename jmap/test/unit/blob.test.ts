@@ -40,7 +40,10 @@ describe("upload", () => {
     const { server, client } = setup();
     server.always("POST /jmap/upload/b/", () => json({ ...UPLOADED, size: 4 }));
     const progress: UploadProgress[] = [];
-    await client.blob.upload(new Uint8Array([1, 2, 3, 4]), { type: "application/octet-stream", onProgress: (p) => progress.push(p) });
+    await client.blob.upload(new Uint8Array([1, 2, 3, 4]), {
+      type: "application/octet-stream",
+      onProgress: (p) => progress.push(p),
+    });
     await client.blob.upload(new Blob(["ab"]), { type: "text/plain", onProgress: (p) => progress.push(p) });
     expect(progress.map((p) => p.total)).toEqual([4, 4, 2, 2]);
   });
@@ -85,13 +88,20 @@ describe("upload", () => {
   it("maps upload errors", async () => {
     const { server, client } = setup();
     server.once("POST /jmap/upload/b/", () => problem(401, { type: "about:blank", status: 401 }));
-    server.once("POST /jmap/upload/b/", () => problem(400, { type: "urn:ietf:params:jmap:error:limit", limit: "maxSizeUpload" }));
+    server.once("POST /jmap/upload/b/", () =>
+      problem(400, { type: "urn:ietf:params:jmap:error:limit", limit: "maxSizeUpload" }),
+    );
     await expect(client.blob.upload("x", { type: "text/plain" })).rejects.toBeInstanceOf(JmapUnauthorizedError);
     await expect(client.blob.upload("x", { type: "text/plain" })).rejects.toBeInstanceOf(JmapRequestError);
   });
 
   it("refuses a body over maxSizeUpload before sending it", async () => {
-    const { server, client } = setup({ session: { ...SESSION, capabilities: { ...SESSION.capabilities, "urn:ietf:params:jmap:core": { maxSizeUpload: 3 } } } });
+    const { server, client } = setup({
+      session: {
+        ...SESSION,
+        capabilities: { ...SESSION.capabilities, "urn:ietf:params:jmap:core": { maxSizeUpload: 3 } },
+      },
+    });
     await expect(client.blob.upload("toolong", { type: "text/plain" })).rejects.toBeInstanceOf(JmapLimitError);
     expect(server.requests.filter((r) => r.method === "POST")).toHaveLength(0);
   });
@@ -108,7 +118,10 @@ describe("download", () => {
 
   it("fetches with Authorization", async () => {
     const { server, client } = setup();
-    server.always("GET /jmap/download/b/Gx/a.txt", () => new Response("hi", { headers: { "content-type": "text/plain" } }));
+    server.always(
+      "GET /jmap/download/b/Gx/a.txt",
+      () => new Response("hi", { headers: { "content-type": "text/plain" } }),
+    );
     const res = await client.blob.download({ blobId: "Gx", name: "a.txt", type: "text/plain" });
     expect(await res.text()).toBe("hi");
     expect(server.requests.at(-1)?.headers["authorization"]).toBe("Basic dGVzdDp0ZXN0");
@@ -146,7 +159,9 @@ describe("cid: resolution", () => {
     const { client } = setup();
     await client.connect();
     const urls = client.blob.cidUrls(EMAIL);
-    expect(urls.get("offsite-1@postern.test")).toMatch(new RegExp(`^${BASE}/jmap/download/b/[^/]+/lake\\.png\\?accept=image%2Fpng$`));
+    expect(urls.get("offsite-1@postern.test")).toMatch(
+      new RegExp(`^${BASE}/jmap/download/b/[^/]+/lake\\.png\\?accept=image%2Fpng$`),
+    );
   });
 
   it("works from attachments alone", () => {

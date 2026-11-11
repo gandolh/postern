@@ -85,7 +85,11 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     };
   }, [store]);
   const api = useMemo<ComposeApi>(() => ({ open: (options) => void store.open(options) }), [store]);
-  return createElement(StoreContext.Provider, { value: store }, createElement(ComposeContext.Provider, { value: api }, children));
+  return createElement(
+    StoreContext.Provider,
+    { value: store },
+    createElement(ComposeContext.Provider, { value: api }, children),
+  );
 }
 
 /** Open the composer. */

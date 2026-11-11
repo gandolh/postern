@@ -10,7 +10,8 @@ import "./mobile.css";
 
 export function PhoneComposeButton({ route }: { route: Route }) {
   const compose = useCompose();
-  const onList = (route.kind === "system" || route.kind === "label" || route.kind === "search") && !route.conversationId;
+  const onList =
+    (route.kind === "system" || route.kind === "label" || route.kind === "search") && !route.conversationId;
   if (!onList) return null;
   return (
     <button type="button" className="mobile-compose" onClick={() => compose.open()}>

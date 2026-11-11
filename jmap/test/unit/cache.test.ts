@@ -36,7 +36,15 @@ describe("ObjectStore", () => {
     const store = new ObjectStore<M>("Mailbox");
     store.reset({ state: "s1", list: [] });
     expect(() =>
-      store.applyChanges({ accountId: "b", oldState: "s0", newState: "s2", hasMoreChanges: false, created: [], updated: [], destroyed: [] }),
+      store.applyChanges({
+        accountId: "b",
+        oldState: "s0",
+        newState: "s2",
+        hasMoreChanges: false,
+        created: [],
+        updated: [],
+        destroyed: [],
+      }),
     ).toThrow(JmapError);
   });
 
@@ -54,7 +62,14 @@ describe("QueryStore", () => {
   // RFC 8620 §5.6's worked example, on a contiguous window.
   it("splices out removed ids, then splices in added ones by ascending index", () => {
     const store = new QueryStore("k");
-    store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["id1", "id2", "id3", "id4"], total: 9 });
+    store.applyQuery({
+      accountId: "b",
+      queryState: "q1",
+      canCalculateChanges: true,
+      position: 0,
+      ids: ["id1", "id2", "id3", "id4"],
+      total: 9,
+    });
     store.applyQueryChanges({
       accountId: "b",
       oldQueryState: "q1",
@@ -70,7 +85,13 @@ describe("QueryStore", () => {
 
   it("inserts several additions in index order whatever order they arrive in", () => {
     const store = new QueryStore("k");
-    store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["a", "b", "c"] });
+    store.applyQuery({
+      accountId: "b",
+      queryState: "q1",
+      canCalculateChanges: true,
+      position: 0,
+      ids: ["a", "b", "c"],
+    });
     store.applyQueryChanges({
       accountId: "b",
       oldQueryState: "q1",
@@ -87,20 +108,40 @@ describe("QueryStore", () => {
   it("refuses query changes from another queryState", () => {
     const store = new QueryStore("k");
     store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: [] });
-    expect(() => store.applyQueryChanges({ accountId: "b", oldQueryState: "q0", newQueryState: "q2", removed: [], added: [] })).toThrow(JmapError);
+    expect(() =>
+      store.applyQueryChanges({ accountId: "b", oldQueryState: "q0", newQueryState: "q2", removed: [], added: [] }),
+    ).toThrow(JmapError);
   });
 
   it("moves an id reported in both removed and added", () => {
     const store = new QueryStore("k");
-    store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["a", "b", "c"] });
-    store.applyQueryChanges({ accountId: "b", oldQueryState: "q1", newQueryState: "q2", removed: ["c"], added: [{ id: "c", index: 0 }] });
+    store.applyQuery({
+      accountId: "b",
+      queryState: "q1",
+      canCalculateChanges: true,
+      position: 0,
+      ids: ["a", "b", "c"],
+    });
+    store.applyQueryChanges({
+      accountId: "b",
+      oldQueryState: "q1",
+      newQueryState: "q2",
+      removed: ["c"],
+      added: [{ id: "c", index: 0 }],
+    });
     expect(store.ids).toEqual(["c", "a", "b"]);
   });
 
   it("skips insertions past the end of the held window", () => {
     const store = new QueryStore("k");
     store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["a", "b"] });
-    store.applyQueryChanges({ accountId: "b", oldQueryState: "q1", newQueryState: "q2", removed: [], added: [{ id: "z", index: 50 }] });
+    store.applyQueryChanges({
+      accountId: "b",
+      oldQueryState: "q1",
+      newQueryState: "q2",
+      removed: [],
+      added: [{ id: "z", index: 50 }],
+    });
     expect(store.ids).toEqual(["a", "b"]);
   });
 
@@ -109,7 +150,9 @@ describe("QueryStore", () => {
     store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["a", "b"] });
     store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 2, ids: ["c"] });
     expect(store.ids).toEqual(["a", "b", "c"]);
-    expect(() => store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 9, ids: ["x"] })).toThrow();
+    expect(() =>
+      store.applyQuery({ accountId: "b", queryState: "q1", canCalculateChanges: true, position: 9, ids: ["x"] }),
+    ).toThrow();
   });
 
   it("keys equal queries equally", () => {
@@ -124,9 +167,12 @@ describe("StateCache", () => {
     cache.objects<M>("Mailbox").reset({ state: "m1", list: [] });
     cache.objects<M>("Thread").reset({ state: "t1", list: [] });
     cache.objects<M>("Email");
-    expect(cache.staleTypes({ "@type": "StateChange", changed: { b: { Mailbox: "m2", Thread: "t1", Email: "e5" }, other: { Mailbox: "x" } } })).toEqual(
-      ["Mailbox"],
-    );
+    expect(
+      cache.staleTypes({
+        "@type": "StateChange",
+        changed: { b: { Mailbox: "m2", Thread: "t1", Email: "e5" }, other: { Mailbox: "x" } },
+      }),
+    ).toEqual(["Mailbox"]);
   });
 });
 
@@ -137,7 +183,11 @@ describe("syncObjects", () => {
     const store = new ObjectStore<M>("Mailbox");
     const result = await syncObjects(client, "Mailbox", store, { properties: ["name", "unreadEmails"] });
     expect(result).toEqual({ status: "changed", state: "m1", created: ["a", "b"], updated: [], destroyed: [] });
-    expect(server.posts()[0]?.methodCalls[0]).toEqual(["Mailbox/get", { accountId: "b", ids: null, properties: ["name", "unreadEmails"] }, "0"]);
+    expect(server.posts()[0]?.methodCalls[0]).toEqual([
+      "Mailbox/get",
+      { accountId: "b", ids: null, properties: ["name", "unreadEmails"] },
+      "0",
+    ]);
   });
 
   it("follows /changes until hasMoreChanges is false, fetching what changed", async () => {
@@ -161,7 +211,18 @@ describe("syncObjects", () => {
 
   it("reports unchanged", async () => {
     const { server, client } = setup();
-    apiAnswers(server, (name) => [name, { accountId: "b", oldState: "m1", newState: "m1", hasMoreChanges: false, created: [], updated: [], destroyed: [] }]);
+    apiAnswers(server, (name) => [
+      name,
+      {
+        accountId: "b",
+        oldState: "m1",
+        newState: "m1",
+        hasMoreChanges: false,
+        created: [],
+        updated: [],
+        destroyed: [],
+      },
+    ]);
     const store = new ObjectStore<M>("Mailbox");
     store.reset({ state: "m1", list: [] });
     expect(await syncObjects(client, "Mailbox", store)).toEqual({ status: "unchanged", state: "m1" });
@@ -181,7 +242,10 @@ describe("syncObjects", () => {
 
   it("treats Stalwart's invalidArguments for an unknown state the same way", async () => {
     const { server, client } = setup();
-    apiAnswers(server, () => ["error", { type: "invalidArguments", description: "invalid JMAP State at line 1 column 303" }]);
+    apiAnswers(server, () => [
+      "error",
+      { type: "invalidArguments", description: "invalid JMAP State at line 1 column 303" },
+    ]);
     const store = new ObjectStore<M>("Email");
     store.reset({ state: "garbage", list: [] });
     const result = await syncObjects(client, "Email", store);
@@ -202,10 +266,28 @@ describe("syncQuery", () => {
     const { server, client } = setup();
     apiAnswers(server, (name) =>
       name === "Email/query"
-        ? [name, { accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["a", "b"], total: 2 }]
-        : [name, { accountId: "b", oldQueryState: "q1", newQueryState: "q2", total: 3, removed: [], added: [{ id: "n", index: 0 }] }],
+        ? [
+            name,
+            { accountId: "b", queryState: "q1", canCalculateChanges: true, position: 0, ids: ["a", "b"], total: 2 },
+          ]
+        : [
+            name,
+            {
+              accountId: "b",
+              oldQueryState: "q1",
+              newQueryState: "q2",
+              total: 3,
+              removed: [],
+              added: [{ id: "n", index: 0 }],
+            },
+          ],
     );
-    const args = { filter: { inMailbox: "a" }, sort: [{ property: "receivedAt" as const, isAscending: false }], collapseThreads: true, limit: 50 };
+    const args = {
+      filter: { inMailbox: "a" },
+      sort: [{ property: "receivedAt" as const, isAscending: false }],
+      collapseThreads: true,
+      limit: 50,
+    };
     const store = new QueryStore(QueryStore.keyOf(args));
     expect((await syncQuery(client, "Email/query", args, store)).status).toBe("changed");
     const second = await syncQuery(client, "Email/query", args, store);

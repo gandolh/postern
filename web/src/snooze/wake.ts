@@ -57,7 +57,12 @@ function merge(a: MessagePlan, b: MessagePlan): MessagePlan {
 }
 
 /** One look: wake what is due or answered, and tidy $woken. */
-export async function wakeSnoozed(client: JmapClient, snoozedId: Id | undefined, inbox: Id | undefined, now: number): Promise<WakeResult> {
+export async function wakeSnoozed(
+  client: JmapClient,
+  snoozedId: Id | undefined,
+  inbox: Id | undefined,
+  now: number,
+): Promise<WakeResult> {
   const result: WakeResult = { due: [], replied: [], unmarked: [], next: null };
   if (inbox === undefined) return result;
   const props = ["threadId", "mailboxIds", "keywords", "receivedAt"] as const;
@@ -190,7 +195,12 @@ export class SnoozeSync {
         do {
           this.#again = false;
           this.#labelsKey = this.#keyOfLabels();
-          const result = await wakeSnoozed(this.#client, this.#labels.snoozedId(), this.#labels.mailboxIdForRole("inbox"), this.#now());
+          const result = await wakeSnoozed(
+            this.#client,
+            this.#labels.snoozedId(),
+            this.#labels.mailboxIdForRole("inbox"),
+            this.#now(),
+          );
           if (result.due.length || result.replied.length || result.unmarked.length) {
             void this.#labels.sync();
             publishMailChange({ kind: "settled" });
@@ -215,9 +225,12 @@ export class SnoozeSync {
     if (!this.#started || next === null) return;
     const delay = next - this.#now() + 1_000;
     if (delay >= this.#interval) return;
-    this.#soon = setTimeout(() => {
-      this.#soon = null;
-      void this.run();
-    }, Math.max(0, delay));
+    this.#soon = setTimeout(
+      () => {
+        this.#soon = null;
+        void this.run();
+      },
+      Math.max(0, delay),
+    );
   }
 }

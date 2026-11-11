@@ -20,7 +20,13 @@ export {
   useActiveConversation,
   type ConversationController,
 } from "./registry";
-export { inlineReplySlotId, setInlineReplyRenderer, useInlineReplyRenderer, type InlineReplyContext, type InlineReplyRenderer } from "./inlineReply";
+export {
+  inlineReplySlotId,
+  setInlineReplyRenderer,
+  useInlineReplyRenderer,
+  type InlineReplyContext,
+  type InlineReplyRenderer,
+} from "./inlineReply";
 export { forwardHeaderText, htmlBodyText, quoteAttribution, quotePlainText, type QuotedMessage } from "./quoting";
 export {
   ConversationStore,

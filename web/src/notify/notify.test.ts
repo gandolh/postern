@@ -5,7 +5,15 @@ import { getDesktopNotifications, setDesktopNotifications, setNotifyAccount } fr
 import { notifyNewMail, type NotifyDeps } from "./show";
 
 function msg(id: string, receivedAt: string, extra: Partial<InboxMessage> = {}): InboxMessage {
-  return { id, threadId: `T${id}`, receivedAt, from: [{ name: "Bob", email: "bob@postern.test" }], subject: `Subject ${id}`, keywords: {}, ...extra };
+  return {
+    id,
+    threadId: `T${id}`,
+    receivedAt,
+    from: [{ name: "Bob", email: "bob@postern.test" }],
+    subject: `Subject ${id}`,
+    keywords: {},
+    ...extra,
+  };
 }
 
 describe("NewMailDetector", () => {

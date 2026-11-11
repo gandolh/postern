@@ -145,14 +145,21 @@ export interface SessionDeps {
   claimDraft?(session: ComposeSession, draftId: Id): boolean;
   /** The identity to start a new message from (the per-device default), if set. */
   defaultIdentityId?(): Id | null;
-  upload?: (client: JmapClient, file: Blob, options: UploadFileOptions) => Promise<{ blobId: Id; type: string; size: number }>;
+  upload?: (
+    client: JmapClient,
+    file: Blob,
+    options: UploadFileOptions,
+  ) => Promise<{ blobId: Id; type: string; size: number }>;
   /** Unique strings (Message-ID, cids, keys). */
   unique?: () => string;
   autosaveDelayMs?: number;
 }
 
 let counter = 0;
-const defaultUnique = () => (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now().toString(36)}-${(counter++).toString(36)}-${Math.random().toString(36).slice(2)}`);
+const defaultUnique = () =>
+  globalThis.crypto?.randomUUID
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now().toString(36)}-${(counter++).toString(36)}-${Math.random().toString(36).slice(2)}`;
 
 export const SIGNATURE_CLASS = "gmail_signature postern_signature";
 
@@ -212,10 +219,21 @@ export class ComposeSession {
   #disposed = false;
   #sendRequest: (() => void) | null = null;
 
-  constructor(deps: SessionDeps, options: { mode: ComposeMode; placement: Placement; sourceId?: Id | null; threadId?: Id | null; draftId?: Id | null }) {
+  constructor(
+    deps: SessionDeps,
+    options: {
+      mode: ComposeMode;
+      placement: Placement;
+      sourceId?: Id | null;
+      threadId?: Id | null;
+      draftId?: Id | null;
+    },
+  ) {
     this.#deps = deps;
     this.#unique = deps.unique ?? defaultUnique;
-    this.key = `c${this.#unique().replace(/[^A-Za-z0-9]/g, "").slice(0, 16)}`;
+    this.key = `c${this.#unique()
+      .replace(/[^A-Za-z0-9]/g, "")
+      .slice(0, 16)}`;
     this.#state = {
       key: this.key,
       mode: options.mode,
@@ -250,7 +268,8 @@ export class ComposeSession {
     this.#saver = new Autosaver(() => this.#save(), {
       delayMs: deps.autosaveDelayMs,
       shouldSave: () => this.#state.status === "ready" && (this.#state.draftId !== null || this.#edited),
-      onStatus: (save, error) => this.#set({ save, saveError: save === "error" ? explainSaveError(error) || null : null }),
+      onStatus: (save, error) =>
+        this.#set({ save, saveError: save === "error" ? explainSaveError(error) || null : null }),
     });
   }
 
@@ -303,12 +322,19 @@ export class ComposeSession {
       this.#set({ identities, identityId: start?.id ?? null });
       const draftId = options.draftId ?? this.#state.draftId;
       if (draftId) await this.#loadDraft(draftId);
-      else if (options.emailId && this.#state.mode !== "new") await this.#loadSource(options.emailId, this.#state.mode, options);
+      else if (options.emailId && this.#state.mode !== "new")
+        await this.#loadSource(options.emailId, this.#state.mode, options);
       else this.#loadNew(options);
       this.#set({ status: "ready" });
     } catch (err) {
       if (this.#disposed) return;
-      this.#set({ status: "failed", loadError: err instanceof Error && err.message === "gone" ? "That message no longer exists." : "Couldn't load the message. Check your connection and try again." });
+      this.#set({
+        status: "failed",
+        loadError:
+          err instanceof Error && err.message === "gone"
+            ? "That message no longer exists."
+            : "Couldn't load the message. Check your connection and try again.",
+      });
     }
   }
 
@@ -352,7 +378,9 @@ export class ComposeSession {
     const key = () => this.#unique();
     const me = this.#me();
     const fromEmail = replyIdentityEmail(original, me);
-    const identity = fromEmail ? this.#state.identities.find((i) => i.email.toLowerCase() === fromEmail.toLowerCase()) : undefined;
+    const identity = fromEmail
+      ? this.#state.identities.find((i) => i.email.toLowerCase() === fromEmail.toLowerCase())
+      : undefined;
     if (identity) this.#set({ identityId: identity.id });
     const headers = threadingHeaders(original);
     this.#inReplyTo = headers.inReplyTo;
@@ -425,7 +453,11 @@ export class ComposeSession {
       cid: null,
       url: null,
     }));
-    const mode: ComposeMode = this.#inReplyTo ? (this.#state.mode === "new" ? "reply" : this.#state.mode) : this.#state.mode;
+    const mode: ComposeMode = this.#inReplyTo
+      ? this.#state.mode === "new"
+        ? "reply"
+        : this.#state.mode
+      : this.#state.mode;
     this.#saved = true;
     this.#set({
       mode,
@@ -451,9 +483,23 @@ export class ComposeSession {
   async #downloadInline(a: DraftAttachment): Promise<FileItem | null> {
     if (!a.cid) return null;
     try {
-      const res = await this.#deps.client.blob.download({ blobId: a.blobId, name: a.name ?? "image", type: a.type }, { signal: this.#abort.signal });
+      const res = await this.#deps.client.blob.download(
+        { blobId: a.blobId, name: a.name ?? "image", type: a.type },
+        { signal: this.#abort.signal },
+      );
       const blob = new Blob([await res.arrayBuffer()], { type: a.type });
-      return { key: this.#unique(), name: a.name ?? "image", type: a.type, size: blob.size, status: "done", loaded: blob.size, blobId: a.blobId, error: null, cid: a.cid.toLowerCase(), url: URL.createObjectURL(blob) };
+      return {
+        key: this.#unique(),
+        name: a.name ?? "image",
+        type: a.type,
+        size: blob.size,
+        status: "done",
+        loaded: blob.size,
+        blobId: a.blobId,
+        error: null,
+        cid: a.cid.toLowerCase(),
+        url: URL.createObjectURL(blob),
+      };
     } catch {
       return null;
     }
@@ -516,7 +562,10 @@ export class ComposeSession {
       this.#editor.setSignature(signatureHtml(after));
     } else {
       // Not mounted: rewrite the stored body.
-      this.#set({ html: replaceSignature(this.#state.html, signatureHtml(after), this.cidUrls()), revision: this.#state.revision + 1 });
+      this.#set({
+        html: replaceSignature(this.#state.html, signatureHtml(after), this.cidUrls()),
+        revision: this.#state.revision + 1,
+      });
     }
   }
 
@@ -543,11 +592,13 @@ export class ComposeSession {
   showQuote(): void {
     const quote = this.#state.quote;
     if (!quote) return;
-    if (this.#state.plain) this.#edit({ quote: null, text: `${this.#state.text.replace(/\s+$/, "")}\n\n${quote.text}` });
+    if (this.#state.plain)
+      this.#edit({ quote: null, text: `${this.#state.text.replace(/\s+$/, "")}\n\n${quote.text}` });
     else if (this.#editor) {
       this.#editor.append(`<br>${quote.html}`);
       this.#edit({ quote: null });
-    } else this.#edit({ quote: null, html: `${this.#state.html}<br>${quote.html}`, revision: this.#state.revision + 1 });
+    } else
+      this.#edit({ quote: null, html: `${this.#state.html}<br>${quote.html}`, revision: this.#state.revision + 1 });
   }
 
   setPlacement(placement: Placement): void {
@@ -647,7 +698,9 @@ export class ComposeSession {
 
   /** Put an image in the body: returns its cid and the object URL to show while it uploads. */
   addInlineImage(file: File): { cid: string; url: string } {
-    const cid = `${this.#unique().replace(/[^A-Za-z0-9]/g, "").slice(0, 20)}@postern`.toLowerCase();
+    const cid = `${this.#unique()
+      .replace(/[^A-Za-z0-9]/g, "")
+      .slice(0, 20)}@postern`.toLowerCase();
     const url = URL.createObjectURL(file);
     const item = this.#fileItem(file, cid, url);
     this.#edit({ inline: [...this.#state.inline, item] });
@@ -659,15 +712,32 @@ export class ComposeSession {
   insertImageFile(file: File): void {
     const { cid, url } = this.addInlineImage(file);
     if (this.#editor) this.#editor.insertImage(cid, url, file.name);
-    else this.#set({ html: `${this.#state.html}<div><img src="cid:${cid}" alt=""></div>`, revision: this.#state.revision + 1 });
+    else
+      this.#set({
+        html: `${this.#state.html}<div><img src="cid:${cid}" alt=""></div>`,
+        revision: this.#state.revision + 1,
+      });
   }
 
   #fileItem(file: File, cid: string | null, url: string | null): FileItem {
-    return { key: this.#unique(), name: file.name || "attachment", type: file.type || "application/octet-stream", size: file.size, status: "uploading", loaded: 0, blobId: null, error: null, cid, url };
+    return {
+      key: this.#unique(),
+      name: file.name || "attachment",
+      type: file.type || "application/octet-stream",
+      size: file.size,
+      status: "uploading",
+      loaded: 0,
+      blobId: null,
+      error: null,
+      cid,
+      url,
+    };
   }
 
   #patchFile(list: "files" | "inline", key: string, patch: Partial<FileItem>): void {
-    this.#set({ [list]: this.#state[list].map((f) => (f.key === key ? { ...f, ...patch } : f)) } as Partial<ComposeSnapshot>);
+    this.#set({
+      [list]: this.#state[list].map((f) => (f.key === key ? { ...f, ...patch } : f)),
+    } as Partial<ComposeSnapshot>);
   }
 
   async #upload(file: File, item: FileItem, list: "files" | "inline"): Promise<void> {
@@ -678,7 +748,12 @@ export class ComposeSession {
         onProgress: (p) => this.#patchFile(list, item.key, { loaded: p.loaded }),
       });
       if (!this.#state[list].some((f) => f.key === item.key)) return;
-      this.#patchFile(list, item.key, { status: "done", blobId: res.blobId, loaded: item.size, type: item.type || res.type });
+      this.#patchFile(list, item.key, {
+        status: "done",
+        blobId: res.blobId,
+        loaded: item.size,
+        type: item.type || res.type,
+      });
       this.#saver.touch();
     } catch (err) {
       if (this.#disposed) return;
@@ -699,7 +774,10 @@ export class ComposeSession {
   removeFile(key: string): void {
     const inline = this.#state.inline.find((f) => f.key === key);
     if (inline?.url) URL.revokeObjectURL(inline.url);
-    this.#edit({ files: this.#state.files.filter((f) => f.key !== key), inline: this.#state.inline.filter((f) => f.key !== key) });
+    this.#edit({
+      files: this.#state.files.filter((f) => f.key !== key),
+      inline: this.#state.inline.filter((f) => f.key !== key),
+    });
   }
 
   // ---- Saving -------------------------------------------------------------------------------
@@ -722,15 +800,20 @@ export class ComposeSession {
   /** The draft as it stands. */
   content(): DraftContent | null {
     const identity = this.identity;
-    const from = identity ? { name: identity.name || null, email: identity.email } : { name: null, email: this.#deps.username };
+    const from = identity
+      ? { name: identity.name || null, email: identity.email }
+      : { name: null, email: this.#deps.username };
     const s = this.#state;
     const body = this.#readBody();
-    const valid = (list: readonly Recipient[]) => list.filter((r) => r.valid).map((r) => ({ name: r.name, email: r.email }));
+    const valid = (list: readonly Recipient[]) =>
+      list.filter((r) => r.valid).map((r) => ({ name: r.name, email: r.email }));
     const quote = s.quote;
     const usedCids = new Set(body.cids);
     // An image still uploading (or failed) has no part yet: never write a cid: without its part.
     // It goes into the draft with the save its upload finishes.
-    const ready = new Set(s.inline.filter((f) => f.status === "done" && f.blobId && f.cid).map((f) => escapeHtml(f.cid as string)));
+    const ready = new Set(
+      s.inline.filter((f) => f.status === "done" && f.blobId && f.cid).map((f) => escapeHtml(f.cid as string)),
+    );
     const html = body.html.replace(/<img src="cid:([^"]*)"[^>]*>/g, (tag, cid: string) => (ready.has(cid) ? tag : ""));
     return {
       from,
@@ -741,8 +824,14 @@ export class ComposeSession {
       subject: s.subject,
       html: s.plain ? null : quote ? `${html}<br>${quote.html}` : html,
       text: quote ? `${body.text}\n\n${quote.text}` : body.text,
-      attachments: s.files.filter((f) => f.status === "done" && f.blobId).map((f) => ({ blobId: f.blobId as Id, type: f.type, name: f.name, size: f.size })),
-      inline: s.plain ? [] : s.inline.filter((f) => f.status === "done" && f.blobId && f.cid && usedCids.has(f.cid)).map((f) => ({ blobId: f.blobId as Id, type: f.type, name: f.name, cid: f.cid })),
+      attachments: s.files
+        .filter((f) => f.status === "done" && f.blobId)
+        .map((f) => ({ blobId: f.blobId as Id, type: f.type, name: f.name, size: f.size })),
+      inline: s.plain
+        ? []
+        : s.inline
+            .filter((f) => f.status === "done" && f.blobId && f.cid && usedCids.has(f.cid))
+            .map((f) => ({ blobId: f.blobId as Id, type: f.type, name: f.name, cid: f.cid })),
       messageId: this.#messageId,
       inReplyTo: this.#inReplyTo,
       references: this.#references,

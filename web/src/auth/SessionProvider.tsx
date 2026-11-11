@@ -14,7 +14,14 @@
 // run (./beforeSignOut.ts: unsaved drafts, a message held for Undo, Web
 // Push), for at most BEFORE_SIGN_OUT_MS.
 
-import { AuthSession, JmapClient, JmapNetworkError, type FetchLike, type SessionStore, type SignInOutcome } from "@postern/jmap";
+import {
+  AuthSession,
+  JmapClient,
+  JmapNetworkError,
+  type FetchLike,
+  type SessionStore,
+  type SignInOutcome,
+} from "@postern/jmap";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { clearPendingPatches } from "../actions/bus";
 import { clearUndo } from "../actions/undo";
@@ -98,7 +105,11 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
         setView({ kind: "signedOut", auth: createAuth(), notice: event.reason === "idle" ? "idle" : undefined });
       } else {
         const expired = event.status === "expired";
-        setView((current) => (current.kind === "signedIn" && current.auth === auth && current.expired !== expired ? { ...current, expired } : current));
+        setView((current) =>
+          current.kind === "signedIn" && current.auth === auth && current.expired !== expired
+            ? { ...current, expired }
+            : current,
+        );
       }
     });
     return () => {
@@ -153,7 +164,11 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
     if (!resuming) return;
     let live = true;
     const show = (notice?: SignInNotice) =>
-      setView((current) => (current.kind === "signedIn" ? current : { kind: "signedOut", auth: current.auth, ...(notice ? { notice } : {}) }));
+      setView((current) =>
+        current.kind === "signedIn"
+          ? current
+          : { kind: "signedOut", auth: current.auth, ...(notice ? { notice } : {}) },
+      );
     void auth.resume().then(async (outcome) => {
       if (!live || outcome === "cancelled") return;
       if (outcome !== "resumed") {
@@ -187,7 +202,11 @@ export function SessionProvider({ children, baseUrl = API_BASE, fetch, idleTimeo
     <SessionContext.Provider value={view.session}>
       {children}
       {view.expired ? (
-        <SessionExpiredDialog username={view.session.account.username} onSignIn={signInAgain} onSignOut={() => void view.session.signOut()} />
+        <SessionExpiredDialog
+          username={view.session.account.username}
+          onSignIn={signInAgain}
+          onSignOut={() => void view.session.signOut()}
+        />
       ) : null}
     </SessionContext.Provider>
   );

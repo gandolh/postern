@@ -58,8 +58,18 @@ export function formatQuoteDate(iso: string, format: QuoteFormat = {}): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
   const locale = format.locale ?? "en-US";
-  const day = new Intl.DateTimeFormat(locale, { weekday: "short", year: "numeric", month: "short", day: "numeric", timeZone: format.timeZone }).format(date);
-  const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone: format.timeZone }).format(date);
+  const day = new Intl.DateTimeFormat(locale, {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: format.timeZone,
+  }).format(date);
+  const time = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: format.timeZone,
+  }).format(date);
   return `${day} at ${time}`;
 }
 
@@ -102,7 +112,8 @@ export function replyQuote(message: QuoteSource, originalText: string, format: Q
 
 /** The header lines Gmail puts above a forwarded message. */
 export function forwardHeaderLines(message: QuoteSource, format: QuoteFormat = {}): string[] {
-  const list = (addresses: readonly EmailAddress[] | null | undefined) => (addresses ?? []).map(formatAddress).join(", ");
+  const list = (addresses: readonly EmailAddress[] | null | undefined) =>
+    (addresses ?? []).map(formatAddress).join(", ");
   const lines = [
     "---------- Forwarded message ---------",
     `From: ${list(message.from)}`,

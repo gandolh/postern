@@ -36,7 +36,10 @@ export function layerFor(from: Element): HTMLElement {
  * until the anchor has said where it is, and worked out again each time
  * `open` turns true (a new callback is a new ref to React).
  */
-export function useLayer(open: boolean): { anchor: (element: HTMLElement | null) => void; container: HTMLElement | null } {
+export function useLayer(open: boolean): {
+  anchor: (element: HTMLElement | null) => void;
+  container: HTMLElement | null;
+} {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const anchor = useCallback(
     (element: HTMLElement | null) => {

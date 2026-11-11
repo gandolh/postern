@@ -20,7 +20,14 @@ import type { ToastApi } from "../shell/toast";
 import { destroyDrafts } from "../send/drafts";
 import { explainSaveError, explainSendError } from "../send/errors";
 import { Outbox } from "../send/outbox";
-import { cancelScheduled, formatSendTime, maxDelayedSendMs, SCHEDULED, scheduleDraft, ScheduledSync } from "../send/schedule";
+import {
+  cancelScheduled,
+  formatSendTime,
+  maxDelayedSendMs,
+  SCHEDULED,
+  scheduleDraft,
+  ScheduledSync,
+} from "../send/schedule";
 import { submitDraft, type Submitted } from "../send/submit";
 import { getUndoSendDelay } from "../send/undoDelay";
 import type { ComposeOptions } from "./compose";
@@ -142,7 +149,18 @@ export class ComposerStore {
   /** Identity/get, once per session (the settings pages edit them; a new composer after that reads them again). */
   identities(): Promise<readonly Identity[]> {
     if (!this.#identities) {
-      const fallback: Identity[] = [{ id: "", name: "", email: this.#deps.username, replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false }];
+      const fallback: Identity[] = [
+        {
+          id: "",
+          name: "",
+          email: this.#deps.username,
+          replyTo: null,
+          bcc: null,
+          textSignature: "",
+          htmlSignature: "",
+          mayDelete: false,
+        },
+      ];
       this.#identities = this.#deps.client.identity.get().then(
         (res) => (res.list.length ? res.list : fallback),
         () => {
@@ -165,13 +183,23 @@ export class ComposerStore {
   open(options: ComposeOptions = {}): ComposeSession {
     const mode = options.mode ?? "new";
     // One composer per draft, whatever opens it: the draft itself, or Reply / Forward pressed on it.
-    const held = options.draftId ? this.forDraft(options.draftId) : options.emailId ? this.forDraft(options.emailId) : undefined;
+    const held = options.draftId
+      ? this.forDraft(options.draftId)
+      : options.emailId
+        ? this.forDraft(options.emailId)
+        : undefined;
     if (held) {
       this.#reveal(held);
       return held;
     }
     if (mode !== "new" && options.threadId && !options.draftId) {
-      const existing = this.#sessions.find((s) => s.state.threadId === options.threadId && s.state.mode === mode && s.state.sourceId === (options.emailId ?? null) && !s.state.sending);
+      const existing = this.#sessions.find(
+        (s) =>
+          s.state.threadId === options.threadId &&
+          s.state.mode === mode &&
+          s.state.sourceId === (options.emailId ?? null) &&
+          !s.state.sending,
+      );
       if (existing) {
         this.#reveal(existing);
         return existing;
@@ -200,7 +228,13 @@ export class ComposerStore {
     if (options.display === "docked") return "docked";
     const threadId = options.threadId;
     const inlineWanted = options.display === "inline" || ((options.mode ?? "new") !== "new" && !!threadId);
-    if (inlineWanted && threadId && this.#hasInlineSlot(threadId) && !this.#sessions.some((s) => s.state.placement === "inline" && s.state.threadId === threadId)) return "inline";
+    if (
+      inlineWanted &&
+      threadId &&
+      this.#hasInlineSlot(threadId) &&
+      !this.#sessions.some((s) => s.state.placement === "inline" && s.state.threadId === threadId)
+    )
+      return "inline";
     return "docked";
   }
 
@@ -212,7 +246,8 @@ export class ComposerStore {
   #reveal(session: ComposeSession): void {
     if (session.state.sending) return;
     if (session.state.placement === "minimised") session.setPlacement("docked");
-    if (session.state.placement === "inline" && session.state.threadId && !this.#hasInlineSlot(session.state.threadId)) session.setPlacement("docked");
+    if (session.state.placement === "inline" && session.state.threadId && !this.#hasInlineSlot(session.state.threadId))
+      session.setPlacement("docked");
     this.#fit(session);
     session.requestFocus("body");
   }
@@ -250,7 +285,9 @@ export class ComposerStore {
         const failed = [...session.state.files, ...session.state.inline].find((f) => f.status === "error");
         if (failed) {
           session.setClosing(false);
-          session.setSendError(`“${failed.name}” didn't upload, so the draft was not closed. Remove it or attach it again.`);
+          session.setSendError(
+            `“${failed.name}” didn't upload, so the draft was not closed. Remove it or attach it again.`,
+          );
           return;
         }
         void this.close(session.key);
@@ -270,7 +307,10 @@ export class ComposerStore {
 
   #add(session: ComposeSession): void {
     this.#sessions = [...this.#sessions, session];
-    this.#unsubscribe.set(session.key, session.subscribe(() => this.#emit()));
+    this.#unsubscribe.set(
+      session.key,
+      session.subscribe(() => this.#emit()),
+    );
     this.#emit();
   }
 
@@ -403,14 +443,25 @@ export class ComposerStore {
         this.#settled();
         this.#deps.toast.show({
           message: "Message sent.",
-          action: threadId ? { label: "View message", onClick: () => (this.#deps.navigate ?? navigate)({ kind: "system", view: "sent", conversationId: threadId }) } : undefined,
+          action: threadId
+            ? {
+                label: "View message",
+                onClick: () =>
+                  (this.#deps.navigate ?? navigate)({ kind: "system", view: "sent", conversationId: threadId }),
+              }
+            : undefined,
         });
       },
       onFailed: (err) => {
         if (session.disposed || this.#disposed || this.#signingOut) return;
         session.setSending(false);
         session.setSendError(explainSendError(err));
-        if (session.state.placement === "inline" && session.state.threadId && !this.#hasInlineSlot(session.state.threadId)) session.setPlacement("docked");
+        if (
+          session.state.placement === "inline" &&
+          session.state.threadId &&
+          !this.#hasInlineSlot(session.state.threadId)
+        )
+          session.setPlacement("docked");
         if (session.state.placement === "minimised") session.setPlacement("docked");
         session.requestFocus("window");
         if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't send the message. It's saved in Drafts." });
@@ -426,7 +477,11 @@ export class ComposerStore {
       };
       this.#undo.set(key, entry);
       setUndo(entry);
-      this.#deps.toast.show({ message: "Message sent.", action: { label: "Undo", onClick: () => void runUndo(entry) }, duration: null });
+      this.#deps.toast.show({
+        message: "Message sent.",
+        action: { label: "Undo", onClick: () => void runUndo(entry) },
+        duration: null,
+      });
     } else {
       this.#deps.toast.show({ message: "Sending…", duration: null });
     }
@@ -439,7 +494,12 @@ export class ComposerStore {
     const session = this.get(key);
     if (session) {
       session.setSending(false);
-      if (session.state.placement === "inline" && session.state.threadId && !this.#hasInlineSlot(session.state.threadId)) session.setPlacement("docked");
+      if (
+        session.state.placement === "inline" &&
+        session.state.threadId &&
+        !this.#hasInlineSlot(session.state.threadId)
+      )
+        session.setPlacement("docked");
       if (session.state.placement === "minimised") session.setPlacement("docked");
       session.requestFocus("body");
     }
@@ -475,14 +535,20 @@ export class ComposerStore {
     const recipients = session.content();
     let scheduled: Awaited<ReturnType<typeof scheduleDraft>>;
     try {
-      scheduled = await scheduleDraft(this.#deps.client, { emailId, identityId: identity.id, from: identity.email, at });
+      scheduled = await scheduleDraft(this.#deps.client, {
+        emailId,
+        identityId: identity.id,
+        from: identity.email,
+        at,
+      });
     } catch (err) {
       if (session.disposed || this.#disposed) return;
       session.setSending(false);
       session.setSendError(explainSendError(err));
       if (session.state.placement === "minimised") session.setPlacement("docked");
       session.requestFocus("window");
-      if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't schedule the message. It's saved in Drafts." });
+      if (!isQuietError(err))
+        this.#deps.toast.show({ message: "Couldn't schedule the message. It's saved in Drafts." });
       return;
     }
     this.#remove(session);
@@ -546,7 +612,10 @@ export class ComposerStore {
       // A scheduled message is the server's to send now, not a draft to edit.
       .map((e) => ({
         id: e.id,
-        draft: e.keywords?.[DRAFT] === true && e.keywords?.[SCHEDULED] !== true && (!drafts || e.mailboxIds?.[drafts] === true),
+        draft:
+          e.keywords?.[DRAFT] === true &&
+          e.keywords?.[SCHEDULED] !== true &&
+          (!drafts || e.mailboxIds?.[drafts] === true),
         mailboxIds: e.mailboxIds ?? {},
       }));
     return { messages };

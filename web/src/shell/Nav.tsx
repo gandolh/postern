@@ -5,7 +5,23 @@
 // In rail mode only the icons show; the names stay for screen readers.
 
 import type { LucideIcon } from "lucide-react";
-import { CalendarClock, ChevronDown, ChevronRight, ChevronUp, Clock, File, Inbox, Mails, Pencil, Send, ShieldAlert, Star, Tag, Trash2, Users } from "lucide-react";
+import {
+  CalendarClock,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Clock,
+  File,
+  Inbox,
+  Mails,
+  Pencil,
+  Send,
+  ShieldAlert,
+  Star,
+  Tag,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Fragment, useMemo, useState, type CSSProperties, type MouseEvent } from "react";
 import { useCompose } from "../composer";
 import { useOptionalComposerStore } from "../composer/compose";
@@ -190,19 +206,38 @@ function LabelTree({ tree: allTree, hidden: allHidden, route, rail }: LabelTreeP
     <>
       <ul className="shell-nav-list">
         {tree.map((node) => (
-          <LabelItem key={node.label.id} node={node} route={route} rail={rail} collapsed={collapsed} onToggle={toggle} />
+          <LabelItem
+            key={node.label.id}
+            node={node}
+            route={route}
+            rail={rail}
+            collapsed={collapsed}
+            onToggle={toggle}
+          />
         ))}
       </ul>
       {hidden.length > 0 ? (
         <>
-          <button type="button" className="shell-nav-item shell-nav-more" aria-expanded={showHidden} onClick={() => setShowHidden((s) => !s)}>
+          <button
+            type="button"
+            className="shell-nav-item shell-nav-more"
+            aria-expanded={showHidden}
+            onClick={() => setShowHidden((s) => !s)}
+          >
             {showHidden ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
             <span className="shell-nav-text">{showHidden ? "Less" : "More"}</span>
           </button>
           {showHidden ? (
             <ul className="shell-nav-list">
               {hidden.map((node) => (
-                <LabelItem key={node.label.id} node={node} route={route} rail={rail} collapsed={collapsed} onToggle={toggle} />
+                <LabelItem
+                  key={node.label.id}
+                  node={node}
+                  route={route}
+                  rail={rail}
+                  collapsed={collapsed}
+                  onToggle={toggle}
+                />
               ))}
             </ul>
           ) : null}
@@ -259,7 +294,14 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
       {hasChildren && open && !rail ? (
         <ul className="shell-nav-list">
           {children.map((child) => (
-            <LabelItem key={child.label.id} node={child} route={route} rail={rail} collapsed={collapsed} onToggle={onToggle} />
+            <LabelItem
+              key={child.label.id}
+              node={child}
+              route={route}
+              rail={rail}
+              collapsed={collapsed}
+              onToggle={onToggle}
+            />
           ))}
         </ul>
       ) : null}

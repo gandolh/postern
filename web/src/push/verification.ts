@@ -44,7 +44,8 @@ export class VerificationInbox {
         clearTimeout(timer);
         signal?.removeEventListener("abort", onAbort);
         waiters.delete(settle);
-        if (waiters.size === 0 && this.#waiting.get(pushSubscriptionId) === waiters) this.#waiting.delete(pushSubscriptionId);
+        if (waiters.size === 0 && this.#waiting.get(pushSubscriptionId) === waiters)
+          this.#waiting.delete(pushSubscriptionId);
       };
       const settle = (code: string) => {
         done();

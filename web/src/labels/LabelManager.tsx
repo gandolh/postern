@@ -93,8 +93,8 @@ export function LabelManager() {
   return (
     <div className="labels-manager">
       <p className="labels-manager-intro">
-        Labels are folders: the ones you make here show up as folders in your phone's mail app, and the other way round. Colours and "show if unread" are
-        kept in this browser only.
+        Labels are folders: the ones you make here show up as folders in your phone's mail app, and the other way round.
+        Colours and "show if unread" are kept in this browser only.
       </p>
 
       <NewLabelForm
@@ -226,10 +226,22 @@ export function LabelManager() {
                       </div>
                     ) : (
                       <div className="labels-actions">
-                        <button type="button" className="btn btn-quiet" disabled={busy} onClick={() => setRenaming(label.id)} aria-label={`Edit ${label.name}`}>
+                        <button
+                          type="button"
+                          className="btn btn-quiet"
+                          disabled={busy}
+                          onClick={() => setRenaming(label.id)}
+                          aria-label={`Edit ${label.name}`}
+                        >
                           <Pencil aria-hidden="true" /> Edit
                         </button>
-                        <button type="button" className="btn btn-quiet" disabled={busy} onClick={() => setConfirming(label.id)} aria-label={`Delete ${label.name}`}>
+                        <button
+                          type="button"
+                          className="btn btn-quiet"
+                          disabled={busy}
+                          onClick={() => setConfirming(label.id)}
+                          aria-label={`Delete ${label.name}`}
+                        >
                           <Trash2 aria-hidden="true" /> Delete
                         </button>
                       </div>
@@ -276,7 +288,13 @@ function NewLabelForm({
     <form className="labels-manager-new" onSubmit={(e) => void submit(e)}>
       <label htmlFor={nameId}>
         New label
-        <input id={nameId} className="input" value={name} autoComplete="off" onChange={(e) => (setName(e.target.value), setError(null))} />
+        <input
+          id={nameId}
+          className="input"
+          value={name}
+          autoComplete="off"
+          onChange={(e) => (setName(e.target.value), setError(null))}
+        />
       </label>
       <label htmlFor={parentFieldId}>
         Nest under
@@ -332,7 +350,14 @@ function RenameForm({
 
   return (
     <form className="labels-rename" onSubmit={submit} onKeyDown={(e) => e.key === "Escape" && onCancel()}>
-      <input className="input" autoFocus value={name} aria-label={`Name of ${label.name}`} autoComplete="off" onChange={(e) => (setName(e.target.value), setError(null))} />
+      <input
+        className="input"
+        autoFocus
+        value={name}
+        aria-label={`Name of ${label.name}`}
+        autoComplete="off"
+        onChange={(e) => (setName(e.target.value), setError(null))}
+      />
       <select className="input" value={parentId} aria-label="Nest under" onChange={(e) => setParentId(e.target.value)}>
         <option value="">(top level)</option>
         {targets.map((l) => (

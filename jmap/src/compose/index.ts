@@ -15,8 +15,20 @@ export {
   type ParsedAddress,
 } from "./address.js";
 export { replySubject, forwardSubject, baseSubject } from "./subject.js";
-export { threadingHeaders, newMessageId, MAX_REFERENCES, type ThreadingHeaders, type ThreadingSource } from "./headers.js";
-export { replyRecipients, replyIdentityEmail, type ReplyMode, type ReplyRecipients, type ReplySource } from "./replyRecipients.js";
+export {
+  threadingHeaders,
+  newMessageId,
+  MAX_REFERENCES,
+  type ThreadingHeaders,
+  type ThreadingSource,
+} from "./headers.js";
+export {
+  replyRecipients,
+  replyIdentityEmail,
+  type ReplyMode,
+  type ReplyRecipients,
+  type ReplySource,
+} from "./replyRecipients.js";
 export {
   escapeHtml,
   textToHtml,

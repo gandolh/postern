@@ -48,12 +48,52 @@ export interface EditorFragment {
 export const CID_ATTR = "data-postern-cid";
 
 /** Class tokens that survive: Gmail's and Postern's quote and signature markers. */
-export const KEPT_CLASSES = new Set(["gmail_quote", "gmail_attr", "gmail_signature", "postern_quote", "postern_signature"]);
+export const KEPT_CLASSES = new Set([
+  "gmail_quote",
+  "gmail_attr",
+  "gmail_signature",
+  "postern_quote",
+  "postern_signature",
+]);
 
 export const EDITOR_TAGS = [
-  "div", "p", "br", "span", "b", "strong", "i", "em", "u", "s", "strike", "del", "sub", "sup", "code", "pre",
-  "a", "ul", "ol", "li", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "img",
-  "table", "thead", "tbody", "tfoot", "tr", "td", "th", "caption",
+  "div",
+  "p",
+  "br",
+  "span",
+  "b",
+  "strong",
+  "i",
+  "em",
+  "u",
+  "s",
+  "strike",
+  "del",
+  "sub",
+  "sup",
+  "code",
+  "pre",
+  "a",
+  "ul",
+  "ol",
+  "li",
+  "blockquote",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "hr",
+  "img",
+  "table",
+  "thead",
+  "tbody",
+  "tfoot",
+  "tr",
+  "td",
+  "th",
+  "caption",
 ] as const;
 
 const CONFIG: Config & { RETURN_DOM_FRAGMENT: true } = {
@@ -162,7 +202,30 @@ function styleToTags(root: DocumentFragment): void {
   }
 }
 
-const BLOCKISH = new Set(["DIV", "P", "UL", "OL", "LI", "BLOCKQUOTE", "PRE", "H1", "H2", "H3", "H4", "H5", "H6", "HR", "TABLE", "THEAD", "TBODY", "TFOOT", "TR", "TD", "TH", "CAPTION"]);
+const BLOCKISH = new Set([
+  "DIV",
+  "P",
+  "UL",
+  "OL",
+  "LI",
+  "BLOCKQUOTE",
+  "PRE",
+  "H1",
+  "H2",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "HR",
+  "TABLE",
+  "THEAD",
+  "TBODY",
+  "TFOOT",
+  "TR",
+  "TD",
+  "TH",
+  "CAPTION",
+]);
 
 /**
  * HTML collapses its source whitespace; the editor keeps whitespace as typed
@@ -182,7 +245,13 @@ function collapseWhitespace(root: DocumentFragment): void {
       const prev = t.previousSibling;
       const next = t.nextSibling;
       const parentBlock = !t.parentElement || BLOCKISH.has(t.parentElement.nodeName);
-      if (!prev || !next || BLOCKISH.has(prev.nodeName) || BLOCKISH.has(next.nodeName) || (parentBlock && (prev.nodeName === "BR" || next.nodeName === "BR"))) {
+      if (
+        !prev ||
+        !next ||
+        BLOCKISH.has(prev.nodeName) ||
+        BLOCKISH.has(next.nodeName) ||
+        (parentBlock && (prev.nodeName === "BR" || next.nodeName === "BR"))
+      ) {
         t.remove();
         continue;
       }

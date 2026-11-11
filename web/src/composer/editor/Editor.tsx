@@ -4,8 +4,29 @@
 // ./sanitize.ts first. The editor's DOM is the app's DOM: nothing reaches it
 // any other way.
 
-import { Bold, Italic, Link2, List, ListOrdered, RemoveFormatting, TextQuote, Underline, type LucideIcon } from "lucide-react";
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
+import {
+  Bold,
+  Italic,
+  Link2,
+  List,
+  ListOrdered,
+  RemoveFormatting,
+  TextQuote,
+  Underline,
+  type LucideIcon,
+} from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type DragEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import type { ComposeSession } from "../session";
 import {
   activeFormats,
@@ -172,16 +193,32 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
       }
       if (type.startsWith("format")) {
         event.preventDefault();
-        const mark: Mark | null = type === "formatBold" ? "b" : type === "formatItalic" ? "i" : type === "formatUnderline" ? "u" : type === "formatStrikeThrough" ? "s" : null;
+        const mark: Mark | null =
+          type === "formatBold"
+            ? "b"
+            : type === "formatItalic"
+              ? "i"
+              : type === "formatUnderline"
+                ? "u"
+                : type === "formatStrikeThrough"
+                  ? "s"
+                  : null;
         if (mark) applyMark(mark);
         return;
       }
-      if (type === "insertFromPaste" || type === "insertFromDrop" || type === "insertFromPasteAsQuotation" || type === "insertFromYank") {
+      if (
+        type === "insertFromPaste" ||
+        type === "insertFromDrop" ||
+        type === "insertFromPasteAsQuotation" ||
+        type === "insertFromYank"
+      ) {
         // Paste and drop are handled (and sanitised) by their own events; never let the browser insert HTML.
         event.preventDefault();
         return;
       }
-      history()?.record(type.startsWith("delete") ? "delete" : type === "insertText" ? "insert" : `${type}-${Date.now()}`);
+      history()?.record(
+        type.startsWith("delete") ? "delete" : type === "insertText" ? "insert" : `${type}-${Date.now()}`,
+      );
     };
     root.addEventListener("beforeinput", onBeforeInput);
     const onSelection = () => {
@@ -235,7 +272,10 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
     const root = rootRef.current;
     if (!root) return;
     history()?.record(`link-${Date.now()}`);
-    const next = link.anchor && root.contains(link.anchor) ? updateLink(link.anchor, href, link.text) : insertLink(root, link.range, href, link.text);
+    const next =
+      link.anchor && root.contains(link.anchor)
+        ? updateLink(link.anchor, href, link.text)
+        : insertLink(root, link.range, href, link.text);
     setLink(null);
     root.focus();
     selectRange(next);
@@ -372,11 +412,34 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
     { label: "Bold", keys: "Ctrl+B", icon: Bold, pressed: formats.b, action: () => applyMark("b") },
     { label: "Italic", keys: "Ctrl+I", icon: Italic, pressed: formats.i, action: () => applyMark("i") },
     { label: "Underline", keys: "Ctrl+U", icon: Underline, pressed: formats.u, action: () => applyMark("u") },
-    { label: "Numbered list", keys: "Ctrl+Shift+7", icon: ListOrdered, pressed: formats.ol, action: () => run((root, range) => toggleList(root, range, "ol")) },
-    { label: "Bulleted list", keys: "Ctrl+Shift+8", icon: List, pressed: formats.ul, action: () => run((root, range) => toggleList(root, range, "ul")) },
-    { label: "Quote", keys: "Ctrl+Shift+9", icon: TextQuote, pressed: formats.quote, action: () => run((root, range) => toggleQuote(root, range)) },
+    {
+      label: "Numbered list",
+      keys: "Ctrl+Shift+7",
+      icon: ListOrdered,
+      pressed: formats.ol,
+      action: () => run((root, range) => toggleList(root, range, "ol")),
+    },
+    {
+      label: "Bulleted list",
+      keys: "Ctrl+Shift+8",
+      icon: List,
+      pressed: formats.ul,
+      action: () => run((root, range) => toggleList(root, range, "ul")),
+    },
+    {
+      label: "Quote",
+      keys: "Ctrl+Shift+9",
+      icon: TextQuote,
+      pressed: formats.quote,
+      action: () => run((root, range) => toggleQuote(root, range)),
+    },
     { label: "Link", keys: "Ctrl+K", icon: Link2, pressed: formats.link, action: openLink },
-    { label: "Remove formatting", keys: "Ctrl+\\", icon: RemoveFormatting, action: () => run((root, range) => clearFormatting(root, range)) },
+    {
+      label: "Remove formatting",
+      keys: "Ctrl+\\",
+      icon: RemoveFormatting,
+      action: () => run((root, range) => clearFormatting(root, range)),
+    },
   ];
 
   return (
@@ -398,7 +461,11 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
       />
       {children}
       {link ? (
-        <div className="compose-link" role="group" aria-labelledby={`${linkId}-title`} onKeyDown={(e) => {
+        <div
+          className="compose-link"
+          role="group"
+          aria-labelledby={`${linkId}-title`}
+          onKeyDown={(e) => {
             if (e.key !== "Escape") return;
             e.stopPropagation();
             setLink(null);
@@ -409,7 +476,12 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
           </p>
           <label className="compose-link-field">
             <span>Text to display</span>
-            <input ref={linkTextRef} className="input" value={link.text} onChange={(e) => setLink({ ...link, text: e.target.value })} />
+            <input
+              ref={linkTextRef}
+              className="input"
+              value={link.text}
+              onChange={(e) => setLink({ ...link, text: e.target.value })}
+            />
           </label>
           <label className="compose-link-field">
             <span>Web address or email address</span>

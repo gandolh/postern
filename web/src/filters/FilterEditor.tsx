@@ -96,7 +96,10 @@ function toFilter(f: FormState, labels: readonly LabelChoice[]): MailFilter {
       words: splitWords(f.words),
       notWords: splitWords(f.notWords),
       hasAttachment: f.hasAttachment,
-      size: f.sizeOn && f.sizeAmount.trim() !== "" ? { comparison: f.sizeComparison, amount: Number.isFinite(amount) ? amount : NaN, unit: f.sizeUnit } : null,
+      size:
+        f.sizeOn && f.sizeAmount.trim() !== ""
+          ? { comparison: f.sizeComparison, amount: Number.isFinite(amount) ? amount : NaN, unit: f.sizeUnit }
+          : null,
     },
     actions: {
       archive: f.archive,
@@ -126,7 +129,8 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const found = filterProblems(filter);
-    if (form.sizeOn && !/^\d+$/.test(form.sizeAmount.trim())) found.push("Size must be a whole number from 1 to 1,000,000.");
+    if (form.sizeOn && !/^\d+$/.test(form.sizeAmount.trim()))
+      found.push("Size must be a whole number from 1 to 1,000,000.");
     if (form.forwardOn && form.forwardTo.trim() === "") found.push("Type the address to forward to.");
     if (found.length > 0) {
       setProblems([...new Set(found)]);
@@ -175,7 +179,13 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             <input type="checkbox" checked={form.sizeOn} onChange={(e) => set("sizeOn", e.target.checked)} />
             Size
           </label>
-          <select className="input" aria-label="Size comparison" value={form.sizeComparison} disabled={!form.sizeOn} onChange={(e) => set("sizeComparison", e.target.value as SizeCriterion["comparison"])}>
+          <select
+            className="input"
+            aria-label="Size comparison"
+            value={form.sizeComparison}
+            disabled={!form.sizeOn}
+            onChange={(e) => set("sizeComparison", e.target.value as SizeCriterion["comparison"])}
+          >
             <option value="larger">greater than</option>
             <option value="smaller">less than</option>
           </select>
@@ -187,14 +197,24 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             disabled={!form.sizeOn}
             onChange={(e) => set("sizeAmount", e.target.value)}
           />
-          <select className="input" aria-label="Size unit" value={form.sizeUnit} disabled={!form.sizeOn} onChange={(e) => set("sizeUnit", e.target.value as SizeCriterion["unit"])}>
+          <select
+            className="input"
+            aria-label="Size unit"
+            value={form.sizeUnit}
+            disabled={!form.sizeOn}
+            onChange={(e) => set("sizeUnit", e.target.value as SizeCriterion["unit"])}
+          >
             <option value="M">MB</option>
             <option value="K">KB</option>
             <option value="B">bytes</option>
           </select>
         </div>
         <label className="settings-check">
-          <input type="checkbox" checked={form.hasAttachment} onChange={(e) => set("hasAttachment", e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={form.hasAttachment}
+            onChange={(e) => set("hasAttachment", e.target.checked)}
+          />
           Has attachment
         </label>
       </fieldset>
@@ -215,10 +235,21 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
         </label>
         <div className="filters-inline">
           <label className="settings-check">
-            <input type="checkbox" checked={form.labelOn} disabled={labels.length === 0} onChange={(e) => set("labelOn", e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={form.labelOn}
+              disabled={labels.length === 0}
+              onChange={(e) => set("labelOn", e.target.checked)}
+            />
             Apply the label
           </label>
-          <select className="input settings-select" aria-label="Label to apply" value={form.labelId} disabled={!form.labelOn} onChange={(e) => set("labelId", e.target.value)}>
+          <select
+            className="input settings-select"
+            aria-label="Label to apply"
+            value={form.labelId}
+            disabled={!form.labelOn}
+            onChange={(e) => set("labelId", e.target.value)}
+          >
             {labels.length === 0 ? <option value="">No labels yet</option> : null}
             {labels.map((l) => (
               <option key={l.id} value={l.id}>
@@ -239,7 +270,9 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             autoComplete="off"
             value={form.forwardTo}
             disabled={!form.forwardOn}
-            aria-invalid={form.forwardOn && form.forwardTo.trim() !== "" && !isAddress(form.forwardTo.trim()) ? true : undefined}
+            aria-invalid={
+              form.forwardOn && form.forwardTo.trim() !== "" && !isAddress(form.forwardTo.trim()) ? true : undefined
+            }
             onChange={(e) => set("forwardTo", e.target.value)}
           />
         </div>
@@ -256,13 +289,17 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
       {retroactive ? (
         <div className="filters-apply">
           <label className="settings-check">
-            <input type="checkbox" checked={form.applyExisting} onChange={(e) => set("applyExisting", e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={form.applyExisting}
+              onChange={(e) => set("applyExisting", e.target.checked)}
+            />
             Also apply to matching conversations
           </label>
           {search ? (
             <p className="settings-hint filters-hint">
-              The ones a search for <a href={formatRoute({ kind: "search", query: search })}>{search}</a> finds (not Spam or Trash). Forwarding and
-              &ldquo;never send it to Spam&rdquo; only apply to new mail.
+              The ones a search for <a href={formatRoute({ kind: "search", query: search })}>{search}</a> finds (not
+              Spam or Trash). Forwarding and &ldquo;never send it to Spam&rdquo; only apply to new mail.
             </p>
           ) : null}
         </div>

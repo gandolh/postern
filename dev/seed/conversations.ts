@@ -125,20 +125,55 @@ function roadmap(): Conversation {
     alice: ["inbox", "label:Work"],
     bob: ["inbox"],
     turns: [
-      t(P.carol, "14T08:12", "Hi all,\n\nAhead of Thursday, here is where the Q4 roadmap stands. Three themes: the launch site, the illustration set, and the onboarding emails.\n\nCan each of you flag what you think is at risk?\n\nCarol", { starred: true }),
-      t(P.alice, "14T09:40", "Thanks Carol. The onboarding emails worry me: the copy is not signed off and nobody owns the templates.\n\nAlice"),
-      t(P.bob, "14T11:05", "I can own the templates if Dave can give me two days of illustration time in October.\n\nBob"),
-      t(P.dave, "14T16:30", "Two days in the week of the 12th works. Before that I'm on the launch site hero images.", { plain: true }),
-      t(P.carol, "15T07:55", "Great, that settles onboarding. Launch site next: are we still on for the 3rd of November?"),
-      t(P.alice, "15T10:20", "The 3rd is tight but possible if the terms page is approved this week. I've asked again."),
+      t(
+        P.carol,
+        "14T08:12",
+        "Hi all,\n\nAhead of Thursday, here is where the Q4 roadmap stands. Three themes: the launch site, the illustration set, and the onboarding emails.\n\nCan each of you flag what you think is at risk?\n\nCarol",
+        { starred: true },
+      ),
+      t(
+        P.alice,
+        "14T09:40",
+        "Thanks Carol. The onboarding emails worry me: the copy is not signed off and nobody owns the templates.\n\nAlice",
+      ),
+      t(
+        P.bob,
+        "14T11:05",
+        "I can own the templates if Dave can give me two days of illustration time in October.\n\nBob",
+      ),
+      t(P.dave, "14T16:30", "Two days in the week of the 12th works. Before that I'm on the launch site hero images.", {
+        plain: true,
+      }),
+      t(
+        P.carol,
+        "15T07:55",
+        "Great, that settles onboarding. Launch site next: are we still on for the 3rd of November?",
+      ),
+      t(
+        P.alice,
+        "15T10:20",
+        "The 3rd is tight but possible if the terms page is approved this week. I've asked again.",
+      ),
       t(P.bob, "16T09:00", "Terms page approved with two edits. I've applied them."),
       t(P.dave, "17T14:45", "Hero images are in the shared folder. Three options; I'd go with B.", { plain: true }),
       t(P.carol, "18T08:30", "B for me too. Alice, Bob?"),
       t(P.alice, "18T09:02", "B. The colours in A fight the logo."),
-      t(P.bob, "21T10:15", "B it is. One more thing for the review: budget. We are 6% over on illustration because of the extra set."),
+      t(
+        P.bob,
+        "21T10:15",
+        "B it is. One more thing for the review: budget. We are 6% over on illustration because of the extra set.",
+      ),
       t(P.carol, "22T12:00", "6% is fine if we drop the animated banner. Agreed?"),
-      t(P.dave, "28T17:20", "Agreed on dropping the banner. I'll send the final illustration list on Monday.", { plain: true, unread: true }),
-      t(P.carol, "29T08:05", "Thanks everyone. The final roadmap is on the calendar invite for Thursday; see you there.\n\nCarol", { unread: true }),
+      t(P.dave, "28T17:20", "Agreed on dropping the banner. I'll send the final illustration list on Monday.", {
+        plain: true,
+        unread: true,
+      }),
+      t(
+        P.carol,
+        "29T08:05",
+        "Thanks everyone. The final roadmap is on the calendar invite for Thursday; see you there.\n\nCarol",
+        { unread: true },
+      ),
     ],
   };
 }
@@ -178,12 +213,19 @@ function lisbon(): Conversation {
       t(P.alice, "03-06T08:15", "Terrace, as long as there is a washing machine."),
       t(P.erin, "03-06T09:40", "Booked the terrace one. Washing machine confirmed."),
       t(P.hiro, "03-20T20:00", "Flights booked: out on the 12th, back on the 17th.", { plain: true }),
-      t(P.erin, "04-02T10:05", "A rough plan for the Wednesday is attached as a calendar file: tram 28 in the morning, then a walk through Alfama.", {
-        attachments: [{ filename: "lisbon-wednesday.ics", type: "text/calendar", data: LISBON_ICS }],
-      }),
+      t(
+        P.erin,
+        "04-02T10:05",
+        "A rough plan for the Wednesday is attached as a calendar file: tram 28 in the morning, then a walk through Alfama.",
+        {
+          attachments: [{ filename: "lisbon-wednesday.ics", type: "text/calendar", data: LISBON_ICS }],
+        },
+      ),
       t(P.alice, "04-02T12:30", "Perfect. Can we fit in the tile museum one afternoon?"),
       t(P.hiro, "04-03T07:50", "Tile museum on Friday. And here is what tram 28 looks like, for the excited.", {
-        attachments: [{ filename: "tram-28.png", type: "image/png", data: png(160, 120, [250, 204, 21], [220, 38, 38]) }],
+        attachments: [
+          { filename: "tram-28.png", type: "image/png", data: png(160, 120, [250, 204, 21], [220, 38, 38]) },
+        ],
       }),
       t(P.erin, "04-03T08:30", "Lovely. See you both at the airport on the 12th!", { starred: true }),
     ],
@@ -237,7 +279,12 @@ function lunch(): Conversation {
     alice: ["inbox"],
     bob: ["inbox"],
     turns: [
-      { from: P.alice, to: [P.bob], at: daysBefore(2, 11, 20), text: "Lunch tomorrow? The new ramen place opened on Mill Street." },
+      {
+        from: P.alice,
+        to: [P.bob],
+        at: daysBefore(2, 11, 20),
+        text: "Lunch tomorrow? The new ramen place opened on Mill Street.",
+      },
       { from: P.bob, to: [P.alice], at: daysBefore(2, 11, 48), unread: true, text: "Yes please. 12:30?" },
     ],
   };
@@ -269,7 +316,12 @@ function invoice(): Conversation {
         text: "Hi Alice,\n\nOur invoice for September's workshop and the illustration set is attached. Payment within 14 days, as usual.\n\nBest,\nCarol",
         attachments: [{ filename: "INV-2026-0142.pdf", type: "application/pdf", data: INVOICE_PDF }],
       },
-      { from: P.alice, to: [P.carol], at: daysBefore(4, 9, 15), text: "Thanks Carol, paid this morning. Reference INV-2026-0142." },
+      {
+        from: P.alice,
+        to: [P.carol],
+        at: daysBefore(4, 9, 15),
+        text: "Thanks Carol, paid this morning. Reference INV-2026-0142.",
+      },
     ],
   };
 }

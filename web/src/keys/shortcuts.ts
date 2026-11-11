@@ -69,13 +69,37 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: "goAll", group: "Navigation", description: "Go to All Mail", keys: [["g", "a"]] },
   { id: "next", group: "Navigation", description: "Next conversation", keys: [["j"]], repeats: true },
   { id: "previous", group: "Navigation", description: "Previous conversation", keys: [["k"]], repeats: true },
-  { id: "open", group: "Navigation", description: "Open the conversation (or open or close a message)", keys: [["o"]], display: [["o"], ["Enter"]] },
+  {
+    id: "open",
+    group: "Navigation",
+    description: "Open the conversation (or open or close a message)",
+    keys: [["o"]],
+    display: [["o"], ["Enter"]],
+  },
   { id: "back", group: "Navigation", description: "Back to the list", keys: [["u"]] },
-  { id: "nextMessage", group: "Navigation", description: "Next message in the conversation", keys: [["n"]], repeats: true },
-  { id: "previousMessage", group: "Navigation", description: "Previous message in the conversation", keys: [["p"]], repeats: true },
+  {
+    id: "nextMessage",
+    group: "Navigation",
+    description: "Next message in the conversation",
+    keys: [["n"]],
+    repeats: true,
+  },
+  {
+    id: "previousMessage",
+    group: "Navigation",
+    description: "Previous message in the conversation",
+    keys: [["p"]],
+    repeats: true,
+  },
 
   { id: "compose", group: "Application", description: "Compose a new message", keys: [["c"]] },
-  { id: "composeFullscreen", group: "Application", description: "Compose in a full-screen window", keys: [["C"]], display: [["Shift", "C"]] },
+  {
+    id: "composeFullscreen",
+    group: "Application",
+    description: "Compose in a full-screen window",
+    keys: [["C"]],
+    display: [["Shift", "C"]],
+  },
   { id: "search", group: "Application", description: "Search mail", keys: [["/"]] },
   { id: "help", group: "Application", description: "Show keyboard shortcuts", keys: [["?"]] },
   { id: "undo", group: "Application", description: "Undo the last action", keys: [["z"]] },
@@ -119,7 +143,9 @@ export function filterShortcuts(query: string): { group: ShortcutGroup; items: S
     const text = searchText(s);
     return words.every((w) => text.includes(w));
   });
-  return GROUP_ORDER.map((group) => ({ group, items: hits.filter((s) => s.group === group) })).filter((g) => g.items.length > 0);
+  return GROUP_ORDER.map((group) => ({ group, items: hits.filter((s) => s.group === group) })).filter(
+    (g) => g.items.length > 0,
+  );
 }
 
 // ---- The key engine ----------------------------------------------------------------
@@ -130,7 +156,12 @@ export function isTypingTarget(target: EventTarget | null): boolean {
   if (target.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) return true;
   if (target instanceof HTMLElement && target.isContentEditable) return true;
   // The composer (its buttons too), menus, listboxes, dialogs and the sender hover card keep their own keys.
-  if (target.closest("[data-compose-key], [role='menu'], [role='listbox'], [role='combobox'], [role='dialog'], [role='alertdialog'], dialog[open], .contacts-hovercard")) return true;
+  if (
+    target.closest(
+      "[data-compose-key], [role='menu'], [role='listbox'], [role='combobox'], [role='dialog'], [role='alertdialog'], dialog[open], .contacts-hovercard",
+    )
+  )
+    return true;
   return false;
 }
 
@@ -200,7 +231,9 @@ export class KeyEngine {
       const fresh = this.now() - this.pendingAt <= SEQUENCE_TIMEOUT_MS;
       this.pending = null;
       if (fresh && !event.repeat) {
-        const hit = SHORTCUTS.find((s) => !s.external && s.keys.some((k) => k.length === 2 && k[0] === first && k[1] === token));
+        const hit = SHORTCUTS.find(
+          (s) => !s.external && s.keys.some((k) => k.length === 2 && k[0] === first && k[1] === token),
+        );
         // A key that does not finish the sequence ends it and does nothing else.
         return hit ? this.run(hit.id) : token === first ? this.begin(token) : false;
       }

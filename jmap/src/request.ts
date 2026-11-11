@@ -150,7 +150,8 @@ export class RequestBuilder {
   #checkRef(ref: ResultReferenceObject, from: string): string {
     const target = this.#calls.find((c) => c.id === ref.resultOf);
     if (!target) throw new JmapError(`${from} references call ${ref.resultOf}, which is not earlier in this request`);
-    if (target.name !== ref.name) throw new JmapError(`${from} references ${ref.name} but call ${ref.resultOf} is ${target.name}`);
+    if (target.name !== ref.name)
+      throw new JmapError(`${from} references ${ref.name} but call ${ref.resultOf} is ${target.name}`);
     return target.id;
   }
 

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { labelSource, quoteArg, RecentSearches, recentSearchSource, replaceToken, senderSource, suggestionQuery } from "./suggestions";
+import {
+  labelSource,
+  quoteArg,
+  RecentSearches,
+  recentSearchSource,
+  replaceToken,
+  senderSource,
+  suggestionQuery,
+} from "./suggestions";
 
 const signal = new AbortController().signal;
 
@@ -56,7 +64,8 @@ describe("label source", () => {
     { path: "My Label", system: false },
   ];
   const source = labelSource(() => labels);
-  const suggest = (input: string) => source.suggest(suggestionQuery(input), signal) as { label: string; text: string }[];
+  const suggest = (input: string) =>
+    source.suggest(suggestionQuery(input), signal) as { label: string; text: string }[];
 
   it("matches names anywhere in the path, with - and _ as spaces", () => {
     expect(suggest("cli").map((s) => s.label)).toEqual(["Work/Clients"]);
@@ -84,11 +93,17 @@ describe("sender source", () => {
     { name: null, email: "carol@northwind.example.com" },
   ];
   const source = senderSource(async () => senders);
-  const suggest = async (input: string) => (await source.suggest(suggestionQuery(input), signal)) as { label: string; detail?: string; text: string }[];
+  const suggest = async (input: string) =>
+    (await source.suggest(suggestionQuery(input), signal)) as { label: string; detail?: string; text: string }[];
 
   it("matches names and addresses and writes from:", async () => {
-    expect(await suggest("bak")).toEqual([{ key: "bob@postern.test", label: "Bob Baker", detail: "bob@postern.test", text: "from:bob@postern.test" }]);
-    expect((await suggest("north"))[0]).toMatchObject({ label: "carol@northwind.example.com", text: "from:carol@northwind.example.com" });
+    expect(await suggest("bak")).toEqual([
+      { key: "bob@postern.test", label: "Bob Baker", detail: "bob@postern.test", text: "from:bob@postern.test" },
+    ]);
+    expect((await suggest("north"))[0]).toMatchObject({
+      label: "carol@northwind.example.com",
+      text: "from:carol@northwind.example.com",
+    });
   });
 
   it("keeps the operator typed, and waits for two letters otherwise", async () => {

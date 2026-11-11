@@ -33,7 +33,15 @@ interface Stub {
 
 function stub(options: { quota?: unknown[]; caps?: string[] } = {}): Stub {
   const caps = new Set(options.caps ?? ["urn:ietf:params:jmap:vacationresponse", "urn:ietf:params:jmap:quota"]);
-  const vacation = { id: "singleton", isEnabled: false, fromDate: null, toDate: null, subject: null, textBody: null, htmlBody: null };
+  const vacation = {
+    id: "singleton",
+    isEnabled: false,
+    fromDate: null,
+    toDate: null,
+    subject: null,
+    textBody: null,
+    htmlBody: null,
+  };
   const vacationSet = vi.fn(async () => undefined);
   const identitySet = vi.fn(async () => ({ updated: { I1: null } }));
   const client = {
@@ -42,8 +50,26 @@ function stub(options: { quota?: unknown[]; caps?: string[] } = {}): Stub {
     identity: {
       get: async () => ({
         list: [
-          { id: "I1", name: "Alice Archer", email: ME, replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false },
-          { id: "I2", name: "Alice Work", email: "alice+work@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: true },
+          {
+            id: "I1",
+            name: "Alice Archer",
+            email: ME,
+            replyTo: null,
+            bcc: null,
+            textSignature: "",
+            htmlSignature: "",
+            mayDelete: false,
+          },
+          {
+            id: "I2",
+            name: "Alice Work",
+            email: "alice+work@postern.test",
+            replyTo: null,
+            bcc: null,
+            textSignature: "",
+            htmlSignature: "",
+            mayDelete: true,
+          },
         ],
       }),
       set: identitySet,
@@ -79,7 +105,11 @@ describe("tabs", () => {
   it("links the four sections and marks the current one", () => {
     renderSettings("accounts");
     const nav = screen.getByRole("navigation", { name: "Settings sections" });
-    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual(["General", "Accounts", "Labels", "Filters"]);
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((a) => a.textContent),
+    ).toEqual(["General", "Accounts", "Labels", "Filters"]);
     expect(within(nav).getByRole("link", { name: "Accounts" }).getAttribute("aria-current")).toBe("page");
   });
   it("renders the label manager and the filters page", () => {
@@ -98,7 +128,9 @@ describe("General", () => {
     const theme = screen.getByRole("group", { name: "Theme" });
     await user.click(within(theme).getByRole("radio", { name: "Dark" }));
     expect(getDisplaySettings().theme).toBe("dark");
-    await user.click(within(screen.getByRole("group", { name: "Reading pane" })).getByRole("radio", { name: "Right of inbox" }));
+    await user.click(
+      within(screen.getByRole("group", { name: "Reading pane" })).getByRole("radio", { name: "Right of inbox" }),
+    );
     expect(getDisplaySettings().readingPane).toBe("right");
     expect(JSON.parse(localStorage.getItem("postern.display")!)).toMatchObject({ theme: "dark", readingPane: "right" });
   });
@@ -122,7 +154,9 @@ describe("General", () => {
   it("images and shortcuts are saved", async () => {
     renderSettings("general");
     const user = userEvent.setup();
-    expect(within(screen.getByRole("group", { name: "Images" })).getByRole("radio", { name: /Ask before/ })).toHaveProperty("checked", true);
+    expect(
+      within(screen.getByRole("group", { name: "Images" })).getByRole("radio", { name: /Ask before/ }),
+    ).toHaveProperty("checked", true);
     await user.click(screen.getByRole("radio", { name: "Always display external images" }));
     await user.click(screen.getByRole("checkbox", { name: "Keyboard shortcuts on" }));
     expect(getPrefs()).toMatchObject({ images: "always", shortcuts: false });
@@ -159,7 +193,9 @@ describe("General", () => {
     renderSettings("general", s);
     await screen.findByLabelText("Subject");
     await userEvent.setup().click(screen.getByRole("checkbox", { name: "Vacation responder on" }));
-    await waitFor(() => expect(screen.getAllByRole("status").some((n) => n.textContent === "Could not save: nope")).toBe(true));
+    await waitFor(() =>
+      expect(screen.getAllByRole("status").some((n) => n.textContent === "Could not save: nope")).toBe(true),
+    );
   });
 
   it("omits the vacation form when the server has no such capability", () => {
@@ -227,7 +263,21 @@ describe("QuotaBar", () => {
     );
 
   it("shows used of limit as a meter", async () => {
-    wrap(stub({ quota: [{ id: "q", resourceType: "octets", used: 250_000_000, hardLimit: 1_000_000_000, scope: "account", name: "a", types: ["Email"] }] }));
+    wrap(
+      stub({
+        quota: [
+          {
+            id: "q",
+            resourceType: "octets",
+            used: 250_000_000,
+            hardLimit: 1_000_000_000,
+            scope: "account",
+            name: "a",
+            types: ["Email"],
+          },
+        ],
+      }),
+    );
     const meter = await screen.findByRole("meter");
     expect(meter.getAttribute("aria-valuenow")).toBe("250000000");
     expect(screen.getByText(/250 MB of 1\.0? ?GB used \(25%\)|250 MB of 1 GB used \(25%\)/)).toBeTruthy();
@@ -239,7 +289,13 @@ describe("QuotaBar", () => {
   it("formats and picks", () => {
     expect(formatBytes(999)).toBe("999 B");
     expect(formatBytes(1_500_000)).toBe("1.5 MB");
-    expect(pickStorageQuota([{ resourceType: "count" } as never, { resourceType: "octets", scope: "domain" } as never, { resourceType: "octets", scope: "account" } as never])?.scope).toBe("account");
+    expect(
+      pickStorageQuota([
+        { resourceType: "count" } as never,
+        { resourceType: "octets", scope: "domain" } as never,
+        { resourceType: "octets", scope: "account" } as never,
+      ])?.scope,
+    ).toBe("account");
   });
 });
 

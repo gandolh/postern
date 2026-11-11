@@ -52,7 +52,12 @@ function refusal(error: SetError | undefined, fallback: string): LabelEditError 
   }
 }
 
-async function setMailbox(deps: LabelEditDeps, args: Parameters<MethodCaller["call"]>[1], fallback: string, id: Id): Promise<void> {
+async function setMailbox(
+  deps: LabelEditDeps,
+  args: Parameters<MethodCaller["call"]>[1],
+  fallback: string,
+  id: Id,
+): Promise<void> {
   const res = await deps.caller.call("Mailbox/set", args as never);
   const error = res.notCreated?.[id] ?? res.notUpdated?.[id] ?? res.notDestroyed?.[id];
   if (error) throw refusal(error, fallback);
@@ -115,7 +120,7 @@ export interface DeleteLabelResult {
 
 async function messagesIn(caller: MethodCaller, labelId: Id): Promise<{ id: Id; mailboxIds: Record<Id, true> }[]> {
   const ids: Id[] = [];
-  for (let position = 0; ; ) {
+  for (let position = 0; ;) {
     const res = await caller.call("Email/query", { filter: { inMailbox: labelId }, position, limit: 500 });
     ids.push(...res.ids);
     position += res.ids.length;

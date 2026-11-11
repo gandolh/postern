@@ -18,7 +18,17 @@ import { getSwipeActions } from "../prefs/prefs";
 import type { SwipeAction } from "../prefs/prefs";
 import { PHONE_QUERY } from "../shell/breakpoints";
 import { useMediaQuery } from "../shell/useMediaQuery";
-import { classify, PULL_DEFAULTS, PullTracker, swipeLabel, swipeOutcome, SwipeTracker, type Direction, type Gesture, type SwipeContext } from "./gestures";
+import {
+  classify,
+  PULL_DEFAULTS,
+  PullTracker,
+  swipeLabel,
+  swipeOutcome,
+  SwipeTracker,
+  type Direction,
+  type Gesture,
+  type SwipeContext,
+} from "./gestures";
 import "./mobile.css";
 
 export interface ListGestureOptions<Row extends { id: Id }> {

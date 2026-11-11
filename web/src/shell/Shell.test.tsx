@@ -25,7 +25,18 @@ const RIGHTS = {
 };
 
 function mailbox(m: Partial<Mailbox> & Pick<Mailbox, "id" | "name">): Mailbox {
-  return { parentId: null, role: null, sortOrder: 0, totalEmails: 0, unreadEmails: 0, totalThreads: 0, unreadThreads: 0, myRights: RIGHTS, isSubscribed: true, ...m };
+  return {
+    parentId: null,
+    role: null,
+    sortOrder: 0,
+    totalEmails: 0,
+    unreadEmails: 0,
+    totalThreads: 0,
+    unreadThreads: 0,
+    myRights: RIGHTS,
+    isSubscribed: true,
+    ...m,
+  };
 }
 
 const MAILBOXES: Mailbox[] = [
@@ -193,7 +204,11 @@ describe("the top bar", () => {
     await user.click(account);
     const card = screen.getByRole("dialog", { name: "Alice Archer" });
     expect(within(card).getByText("alice@postern.test")).toBeTruthy();
-    expect(within(card).getByRole("link", { name: /Manage your account/ }).getAttribute("target")).toBe("_blank");
+    expect(
+      within(card)
+        .getByRole("link", { name: /Manage your account/ })
+        .getAttribute("target"),
+    ).toBe("_blank");
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "Alice Archer" })).toBeNull();
     expect(document.activeElement).toBe(account);
@@ -222,7 +237,10 @@ describe("the toast", () => {
   function Trigger({ onUndo }: { onUndo: () => void }) {
     const toast = useToast();
     return (
-      <button type="button" onClick={() => toast.show({ message: "Conversation archived.", action: { label: "Undo", onClick: onUndo } })}>
+      <button
+        type="button"
+        onClick={() => toast.show({ message: "Conversation archived.", action: { label: "Undo", onClick: onUndo } })}
+      >
         Archive
       </button>
     );

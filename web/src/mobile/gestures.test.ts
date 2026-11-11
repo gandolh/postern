@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { classify, LOCK_DISTANCE, PullTracker, PULL_DEFAULTS, swipeLabel, swipeOutcome, SwipeTracker } from "./gestures";
+import {
+  classify,
+  LOCK_DISTANCE,
+  PullTracker,
+  PULL_DEFAULTS,
+  swipeLabel,
+  swipeOutcome,
+  SwipeTracker,
+} from "./gestures";
 
 const BOTH = { left: true, right: true };
 

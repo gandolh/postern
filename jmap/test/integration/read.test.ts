@@ -30,7 +30,12 @@ describe.skipIf(!live)("against the dev Stalwart: reading", () => {
     expect(s.raw.apiUrl).toMatch(/^https:\/\/mail\.postern\.test\//);
     expect(s.apiUrl).toBe(`${BASE}/jmap/`);
     expect(s.uploadUrlFor()).toBe(`${BASE}/jmap/upload/${s.accountId}/`);
-    expect(s.limits).toMatchObject({ maxCallsInRequest: 16, maxObjectsInGet: 500, maxObjectsInSet: 500, maxConcurrentUpload: 4 });
+    expect(s.limits).toMatchObject({
+      maxCallsInRequest: 16,
+      maxObjectsInGet: 500,
+      maxObjectsInSet: 500,
+      maxConcurrentUpload: 4,
+    });
     expect(s.state).toMatch(/\S/);
   });
 
@@ -98,7 +103,8 @@ describe.skipIf(!live)("against the dev Stalwart: reading", () => {
       expect(m.threadId).toBe(conversation.id);
       const parts = [...m.textBody, ...m.htmlBody].map((p) => p.partId).filter((p): p is string => p !== null);
       expect(parts.some((p) => m.bodyValues[p] !== undefined)).toBe(true);
-      for (const value of Object.values(m.bodyValues)) expect(new TextEncoder().encode(value.value).byteLength).toBeLessThanOrEqual(256 + 4);
+      for (const value of Object.values(m.bodyValues))
+        expect(new TextEncoder().encode(value.value).byteLength).toBeLessThanOrEqual(256 + 4);
     }
   });
 
@@ -136,7 +142,11 @@ describe.skipIf(!live)("against the dev Stalwart: reading", () => {
   });
 
   it("validates Sieve without storing it", async () => {
-    expect(await alice.sieveScript.validateSource('require "fileinto";\nif header :contains "subject" "x" { fileinto "Work"; }\n')).toBeNull();
+    expect(
+      await alice.sieveScript.validateSource(
+        'require "fileinto";\nif header :contains "subject" "x" { fileinto "Work"; }\n',
+      ),
+    ).toBeNull();
     expect((await alice.sieveScript.validateSource("if foo bar"))?.type).toBe("invalidScript");
   });
 
@@ -174,7 +184,11 @@ describe.skipIf(!live)("against the dev Stalwart: reading", () => {
 
     const tooMany = {
       using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
-      methodCalls: Array.from({ length: 17 }, (_, i): [string, Record<string, unknown>, string] => ["Mailbox/get", { accountId: alice.accountId, ids: [] }, String(i)]),
+      methodCalls: Array.from({ length: 17 }, (_, i): [string, Record<string, unknown>, string] => [
+        "Mailbox/get",
+        { accountId: alice.accountId, ids: [] },
+        String(i),
+      ]),
     };
     const limit = await alice.post(alice.session, tooMany).catch((e: unknown) => e);
     expect(limit).toBeInstanceOf(JmapRequestError);

@@ -125,13 +125,20 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
   };
 
   /** Actions that take conversations out of the list end the selection, as Gmail's do. */
-  const leaving = async (only: readonly ConversationRow[] | undefined, run: (rows: readonly ConversationRow[]) => Promise<unknown>) => {
+  const leaving = async (
+    only: readonly ConversationRow[] | undefined,
+    run: (rows: readonly ConversationRow[]) => Promise<unknown>,
+  ) => {
     const rows = only ?? (await targets());
     if (rows.length === 0) return;
     if (!only) set.setSelection(NO_SELECTION);
     else {
       const gone = new Set(rows.map((r) => r.id));
-      set.setSelection((s) => (s.all || [...s.ids].some((id) => gone.has(id)) ? { ...s, all: false, ids: new Set([...s.ids].filter((id) => !gone.has(id))) } : s));
+      set.setSelection((s) =>
+        s.all || [...s.ids].some((id) => gone.has(id))
+          ? { ...s, all: false, ids: new Set([...s.ids].filter((id) => !gone.has(id))) }
+          : s,
+      );
     }
     // Keyboard focus moves to the next row (else the previous) so it is not lost with the row.
     const active = document.activeElement;
@@ -148,7 +155,10 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
     await run(rows);
   };
 
-  const staying = async (only: readonly ConversationRow[] | undefined, run: (rows: readonly ConversationRow[]) => Promise<unknown>) => {
+  const staying = async (
+    only: readonly ConversationRow[] | undefined,
+    run: (rows: readonly ConversationRow[]) => Promise<unknown>,
+  ) => {
     const rows = only ?? (await targets());
     if (rows.length > 0) await run(rows);
   };
@@ -210,20 +220,26 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
 
   const setRead = (read: boolean, only?: readonly ConversationRow[], toast = true) => {
     const { actions, scope } = get();
-    return staying(only, (rows) => (read ? actions.markRead(rows, scope, { toast }) : actions.markUnread(rows, scope, { toast })));
+    return staying(only, (rows) =>
+      read ? actions.markRead(rows, scope, { toast }) : actions.markUnread(rows, scope, { toast }),
+    );
   };
 
   /** Star when none is starred, else unstar every one; quiet like Gmail's star (undo stays on z). */
   const toggleStar = (only?: readonly ConversationRow[]) => {
     const { actions, scope } = get();
     return staying(only, (rows) =>
-      rows.some((r) => isStarred(r, scope)) ? actions.unstar(rows, scope, { toast: false }) : actions.star(rows, scope, { toast: false }),
+      rows.some((r) => isStarred(r, scope))
+        ? actions.unstar(rows, scope, { toast: false })
+        : actions.star(rows, scope, { toast: false }),
     );
   };
 
   const setImportant = (on: boolean, only?: readonly ConversationRow[], toast = true) => {
     const { actions, scope } = get();
-    return staying(only, (rows) => (on ? actions.markImportant(rows, scope, { toast }) : actions.markNotImportant(rows, scope, { toast })));
+    return staying(only, (rows) =>
+      on ? actions.markImportant(rows, scope, { toast }) : actions.markNotImportant(rows, scope, { toast }),
+    );
   };
 
   const select = (kind: SelectKind) => {
@@ -279,7 +295,9 @@ function makeApi(get: () => Latest, set: Setters, requestFocus: () => void): { a
     },
     reportSpam() {
       const { actions, scope, presentation } = get();
-      return leaving(undefined, (rows) => (presentation.notSpam ? actions.notSpam(rows, scope) : actions.reportSpam(rows, scope)));
+      return leaving(undefined, (rows) =>
+        presentation.notSpam ? actions.notSpam(rows, scope) : actions.reportSpam(rows, scope),
+      );
     },
     markRead: () => setRead(true),
     markUnread: () => setRead(false),
@@ -354,7 +372,9 @@ class ListBehaviour {
 export function ConversationList(props: ConversationListProps) {
   const { conversationView } = usePrefs().prefs;
   // A new list when the mode changes: row ids mean conversations in one and messages in the other.
-  return <ListBody key={conversationView ? "conversations" : "messages"} {...props} conversationView={conversationView} />;
+  return (
+    <ListBody key={conversationView ? "conversations" : "messages"} {...props} conversationView={conversationView} />
+  );
 }
 
 function ListBody(props: ConversationListProps & { conversationView: boolean }) {
@@ -381,7 +401,18 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   const [behaviour] = useState(() => new ListBehaviour({ setSelection, setFocusId, setConfirming }));
   const { api, handlers } = behaviour;
   useLayoutEffect(() => {
-    behaviour.update({ rows, selection, focusId, presentation, scope, route, store, actions, scrollToIndex, conversationView });
+    behaviour.update({
+      rows,
+      selection,
+      focusId,
+      presentation,
+      scope,
+      route,
+      store,
+      actions,
+      scrollToIndex,
+      conversationView,
+    });
   });
 
   // The reader's `j` / `k` step through the message rows, the list on screen or not.
@@ -403,7 +434,12 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
     rows,
     context: presentation,
     isUnread: (row) => isUnread(row, scope),
-    act: (row, action) => (action === "archive" ? handlers.onArchive(row) : action === "delete" ? handlers.onDelete(row) : handlers.onToggleRead(row)),
+    act: (row, action) =>
+      action === "archive"
+        ? handlers.onArchive(row)
+        : action === "delete"
+          ? handlers.onDelete(row)
+          : handlers.onToggleRead(row),
     refresh: () => api.refresh(),
   });
 
@@ -423,18 +459,26 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   // Keyboard focus follows focusRow / moveFocus once the row is rendered.
   useEffect(() => {
     if (!behaviour.focusRequested || focusId === null) return;
-    const el = [...(gridRef.current?.querySelectorAll<HTMLElement>("[data-row-id]") ?? [])].find((r) => r.dataset["rowId"] === focusId);
+    const el = [...(gridRef.current?.querySelectorAll<HTMLElement>("[data-row-id]") ?? [])].find(
+      (r) => r.dataset["rowId"] === focusId,
+    );
     if (!el) return;
     behaviour.focusDone();
     el.focus({ preventScroll: true });
   });
 
-  const selectedRows = useMemo(() => (selection.all ? rows : rows.filter((r) => selection.ids.has(r.id))), [rows, selection]);
+  const selectedRows = useMemo(
+    () => (selection.all ? rows : rows.filter((r) => selection.ids.has(r.id))),
+    [rows, selection],
+  );
   const selectedIds = useMemo(() => new Set(selectedRows.map((r) => r.id)), [selectedRows]);
   const selectedCount = selection.all ? snapshot.total : selectedRows.length;
   const allLoadedSelected = rows.length > 0 && selectedRows.length === rows.length;
 
-  const chipLabels = useMemo<ChipLabel[]>(() => labels.labels.map((l) => ({ id: l.id, title: l.system ? l.title : l.path, system: l.system })), [labels.labels]);
+  const chipLabels = useMemo<ChipLabel[]>(
+    () => labels.labels.map((l) => ({ id: l.id, title: l.system ? l.title : l.path, system: l.system })),
+    [labels.labels],
+  );
   const context = useMemo<RowContext>(
     () => ({
       scope,
@@ -460,10 +504,14 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   }, [route.conversationId, route.messageId, conversationView, rows]);
 
   const focusIndex = focusId === null ? -1 : rows.findIndex((r) => r.id === focusId);
-  const tabStop = focusIndex >= virtual.start && focusIndex < Math.min(virtual.end, rows.length) ? focusIndex : Math.min(virtual.start, rows.length - 1);
+  const tabStop =
+    focusIndex >= virtual.start && focusIndex < Math.min(virtual.end, rows.length)
+      ? focusIndex
+      : Math.min(virtual.start, rows.length - 1);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).getAttribute("role") !== "row" || event.altKey || event.ctrlKey || event.metaKey) return;
+    if ((event.target as HTMLElement).getAttribute("role") !== "row" || event.altKey || event.ctrlKey || event.metaKey)
+      return;
     switch (event.key) {
       case "ArrowDown":
         api.moveFocus(1);
@@ -493,11 +541,15 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
 
   const total = snapshot.total.toLocaleString();
   const allLabel = props.allLabel ?? `in ${title}`;
-  const paging = count > 0 ? `${(virtual.first + 1).toLocaleString()}–${Math.min(Math.max(virtual.last, virtual.first + 1), count).toLocaleString()} of ${count.toLocaleString()}` : "";
+  const paging =
+    count > 0
+      ? `${(virtual.first + 1).toLocaleString()}–${Math.min(Math.max(virtual.last, virtual.first + 1), count).toLocaleString()} of ${count.toLocaleString()}`
+      : "";
   // The copy counts what a row is, a conversation or a message.
   const noun = rowNoun(conversationView);
   const things = nounFor(2, noun);
-  const announcement = selectedCount > 0 ? `${selectedCount.toLocaleString()} ${nounFor(selectedCount, noun)} selected` : "";
+  const announcement =
+    selectedCount > 0 ? `${selectedCount.toLocaleString()} ${nounFor(selectedCount, noun)} selected` : "";
 
   let body: ReactNode;
   if (snapshot.status === "loading") {
@@ -545,7 +597,11 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         onKeyDown={onKeyDown}
       >
         <div role="presentation" className="list-canvas" style={{ height: virtual.totalHeight }}>
-          <div role="rowgroup" className="list-rows" style={{ transform: `translateY(${virtual.start * virtual.rowHeight}px)` }}>
+          <div
+            role="rowgroup"
+            className="list-rows"
+            style={{ transform: `translateY(${virtual.start * virtual.rowHeight}px)` }}
+          >
             {items}
           </div>
         </div>

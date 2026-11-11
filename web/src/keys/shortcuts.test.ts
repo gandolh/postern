@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SEQUENCE_TIMEOUT_MS, KeyEngine, SHORTCUTS, filterShortcuts, isTypingTarget, tokenOf, type ActionId } from "./shortcuts";
+import {
+  SEQUENCE_TIMEOUT_MS,
+  KeyEngine,
+  SHORTCUTS,
+  filterShortcuts,
+  isTypingTarget,
+  tokenOf,
+  type ActionId,
+} from "./shortcuts";
 
 function press(engine: KeyEngine, key: string, init: KeyboardEventInit = {}, target?: Element): boolean {
   const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...init });
@@ -25,10 +33,52 @@ afterEach(() => {
 describe("single keys", () => {
   it("runs c, /, ? and the list and message keys", () => {
     const { engine, calls } = setup();
-    for (const key of ["c", "/", "?", "j", "k", "o", "u", "n", "p", "e", "#", "!", "s", "x", "r", "a", "f", "l", "v", "z"]) {
+    for (const key of [
+      "c",
+      "/",
+      "?",
+      "j",
+      "k",
+      "o",
+      "u",
+      "n",
+      "p",
+      "e",
+      "#",
+      "!",
+      "s",
+      "x",
+      "r",
+      "a",
+      "f",
+      "l",
+      "v",
+      "z",
+    ]) {
       expect(press(engine, key, { shiftKey: key === "#" || key === "!" || key === "?" })).toBe(true);
     }
-    expect(calls).toEqual(["compose", "search", "help", "next", "previous", "open", "back", "nextMessage", "previousMessage", "archive", "trash", "reportSpam", "star", "select", "reply", "replyAll", "forward", "label", "move", "undo"]);
+    expect(calls).toEqual([
+      "compose",
+      "search",
+      "help",
+      "next",
+      "previous",
+      "open",
+      "back",
+      "nextMessage",
+      "previousMessage",
+      "archive",
+      "trash",
+      "reportSpam",
+      "star",
+      "select",
+      "reply",
+      "replyAll",
+      "forward",
+      "label",
+      "move",
+      "undo",
+    ]);
   });
 
   it("reads Shift+i, Shift+u, Shift+c, ignoring Caps Lock", () => {
@@ -197,7 +247,9 @@ describe("guards", () => {
 
 describe("help sheet search", () => {
   it("lists every group when the box is empty", () => {
-    expect(filterShortcuts("").map((g) => g.group)).toEqual(["Navigation", "Application", "Conversations", "Composing"].filter((g) => SHORTCUTS.some((s) => s.group === g)));
+    expect(filterShortcuts("").map((g) => g.group)).toEqual(
+      ["Navigation", "Application", "Conversations", "Composing"].filter((g) => SHORTCUTS.some((s) => s.group === g)),
+    );
     expect(filterShortcuts("").flatMap((g) => g.items).length).toBe(SHORTCUTS.length);
   });
 

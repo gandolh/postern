@@ -77,7 +77,11 @@ export function quoteArg(value: string): string {
   return /[\s(){}"]/.test(value) ? `"${value.replace(/"/g, "")}"` : value;
 }
 
-const fold = (text: string): string => text.toLowerCase().replace(/[\s_-]+/g, " ").trim();
+const fold = (text: string): string =>
+  text
+    .toLowerCase()
+    .replace(/[\s_-]+/g, " ")
+    .trim();
 
 // ---- Recent searches -------------------------------------------------------
 
@@ -127,7 +131,14 @@ export interface SuggestibleLabel {
 }
 
 /** System labels the box writes as `in:inbox`; the rest are `label:"Work/Clients"`. */
-const SYSTEM_WORD: Record<string, string> = { inbox: "inbox", starred: "starred", sent: "sent", drafts: "drafts", spam: "spam", trash: "trash" };
+const SYSTEM_WORD: Record<string, string> = {
+  inbox: "inbox",
+  starred: "starred",
+  sent: "sent",
+  drafts: "drafts",
+  spam: "spam",
+  trash: "trash",
+};
 
 export function labelSource(getLabels: () => readonly SuggestibleLabel[], limit = 5): SuggestionSource {
   return {
@@ -146,7 +157,12 @@ export function labelSource(getLabels: () => readonly SuggestibleLabel[], limit 
         if (l.system && !word) continue;
         const operator = word ? "in" : (q.operator ?? "label");
         const value = word ?? quoteArg(l.path);
-        out.push({ key: l.path, label: l.path, detail: `${operator}:${word ?? l.path}`, text: replaceToken(q, `${q.negation}${operator}:${value}`) });
+        out.push({
+          key: l.path,
+          label: l.path,
+          detail: `${operator}:${word ?? l.path}`,
+          text: replaceToken(q, `${q.negation}${operator}:${value}`),
+        });
         if (out.length >= limit) break;
       }
       return out;
@@ -161,18 +177,23 @@ export interface Sender {
   email: string;
 }
 
-export function senderSource(getSenders: () => Promise<readonly Sender[]> | readonly Sender[], limit = 5): SuggestionSource {
+export function senderSource(
+  getSenders: () => Promise<readonly Sender[]> | readonly Sender[],
+  limit = 5,
+): SuggestionSource {
   return {
     id: "senders",
     heading: "People",
     async suggest(q) {
       const operator = q.operator;
-      if (operator !== null && operator !== "from" && operator !== "to" && operator !== "cc" && operator !== "bcc") return [];
+      if (operator !== null && operator !== "from" && operator !== "to" && operator !== "cc" && operator !== "bcc")
+        return [];
       if (operator === null && q.rest.length < 2) return [];
       const needle = q.rest.toLowerCase();
       const out: Suggestion[] = [];
       for (const s of await getSenders()) {
-        if (needle && !s.email.toLowerCase().includes(needle) && !(s.name ?? "").toLowerCase().includes(needle)) continue;
+        if (needle && !s.email.toLowerCase().includes(needle) && !(s.name ?? "").toLowerCase().includes(needle))
+          continue;
         out.push({
           key: s.email,
           label: s.name || s.email,

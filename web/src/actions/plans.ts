@@ -105,7 +105,12 @@ export function destroyIds(conversations: readonly Conversation[], scope: Conver
 // ---- Keywords --------------------------------------------------------------
 
 /** Set or clear a keyword on every message shown. */
-export function planKeyword(conversations: readonly Conversation[], scope: ConversationScope, keyword: string, on: boolean): MessagePlan {
+export function planKeyword(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  keyword: string,
+  on: boolean,
+): MessagePlan {
   return planEdits(conversations.map(asShown(scope)), () => ({ keywords: { [keyword]: on } }));
 }
 
@@ -115,7 +120,11 @@ export function planRead(conversations: readonly Conversation[], scope: Conversa
 }
 
 /** Mark important or not (the client-side `$important`), every message shown. */
-export function planImportant(conversations: readonly Conversation[], scope: ConversationScope, important: boolean): MessagePlan {
+export function planImportant(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  important: boolean,
+): MessagePlan {
   return planKeyword(conversations, scope, IMPORTANT, important);
 }
 
@@ -148,14 +157,20 @@ export interface LabelChange {
  * left in no label goes to All Mail (`roles.archive`).
  * @throws MissingLabelError("archive") when All Mail is needed and missing.
  */
-export function planLabels(conversations: readonly Conversation[], scope: ConversationScope, change: LabelChange): MessagePlan {
+export function planLabels(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  change: LabelChange,
+): MessagePlan {
   const add = change.add ?? [];
   const remove = (change.remove ?? []).filter((id) => !add.includes(id));
   return planEdits(conversations.map(asShown(scope)), (m) => {
     const mailboxIds: Record<Id, boolean> = {};
     for (const id of add) mailboxIds[id] = true;
     for (const id of remove) mailboxIds[id] = false;
-    const left = Object.keys(m.mailboxIds).filter((id) => !remove.includes(id)).length + add.filter((id) => !m.mailboxIds[id]).length;
+    const left =
+      Object.keys(m.mailboxIds).filter((id) => !remove.includes(id)).length +
+      add.filter((id) => !m.mailboxIds[id]).length;
     if (left === 0) {
       const archive = scope.roles.archive;
       if (archive === undefined) throw new MissingLabelError("archive");
@@ -170,7 +185,12 @@ export function planLabels(conversations: readonly Conversation[], scope: Conver
  * no `from` (Starred, All Mail, search) it only adds `to`, and moving to Trash
  * or Spam takes every label off, as Delete and Report spam do.
  */
-export function planMove(conversations: readonly Conversation[], scope: ConversationScope, from: Id | undefined, to: Id): MessagePlan {
+export function planMove(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  from: Id | undefined,
+  to: Id,
+): MessagePlan {
   if (to === scope.roles.trash || to === scope.roles.junk) {
     return planEdits(conversations.map(asMoved(scope)), (m) => moveOnly(m, to));
   }
@@ -198,7 +218,10 @@ function isDraftInDrafts(message: ConversationMessage, roles: MailboxRoles): boo
  * The messages archive, delete, move and report spam act on: those shown,
  * less any draft in Drafts, unless drafts are all there is.
  */
-export function movedMessages<M extends ConversationMessage>(conversation: Conversation<M>, scope: ConversationScope): readonly M[] {
+export function movedMessages<M extends ConversationMessage>(
+  conversation: Conversation<M>,
+  scope: ConversationScope,
+): readonly M[] {
   const shown = shownMessages(conversation, scope);
   const kept = shown.filter((m) => !isDraftInDrafts(m, scope.roles));
   return kept.length > 0 ? kept : shown;

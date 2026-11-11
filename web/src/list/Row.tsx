@@ -5,11 +5,27 @@
 import type { Id } from "@postern/jmap";
 import { Archive, Bookmark, Mail, MailOpen, Paperclip, Star, Trash2 } from "lucide-react";
 import { Fragment, memo, useMemo, type DragEvent, type MouseEvent, type ReactNode } from "react";
-import { isImportant, isStarred, isUnread, labelIdsOf, shownMessages, type ConversationScope } from "../actions/conversation";
+import {
+  isImportant,
+  isStarred,
+  isUnread,
+  labelIdsOf,
+  shownMessages,
+  type ConversationScope,
+} from "../actions/conversation";
 import { writeDrag } from "../labels/dragData";
 import { useLabelColor } from "../labels/useLabelPrefs";
 import { IconButton } from "../shell/IconButton";
-import { chipLabels, formatFullDate, formatListDate, parseHighlights, summarizeSenders, type ChipLabel, type SenderMode, type SenderSummary } from "./format";
+import {
+  chipLabels,
+  formatFullDate,
+  formatListDate,
+  parseHighlights,
+  summarizeSenders,
+  type ChipLabel,
+  type SenderMode,
+  type SenderSummary,
+} from "./format";
 import { snoozedUntil } from "../snooze/keyword";
 import { formatSnoozeTime } from "../snooze/times";
 import "../snooze/snooze.css";
@@ -131,7 +147,15 @@ function Highlighted({ html, fallback }: { html: string | null | undefined; fall
   );
 }
 
-export const ConversationRowView = memo(function ConversationRowView({ row, index, selected, open, tabbable, context, handlers }: RowProps) {
+export const ConversationRowView = memo(function ConversationRowView({
+  row,
+  index,
+  selected,
+  open,
+  tabbable,
+  context,
+  handlers,
+}: RowProps) {
   const { scope, me, senderMode, matches, labels, currentLabelId, now } = context;
   const view = useMemo(() => {
     const shown = shownMessages(row, scope);
@@ -146,7 +170,10 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
       snoozed: snoozedUntil(shown),
     };
   }, [row, scope, me, senderMode, matches, labels, currentLabelId]);
-  const date = useMemo(() => ({ text: formatListDate(row.receivedAt, now), full: formatFullDate(row.receivedAt) }), [row.receivedAt, now]);
+  const date = useMemo(
+    () => ({ text: formatListDate(row.receivedAt, now), full: formatFullDate(row.receivedAt) }),
+    [row.receivedAt, now],
+  );
 
   const stop = (fn: () => void) => (event: MouseEvent) => {
     event.stopPropagation();
@@ -257,7 +284,14 @@ export const ConversationRowView = memo(function ConversationRowView({ row, inde
         </time>
         <div className="list-hover">
           {context.canArchive ? (
-            <IconButton className="list-icon-btn" label="Archive" icon={Archive} tabIndex={-1} tooltip="end" onClick={stop(() => handlers.onArchive(row))} />
+            <IconButton
+              className="list-icon-btn"
+              label="Archive"
+              icon={Archive}
+              tabIndex={-1}
+              tooltip="end"
+              onClick={stop(() => handlers.onArchive(row))}
+            />
           ) : null}
           <IconButton
             className="list-icon-btn"

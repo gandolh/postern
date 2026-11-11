@@ -56,7 +56,9 @@ describe("EventStreamParser", () => {
       }
     }
     // A CR at a chunk end and the LF at the next chunk's start are one line ending, not two.
-    expect(parse(["data: a\r", "\ndata: b\r", "\n\r", "\n"]).events).toEqual([{ type: "message", data: "a\nb", lastEventId: "" }]);
+    expect(parse(["data: a\r", "\ndata: b\r", "\n\r", "\n"]).events).toEqual([
+      { type: "message", data: "a\nb", lastEventId: "" },
+    ]);
   });
 
   it("reports comments and ignores them as events", () => {

@@ -20,6 +20,9 @@ export function SearchConversation({ route, conversationId }: { route: SearchRes
       </ConnectionLost>
     );
   }
-  if (!parsed) return <ConversationLoading backHref={formatRoute(withoutConversation(route))} backLabel="Back to search results" />;
+  if (!parsed)
+    return (
+      <ConversationLoading backHref={formatRoute(withoutConversation(route))} backLabel="Back to search results" />
+    );
   return <ConversationView route={route} conversationId={conversationId} label={null} scope={parsed.scope} />;
 }

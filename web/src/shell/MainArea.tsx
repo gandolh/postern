@@ -38,7 +38,9 @@ export function MainArea({ route }: { route: Route }) {
         <MailSplit
           pane={readingPane}
           list={<SearchRoute key={formatRoute(withoutConversation(route))} route={route} />}
-          conversation={route.conversationId ? <SearchConversation route={route} conversationId={route.conversationId} /> : null}
+          conversation={
+            route.conversationId ? <SearchConversation route={route} conversationId={route.conversationId} /> : null
+          }
         />
       );
     default:
@@ -76,7 +78,11 @@ function LabelArea({ route, pane }: { route: LabelRoute; pane: ReadingPane }) {
     <MailSplit
       pane={pane}
       list={<ListRoute key={formatRoute(withoutConversation(route))} route={route} label={label} />}
-      conversation={route.conversationId ? <ConversationView route={route} conversationId={route.conversationId} label={label} /> : null}
+      conversation={
+        route.conversationId ? (
+          <ConversationView route={route} conversationId={route.conversationId} label={label} />
+        ) : null
+      }
     />
   );
 }

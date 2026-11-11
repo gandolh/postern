@@ -11,4 +11,13 @@
 export { PhoneComposeButton } from "./ComposeButton";
 export { useListGestures, type ListGestureOptions } from "./useListGestures";
 export { SwipeSettings } from "./SwipeSettings";
-export { classify, PullTracker, swipeLabel, swipeOutcome, SwipeTracker, type Direction, type Gesture, type SwipeContext } from "./gestures";
+export {
+  classify,
+  PullTracker,
+  swipeLabel,
+  swipeOutcome,
+  SwipeTracker,
+  type Direction,
+  type Gesture,
+  type SwipeContext,
+} from "./gestures";

@@ -19,11 +19,19 @@ export interface UseListStoreOptions {
 }
 
 /** The store for `query` (a new one when the query's key changes) and its snapshot. */
-export function useListStore(client: JmapClient, query: ListQuery, options: UseListStoreOptions = {}): { store: ListStore; snapshot: ListSnapshot } {
+export function useListStore(
+  client: JmapClient,
+  query: ListQuery,
+  options: UseListStoreOptions = {},
+): { store: ListStore; snapshot: ListSnapshot } {
   const conversationView = options.conversationView ?? true;
   const key = queryKey(query, conversationView);
   const store = useMemo(
-    () => new ListStore(client, query, { accountId: () => (client.hasSession ? client.accountId : undefined), conversationView }),
+    () =>
+      new ListStore(client, query, {
+        accountId: () => (client.hasSession ? client.accountId : undefined),
+        conversationView,
+      }),
     // The query object may be rebuilt each render; the key (which carries the mode) decides when the list is a different list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [client, key],

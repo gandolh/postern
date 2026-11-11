@@ -13,12 +13,16 @@ function editor(html: string): HTMLDivElement {
 
 describe("the HTML Postern sends", () => {
   it("keeps the allowed structure and drops whatever the browser added", () => {
-    const root = editor(`<div id="x" style="color:red" data-foo="1">Hi <strong class="c">Bob</strong> <span style="font-size:20px">and</span> <font color="red">Carol</font></div>`);
+    const root = editor(
+      `<div id="x" style="color:red" data-foo="1">Hi <strong class="c">Bob</strong> <span style="font-size:20px">and</span> <font color="red">Carol</font></div>`,
+    );
     expect(serializeEditor(root).html).toBe("<div>Hi <b>Bob</b> and Carol</div>");
   });
 
   it("sends images as cid: references and drops images it did not upload", () => {
-    const root = editor(`<div><img src="blob:http://localhost/1" ${CID_ATTR}="a@postern" alt="pic" width="40"><img src="https://evil.test/x.png"></div>`);
+    const root = editor(
+      `<div><img src="blob:http://localhost/1" ${CID_ATTR}="a@postern" alt="pic" width="40"><img src="https://evil.test/x.png"></div>`,
+    );
     const out = serializeEditor(root);
     expect(out.html).toBe('<div><img src="cid:a@postern" alt="pic" width="40"></div>');
     expect(out.cids).toEqual(["a@postern"]);
@@ -26,8 +30,12 @@ describe("the HTML Postern sends", () => {
   });
 
   it("keeps safe links only", () => {
-    const root = editor(`<a href="https://ok.test/">ok</a> <a href="javascript:alert(1)">bad</a> <a href="mailto:bob@x.test">Bob</a>`);
-    expect(serializeEditor(root).html).toBe('<a href="https://ok.test/">ok</a> bad <a href="mailto:bob@x.test">Bob</a>');
+    const root = editor(
+      `<a href="https://ok.test/">ok</a> <a href="javascript:alert(1)">bad</a> <a href="mailto:bob@x.test">Bob</a>`,
+    );
+    expect(serializeEditor(root).html).toBe(
+      '<a href="https://ok.test/">ok</a> bad <a href="mailto:bob@x.test">Bob</a>',
+    );
   });
 
   it("escapes text and removes the caret's invisible characters", () => {
@@ -36,7 +44,9 @@ describe("the HTML Postern sends", () => {
   });
 
   it("gives quotes Gmail's border", () => {
-    expect(serializeEditor(editor("<blockquote>q</blockquote>")).html).toContain('style="margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"');
+    expect(serializeEditor(editor("<blockquote>q</blockquote>")).html).toContain(
+      'style="margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"',
+    );
   });
 });
 
@@ -45,18 +55,34 @@ describe("the text/plain alternative", () => {
     const root = editor(
       `<div>Hello Bob,</div><div><br></div><ul><li>one</li><li>two</li></ul><ol start="3"><li>three</li><li>four</li></ol><blockquote><div>quoted</div><div>more</div></blockquote><div>See <a href="https://docs.test/">the docs</a> or https://x.test/</div>`,
     );
-    expect(serializeEditor(root).text).toBe(["Hello Bob,", "", "- one", "- two", "3. three", "4. four", "> quoted", "> more", "See the docs <https://docs.test/> or https://x.test/"].join("\n"));
+    expect(serializeEditor(root).text).toBe(
+      [
+        "Hello Bob,",
+        "",
+        "- one",
+        "- two",
+        "3. three",
+        "4. four",
+        "> quoted",
+        "> more",
+        "See the docs <https://docs.test/> or https://x.test/",
+      ].join("\n"),
+    );
   });
 
   it('keeps the "-- " signature separator', () => {
-    const root = editor(`<div>Hi</div><div><br></div><div class="gmail_signature postern_signature">-- <br>Alice</div>`);
+    const root = editor(
+      `<div>Hi</div><div><br></div><div class="gmail_signature postern_signature">-- <br>Alice</div>`,
+    );
     const out = serializeEditor(root);
     expect(out.text).toBe("Hi\n\n-- \nAlice");
     expect(out.html).toContain('<div class="gmail_signature postern_signature">-- <br>Alice</div>');
   });
 
   it("leaves the quote and the signature out of what the user wrote", () => {
-    const root = editor(`<div>The file is below.</div><div class="postern_signature">-- <br>Alice, see attached CV</div><div class="gmail_quote postern_quote"><div class="gmail_attr">On Tue, Bob wrote:<br></div><blockquote>I attached it</blockquote></div>`);
+    const root = editor(
+      `<div>The file is below.</div><div class="postern_signature">-- <br>Alice, see attached CV</div><div class="gmail_quote postern_quote"><div class="gmail_attr">On Tue, Bob wrote:<br></div><blockquote>I attached it</blockquote></div>`,
+    );
     const out = serializeEditor(root);
     expect(out.ownText).toBe("The file is below.");
     expect(out.text).toContain("> I attached it");

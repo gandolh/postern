@@ -6,7 +6,16 @@
 // makes the same checks.
 
 import { mentionsAttachment } from "@postern/jmap";
-import { ChevronDown, Ellipsis, ExternalLink, Image as ImageIcon, MoreVertical, Paperclip, Trash2, Type } from "lucide-react";
+import {
+  ChevronDown,
+  Ellipsis,
+  ExternalLink,
+  Image as ImageIcon,
+  MoreVertical,
+  Paperclip,
+  Trash2,
+  Type,
+} from "lucide-react";
 import { useEffect, useId, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { IconButton } from "../shell/IconButton";
@@ -86,10 +95,13 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
     const state = session.state;
     const all = [...state.to, ...state.cc, ...state.bcc];
     const invalid = all.find((r) => !r.valid);
-    if (invalid) return `“${invalid.raw || invalid.email}” isn't a valid email address. Fix it or remove it, then send.`;
+    if (invalid)
+      return `“${invalid.raw || invalid.email}” isn't a valid email address. Fix it or remove it, then send.`;
     if (all.length === 0) return "Add at least one recipient.";
-    if ([...state.files, ...state.inline].some((f) => f.status === "uploading")) return "Wait for the attachments to finish uploading.";
-    if ([...state.files, ...state.inline].some((f) => f.status === "error")) return "Some files didn't upload. Remove them or attach them again.";
+    if ([...state.files, ...state.inline].some((f) => f.status === "uploading"))
+      return "Wait for the attachments to finish uploading.";
+    if ([...state.files, ...state.inline].some((f) => f.status === "error"))
+      return "Some files didn't upload. Remove them or attach them again.";
     return null;
   }
 
@@ -167,7 +179,13 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   const afterText = (
     <>
       {state.quote ? (
-        <button type="button" className="compose-trimmed" aria-label="Show trimmed content" title="Show trimmed content" onClick={() => session.showQuote()}>
+        <button
+          type="button"
+          className="compose-trimmed"
+          aria-label="Show trimmed content"
+          title="Show trimmed content"
+          onClick={() => session.showQuote()}
+        >
           <Ellipsis aria-hidden="true" />
         </button>
       ) : null}
@@ -200,7 +218,12 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
           <label className="compose-row-label" htmlFor={fromId}>
             From
           </label>
-          <select id={fromId} className="compose-select" value={state.identityId ?? ""} onChange={(e) => session.setIdentity(e.target.value)}>
+          <select
+            id={fromId}
+            className="compose-select"
+            value={state.identityId ?? ""}
+            onChange={(e) => session.setIdentity(e.target.value)}
+          >
             {identities.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name ? `${i.name} <${i.email}>` : i.email}
@@ -209,15 +232,33 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
           </select>
         </div>
       ) : null}
-      <RecipientInput ref={toRef} session={session} source={store.recipients} field="to" label="To" recipients={state.to} trailing={ccBcc} />
-      {state.showCc ? <RecipientInput session={session} source={store.recipients} field="cc" label="Cc" recipients={state.cc} /> : null}
-      {state.showBcc ? <RecipientInput session={session} source={store.recipients} field="bcc" label="Bcc" recipients={state.bcc} /> : null}
+      <RecipientInput
+        ref={toRef}
+        session={session}
+        source={store.recipients}
+        field="to"
+        label="To"
+        recipients={state.to}
+        trailing={ccBcc}
+      />
+      {state.showCc ? (
+        <RecipientInput session={session} source={store.recipients} field="cc" label="Cc" recipients={state.cc} />
+      ) : null}
+      {state.showBcc ? (
+        <RecipientInput session={session} source={store.recipients} field="bcc" label="Bcc" recipients={state.bcc} />
+      ) : null}
       {variant === "window" ? (
         <div className="compose-row">
           <label className="visually-hidden" htmlFor={subjectId}>
             Subject
           </label>
-          <input id={subjectId} className="compose-input compose-subject" placeholder="Subject" value={state.subject} onChange={(e) => session.setSubject(e.target.value)} />
+          <input
+            id={subjectId}
+            className="compose-input compose-subject"
+            placeholder="Subject"
+            value={state.subject}
+            onChange={(e) => session.setSubject(e.target.value)}
+          />
         </div>
       ) : null}
 
@@ -238,11 +279,25 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       <div className="compose-body">
         {state.plain ? (
           <>
-            <textarea ref={textRef} className="compose-plain" aria-label="Message body" value={state.text} onChange={(e) => session.setText(e.target.value)} spellCheck />
+            <textarea
+              ref={textRef}
+              className="compose-plain"
+              aria-label="Message body"
+              value={state.text}
+              onChange={(e) => session.setText(e.target.value)}
+              spellCheck
+            />
             {afterText}
           </>
         ) : (
-          <Editor session={session} revision={state.revision} label="Message body" showToolbar={toolbar} toolbarId={toolbarId} onAttach={(files) => session.addFiles(files)}>
+          <Editor
+            session={session}
+            revision={state.revision}
+            label="Message body"
+            showToolbar={toolbar}
+            toolbarId={toolbarId}
+            onAttach={(files) => session.addFiles(files)}
+          >
             {afterText}
           </Editor>
         )}
@@ -250,16 +305,33 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
 
       <div className="compose-footer">
         <span className="compose-send-group" data-split={canSchedule || undefined} ref={sendMenuAnchor}>
-          <button type="button" className="btn btn-primary compose-send" onClick={() => send()} aria-describedby={state.sendError ? errorId : undefined} title="Send (Ctrl+Enter)">
+          <button
+            type="button"
+            className="btn btn-primary compose-send"
+            onClick={() => send()}
+            aria-describedby={state.sendError ? errorId : undefined}
+            title="Send (Ctrl+Enter)"
+          >
             Send
           </button>
           {canSchedule ? (
             <Menu.Root modal={false} open={sendMenu} onOpenChange={setSendMenu}>
-              <Menu.Trigger ref={sendMenuButton} className="btn btn-primary compose-send-more" aria-label="More send options" title="More send options">
+              <Menu.Trigger
+                ref={sendMenuButton}
+                className="btn btn-primary compose-send-more"
+                aria-label="More send options"
+                title="More send options"
+              >
                 <ChevronDown aria-hidden="true" />
               </Menu.Trigger>
               <Menu.Portal container={sendMenuContainer}>
-                <Menu.Positioner className="compose-menu-positioner" side="top" align="start" sideOffset={4} collisionPadding={8}>
+                <Menu.Positioner
+                  className="compose-menu-positioner"
+                  side="top"
+                  align="start"
+                  sideOffset={4}
+                  collisionPadding={8}
+                >
                   <Menu.Popup
                     className="compose-menu"
                     onKeyDown={(e) => {
@@ -294,15 +366,29 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
           ) : null}
         </span>
         {!state.plain ? (
-          <IconButton label="Formatting options" icon={Type} aria-pressed={toolbar} aria-controls={toolbarId} onClick={() => setToolbar((t) => !t)} />
+          <IconButton
+            label="Formatting options"
+            icon={Type}
+            aria-pressed={toolbar}
+            aria-controls={toolbarId}
+            onClick={() => setToolbar((t) => !t)}
+          />
         ) : null}
         <IconButton label="Attach files" icon={Paperclip} onClick={() => fileRef.current?.click()} />
-        {!state.plain ? <IconButton label="Insert photo" icon={ImageIcon} onClick={() => imageRef.current?.click()} /> : null}
+        {!state.plain ? (
+          <IconButton label="Insert photo" icon={ImageIcon} onClick={() => imageRef.current?.click()} />
+        ) : null}
         <span className="compose-menu-wrap" ref={menuAnchor}>
           <Menu.Root modal={false} open={menu} onOpenChange={setMenu}>
             <Menu.Trigger ref={menuButton} render={<IconButton label="More options" icon={MoreVertical} />} />
             <Menu.Portal container={menuContainer}>
-              <Menu.Positioner className="compose-menu-positioner" side="top" align="start" sideOffset={4} collisionPadding={8}>
+              <Menu.Positioner
+                className="compose-menu-positioner"
+                side="top"
+                align="start"
+                sideOffset={4}
+                collisionPadding={8}
+              >
                 <Menu.Popup
                   className="compose-menu"
                   onKeyDown={(e) => {
@@ -340,13 +426,22 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
             </Menu.Portal>
           </Menu.Root>
         </span>
-        {variant === "inline" && onPopOut ? <IconButton label="Pop out reply" icon={ExternalLink} onClick={onPopOut} /> : null}
+        {variant === "inline" && onPopOut ? (
+          <IconButton label="Pop out reply" icon={ExternalLink} onClick={onPopOut} />
+        ) : null}
         <span className="compose-save" role="status" aria-live="polite">
           {saveLabel(state)}
         </span>
         <IconButton label="Discard draft" icon={Trash2} tooltip="end" onClick={() => setQuestion("discard")} />
         <input ref={fileRef} type="file" multiple hidden onChange={(e) => onPickFiles(e, false)} />
-        <input ref={imageRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden onChange={(e) => onPickFiles(e, true)} />
+        <input
+          ref={imageRef}
+          type="file"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          multiple
+          hidden
+          onChange={(e) => onPickFiles(e, true)}
+        />
       </div>
 
       {question === "attachment" ? (

@@ -16,7 +16,10 @@ import { readAuthenticationResults } from "./people";
 export const ORIGINAL_SHOWN_CHARS = 2_000_000;
 
 async function fetchOriginal(client: JmapClient, message: ConvMessage, signal: AbortSignal): Promise<string> {
-  const res = await client.blob.download({ blobId: message.blobId, name: "original.eml", type: "text/plain" }, { signal });
+  const res = await client.blob.download(
+    { blobId: message.blobId, name: "original.eml", type: "text/plain" },
+    { signal },
+  );
   return res.text();
 }
 
@@ -48,7 +51,13 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
         <IconButton
           label="Download original"
           icon={Download}
-          onClick={() => void saveAttachment(client, { blobId: message.blobId, name: `${subject.slice(0, 60).replace(/[\\/:*?"<>|]+/g, "_")}.eml`, type: "message/rfc822" }).catch(() => {})}
+          onClick={() =>
+            void saveAttachment(client, {
+              blobId: message.blobId,
+              name: `${subject.slice(0, 60).replace(/[\\/:*?"<>|]+/g, "_")}.eml`,
+              type: "message/rfc822",
+            }).catch(() => {})
+          }
         />
         <IconButton label="Close" icon={X} onClick={onClose} tooltip="end" data-autofocus />
       </header>
@@ -58,9 +67,15 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
         {auth ? (
           <>
             <dt>SPF</dt>
-            <dd>{auth.spf ?? "none"}{auth.mailedBy ? ` (${auth.mailedBy})` : ""}</dd>
+            <dd>
+              {auth.spf ?? "none"}
+              {auth.mailedBy ? ` (${auth.mailedBy})` : ""}
+            </dd>
             <dt>DKIM</dt>
-            <dd>{auth.dkim ?? "none"}{auth.signedBy ? ` (${auth.signedBy})` : ""}</dd>
+            <dd>
+              {auth.dkim ?? "none"}
+              {auth.signedBy ? ` (${auth.signedBy})` : ""}
+            </dd>
             <dt>DMARC</dt>
             <dd>{auth.dmarc ?? "none"}</dd>
             {auth.checkedBy ? (

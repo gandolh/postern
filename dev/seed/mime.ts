@@ -252,7 +252,12 @@ export function buildMessage(spec: MessageSpec): string {
 // ------------------------------------------------------------------- binaries
 
 /** A width x height RGB PNG with a diagonal two-colour gradient. */
-export function png(width: number, height: number, from: [number, number, number], to: [number, number, number]): Uint8Array {
+export function png(
+  width: number,
+  height: number,
+  from: [number, number, number],
+  to: [number, number, number],
+): Uint8Array {
   const raw = Buffer.alloc((width * 3 + 1) * height);
   for (let y = 0; y < height; y++) {
     const row = y * (width * 3 + 1);
@@ -319,7 +324,10 @@ export function pdf(title: string, lines: readonly string[]): Uint8Array {
 }
 
 function icsDate(d: Date): string {
-  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return d
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 
 export interface CalendarEvent {
@@ -364,7 +372,8 @@ export function ics(method: string, e: CalendarEvent): string {
       `DESCRIPTION:${text(e.description)}`,
       `ORGANIZER;CN=${e.organizer.name ?? e.organizer.email}:mailto:${e.organizer.email}`,
       ...e.attendees.map(
-        (a) => `ATTENDEE;CN=${a.name ?? a.email};ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${a.email}`,
+        (a) =>
+          `ATTENDEE;CN=${a.name ?? a.email};ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${a.email}`,
       ),
       "END:VEVENT",
       "END:VCALENDAR",

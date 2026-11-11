@@ -8,7 +8,14 @@ import { publishMailChange } from "../actions";
 import { useAccount, useJmap } from "../auth";
 import { useLabels, useLabelsStore } from "../labels/useLabels";
 import { applyListStateChange } from "../list";
-import { getDesktopNotifications, NewMailDetector, notifyNewMail, setNotifyAccount, subscribeDesktopNotifications, type InboxMessage } from "../notify";
+import {
+  getDesktopNotifications,
+  NewMailDetector,
+  notifyNewMail,
+  setNotifyAccount,
+  subscribeDesktopNotifications,
+  type InboxMessage,
+} from "../notify";
 import { getRoute, navigate } from "../shell/router";
 import { TopBarStatus } from "../shell/status";
 import { statusMessage } from "./status";
@@ -84,7 +91,12 @@ export function LiveHost() {
               permission: () => (typeof Notification === "undefined" ? "unsupported" : Notification.permission),
               watchingInbox: () => {
                 const route = getRoute();
-                return document.visibilityState === "visible" && document.hasFocus() && route.kind === "system" && route.view === "inbox";
+                return (
+                  document.visibilityState === "visible" &&
+                  document.hasFocus() &&
+                  route.kind === "system" &&
+                  route.view === "inbox"
+                );
               },
               focusWindow: () => window.focus(),
               openConversation: (threadId) => navigate({ kind: "system", view: "inbox", conversationId: threadId }),
@@ -98,7 +110,11 @@ export function LiveHost() {
       return looking;
     };
 
-    const reader = client.push({ types: ["Email", "Mailbox", "Thread", "EmailDelivery"], pollIntervalMs: POLL_MS, streamRetryMs: 60_000 });
+    const reader = client.push({
+      types: ["Email", "Mailbox", "Thread", "EmailDelivery"],
+      pollIntervalMs: POLL_MS,
+      streamRetryMs: 60_000,
+    });
     const accountId = () => client.accountId;
     const onChange = (change: StateChange) => {
       const types = change.changed[accountId()] ?? {};

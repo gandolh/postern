@@ -52,7 +52,12 @@ export function describeNewMail(messages: readonly NoticeMessage[]): NewMailNoti
     const newest = messages[messages.length - 1]?.threadId;
     return [{ title: `${messages.length} new messages`, tag: NEW_MAIL_TAG, ...(newest ? { threadId: newest } : {}) }];
   }
-  return messages.map((m) => ({ title: senderOf(m), body: m.subject?.trim() || "(no subject)", tag: m.threadId, threadId: m.threadId }));
+  return messages.map((m) => ({
+    title: senderOf(m),
+    body: m.subject?.trim() || "(no subject)",
+    tag: m.threadId,
+    threadId: m.threadId,
+  }));
 }
 
 /** Notifies for each message (or once for a burst). Returns how many notifications were shown. */
@@ -61,7 +66,12 @@ export function notifyNewMail(messages: readonly InboxMessage[], deps: NotifyDep
   const notices = describeNewMail(messages);
   for (const notice of notices) {
     const hash = notice.threadId ? `#inbox/${notice.threadId}` : "#inbox";
-    const n = deps.create(notice.title, { ...(notice.body !== undefined ? { body: notice.body } : {}), tag: notice.tag, icon: deps.icon, data: { hash } });
+    const n = deps.create(notice.title, {
+      ...(notice.body !== undefined ? { body: notice.body } : {}),
+      tag: notice.tag,
+      icon: deps.icon,
+      data: { hash },
+    });
     n.onclick = () => {
       deps.focusWindow();
       if (notice.threadId) deps.openConversation(notice.threadId);

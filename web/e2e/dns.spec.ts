@@ -26,7 +26,10 @@ const MESSAGE_HOSTS = [
 test("no host named in a message is looked up before Display images", async () => {
   test.setTimeout(180_000);
   const netLog = test.info().outputPath("netlog.json");
-  const browser = await chromium.launch({ channel: "chromium", args: [`--log-net-log=${netLog}`, "--net-log-capture-mode=Default"] });
+  const browser = await chromium.launch({
+    channel: "chromium",
+    args: [`--log-net-log=${netLog}`, "--net-log-capture-mode=Default"],
+  });
   try {
     const context = await browser.newContext({ serviceWorkers: "block" });
     const page = await context.newPage();
@@ -39,7 +42,8 @@ test("no host named in a message is looked up before Display images", async () =
         await frame.scrollIntoViewIfNeeded();
         const box = await frame.boundingBox();
         // Point at everything (hover, no click): Chrome may prefetch or preconnect a hovered link's host.
-        if (box) for (let y = box.y + 4; y < Math.min(box.y + box.height, 700); y += 18) await page.mouse.move(box.x + 40, y);
+        if (box)
+          for (let y = box.y + 4; y < Math.min(box.y + box.height, 700); y += 18) await page.mouse.move(box.x + 40, y);
       }
       await page.waitForTimeout(500);
     }

@@ -120,7 +120,11 @@ export class QueryStore {
 
   /** A stable key for a filter and sort, for keying stores. */
   static keyOf(args: { filter?: unknown; sort?: unknown; collapseThreads?: boolean }): string {
-    return stableStringify({ filter: args.filter ?? null, sort: args.sort ?? null, collapseThreads: args.collapseThreads ?? false });
+    return stableStringify({
+      filter: args.filter ?? null,
+      sort: args.sort ?? null,
+      collapseThreads: args.collapseThreads ?? false,
+    });
   }
 
   get queryState(): string | null {
@@ -228,14 +232,7 @@ export class StateCache {
 
 /** Types with standard /changes and /get methods. */
 export type SyncableType =
-  | "Mailbox"
-  | "Thread"
-  | "Email"
-  | "Identity"
-  | "EmailSubmission"
-  | "Quota"
-  | "AddressBook"
-  | "ContactCard";
+  "Mailbox" | "Thread" | "Email" | "Identity" | "EmailSubmission" | "Quota" | "AddressBook" | "ContactCard";
 
 export interface SyncObjectsOptions {
   /** Properties to fetch for created and updated objects. */
@@ -263,7 +260,11 @@ export async function syncObjects<T extends { id: Id }>(
   const properties = options.properties;
 
   if (store.state === null) {
-    const res = (await caller.call(getName, { ids: null, properties } as CallArgs<MethodName>, options)) as unknown as GetResponse<T>;
+    const res = (await caller.call(
+      getName,
+      { ids: null, properties } as CallArgs<MethodName>,
+      options,
+    )) as unknown as GetResponse<T>;
     store.reset(res);
     return { status: "changed", state: res.state, created: res.list.map((o) => o.id), updated: [], destroyed: [] };
   }
@@ -288,7 +289,11 @@ export async function syncObjects<T extends { id: Id }>(
     const wanted = new Set(store.applyChanges(changes).fetch);
     if (options.includeCreated === false) for (const id of changes.created) wanted.delete(id);
     if (wanted.size > 0) {
-      const res = (await caller.call(getName, { ids: [...wanted], properties } as CallArgs<MethodName>, options)) as unknown as GetResponse<T>;
+      const res = (await caller.call(
+        getName,
+        { ids: [...wanted], properties } as CallArgs<MethodName>,
+        options,
+      )) as unknown as GetResponse<T>;
       store.put(res);
     }
     created.push(...changes.created);
@@ -302,10 +307,14 @@ export async function syncObjects<T extends { id: Id }>(
 }
 
 /** Query methods with a `/queryChanges` counterpart. */
-export type QueryMethod = "Email/query" | "Mailbox/query" | "EmailSubmission/query" | "Quota/query" | "ContactCard/query";
+export type QueryMethod =
+  "Email/query" | "Mailbox/query" | "EmailSubmission/query" | "Quota/query" | "ContactCard/query";
 
 /** A query's arguments for `syncQuery`: everything but the window, which the store manages. */
-export type QuerySyncArgs<M extends QueryMethod> = Omit<CallArgs<M>, "position" | "anchor" | "anchorOffset" | "#position" | "#anchor" | "#anchorOffset">;
+export type QuerySyncArgs<M extends QueryMethod> = Omit<
+  CallArgs<M>,
+  "position" | "anchor" | "anchorOffset" | "#position" | "#anchor" | "#anchorOffset"
+>;
 
 export type QuerySyncResult =
   | { status: "unchanged"; queryState: string }
@@ -329,13 +338,22 @@ export async function syncQuery<M extends QueryMethod>(
     const query = { ...rest, position: 0, limit: options.limit ?? limit } as CallArgs<MethodName>;
     const res = (await caller.call(method, query, options)) as QueryResponse;
     store.applyQuery(res);
-    return { status: "changed", queryState: res.queryState, removed: [], added: res.ids.map((id, index) => ({ id, index })) };
+    return {
+      status: "changed",
+      queryState: res.queryState,
+      removed: [],
+      added: res.ids.map((id, index) => ({ id, index })),
+    };
   }
   const changesMethod = method.replace("/query", "/queryChanges") as MethodName;
   const upToId = store.ids[store.ids.length - 1];
   let res: QueryChangesResponse;
   try {
-    res = (await caller.call(changesMethod, { ...rest, sinceQueryState: queryState, upToId } as CallArgs<MethodName>, options)) as unknown as QueryChangesResponse;
+    res = (await caller.call(
+      changesMethod,
+      { ...rest, sinceQueryState: queryState, upToId } as CallArgs<MethodName>,
+      options,
+    )) as unknown as QueryChangesResponse;
   } catch (err) {
     if (!isResync(err)) throw err;
     store.clear();

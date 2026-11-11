@@ -16,8 +16,17 @@ afterEach(() => forgetMessageRows());
 
 describe("messageRowRoute", () => {
   it("names the conversation and the message, on the same list", () => {
-    expect(messageRowRoute({ kind: "label", labelId: "i" }, row("m2", "T1"))).toEqual({ kind: "label", labelId: "i", conversationId: "T1", messageId: "m2" });
-    expect(messageRowRoute({ ...INBOX, conversationId: "T9", messageId: "x" }, row("m2", "T1"))).toEqual({ ...INBOX, conversationId: "T1", messageId: "m2" });
+    expect(messageRowRoute({ kind: "label", labelId: "i" }, row("m2", "T1"))).toEqual({
+      kind: "label",
+      labelId: "i",
+      conversationId: "T1",
+      messageId: "m2",
+    });
+    expect(messageRowRoute({ ...INBOX, conversationId: "T9", messageId: "x" }, row("m2", "T1"))).toEqual({
+      ...INBOX,
+      conversationId: "T1",
+      messageId: "m2",
+    });
   });
 });
 
@@ -64,7 +73,9 @@ describe("openNeighbourRow", () => {
 
   it("follows the list it came from, with the open message", () => {
     holdMessageRows({ kind: "search", query: "from:bob" }, ROWS, () => {});
-    expect(openNeighbourRow({ kind: "search", query: "from:bob", conversationId: "T1", messageId: "m3" }, 1)).toBe(true);
+    expect(openNeighbourRow({ kind: "search", query: "from:bob", conversationId: "T1", messageId: "m3" }, 1)).toBe(
+      true,
+    );
     expect(window.location.hash).toBe("#search/from%3Abob/T1/m2");
   });
 });

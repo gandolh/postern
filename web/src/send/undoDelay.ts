@@ -18,5 +18,7 @@ export function getUndoSendDelay(): number {
 
 /** Set the hold (0 sends at once; capped at 30 s). Takes effect for the next send. */
 export function setUndoSendDelay(ms: number): void {
-  delayMs = Number.isFinite(ms) ? Math.min(MAX_UNDO_SEND_DELAY_MS, Math.max(0, Math.round(ms))) : DEFAULT_UNDO_SEND_DELAY_MS;
+  delayMs = Number.isFinite(ms)
+    ? Math.min(MAX_UNDO_SEND_DELAY_MS, Math.max(0, Math.round(ms)))
+    : DEFAULT_UNDO_SEND_DELAY_MS;
 }

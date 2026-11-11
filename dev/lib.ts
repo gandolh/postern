@@ -48,11 +48,7 @@ export function fail(message: string): never {
   process.exit(1);
 }
 
-export const USING = [
-  "urn:ietf:params:jmap:core",
-  "urn:ietf:params:jmap:mail",
-  "urn:ietf:params:jmap:submission",
-];
+export const USING = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
 
 export type Invocation = [name: string, args: Record<string, unknown>, callId: string];
 

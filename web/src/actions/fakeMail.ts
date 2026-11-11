@@ -57,7 +57,14 @@ function session(maxObjectsInSet: number, maxObjectsInGet: number): SessionObjec
       },
       "urn:ietf:params:jmap:mail": {},
     },
-    accounts: { [ACCOUNT]: { name: "alice@postern.test", isPersonal: true, isReadOnly: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {} } } },
+    accounts: {
+      [ACCOUNT]: {
+        name: "alice@postern.test",
+        isPersonal: true,
+        isReadOnly: false,
+        accountCapabilities: { "urn:ietf:params:jmap:mail": {} },
+      },
+    },
     primaryAccounts: { "urn:ietf:params:jmap:mail": ACCOUNT, "urn:ietf:params:jmap:core": ACCOUNT },
     username: "alice@postern.test",
     apiUrl: "http://fake/jmap/",
@@ -110,7 +117,12 @@ export class FakeMail {
   #mailboxState = 0;
   #nextId = 1;
 
-  constructor(options: { mailboxes: FakeMailbox[]; emails: FakeEmail[]; maxObjectsInSet?: number; maxObjectsInGet?: number }) {
+  constructor(options: {
+    mailboxes: FakeMailbox[];
+    emails: FakeEmail[];
+    maxObjectsInSet?: number;
+    maxObjectsInGet?: number;
+  }) {
     this.mailboxes = clone(options.mailboxes);
     for (const e of options.emails) this.emails.set(e.id, clone(e));
     this.maxObjectsInSet = options.maxObjectsInSet ?? 500;
@@ -124,7 +136,11 @@ export class FakeMail {
 
   /** A connected client on this server. */
   async connect(): Promise<JmapClient> {
-    const client = new JmapClient({ baseUrl: "http://fake", auth: { authorization: () => "Basic test" }, fetch: this.fetch });
+    const client = new JmapClient({
+      baseUrl: "http://fake",
+      auth: { authorization: () => "Basic test" },
+      fetch: this.fetch,
+    });
     await client.connect();
     return client;
   }
@@ -207,7 +223,11 @@ export class FakeMail {
       case "SearchSnippet/get":
         return {
           accountId: ACCOUNT,
-          list: ((args["emailIds"] as Id[]) ?? []).map((id) => ({ emailId: id, subject: `<mark>${this.emails.get(id)?.subject ?? ""}</mark>`, preview: null })),
+          list: ((args["emailIds"] as Id[]) ?? []).map((id) => ({
+            emailId: id,
+            subject: `<mark>${this.emails.get(id)?.subject ?? ""}</mark>`,
+            preview: null,
+          })),
           notFound: null,
         };
       default:
@@ -242,7 +262,13 @@ export class FakeMail {
     const ascending = sort?.isAscending ?? false;
     const list = [...emails.values()]
       .filter((e) => this.#matches(e, args["filter"]))
-      .sort((a, b) => (a.receivedAt === b.receivedAt ? (a.id < b.id ? 1 : -1) : (a.receivedAt < b.receivedAt ? -1 : 1) * (ascending ? 1 : -1)));
+      .sort((a, b) =>
+        a.receivedAt === b.receivedAt
+          ? a.id < b.id
+            ? 1
+            : -1
+          : (a.receivedAt < b.receivedAt ? -1 : 1) * (ascending ? 1 : -1),
+      );
     if (!args["collapseThreads"]) return list.map((e) => e.id);
     const seen = new Set<Id>();
     return list.filter((e) => (seen.has(e.threadId) ? false : (seen.add(e.threadId), true))).map((e) => e.id);
@@ -304,10 +330,17 @@ export class FakeMail {
     const ids = [...new Set((args["ids"] as Id[]) ?? [])];
     if (ids.length > this.maxObjectsInGet) throw new MethodError("requestTooLarge");
     const list = ids.flatMap((id) => {
-      const emails = [...this.emails.values()].filter((e) => e.threadId === id).sort((a, b) => (a.receivedAt < b.receivedAt ? -1 : 1));
+      const emails = [...this.emails.values()]
+        .filter((e) => e.threadId === id)
+        .sort((a, b) => (a.receivedAt < b.receivedAt ? -1 : 1));
       return emails.length ? [{ id, emailIds: emails.map((e) => e.id) }] : [];
     });
-    return { accountId: ACCOUNT, state: this.state, list, notFound: ids.filter((id) => !list.some((t) => t.id === id)) };
+    return {
+      accountId: ACCOUNT,
+      state: this.state,
+      list,
+      notFound: ids.filter((id) => !list.some((t) => t.id === id)),
+    };
   }
 
   // ---- Email/set, Email/changes ------------------------------------------

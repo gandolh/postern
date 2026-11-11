@@ -36,7 +36,11 @@ export function lendConversation(conversation: Conversation): () => void {
   };
 }
 
-export async function resolveConversations(caller: MethodCaller, ids: readonly Id[], options: ResolveOptions = {}): Promise<Conversation[]> {
+export async function resolveConversations(
+  caller: MethodCaller,
+  ids: readonly Id[],
+  options: ResolveOptions = {},
+): Promise<Conversation[]> {
   const list = getActiveList();
   const held = new Map<Id, Conversation>();
   if (list) {
@@ -65,14 +69,27 @@ export async function fetchConversations(caller: MethodCaller, threadIds: readon
     const threads = await caller.call("Thread/get", { ids: threadIds.slice(i, i + CHUNK) });
     const emailIds = threads.list.flatMap((t) => t.emailIds);
     const emails = emailIds.length
-      ? (await caller.call("Email/get", { ids: emailIds, properties: ["id", "threadId", "mailboxIds", "keywords", "receivedAt"] })).list
+      ? (
+          await caller.call("Email/get", {
+            ids: emailIds,
+            properties: ["id", "threadId", "mailboxIds", "keywords", "receivedAt"],
+          })
+        ).list
       : [];
     const byId = new Map(emails.map((e) => [e.id, e]));
     for (const t of threads.list) {
       const messages = t.emailIds.flatMap((id) => {
         const e = byId.get(id);
         return e
-          ? [{ id: e.id, threadId: e.threadId, mailboxIds: e.mailboxIds, keywords: e.keywords ?? {}, receivedAt: e.receivedAt } as ConversationMessage]
+          ? [
+              {
+                id: e.id,
+                threadId: e.threadId,
+                mailboxIds: e.mailboxIds,
+                keywords: e.keywords ?? {},
+                receivedAt: e.receivedAt,
+              } as ConversationMessage,
+            ]
           : [];
       });
       if (messages.length > 0) out.push({ id: t.id, messages });

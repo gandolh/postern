@@ -51,10 +51,26 @@ import type { ConversationRow, ListQuery, ListSnapshot, RowMessage } from "./typ
 export const PAGE_SIZE = 50;
 
 /** The row's own message: subject, snippet, date, attachment. */
-export const ROW_PROPERTIES = ["threadId", "from", "subject", "preview", "receivedAt", "keywords", "mailboxIds", "hasAttachment"] as const satisfies readonly EmailProperty[];
+export const ROW_PROPERTIES = [
+  "threadId",
+  "from",
+  "subject",
+  "preview",
+  "receivedAt",
+  "keywords",
+  "mailboxIds",
+  "hasAttachment",
+] as const satisfies readonly EmailProperty[];
 
 /** Every message of a conversation: enough for senders, unread, stars, labels and actions. */
-export const MESSAGE_PROPERTIES = ["threadId", "from", "to", "keywords", "mailboxIds", "receivedAt"] as const satisfies readonly EmailProperty[];
+export const MESSAGE_PROPERTIES = [
+  "threadId",
+  "from",
+  "to",
+  "keywords",
+  "mailboxIds",
+  "receivedAt",
+] as const satisfies readonly EmailProperty[];
 
 /** A message row (conversation view off): the row's own data and what the actions need, in one get. */
 export const MESSAGE_ROW_PROPERTIES = [...new Set([...ROW_PROPERTIES, ...MESSAGE_PROPERTIES])] as EmailProperty[];
@@ -214,15 +230,21 @@ export class ListStore {
   async allConversations(): Promise<ConversationRow[]> {
     const { filter, sort, collapseThreads } = this.#queryArgs();
     const repIds: Id[] = [];
-    for (let position = 0; ; ) {
+    for (let position = 0; ;) {
       const res = await this.#caller.call("Email/query", { filter, sort, collapseThreads, position, limit: 1000 });
       repIds.push(...res.ids);
       position += res.ids.length;
-      if (res.ids.length === 0 || res.ids.length < (res.limit ?? 1000) || (res.total !== undefined && position >= res.total)) break;
+      if (
+        res.ids.length === 0 ||
+        res.ids.length < (res.limit ?? 1000) ||
+        (res.total !== undefined && position >= res.total)
+      )
+        break;
     }
     if (repIds.length === 0) return [];
     if (!this.#byConversation) {
-      const got = (await this.#caller.call("Email/get", { ids: repIds, properties: [...MESSAGE_ROW_PROPERTIES] })).list as (RowEmail & RowMessage)[];
+      const got = (await this.#caller.call("Email/get", { ids: repIds, properties: [...MESSAGE_ROW_PROPERTIES] }))
+        .list as (RowEmail & RowMessage)[];
       const byId = new Map(got.map((e) => [e.id, e]));
       return repIds.flatMap((id) => {
         const e = byId.get(id);
@@ -348,13 +370,17 @@ export class ListStore {
     const g = r.call("Email/get", { ids: q.ref("/ids"), properties: [...ROW_PROPERTIES] });
     const t = r.call("Thread/get", { ids: g.ref<Id[]>("/list/*/threadId") });
     const m = r.call("Email/get", { ids: t.ref<Id[]>("/list/*/emailIds"), properties: [...MESSAGE_PROPERTIES] });
-    const s = this.query.searchSnippets ? r.call("SearchSnippet/get", { filter: args.filter, emailIds: q.ref("/ids") }) : null;
+    const s = this.query.searchSnippets
+      ? r.call("SearchSnippet/get", { filter: args.filter, emailIds: q.ref("/ids") })
+      : null;
     const res = await r.send();
     const query = res.get(q);
     const rows = res.get(g).list;
     const threads = res.get(t).list;
     // Long conversations can pass maxObjectsInGet in one back-referenced get: fetch those in chunks.
-    const messages = res.error(m) ? await this.#getMessages(threads.flatMap((x) => x.emailIds)) : (res.get(m) as unknown as GetResponse<RowMessage>);
+    const messages = res.error(m)
+      ? await this.#getMessages(threads.flatMap((x) => x.emailIds))
+      : (res.get(m) as unknown as GetResponse<RowMessage>);
     const snippets = s && !res.error(s) ? res.get(s).list : [];
     return { query, rows, threads, messages, snippets };
   }
@@ -365,7 +391,9 @@ export class ListStore {
     const args = this.#queryArgs();
     const q = r.call("Email/query", { ...args, position, limit: this.#pageSize });
     const g = r.call("Email/get", { ids: q.ref("/ids"), properties: [...MESSAGE_ROW_PROPERTIES] });
-    const s = this.query.searchSnippets ? r.call("SearchSnippet/get", { filter: args.filter, emailIds: q.ref("/ids") }) : null;
+    const s = this.query.searchSnippets
+      ? r.call("SearchSnippet/get", { filter: args.filter, emailIds: q.ref("/ids") })
+      : null;
     const res = await r.send();
     const got = res.get(g);
     return {
@@ -378,7 +406,10 @@ export class ListStore {
   }
 
   async #getMessages(ids: Id[]): Promise<GetResponse<RowMessage>> {
-    return (await this.#caller.call("Email/get", { ids, properties: [...MESSAGE_PROPERTIES] })) as unknown as GetResponse<RowMessage>;
+    return (await this.#caller.call("Email/get", {
+      ids,
+      properties: [...MESSAGE_PROPERTIES],
+    })) as unknown as GetResponse<RowMessage>;
   }
 
   /** Fetch rows that came into the list, and conversations that gained a message. One request. */
@@ -389,15 +420,24 @@ export class ListStore {
       const r = this.#caller.request();
       const g = chunk.length ? r.call("Email/get", { ids: [...chunk], properties: [...ROW_PROPERTIES] }) : null;
       const t = g ? r.call("Thread/get", { ids: g.ref<Id[]>("/list/*/threadId") }) : null;
-      const m = t ? r.call("Email/get", { ids: t.ref<Id[]>("/list/*/emailIds"), properties: [...MESSAGE_PROPERTIES] }) : null;
-      const s = g && this.query.searchSnippets ? r.call("SearchSnippet/get", { filter: this.query.filter, emailIds: [...chunk] }) : null;
+      const m = t
+        ? r.call("Email/get", { ids: t.ref<Id[]>("/list/*/emailIds"), properties: [...MESSAGE_PROPERTIES] })
+        : null;
+      const s =
+        g && this.query.searchSnippets
+          ? r.call("SearchSnippet/get", { filter: this.query.filter, emailIds: [...chunk] })
+          : null;
       const more = i === 0 && threadIds.length ? r.call("Thread/get", { ids: [...threadIds] }) : null;
-      const moreMessages = more ? r.call("Email/get", { ids: more.ref<Id[]>("/list/*/emailIds"), properties: [...MESSAGE_PROPERTIES] }) : null;
+      const moreMessages = more
+        ? r.call("Email/get", { ids: more.ref<Id[]>("/list/*/emailIds"), properties: [...MESSAGE_PROPERTIES] })
+        : null;
       const res = await r.send();
       const threads: Thread[] = [];
       if (g && t && m) {
         threads.push(...res.get(t).list);
-        const messages = res.error(m) ? await this.#getMessages(res.get(t).list.flatMap((x) => x.emailIds)) : (res.get(m) as unknown as GetResponse<RowMessage>);
+        const messages = res.error(m)
+          ? await this.#getMessages(res.get(t).list.flatMap((x) => x.emailIds))
+          : (res.get(m) as unknown as GetResponse<RowMessage>);
         this.#messages.put(messages);
         this.#addRows(res.get(g).list, res.get(t).list, s && !res.error(s) ? res.get(s).list : []);
       }
@@ -418,7 +458,9 @@ export class ListStore {
       const chunk = ids.slice(i, i + this.#pageSize);
       const r = this.#caller.request();
       const g = r.call("Email/get", { ids: [...chunk], properties: [...MESSAGE_ROW_PROPERTIES] });
-      const s = this.query.searchSnippets ? r.call("SearchSnippet/get", { filter: this.query.filter, emailIds: [...chunk] }) : null;
+      const s = this.query.searchSnippets
+        ? r.call("SearchSnippet/get", { filter: this.query.filter, emailIds: [...chunk] })
+        : null;
       const res = await r.send();
       const got = res.get(g);
       this.#messages.put(got as unknown as GetResponse<RowMessage>);
@@ -463,7 +505,11 @@ export class ListStore {
         if (objects.destroyed.length > 0) {
           const gone = new Set(objects.destroyed);
           for (const [threadId, ids] of this.#threads) {
-            if (ids.some((id) => gone.has(id))) this.#threads.set(threadId, ids.filter((id) => !gone.has(id)));
+            if (ids.some((id) => gone.has(id)))
+              this.#threads.set(
+                threadId,
+                ids.filter((id) => !gone.has(id)),
+              );
           }
         }
       }
@@ -485,7 +531,7 @@ export class ListStore {
     this.#threads.clear();
     this.#silent = true;
     try {
-      for (let attempts = 0; attempts < 5; ) {
+      for (let attempts = 0; attempts < 5;) {
         const total = this.#ids.total ?? Infinity;
         if (this.#ids.queryState !== null && this.#ids.ids.length >= Math.min(target, total)) break;
         const outcome = await this.#loadPage();
@@ -526,7 +572,11 @@ export class ListStore {
     // Session trouble is the sign-in layer's to show; the next refresh (focus, push) tries again.
     if (isQuietError(err)) return;
     this.#failedAt = Date.now();
-    this.#publish(this.#snapshot.status === "ready" ? { ...this.#snapshot, error: err } : { ...INITIAL, status: "error", error: err });
+    this.#publish(
+      this.#snapshot.status === "ready"
+        ? { ...this.#snapshot, error: err }
+        : { ...INITIAL, status: "error", error: err },
+    );
   }
 
   #build(): ListSnapshot {

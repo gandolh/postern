@@ -10,7 +10,8 @@ export type TextRun = { kind: "text"; text: string } | { kind: "link"; text: str
 // linear: an address only starts where a run of address
 // characters starts (the lookbehind), and its parts are bounded by RFC 5321's
 // lengths, so a long run with no "@" is not rescanned from every position.
-const CANDIDATE = /\b(?:https?:\/\/|mailto:|www\.)[^\s<>"'`]+|(?<![\w.+-])[\w.+-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi;
+const CANDIDATE =
+  /\b(?:https?:\/\/|mailto:|www\.)[^\s<>"'`]+|(?<![\w.+-])[\w.+-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi;
 
 const CLOSERS: Record<string, string> = { ")": "(", "]": "[", "}": "{", ">": "<" };
 

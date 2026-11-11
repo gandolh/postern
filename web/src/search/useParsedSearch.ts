@@ -14,7 +14,9 @@ export function useParsedSearch(query: string): ParsedSearch | null {
   const ready = labels.status === "ready";
   const store = labels.store;
   // Only role ids and label paths matter, not the counts that change under them.
-  const key = ready ? JSON.stringify([labels.labels.filter((l) => !l.system).map((l) => [l.id, l.path]), rolesOf(store)]) : "";
+  const key = ready
+    ? JSON.stringify([labels.labels.filter((l) => !l.system).map((l) => [l.id, l.path]), rolesOf(store)])
+    : "";
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const now = useMemo(() => new Date(), [query]);
   return useMemo(() => {

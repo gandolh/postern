@@ -14,7 +14,15 @@ import { IconButton } from "../shell/IconButton";
 import { useToast } from "../shell/toast";
 import { fileName, MAX_PREVIEW_BYTES, openPdf, saveAttachment, type AttachmentRef } from "./files";
 import { ImageViewer } from "./ImageViewer";
-import { attachmentKind, doubleExtension, formatSize, hasBidiControls, stripBidiControls, typeLabel, type AttachmentKind } from "./kind";
+import {
+  attachmentKind,
+  doubleExtension,
+  formatSize,
+  hasBidiControls,
+  stripBidiControls,
+  typeLabel,
+  type AttachmentKind,
+} from "./kind";
 import "./attachments.css";
 
 export interface AttachmentListProps {
@@ -29,7 +37,10 @@ export interface AttachmentListProps {
 const ICONS = { image: FileImage, pdf: FileText, active: FileCode, other: File } as const;
 
 /** Why a chip warns, or null. Exported for tests. */
-export function attachmentWarning(part: Pick<EmailBodyPart, "name" | "type">, kind: AttachmentKind = attachmentKind(part.type, part.name)): string | null {
+export function attachmentWarning(
+  part: Pick<EmailBodyPart, "name" | "type">,
+  kind: AttachmentKind = attachmentKind(part.type, part.name),
+): string | null {
   if (hasBidiControls(part.name)) {
     return `The name uses hidden characters that reverse its text. Its real name is ${stripBidiControls(part.name ?? "")}. Download only.`;
   }
@@ -76,7 +87,13 @@ export function AttachmentList({ parts, inlineCids, label = "Attachments" }: Att
   );
 }
 
-function AttachmentChip({ part, onPreviewImage }: { part: EmailBodyPart; onPreviewImage: (ref: AttachmentRef) => void }) {
+function AttachmentChip({
+  part,
+  onPreviewImage,
+}: {
+  part: EmailBodyPart;
+  onPreviewImage: (ref: AttachmentRef) => void;
+}) {
   const client = useJmap();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -91,7 +108,8 @@ function AttachmentChip({ part, onPreviewImage }: { part: EmailBodyPart; onPrevi
     try {
       await what();
     } catch (err) {
-      if (!isQuietError(err)) toast.show({ message: err instanceof Error && err.name === "NotPreviewableError" ? err.message : failure });
+      if (!isQuietError(err))
+        toast.show({ message: err instanceof Error && err.name === "NotPreviewableError" ? err.message : failure });
     } finally {
       setBusy(false);
     }
@@ -106,7 +124,12 @@ function AttachmentChip({ part, onPreviewImage }: { part: EmailBodyPart; onPrevi
 
   return (
     <li className="att-chip" data-kind={kind} data-warning={warning ? "true" : undefined} aria-busy={busy || undefined}>
-      <button type="button" className="att-main" onClick={preview ?? download} aria-label={`${preview ? "Preview" : "Download"} ${name}`}>
+      <button
+        type="button"
+        className="att-main"
+        onClick={preview ?? download}
+        aria-label={`${preview ? "Preview" : "Download"} ${name}`}
+      >
         <Icon aria-hidden="true" className="att-icon" />
         <span className="att-text">
           <bdi className="att-name">{name}</bdi>
@@ -115,7 +138,9 @@ function AttachmentChip({ part, onPreviewImage }: { part: EmailBodyPart; onPrevi
           </span>
         </span>
       </button>
-      {preview ? <IconButton className="att-action" label={`Preview ${name}`} icon={Eye} onClick={preview} tooltip="end" /> : null}
+      {preview ? (
+        <IconButton className="att-action" label={`Preview ${name}`} icon={Eye} onClick={preview} tooltip="end" />
+      ) : null}
       <IconButton className="att-action" label={`Download ${name}`} icon={Download} onClick={download} tooltip="end" />
       {warning ? (
         <p className="att-warning" role="note">

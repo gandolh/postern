@@ -26,7 +26,8 @@ export function sentPatch(draftsMailboxId: Id | undefined, sentMailboxId: Id | u
   // A message must stay in a mailbox: leave Drafts only when there is a Sent to go to.
   if (sentMailboxId) {
     patch[`mailboxIds/${escapePointer(sentMailboxId)}`] = true;
-    if (draftsMailboxId && draftsMailboxId !== sentMailboxId) patch[`mailboxIds/${escapePointer(draftsMailboxId)}`] = null;
+    if (draftsMailboxId && draftsMailboxId !== sentMailboxId)
+      patch[`mailboxIds/${escapePointer(draftsMailboxId)}`] = null;
   }
   return patch;
 }
@@ -44,6 +45,10 @@ export async function submitDraft(client: JmapClient, args: SubmitArgs, signal?:
   const refused = res.notCreated?.["send"];
   if (refused) throw new JmapSetError("EmailSubmission/set", "send", refused);
   const created = res.created?.["send"];
-  if (!created?.id) throw new JmapSetError("EmailSubmission/set", "send", { type: "serverFail", description: "No submission came back" });
+  if (!created?.id)
+    throw new JmapSetError("EmailSubmission/set", "send", {
+      type: "serverFail",
+      description: "No submission came back",
+    });
   return { submissionId: created.id, emailId: args.emailId };
 }

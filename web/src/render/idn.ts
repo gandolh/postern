@@ -55,7 +55,7 @@ export function decodePunycode(input: string): string | null {
   let n = INITIAL_N;
   let bias = INITIAL_BIAS;
   let i = 0;
-  for (let pos = delimiter > 0 ? delimiter + 1 : 0; pos < input.length; ) {
+  for (let pos = delimiter > 0 ? delimiter + 1 : 0; pos < input.length;) {
     const oldI = i;
     let w = 1;
     for (let k = BASE; ; k += BASE) {

@@ -25,7 +25,12 @@ function InlineFrame({ label, composeKey, children }: { label: string; composeKe
     const from = opener.current;
     return () => {
       const active = document.activeElement;
-      if (from instanceof HTMLElement && from.isConnected && (active === document.body || active === null || !active.isConnected)) from.focus();
+      if (
+        from instanceof HTMLElement &&
+        from.isConnected &&
+        (active === document.body || active === null || !active.isConnected)
+      )
+        from.focus();
     };
   }, []);
   return (
@@ -43,7 +48,12 @@ export function InlineReplySlot({ context }: { context: InlineReplyContext }) {
   const [offered, setOffered] = useState<{ threadId: Id; draftId: Id } | null>(null);
   const messageKey = context.messageIds.join(",");
   const cardIds = new Set(context.messageIds);
-  const shownAsCard = state ? (store.get(state.key)?.draftIds().some((id) => cardIds.has(id)) ?? false) : false;
+  const shownAsCard = state
+    ? (store
+        .get(state.key)
+        ?.draftIds()
+        .some((id) => cardIds.has(id)) ?? false)
+    : false;
 
   // A composer whose draft the view shows as a card goes to a window instead.
   useEffect(() => {
@@ -59,7 +69,9 @@ export function InlineReplySlot({ context }: { context: InlineReplyContext }) {
       .threadDrafts(context.threadId, ac.signal)
       .then(({ messages }) => {
         if (ac.signal.aborted) return;
-        const free = messages.filter((m) => m.draft && !onCards.has(m.id) && !store.isGone(m.id) && !store.forDraft(m.id));
+        const free = messages.filter(
+          (m) => m.draft && !onCards.has(m.id) && !store.isGone(m.id) && !store.forDraft(m.id),
+        );
         const fresh = free.filter((m) => !store.wasClosed(m.id));
         const newest = fresh[fresh.length - 1];
         if (newest) {
@@ -78,13 +90,22 @@ export function InlineReplySlot({ context }: { context: InlineReplyContext }) {
     if (!session) return null;
     return (
       <InlineFrame label={state.mode === "forward" ? "Forward" : "Reply"} composeKey={state.key}>
-        <ComposeForm session={session} state={state} variant="inline" onPopOut={() => store.setPlacement(state.key, "docked")} />
+        <ComposeForm
+          session={session}
+          state={state}
+          variant="inline"
+          onPopOut={() => store.setPlacement(state.key, "docked")}
+        />
       </InlineFrame>
     );
   }
   if (offered && offered.threadId === context.threadId && !busy && !cardIds.has(offered.draftId)) {
     return (
-      <button type="button" className="btn compose-draft-offer" onClick={() => store.open({ draftId: offered.draftId, threadId: context.threadId, display: "inline" })}>
+      <button
+        type="button"
+        className="btn compose-draft-offer"
+        onClick={() => store.open({ draftId: offered.draftId, threadId: context.threadId, display: "inline" })}
+      >
         <FilePen aria-hidden="true" /> Continue the draft
       </button>
     );

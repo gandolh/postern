@@ -15,13 +15,35 @@ const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const MB = 1_000_000;
 
 function image(cid: string, size: number): EmailBodyPart {
-  return { partId: cid, blobId: `blob-${cid}`, size, name: `${cid}.png`, type: "image/png", charset: null, disposition: "inline", cid, location: null };
+  return {
+    partId: cid,
+    blobId: `blob-${cid}`,
+    size,
+    name: `${cid}.png`,
+    type: "image/png",
+    charset: null,
+    disposition: "inline",
+    cid,
+    location: null,
+  };
 }
 
 const html = '<p>Photos</p><img src="cid:a" alt="a"><img src="cid:b" alt="b"><img src="cid:c" alt="c">';
 const EMAIL = {
   ...fakeEmail({ id: "x", threadId: "T", receivedAt: "2026-10-01T10:00:00Z", keywords: { $seen: true } }),
-  htmlBody: [{ partId: "1", blobId: "h", size: 100, name: null, type: "text/html", charset: "utf-8", disposition: null, cid: null, location: null }],
+  htmlBody: [
+    {
+      partId: "1",
+      blobId: "h",
+      size: 100,
+      name: null,
+      type: "text/html",
+      charset: "utf-8",
+      disposition: null,
+      cid: null,
+      location: null,
+    },
+  ],
   textBody: [],
   attachments: [image("a", 10 * MB), image("b", 5 * MB), image("c", 4 * MB)],
   bodyValues: { "1": { value: html, isEncodingProblem: false, isTruncated: false } },
@@ -63,7 +85,16 @@ describe("the inline image budget", () => {
       <MessageBody
         state={{
           status: "ready",
-          body: { kind: "html", html, cidUrls: new Map(), inlineCids: new Set(), deferredCids: new Set(["a", "b"]), deferredBytes: 18 * MB, truncated: false, encodingProblem: false },
+          body: {
+            kind: "html",
+            html,
+            cidUrls: new Map(),
+            inlineCids: new Set(),
+            deferredCids: new Set(["a", "b"]),
+            deferredBytes: 18 * MB,
+            truncated: false,
+            encodingProblem: false,
+          },
         }}
         senderAddress="bob@postern.test"
         senderName="Bob"

@@ -24,7 +24,11 @@ function subscribeOnline(onChange: () => void): () => void {
 
 /** The installed app opens offline to this page (tokens die with the tab), so say why signing in can't work yet. */
 function useOnline(): boolean {
-  return useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true);
+  return useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true,
+  );
 }
 
 export function SignInPage({ onSignIn, notice }: SignInPageProps) {

@@ -20,7 +20,10 @@ function Harness() {
   return (
     <>
       <p>{block.isBlocked(bob.email) ? "blocked" : "not blocked"}</p>
-      <button type="button" onClick={() => (block.isBlocked(bob.email) ? void block.unblock(bob.email) : block.ask(bob))}>
+      <button
+        type="button"
+        onClick={() => (block.isBlocked(bob.email) ? void block.unblock(bob.email) : block.ask(bob))}
+      >
         menu
       </button>
       {block.dialog}
@@ -116,7 +119,9 @@ describe("Block sender", () => {
     const user = await renderHarness(io);
     await user.click(screen.getByRole("button", { name: "menu" }));
     await user.click(screen.getByRole("button", { name: "Block" }));
-    await screen.findByText(/blocked\. New messages from them will go to Spam\. Filters are off while your vacation responder is on\./);
+    await screen.findByText(
+      /blocked\. New messages from them will go to Spam\. Filters are off while your vacation responder is on\./,
+    );
     expect(io.active()).toBe("vacation");
   });
 

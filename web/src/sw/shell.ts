@@ -71,12 +71,22 @@ export function shellFiles(manifest: readonly (ManifestEntry | string)[], scopeU
   const scope = new URL(scopeUrl);
   const files = new Map<string, ShellFile>();
   for (const entry of manifest) {
-    if (typeof entry === "string" || typeof entry.integrity !== "string" || !/^sha256-[A-Za-z0-9+/]+=*$/.test(entry.integrity)) continue;
+    if (
+      typeof entry === "string" ||
+      typeof entry.integrity !== "string" ||
+      !/^sha256-[A-Za-z0-9+/]+=*$/.test(entry.integrity)
+    )
+      continue;
     const url = new URL(entry.url, scope);
     if (!mayAnswerFromPrecache(url, scope.origin, scope.pathname)) continue;
     const contentType = contentTypeFor(url.pathname);
     if (!contentType) continue;
-    files.set(url.pathname, { url: url.origin + url.pathname, pathname: url.pathname, integrity: entry.integrity, contentType });
+    files.set(url.pathname, {
+      url: url.origin + url.pathname,
+      pathname: url.pathname,
+      integrity: entry.integrity,
+      contentType,
+    });
   }
   return files;
 }
@@ -114,7 +124,11 @@ async function matches(body: ArrayBuffer, integrity: string): Promise<boolean> {
 
 /** A response made here from verified bytes: its type, production's headers, nothing from the cache. */
 export function buildResponse(file: ShellFile, body: ArrayBuffer): Response {
-  return new Response(body, { status: 200, statusText: "OK", headers: { ...APP_HEADERS, "content-type": file.contentType } });
+  return new Response(body, {
+    status: 200,
+    statusText: "OK",
+    headers: { ...APP_HEADERS, "content-type": file.contentType },
+  });
 }
 
 /** Which shell file answers this request, or null to leave it to the network. Synchronous: fetch handlers decide at once. */
@@ -122,7 +136,8 @@ export function pick(request: Request, files: ReadonlyMap<string, ShellFile>, sc
   if (request.method !== "GET") return null;
   const url = new URL(request.url);
   const scope = new URL(scopeUrl);
-  if (request.mode === "navigate") return servesShell(url, scope.origin, scope.pathname) ? (files.get(`${scope.pathname}index.html`) ?? null) : null;
+  if (request.mode === "navigate")
+    return servesShell(url, scope.origin, scope.pathname) ? (files.get(`${scope.pathname}index.html`) ?? null) : null;
   if (!mayAnswerFromPrecache(url, scope.origin, scope.pathname)) return null;
   return files.get(url.pathname) ?? null;
 }
@@ -186,7 +201,11 @@ export async function serve(
 }
 
 /** Fill this build's cache, file by file. A file that fails or does not match is skipped, never fatal. */
-export async function installShell(files: ReadonlyMap<string, ShellFile>, cacheName: string, deps: ShellDeps): Promise<{ stored: string[]; skipped: string[] }> {
+export async function installShell(
+  files: ReadonlyMap<string, ShellFile>,
+  cacheName: string,
+  deps: ShellDeps,
+): Promise<{ stored: string[]; skipped: string[] }> {
   const stored: string[] = [];
   const skipped: string[] = [];
   await Promise.all(
@@ -208,7 +227,9 @@ export async function installShell(files: ReadonlyMap<string, ShellFile>, cacheN
 /** Delete this worker's older caches and the workbox cache. Other apps' caches on the origin are left alone. */
 export async function cleanupCaches(current: string, deps: ShellDeps): Promise<string[]> {
   const legacy = `workbox-precache-v2-${deps.scopeUrl}`;
-  const gone = (await deps.caches.keys()).filter((name) => name === legacy || (name.startsWith(CACHE_PREFIX) && name !== current));
+  const gone = (await deps.caches.keys()).filter(
+    (name) => name === legacy || (name.startsWith(CACHE_PREFIX) && name !== current),
+  );
   await Promise.all(gone.map((name) => deps.caches.delete(name)));
   return gone;
 }

@@ -77,7 +77,10 @@ function fakeStalwart(options: { mfa?: boolean } = {}) {
     once(key: string, answer: () => Response | Promise<Response>) {
       queued.set(key, [...(queued.get(key) ?? []), answer]);
     },
-    signInPosts: () => seen.filter((s) => s.key === "POST /webmail-api/api/auth").map((s) => JSON.parse(s.body ?? "{}") as Record<string, string>),
+    signInPosts: () =>
+      seen
+        .filter((s) => s.key === "POST /webmail-api/api/auth")
+        .map((s) => JSON.parse(s.body ?? "{}") as Record<string, string>),
   };
 }
 
@@ -157,14 +160,22 @@ describe("the sign-in page", () => {
     expect(await screen.findByText("Signed in as alice@postern.test")).toBeTruthy();
     expect(screen.getByText("Name: Alice Archer")).toBeTruthy();
     expect(server.signInPosts()).toHaveLength(1);
-    expect(server.signInPosts()[0]).toMatchObject({ accountName: "alice@postern.test", clientId: "postern", redirectUri: new URL(import.meta.env.BASE_URL, window.location.origin).href });
+    expect(server.signInPosts()[0]).toMatchObject({
+      accountName: "alice@postern.test",
+      clientId: "postern",
+      redirectUri: new URL(import.meta.env.BASE_URL, window.location.origin).href,
+    });
     expect(lastClient?.session.username).toBe("alice@postern.test");
     expect(server.seen.find((s) => s.key === "GET /webmail-api/jmap/session")?.authorization).toBe("Bearer A1");
     expect(document.body.innerHTML).not.toContain(PASSWORD);
     expect(localStorage.length).toBe(0);
     expect(Object.keys(sessionStorage)).toEqual([SESSION_KEY]);
     const kept = sessionStorage.getItem(SESSION_KEY) ?? "";
-    expect(JSON.parse(kept)).toMatchObject({ refreshToken: "R1", username: "alice@postern.test", name: "Alice Archer" });
+    expect(JSON.parse(kept)).toMatchObject({
+      refreshToken: "R1",
+      username: "alice@postern.test",
+      name: "Alice Archer",
+    });
     expect(kept).not.toContain("A1");
     expect(kept).not.toContain(PASSWORD);
     expect(document.cookie).toBe("");
@@ -278,7 +289,9 @@ describe("the signed-in session", () => {
     await act(async () => {
       await lastClient?.connect();
     });
-    expect(server.seen.filter((s) => s.key === "GET /webmail-api/jmap/session").at(-1)?.authorization).toBe("Bearer A2");
+    expect(server.seen.filter((s) => s.key === "GET /webmail-api/jmap/session").at(-1)?.authorization).toBe(
+      "Bearer A2",
+    );
   });
 
   it("signs out: back to the sign-in page, and the old client no longer works", async () => {
@@ -350,7 +363,9 @@ describe("the signed-in session", () => {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "j" }));
     }
     expect(screen.getByText("Signed in as alice@postern.test")).toBeTruthy();
-    expect((await screen.findByRole("status", {}, { timeout: 2000 })).textContent).toMatch(/signed out after a long time without activity/);
+    expect((await screen.findByRole("status", {}, { timeout: 2000 })).textContent).toMatch(
+      /signed out after a long time without activity/,
+    );
     expect(screen.getByRole("heading", { name: "Sign in" })).toBeTruthy();
   });
 });
@@ -401,7 +416,9 @@ describe("before and after a sign-out", () => {
     await screen.findByText("Signed in as alice@postern.test");
     const hook = hookThatUsesTheTokens(server);
     try {
-      expect((await screen.findByRole("status", {}, { timeout: 2000 })).textContent).toMatch(/signed out after a long time without activity/);
+      expect((await screen.findByRole("status", {}, { timeout: 2000 })).textContent).toMatch(
+        /signed out after a long time without activity/,
+      );
       expect(hook.sent).toEqual(["Bearer A1"]);
     } finally {
       hook.off();
@@ -456,10 +473,16 @@ describe("before and after a sign-out", () => {
 
 describe("a reload", () => {
   const refreshGrants = (server: ReturnType<typeof fakeStalwart>) =>
-    server.seen.filter((s) => s.key === "POST /webmail-api/auth/token" && new URLSearchParams(s.body ?? "").get("grant_type") === "refresh_token");
+    server.seen.filter(
+      (s) =>
+        s.key === "POST /webmail-api/auth/token" &&
+        new URLSearchParams(s.body ?? "").get("grant_type") === "refresh_token",
+    );
 
   /** Sign in, then load the page again: the old tree goes without its unmount (a reload runs none), the tab's sessionStorage stays. */
-  async function signInThenReload(options: { idleTimeoutMs?: number; age?: number; prepare?: (server: ReturnType<typeof fakeStalwart>) => void } = {}) {
+  async function signInThenReload(
+    options: { idleTimeoutMs?: number; age?: number; prepare?: (server: ReturnType<typeof fakeStalwart>) => void } = {},
+  ) {
     const server = fakeStalwart();
     const user = userEvent.setup();
     render(
@@ -472,7 +495,10 @@ describe("a reload", () => {
     const kept = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? "{}") as { lastActivity: number };
     cleanup(); // its sign-out clears the store, as a reload would not: put it back
     lastClient = undefined;
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...kept, lastActivity: kept.lastActivity - (options.age ?? 0) }));
+    sessionStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ ...kept, lastActivity: kept.lastActivity - (options.age ?? 0) }),
+    );
     const before = server.seen.length;
     options.prepare?.(server);
     render(
@@ -499,7 +525,10 @@ describe("a reload", () => {
 
   it("resumes under StrictMode too (its rehearsal's sign-out cancels the first try, not the store)", async () => {
     const server = fakeStalwart();
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() }));
+    sessionStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ version: 1, refreshToken: "R1", username: "alice@postern.test", lastActivity: Date.now() }),
+    );
     render(
       <StrictMode>
         <SessionProvider fetch={server.fetch}>
@@ -520,14 +549,19 @@ describe("a reload", () => {
   });
 
   it("a refused refresh token (from before a password change, say) shows the form and clears the store", async () => {
-    await signInThenReload({ prepare: (server) => server.once("POST /webmail-api/auth/token", () => json({ error: "invalid_grant" }, 400)) });
+    await signInThenReload({
+      prepare: (server) => server.once("POST /webmail-api/auth/token", () => json({ error: "invalid_grant" }, 400)),
+    });
     expect(await screen.findByLabelText("Password")).toBeTruthy();
     expect(screen.queryByText(/You're offline/)).toBeNull();
     expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
   it("a server out of reach shows the form with the offline notice, signs nothing in, and keeps the token for the next reload", async () => {
-    await signInThenReload({ prepare: (server) => server.once("POST /webmail-api/auth/token", () => Promise.reject(new TypeError("fetch failed"))) });
+    await signInThenReload({
+      prepare: (server) =>
+        server.once("POST /webmail-api/auth/token", () => Promise.reject(new TypeError("fetch failed"))),
+    });
     expect(await screen.findByText(/You're offline/)).toBeTruthy();
     expect(screen.getByLabelText("Password")).toBeTruthy();
     expect(lastClient).toBeUndefined();

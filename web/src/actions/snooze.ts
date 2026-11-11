@@ -17,7 +17,12 @@ import { actionCopy, type ActionCopy } from "./copy";
 import { formatSnoozeTime } from "../snooze/times";
 
 /** Snooze until `at`: every message moved (a reply draft stays, as for archive) leaves the Inbox for Snoozed. */
-export function planSnooze(conversations: readonly Conversation[], scope: ConversationScope, snoozedId: Id, at: Date): MessagePlan {
+export function planSnooze(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  snoozedId: Id,
+  at: Date,
+): MessagePlan {
   const inbox = scope.roles.inbox;
   const keyword = snoozeKeyword(at);
   return planEdits(
@@ -53,9 +58,13 @@ export function planUnsnooze(
   if (inbox === undefined) throw new MissingLabelError("inbox");
   const groups = conversations.map((c) => ({
     id: c.id,
-    messages: c.messages.filter((m) => (snoozedId !== undefined && m.mailboxIds[snoozedId] === true) || snoozeKeywordsOf(m).length > 0),
+    messages: c.messages.filter(
+      (m) => (snoozedId !== undefined && m.mailboxIds[snoozedId] === true) || snoozeKeywordsOf(m).length > 0,
+    ),
   }));
-  const newest = new Set(groups.flatMap((g) => (options.wake ? [latest(g.messages)?.id] : [])).filter((id): id is Id => id !== undefined));
+  const newest = new Set(
+    groups.flatMap((g) => (options.wake ? [latest(g.messages)?.id] : [])).filter((id): id is Id => id !== undefined),
+  );
   return planEdits(groups, (m) => {
     const keywords: Record<string, boolean> = {};
     for (const k of snoozeKeywordsOf(m)) keywords[k] = false;
@@ -72,7 +81,17 @@ export function planUnsnooze(
 /** "Conversation snoozed until Tue 08:00." (`when` is a formatted time: no tokens in it.) */
 export function snoozeCopy(at: Date, now: Date = new Date()): ActionCopy {
   const when = formatSnoozeTime(at, now);
-  return actionCopy(`{Thing} snoozed until ${when}.`, `{n} {things} snoozed until ${when}.`, "Couldn't snooze the {thing}.", "Couldn't snooze {n} {things}.");
+  return actionCopy(
+    `{Thing} snoozed until ${when}.`,
+    `{n} {things} snoozed until ${when}.`,
+    "Couldn't snooze the {thing}.",
+    "Couldn't snooze {n} {things}.",
+  );
 }
 
-export const UNSNOOZE_COPY = actionCopy("{Thing} unsnoozed.", "{n} {things} unsnoozed.", "Couldn't unsnooze the {thing}.", "Couldn't unsnooze {n} {things}.");
+export const UNSNOOZE_COPY = actionCopy(
+  "{Thing} unsnoozed.",
+  "{n} {things} unsnoozed.",
+  "Couldn't unsnooze the {thing}.",
+  "Couldn't unsnooze {n} {things}.",
+);

@@ -117,8 +117,12 @@
 
   /* ---- Depth ----------------------------------------------------------- */
   --shadow-sm: 0 1px 2px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.5));
-  --shadow-md: 0 2px 6px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.45)), 0 1px 2px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
-  --shadow-lg: 0 8px 24px light-dark(rgb(24 32 28 / 0.16), rgb(0 0 0 / 0.55)), 0 2px 6px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
+  --shadow-md:
+    0 2px 6px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.45)),
+    0 1px 2px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
+  --shadow-lg:
+    0 8px 24px light-dark(rgb(24 32 28 / 0.16), rgb(0 0 0 / 0.55)),
+    0 2px 6px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
 
   /* ---- Motion ---------------------------------------------------------- */
   --duration-fast: 120ms;

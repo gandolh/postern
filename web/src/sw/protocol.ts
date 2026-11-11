@@ -38,7 +38,11 @@ export function readWorkerMessage(data: unknown): WorkerMessage | null {
   switch (m["type"]) {
     case PUSH_VERIFICATION:
       return typeof m["pushSubscriptionId"] === "string" && typeof m["verificationCode"] === "string"
-        ? { type: PUSH_VERIFICATION, pushSubscriptionId: m["pushSubscriptionId"], verificationCode: m["verificationCode"] }
+        ? {
+            type: PUSH_VERIFICATION,
+            pushSubscriptionId: m["pushSubscriptionId"],
+            verificationCode: m["verificationCode"],
+          }
         : null;
     case OPEN:
       return typeof m["hash"] === "string" && isNotificationHash(m["hash"]) ? { type: OPEN, hash: m["hash"] } : null;

@@ -24,11 +24,27 @@ import { ConversationView } from "./ConversationView";
 import { getActiveConversation } from "./registry";
 
 function part(partId: string, type: string): EmailBodyPart {
-  return { partId, blobId: `blob-${partId}`, size: 100, name: null, type, charset: "utf-8", disposition: null, cid: null, location: null };
+  return {
+    partId,
+    blobId: `blob-${partId}`,
+    size: 100,
+    name: null,
+    type,
+    charset: "utf-8",
+    disposition: null,
+    cid: null,
+    location: null,
+  };
 }
 
 /** A message with a body, as Email/get returns it with the body properties. */
-function message(id: string, threadId: string, receivedAt: string, body: { html?: string; text?: string }, extra: Partial<FakeEmail> = {}): FakeEmail {
+function message(
+  id: string,
+  threadId: string,
+  receivedAt: string,
+  body: { html?: string; text?: string },
+  extra: Partial<FakeEmail> = {},
+): FakeEmail {
   const html = body.html !== undefined ? [part("1", "text/html")] : [];
   const text = body.text !== undefined ? [part("2", "text/plain")] : [];
   return {
@@ -53,15 +69,25 @@ const T1 = [
     "e1",
     "T1",
     "2026-10-01T10:00:00Z",
-    { html: '<p>OLDEST_HTML_TEXT <img src="https://t.test/pixel.png" width="1" height="1"></p><script>window.__POSTERN_PWNED=1</script>' },
+    {
+      html: '<p>OLDEST_HTML_TEXT <img src="https://t.test/pixel.png" width="1" height="1"></p><script>window.__POSTERN_PWNED=1</script>',
+    },
     { from: BOB, preview: "oldest preview" },
   ),
-  message("e2", "T1", "2026-10-02T10:00:00Z", { text: "See https://example.test/x for details.\n\nOn Thu, Bob <bob@postern.test> wrote:\n> QUOTED_PLAIN_TEXT\n" }, { from: BOB }),
+  message(
+    "e2",
+    "T1",
+    "2026-10-02T10:00:00Z",
+    { text: "See https://example.test/x for details.\n\nOn Thu, Bob <bob@postern.test> wrote:\n> QUOTED_PLAIN_TEXT\n" },
+    { from: BOB },
+  ),
   message(
     "e3",
     "T1",
     "2026-10-03T10:00:00Z",
-    { html: '<div>NEWEST_HTML_TEXT</div><div class="gmail_quote">On Fri, Bob wrote:<blockquote>QUOTED_HTML_TEXT</blockquote></div>' },
+    {
+      html: '<div>NEWEST_HTML_TEXT</div><div class="gmail_quote">On Fri, Bob wrote:<blockquote>QUOTED_HTML_TEXT</blockquote></div>',
+    },
     { from: FORGED, keywords: {} },
   ),
 ];
@@ -123,7 +149,9 @@ describe("the conversation view", () => {
 
   it("collapses read messages to a line, opens the unread and the newest, and flags a forged name", async () => {
     await renderConversation(T1);
-    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen
+      .getAllByRole("button", { expanded: false })
+      .filter((b) => b.classList.contains("conv-msg-line"));
     expect(lines).toHaveLength(2);
     expect(lines[0]!.textContent).toContain("Bob Baker");
     expect(lines[0]!.textContent).toContain("bob@postern.test");
@@ -141,7 +169,9 @@ describe("the conversation view", () => {
 
   it("blocks remote images until asked, then restores them for that message", async () => {
     const { user } = await renderConversation(T1);
-    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen
+      .getAllByRole("button", { expanded: false })
+      .filter((b) => b.classList.contains("conv-msg-line"));
     await user.click(lines[0]!);
     await waitFor(() => expect(frames()).toHaveLength(2));
     const first = () => frames().find((f) => f.getAttribute("srcdoc")?.includes("OLDEST_HTML_TEXT"))!;
@@ -154,7 +184,9 @@ describe("the conversation view", () => {
 
   it("shows plain text as text, with safe links and a folded quote", async () => {
     const { user } = await renderConversation(T1);
-    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen
+      .getAllByRole("button", { expanded: false })
+      .filter((b) => b.classList.contains("conv-msg-line"));
     await user.click(lines[1]!);
     const link = await screen.findByRole("link", { name: "https://example.test/x" });
     expect(link.getAttribute("rel")).toBe("noopener noreferrer");
@@ -174,7 +206,9 @@ describe("the conversation view", () => {
   });
 
   it("folds a long run of read messages behind 'N older messages'", async () => {
-    const many = Array.from({ length: 7 }, (_, i) => message(`m${i}`, "T2", `2026-10-0${i + 1}T10:00:00Z`, { text: `body ${i}` }, { from: BOB }));
+    const many = Array.from({ length: 7 }, (_, i) =>
+      message(`m${i}`, "T2", `2026-10-0${i + 1}T10:00:00Z`, { text: `body ${i}` }, { from: BOB }),
+    );
     const { user } = await renderConversation(many, "T2");
     const fold = screen.getByRole("button", { name: "3 older messages" });
     expect(document.querySelectorAll(".conv-msg")).toHaveLength(4);
@@ -203,23 +237,39 @@ describe("the conversation view", () => {
 
   it("remembers 'Always display images from' per account on this device", async () => {
     const { user } = await renderConversation(T1);
-    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen
+      .getAllByRole("button", { expanded: false })
+      .filter((b) => b.classList.contains("conv-msg-line"));
     await user.click(lines[0]!);
     await user.click(await screen.findByRole("button", { name: "Always display images from bob@postern.test" }));
-    await waitFor(() => expect(frames().some((f) => f.getAttribute("srcdoc")?.includes('src="https://t.test/pixel.png"'))).toBe(true));
-    expect(JSON.parse(window.localStorage.getItem("postern.images.alice@postern.test") ?? "[]")).toEqual(["bob@postern.test"]);
+    await waitFor(() =>
+      expect(frames().some((f) => f.getAttribute("srcdoc")?.includes('src="https://t.test/pixel.png"'))).toBe(true),
+    );
+    expect(JSON.parse(window.localStorage.getItem("postern.images.alice@postern.test") ?? "[]")).toEqual([
+      "bob@postern.test",
+    ]);
   });
 
   it("archives from the toolbar and goes back to the list", async () => {
     const { mail, user } = await renderConversation(T1);
-    await user.click(within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }));
+    await user.click(
+      within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }),
+    );
     expect(window.location.hash).toBe("#inbox");
     await waitFor(() => expect(Object.keys(mail.emails.get("e1")!.mailboxIds)).toEqual(["h"]));
     expect(peekUndo()?.label).toBe("Conversation archived.");
   });
 
   it("isolates a display name with bidi overrides from the real address after it", async () => {
-    const rlo = [message("r1", "T3", "2026-10-03T10:00:00Z", { text: "hi" }, { from: [{ name: "Support \u202Emoc.knab", email: "attacker@evil.test" }], keywords: {} })];
+    const rlo = [
+      message(
+        "r1",
+        "T3",
+        "2026-10-03T10:00:00Z",
+        { text: "hi" },
+        { from: [{ name: "Support \u202Emoc.knab", email: "attacker@evil.test" }], keywords: {} },
+      ),
+    ];
     await renderConversation(rlo, "T3");
     const card = document.getElementById("conv-message-r1")!;
     const name = card.querySelector(".conv-sender-name")!;
@@ -234,8 +284,20 @@ describe("the conversation view", () => {
 describe("one message alone (a message row with conversation view off)", () => {
   const UNREAD = [
     message("u1", "T1", "2026-10-01T10:00:00Z", { text: "FIRST_TEXT" }, { from: BOB, keywords: {} }),
-    message("u2", "T1", "2026-10-02T10:00:00Z", { text: "SECOND_TEXT" }, { from: BOB, keywords: {}, subject: "Re: Plans" }),
-    message("u3", "T1", "2026-10-03T10:00:00Z", { text: "THIRD_TEXT" }, { from: BOB, keywords: {}, subject: "Re: Plans" }),
+    message(
+      "u2",
+      "T1",
+      "2026-10-02T10:00:00Z",
+      { text: "SECOND_TEXT" },
+      { from: BOB, keywords: {}, subject: "Re: Plans" },
+    ),
+    message(
+      "u3",
+      "T1",
+      "2026-10-03T10:00:00Z",
+      { text: "THIRD_TEXT" },
+      { from: BOB, keywords: {}, subject: "Re: Plans" },
+    ),
   ];
 
   async function renderMessage(emails: FakeEmail[], messageId: string) {
@@ -275,7 +337,9 @@ describe("one message alone (a message row with conversation view off)", () => {
   it("archives only that message, says so, and goes back to the list", async () => {
     const { mail, user } = await renderMessage(UNREAD, "u2");
     await screen.findByRole("heading", { level: 1, name: "Plans" });
-    await user.click(within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }));
+    await user.click(
+      within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }),
+    );
     expect(window.location.hash).toBe("#inbox");
     await waitFor(() => expect(Object.keys(mail.emails.get("u2")!.mailboxIds)).toEqual(["h"]));
     expect(Object.keys(mail.emails.get("u1")!.mailboxIds)).toEqual(["a"]);
@@ -338,7 +402,10 @@ describe("messages that arrive while the conversation is open", () => {
   it("open, and are marked read at once (as Gmail does), without an undo", async () => {
     const { mail } = await renderConversation(T1);
     await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
-    await arrive(mail, message("e4", "T1", "2026-10-04T10:00:00Z", { text: "A NEW REPLY" }, { from: BOB, keywords: {} }));
+    await arrive(
+      mail,
+      message("e4", "T1", "2026-10-04T10:00:00Z", { text: "A NEW REPLY" }, { from: BOB, keywords: {} }),
+    );
     expect(await screen.findByText(/A NEW REPLY/)).toBeTruthy();
     await waitFor(() => expect(mail.emails.get("e4")!.keywords["$seen"]).toBe(true));
     expect(peekUndo()).toBeNull();
@@ -348,7 +415,10 @@ describe("messages that arrive while the conversation is open", () => {
     const { mail } = await renderConversation(T1);
     await waitFor(() => expect(mail.emails.get("e3")!.keywords["$seen"]).toBe(true));
     setVisibility("hidden");
-    await arrive(mail, message("e5", "T1", "2026-10-05T10:00:00Z", { text: "WHILE AWAY" }, { from: BOB, keywords: {} }));
+    await arrive(
+      mail,
+      message("e5", "T1", "2026-10-05T10:00:00Z", { text: "WHILE AWAY" }, { from: BOB, keywords: {} }),
+    );
     expect(await screen.findByText(/WHILE AWAY/)).toBeTruthy();
     await new Promise((r) => setTimeout(r, 50));
     expect(mail.emails.get("e5")!.keywords["$seen"]).toBeUndefined();
@@ -391,8 +461,20 @@ describe("a conversation opened from search results", () => {
     const mail = new FakeMail({
       mailboxes: MAILBOXES,
       emails: [
-        message("s1", "T9", "2026-10-01T10:00:00Z", { text: "IN THE INBOX" }, { from: BOB, keywords: {}, subject: "Roadmap" }),
-        message("s2", "T9", "2026-10-02T10:00:00Z", { text: "IN THE TRASH" }, { from: BOB, keywords: {}, subject: "Roadmap", mailboxIds: { b: true } }),
+        message(
+          "s1",
+          "T9",
+          "2026-10-01T10:00:00Z",
+          { text: "IN THE INBOX" },
+          { from: BOB, keywords: {}, subject: "Roadmap" },
+        ),
+        message(
+          "s2",
+          "T9",
+          "2026-10-02T10:00:00Z",
+          { text: "IN THE TRASH" },
+          { from: BOB, keywords: {}, subject: "Roadmap", mailboxIds: { b: true } },
+        ),
       ],
     });
     renderSearch(await mail.connect(), { kind: "search", query: "in:trash roadmap", conversationId: "T9" });
@@ -411,8 +493,20 @@ describe("a conversation opened from search results", () => {
       mailboxes: MAILBOXES,
       emails: [
         message("r1", "T8", "2026-10-01T10:00:00Z", { text: "THE ORIGINAL" }, { from: BOB }),
-        message("r2", "T8", "2026-10-02T10:00:00Z", { text: "DELETED REPLY" }, { from: BOB, keywords: {}, mailboxIds: { b: true } }),
-        message("d1", "T8", "2026-10-03T10:00:00Z", { text: "MY DRAFT" }, { keywords: { $draft: true, $seen: true }, mailboxIds: { d: true }, subject: "Re: Plans" }),
+        message(
+          "r2",
+          "T8",
+          "2026-10-02T10:00:00Z",
+          { text: "DELETED REPLY" },
+          { from: BOB, keywords: {}, mailboxIds: { b: true } },
+        ),
+        message(
+          "d1",
+          "T8",
+          "2026-10-03T10:00:00Z",
+          { text: "MY DRAFT" },
+          { keywords: { $draft: true, $seen: true }, mailboxIds: { d: true }, subject: "Re: Plans" },
+        ),
       ],
     });
     const { client, release } = await slowLabels(mail);

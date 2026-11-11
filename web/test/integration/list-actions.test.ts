@@ -60,7 +60,8 @@ describe.skipIf(!live)("against the dev Stalwart: the list and archive", () => {
     const update: Record<Id, PatchObject> = {};
     for (const [id, was] of Object.entries(before)) {
       const is = now[id];
-      if (is && JSON.stringify(is) !== JSON.stringify(was)) update[id] = { mailboxIds: was.mailboxIds, keywords: was.keywords };
+      if (is && JSON.stringify(is) !== JSON.stringify(was))
+        update[id] = { mailboxIds: was.mailboxIds, keywords: was.keywords };
     }
     if (Object.keys(update).length) await client.call("Email/set", { update });
     expect(await inboxThreads()).toBe(manifest.accounts.alice.labels["inbox"]!.threads);
@@ -99,7 +100,9 @@ describe.skipIf(!live)("against the dev Stalwart: the list and archive", () => {
     const seen: string[] = [];
     const stop = subscribeMailChanges((c) => seen.push(c.kind));
     try {
-      expect(await actions.archive(targets, labelListView({ view: "inbox", mailboxId: roles.inbox }, roles)!.query.scope)).toBe("done");
+      expect(
+        await actions.archive(targets, labelListView({ view: "inbox", mailboxId: roles.inbox }, roles)!.query.scope),
+      ).toBe("done");
     } finally {
       stop();
     }

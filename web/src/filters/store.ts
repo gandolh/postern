@@ -8,7 +8,14 @@
 import { isAbortError, type FilterSet, type JmapClient } from "@postern/jmap";
 import { useEffect, useSyncExternalStore } from "react";
 import { useJmap } from "../auth";
-import { activateFilters, loadFilters, saveFilters, type LoadedFilters, type SaveOptions, type SaveOutcome } from "./filterScript";
+import {
+  activateFilters,
+  loadFilters,
+  saveFilters,
+  type LoadedFilters,
+  type SaveOptions,
+  type SaveOutcome,
+} from "./filterScript";
 import { jmapSieveIo, type SieveIo } from "./scriptIo";
 
 export interface FiltersSnapshot {
@@ -55,7 +62,10 @@ export class FiltersStore {
         (loaded) => this.#set({ status: "ready", loaded, error: null }),
         (e: unknown) => {
           if (isAbortError(e)) return;
-          this.#set({ status: this.#snapshot.loaded ? "ready" : "error", error: e instanceof Error ? e.message : "unknown error" });
+          this.#set({
+            status: this.#snapshot.loaded ? "ready" : "error",
+            error: e instanceof Error ? e.message : "unknown error",
+          });
         },
       )
       .finally(() => {

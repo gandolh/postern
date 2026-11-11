@@ -11,7 +11,8 @@ import { APP_URL, ORIGIN } from "./lib/env.ts";
 
 test.use({ serviceWorkers: "allow" });
 
-const CSP_CONSOLE = /Content Security Policy|Refused to (load|apply|execute|frame|connect|create|send)|Permissions-Policy|Unrecognized feature/i;
+const CSP_CONSOLE =
+  /Content Security Policy|Refused to (load|apply|execute|frame|connect|create|send)|Permissions-Policy|Unrecognized feature/i;
 
 /** Collect CSP-looking console lines from every page the context opens (the PDF tab too). */
 function watchConsole(page: Page): string[] {
@@ -34,7 +35,16 @@ test.describe("headers", () => {
   test("the app's responses carry the production header set", async ({ request }) => {
     const asset = (await (await request.get(APP_URL)).text()).match(/"(\/assets\/[^"]+\.js)"/)?.[1];
     expect(asset).toBeTruthy();
-    for (const path of ["/", "/index.html", "/sw.js", "/manifest.webmanifest", asset!, "/#inbox", "/no-such-page", "/webmail-apix"]) {
+    for (const path of [
+      "/",
+      "/index.html",
+      "/sw.js",
+      "/manifest.webmanifest",
+      asset!,
+      "/#inbox",
+      "/no-such-page",
+      "/webmail-apix",
+    ]) {
       const res = await request.get(`${ORIGIN}${path}`);
       expect(res.status(), path).toBe(200);
       const headers = res.headers();
@@ -43,8 +53,12 @@ test.describe("headers", () => {
       expect(headers["server"], path).toBeUndefined();
     }
     expect((await request.get(`${ORIGIN}/sw.js`)).headers()["cache-control"]).toBe("no-cache");
-    expect((await request.get(`${ORIGIN}/manifest.webmanifest`)).headers()["content-type"]).toBe("application/manifest+json");
-    expect((await request.get(`${ORIGIN}${asset}`)).headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
+    expect((await request.get(`${ORIGIN}/manifest.webmanifest`)).headers()["content-type"]).toBe(
+      "application/manifest+json",
+    );
+    expect((await request.get(`${ORIGIN}${asset}`)).headers()["cache-control"]).toBe(
+      "public, max-age=31536000, immutable",
+    );
   });
 
   test("/webmail-api passes only Postern's paths, with its own headers", async ({ request }) => {
@@ -53,7 +67,16 @@ test.describe("headers", () => {
     for (const [name, value] of Object.entries(API_HEADERS)) expect(session.headers()[name], name).toBe(value);
     // Stalwart's admin UI, account pages, OAuth login page, management API and discovery stay off Postern's origin,
     // and the rest of the prefix is refused rather than given the app's fallback.
-    for (const path of ["/webmail-api", "/webmail-api/", "/webmail-api/admin/", "/webmail-api/account/", "/webmail-api/login", "/webmail-api/api/principal", "/webmail-api/.well-known/openid-configuration", "/webmail-api/healthz/live"]) {
+    for (const path of [
+      "/webmail-api",
+      "/webmail-api/",
+      "/webmail-api/admin/",
+      "/webmail-api/account/",
+      "/webmail-api/login",
+      "/webmail-api/api/principal",
+      "/webmail-api/.well-known/openid-configuration",
+      "/webmail-api/healthz/live",
+    ]) {
       expect((await request.get(`${ORIGIN}${path}`)).status(), path).toBe(404);
     }
   });
@@ -68,7 +91,9 @@ test("control: the watch does catch a violation", async ({ page, context }) => {
     script.textContent = "window.inlineRan = true";
     document.head.append(script);
   });
-  await expect.poll(() => cspViolations(page)).toContainEqual(expect.stringContaining("script-src-elem blocked inline"));
+  await expect
+    .poll(() => cspViolations(page))
+    .toContainEqual(expect.stringContaining("script-src-elem blocked inline"));
   expect(lines.length).toBeGreaterThan(0);
   expect(await page.evaluate(() => (window as unknown as { inlineRan?: boolean }).inlineRan)).toBeUndefined();
 });
@@ -87,7 +112,18 @@ test("every screen works under the CSP", async ({ page, context }) => {
 
   const work = await labelId("Work");
   await test.step("every list route", async () => {
-    for (const hash of ["#inbox", "#starred", "#sent", "#drafts", "#spam", "#trash", "#all", `#label/${work}`, "#search/from%3Abob", "#contacts"]) {
+    for (const hash of [
+      "#inbox",
+      "#starred",
+      "#sent",
+      "#drafts",
+      "#spam",
+      "#trash",
+      "#all",
+      `#label/${work}`,
+      "#search/from%3Abob",
+      "#contacts",
+    ]) {
       await goTo(page, hash);
       await expect(page.locator(".shell-main")).not.toBeEmpty();
       await page.waitForTimeout(400);
@@ -109,7 +145,9 @@ test("every screen works under the CSP", async ({ page, context }) => {
   await test.step("the HTML signature preview, in its sandboxed frame", async () => {
     await goTo(page, "#settings/accounts");
     const field = page.getByLabel("Signature (HTML, optional)").first();
-    await field.fill('<p style="color:#1c6a57"><b>Alice</b> <img src="https://track.evil.test/sig.png" alt="logo"></p>');
+    await field.fill(
+      '<p style="color:#1c6a57"><b>Alice</b> <img src="https://track.evil.test/sig.png" alt="logo"></p>',
+    );
     await field.blur();
     const preview = page.locator("iframe.settings-preview").first();
     await expect(preview).toHaveAttribute("sandbox", "");
@@ -124,7 +162,13 @@ test("every screen works under the CSP", async ({ page, context }) => {
     const offsite = await threadBySubject("Photos from the offsite");
     await goTo(page, `#inbox/${offsite.threadId}`);
     await expect(page.locator(".conv-page h1#conv-subject")).toHaveText("Photos from the offsite");
-    await expect.poll(async () => ((await page.locator(".conv-page iframe").first().getAttribute("srcdoc")) ?? "").includes('src="data:image/png;base64,')).toBe(true);
+    await expect
+      .poll(async () =>
+        ((await page.locator(".conv-page iframe").first().getAttribute("srcdoc")) ?? "").includes(
+          'src="data:image/png;base64,',
+        ),
+      )
+      .toBe(true);
     await page.getByRole("button", { name: "Preview group-photo.png" }).first().click();
     const viewer = page.locator("[role=dialog] iframe.att-viewer-frame");
     await expect(viewer).toHaveAttribute("sandbox", "");
@@ -164,7 +208,10 @@ test("every screen works under the CSP", async ({ page, context }) => {
     await editor.evaluate((el) => {
       const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
       const data = new DataTransfer();
-      data.setData("text/html", `<p>Pasted <b>bold</b> and <a href="https://example.com/">a link</a></p><p><img src="data:image/png;base64,${png}" alt="dot" width="20" height="20"></p>`);
+      data.setData(
+        "text/html",
+        `<p>Pasted <b>bold</b> and <a href="https://example.com/">a link</a></p><p><img src="data:image/png;base64,${png}" alt="dot" width="20" height="20"></p>`,
+      );
       data.setData("text/plain", "Pasted bold and a link");
       el.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
     });

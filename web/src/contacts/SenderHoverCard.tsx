@@ -133,7 +133,12 @@ function HoverCardBody({ id, address, close }: { id: string; address: EmailAddre
             In your contacts
           </button>
         ) : (
-          <button type="button" className="btn btn-quiet" disabled={adding || status !== "ready"} onClick={() => void add()}>
+          <button
+            type="button"
+            className="btn btn-quiet"
+            disabled={adding || status !== "ready"}
+            onClick={() => void add()}
+          >
             <UserPlus aria-hidden="true" /> Add to contacts
           </button>
         )}

@@ -57,8 +57,14 @@ export function replyRecipients(original: ReplySource, mode: ReplyMode, me: Iter
   // Leave yourself out, unless that leaves nobody to write to.
   const withoutMe = (list: EmailAddress[]) => list.filter((a) => !isMine(a));
   let finalTo = dedupeAddresses(withoutMe(nextTo));
-  let finalCc = dedupeAddresses(withoutMe(nextCc), finalTo.map((a) => a.email));
-  const finalBcc = dedupeAddresses(withoutMe(nextBcc), [...finalTo, ...finalCc].map((a) => a.email));
+  let finalCc = dedupeAddresses(
+    withoutMe(nextCc),
+    finalTo.map((a) => a.email),
+  );
+  const finalBcc = dedupeAddresses(
+    withoutMe(nextBcc),
+    [...finalTo, ...finalCc].map((a) => a.email),
+  );
   if (finalTo.length === 0 && finalCc.length > 0) {
     finalTo = finalCc;
     finalCc = [];
@@ -72,7 +78,10 @@ export function replyRecipients(original: ReplySource, mode: ReplyMode, me: Iter
  * original was sent to (To, Cc, Bcc, then Delivered-To order), else null (use
  * the default identity).
  */
-export function replyIdentityEmail(original: Partial<Pick<Email, "to" | "cc" | "bcc">>, mine: readonly string[]): string | null {
+export function replyIdentityEmail(
+  original: Partial<Pick<Email, "to" | "cc" | "bcc">>,
+  mine: readonly string[],
+): string | null {
   const keys = new Map(mine.map((m) => [addressKey(m), m]));
   for (const a of [...(original.to ?? []), ...(original.cc ?? []), ...(original.bcc ?? [])]) {
     const hit = keys.get(addressKey(a.email));

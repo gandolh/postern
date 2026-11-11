@@ -23,12 +23,61 @@ export interface SerializedBody {
 
 const ZWSP = /\u200b/g;
 const OUTPUT_TAG: Record<string, string> = {
-  div: "div", p: "p", span: "span", b: "b", strong: "b", i: "i", em: "i", u: "u", s: "s", strike: "s", del: "s", sub: "sub", sup: "sup",
-  code: "code", pre: "pre", a: "a", ul: "ul", ol: "ol", li: "li", blockquote: "blockquote",
-  h1: "h1", h2: "h2", h3: "h3", h4: "h4", h5: "h5", h6: "h6", table: "table", thead: "thead", tbody: "tbody", tfoot: "tfoot", tr: "tr", td: "td", th: "th", caption: "caption",
+  div: "div",
+  p: "p",
+  span: "span",
+  b: "b",
+  strong: "b",
+  i: "i",
+  em: "i",
+  u: "u",
+  s: "s",
+  strike: "s",
+  del: "s",
+  sub: "sub",
+  sup: "sup",
+  code: "code",
+  pre: "pre",
+  a: "a",
+  ul: "ul",
+  ol: "ol",
+  li: "li",
+  blockquote: "blockquote",
+  h1: "h1",
+  h2: "h2",
+  h3: "h3",
+  h4: "h4",
+  h5: "h5",
+  h6: "h6",
+  table: "table",
+  thead: "thead",
+  tbody: "tbody",
+  tfoot: "tfoot",
+  tr: "tr",
+  td: "td",
+  th: "th",
+  caption: "caption",
 };
 const VOID = new Set(["br", "hr", "img"]);
-const BLOCK = new Set(["div", "p", "li", "blockquote", "pre", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6", "table", "tr", "hr", "caption"]);
+const BLOCK = new Set([
+  "div",
+  "p",
+  "li",
+  "blockquote",
+  "pre",
+  "ul",
+  "ol",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "table",
+  "tr",
+  "hr",
+  "caption",
+]);
 const QUOTE_MARKERS = ["postern_quote", "gmail_quote"];
 const SIGNATURE_MARKERS = ["postern_signature", "gmail_signature"];
 
@@ -86,7 +135,8 @@ function serializeHtml(node: Node, cids: Set<string>): string {
     const start = el.getAttribute("start");
     if (start && /^\d+$/.test(start)) attrs += ` start="${start}"`;
   }
-  if ((out === "td" || out === "th") && /^\d+$/.test(el.getAttribute("colspan") ?? "")) attrs += ` colspan="${el.getAttribute("colspan")}"`;
+  if ((out === "td" || out === "th") && /^\d+$/.test(el.getAttribute("colspan") ?? ""))
+    attrs += ` colspan="${el.getAttribute("colspan")}"`;
   if (out === "span" && !attrs) return inner;
   return VOID.has(out) ? `<${out}${attrs}>` : `<${out}${attrs}>${inner}</${out}>`;
 }
@@ -118,7 +168,13 @@ function serializeText(node: Node, t: TextOut, skip: (el: Element) => boolean, l
     for (const c of Array.from(el.childNodes)) serializeText(c, inner, skip, null);
     const body = inner.out.replace(/\n+$/, "");
     t.ensureLine();
-    if (body) t.push(`${body.split("\n").map((l) => (l === "" ? ">" : l.startsWith(">") ? `>${l}` : `> ${l}`)).join("\n")}\n`);
+    if (body)
+      t.push(
+        `${body
+          .split("\n")
+          .map((l) => (l === "" ? ">" : l.startsWith(">") ? `>${l}` : `> ${l}`))
+          .join("\n")}\n`,
+      );
     return;
   }
   const block = BLOCK.has(tag);
@@ -130,7 +186,8 @@ function serializeText(node: Node, t: TextOut, skip: (el: Element) => boolean, l
     if (!t.out.endsWith("\n") && t.out !== "") t.push("\t");
   }
   const childList = tag === "ol" ? { n: Number(el.getAttribute("start")) || 1 } : tag === "ul" ? null : listIndex;
-  for (const c of Array.from(el.childNodes)) serializeText(c, t, skip, tag === "ol" || tag === "ul" ? childList : listIndex);
+  for (const c of Array.from(el.childNodes))
+    serializeText(c, t, skip, tag === "ol" || tag === "ul" ? childList : listIndex);
   if (tag === "a") {
     const href = linkHref(el);
     const text = (el.textContent ?? "").replace(ZWSP, "").trim();
@@ -141,7 +198,10 @@ function serializeText(node: Node, t: TextOut, skip: (el: Element) => boolean, l
 }
 
 function finishText(text: string): string {
-  return text.replace(/\n{3,}/g, "\n\n").replace(/^\n+/, "").replace(/\s+$/, "");
+  return text
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/^\n+/, "")
+    .replace(/\s+$/, "");
 }
 
 /** The editor's content, ready to send. */
@@ -151,6 +211,7 @@ export function serializeEditor(root: Element): SerializedBody {
   const all = new TextOut();
   for (const c of Array.from(root.childNodes)) serializeText(c, all, () => false, null);
   const own = new TextOut();
-  for (const c of Array.from(root.childNodes)) serializeText(c, own, (el) => hasClass(el, QUOTE_MARKERS) || hasClass(el, SIGNATURE_MARKERS), null);
+  for (const c of Array.from(root.childNodes))
+    serializeText(c, own, (el) => hasClass(el, QUOTE_MARKERS) || hasClass(el, SIGNATURE_MARKERS), null);
   return { html, text: finishText(all.out), ownText: finishText(own.out), cids: [...cids] };
 }

@@ -53,10 +53,26 @@ export function IdentityEditor({ identity }: { identity: Identity }) {
             void commit({ replyTo: trimmed === "" ? null : [{ name: null, email: trimmed }] });
           }}
         />
-        {replyToError ? <p role="alert" className="settings-error">Enter one email address, or leave it empty.</p> : null}
+        {replyToError ? (
+          <p role="alert" className="settings-error">
+            Enter one email address, or leave it empty.
+          </p>
+        ) : null}
       </div>
-      <TextField id={`${id}-text`} label="Signature (plain text)" multiline value={current.textSignature} onCommit={(textSignature) => void commit({ textSignature })} />
-      <TextField id={`${id}-html`} label="Signature (HTML, optional)" multiline value={current.htmlSignature} onCommit={(htmlSignature) => void commit({ htmlSignature })} />
+      <TextField
+        id={`${id}-text`}
+        label="Signature (plain text)"
+        multiline
+        value={current.textSignature}
+        onCommit={(textSignature) => void commit({ textSignature })}
+      />
+      <TextField
+        id={`${id}-html`}
+        label="Signature (HTML, optional)"
+        multiline
+        value={current.htmlSignature}
+        onCommit={(htmlSignature) => void commit({ htmlSignature })}
+      />
       <HtmlPreview html={current.htmlSignature} title={`Preview of the HTML signature for ${current.email}`} />
       {note}
     </fieldset>

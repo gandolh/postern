@@ -14,12 +14,22 @@ export interface SavedDraft {
 }
 
 /** Create `email` and destroy the older copies, in one request. @throws JmapSetError when the create is refused. */
-export async function saveDraft(client: JmapClient, email: EmailCreate, previous: readonly Id[], signal?: AbortSignal): Promise<SavedDraft> {
-  const res = await client.call("Email/set", { create: { draft: email }, ...(previous.length ? { destroy: [...previous] } : {}) }, { signal });
+export async function saveDraft(
+  client: JmapClient,
+  email: EmailCreate,
+  previous: readonly Id[],
+  signal?: AbortSignal,
+): Promise<SavedDraft> {
+  const res = await client.call(
+    "Email/set",
+    { create: { draft: email }, ...(previous.length ? { destroy: [...previous] } : {}) },
+    { signal },
+  );
   const refused = res.notCreated?.["draft"];
   if (refused) throw new JmapSetError("Email/set", "draft", refused);
   const created = res.created?.["draft"];
-  if (!created?.id) throw new JmapSetError("Email/set", "draft", { type: "serverFail", description: "No draft came back" });
+  if (!created?.id)
+    throw new JmapSetError("Email/set", "draft", { type: "serverFail", description: "No draft came back" });
   const leftOver = Object.entries(res.notDestroyed ?? {})
     .filter(([, e]) => e.type !== "notFound")
     .map(([id]) => id);

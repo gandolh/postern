@@ -46,7 +46,12 @@ export function setSignedIn(on: boolean): void {
 
 /** Would this page show a desktop notification for new mail itself? */
 export function willNotifyHere(): boolean {
-  return signedIn && getDesktopNotifications() && typeof Notification !== "undefined" && Notification.permission === "granted";
+  return (
+    signedIn &&
+    getDesktopNotifications() &&
+    typeof Notification !== "undefined" &&
+    Notification.permission === "granted"
+  );
 }
 
 /** Handles one message from the worker. Exported for tests. */
@@ -102,7 +107,11 @@ export interface WorkerLike {
  * worker of the registration for the scope (or this page's controller, which
  * is that same object) and run the script at `scriptUrl`.
  */
-export function acceptsSource(source: unknown, trusted: readonly (WorkerLike | null | undefined)[], scriptUrl: string): boolean {
+export function acceptsSource(
+  source: unknown,
+  trusted: readonly (WorkerLike | null | undefined)[],
+  scriptUrl: string,
+): boolean {
   if (typeof source !== "object" || source === null) return false;
   if ((source as WorkerLike).scriptURL !== scriptUrl) return false;
   return trusted.some((worker) => worker !== null && worker !== undefined && worker === source);
@@ -117,11 +126,16 @@ function workerUrls(): { scope: string; scriptUrl: string } {
 /** Handles a message event if it comes from Postern's worker; anything else is dropped. Exported for tests. */
 export async function receiveWorkerMessage(
   event: Pick<MessageEvent, "data" | "ports" | "source">,
-  lookup: { controller: () => WorkerLike | null; active: () => Promise<WorkerLike | null | undefined>; scriptUrl: string },
+  lookup: {
+    controller: () => WorkerLike | null;
+    active: () => Promise<WorkerLike | null | undefined>;
+    scriptUrl: string;
+  },
 ): Promise<boolean> {
   const controller = lookup.controller();
   // The controller is the usual sender; otherwise ask the registration (an uncontrolled first load).
-  const trusted = controller !== null && controller === event.source ? [controller] : [await lookup.active().catch(() => null)];
+  const trusted =
+    controller !== null && controller === event.source ? [controller] : [await lookup.active().catch(() => null)];
   if (!acceptsSource(event.source, trusted, lookup.scriptUrl)) return false;
   handleWorkerMessage(event.data, event.ports);
   return true;

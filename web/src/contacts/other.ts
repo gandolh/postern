@@ -15,7 +15,10 @@ export interface SentMessage {
 }
 
 /** One entry per address across `messages`, with how often and when it was written to. Pure. */
-export function collectOtherContacts(messages: readonly SentMessage[], into: Map<string, Candidate> = new Map()): Map<string, Candidate> {
+export function collectOtherContacts(
+  messages: readonly SentMessage[],
+  into: Map<string, Candidate> = new Map(),
+): Map<string, Candidate> {
   for (const m of messages) {
     const at = Date.parse(m.receivedAt) || 0;
     addRecipients([...(m.to ?? []), ...(m.cc ?? []), ...(m.bcc ?? [])], at, into);

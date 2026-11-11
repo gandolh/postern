@@ -17,15 +17,19 @@ describe("scopePath", () => {
 });
 
 describe("the API is never routed, though it is inside the scope", () => {
-  it.each(["/webmail-api", "/webmail-api/", "/webmail-api/jmap/", "/webmail-api/jmap/session", "/webmail-api/jmap/download/a/b/x.pdf", "/webmail-api/auth/token"])(
-    "%s is the API",
-    (path) => {
-      expect(isApiPath(path)).toBe(true);
-      expect(NAVIGATION_DENYLIST.some((re) => re.test(path))).toBe(true);
-      expect(servesShell(url(path), ORIGIN, SCOPE)).toBe(false);
-      expect(mayAnswerFromPrecache(url(path), ORIGIN, SCOPE)).toBe(false);
-    },
-  );
+  it.each([
+    "/webmail-api",
+    "/webmail-api/",
+    "/webmail-api/jmap/",
+    "/webmail-api/jmap/session",
+    "/webmail-api/jmap/download/a/b/x.pdf",
+    "/webmail-api/auth/token",
+  ])("%s is the API", (path) => {
+    expect(isApiPath(path)).toBe(true);
+    expect(NAVIGATION_DENYLIST.some((re) => re.test(path))).toBe(true);
+    expect(servesShell(url(path), ORIGIN, SCOPE)).toBe(false);
+    expect(mayAnswerFromPrecache(url(path), ORIGIN, SCOPE)).toBe(false);
+  });
 
   it("does not mistake the app for the API", () => {
     expect(isApiPath("/")).toBe(false);

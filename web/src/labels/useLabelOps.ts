@@ -27,22 +27,36 @@ const count = (n: number) => n.toLocaleString();
 
 export function addedCopy(name: string): ActionCopy {
   return {
-    done: (n, noun) => (n === 1 ? `Label "${name}" added.` : `Label "${name}" added to ${count(n)} ${nounFor(n, noun)}.`),
-    failed: (n, noun) => (n === 1 ? `Couldn't add the label "${name}".` : `Couldn't add the label "${name}" to ${count(n)} ${nounFor(n, noun)}.`),
+    done: (n, noun) =>
+      n === 1 ? `Label "${name}" added.` : `Label "${name}" added to ${count(n)} ${nounFor(n, noun)}.`,
+    failed: (n, noun) =>
+      n === 1
+        ? `Couldn't add the label "${name}".`
+        : `Couldn't add the label "${name}" to ${count(n)} ${nounFor(n, noun)}.`,
   };
 }
 
 export function removedCopy(name: string): ActionCopy {
   return {
-    done: (n, noun) => (n === 1 ? `Label "${name}" removed.` : `Label "${name}" removed from ${count(n)} ${nounFor(n, noun)}.`),
-    failed: (n, noun) => (n === 1 ? `Couldn't remove the label "${name}".` : `Couldn't remove the label "${name}" from ${count(n)} ${nounFor(n, noun)}.`),
+    done: (n, noun) =>
+      n === 1 ? `Label "${name}" removed.` : `Label "${name}" removed from ${count(n)} ${nounFor(n, noun)}.`,
+    failed: (n, noun) =>
+      n === 1
+        ? `Couldn't remove the label "${name}".`
+        : `Couldn't remove the label "${name}" from ${count(n)} ${nounFor(n, noun)}.`,
   };
 }
 
 export function movedCopy(name: string): ActionCopy {
   return {
-    done: (n, noun) => (n === 1 ? `${capitalised(nounFor(1, noun))} moved to "${name}".` : `${count(n)} ${nounFor(n, noun)} moved to "${name}".`),
-    failed: (n, noun) => (n === 1 ? `Couldn't move the ${nounFor(1, noun)} to "${name}".` : `Couldn't move ${count(n)} ${nounFor(n, noun)} to "${name}".`),
+    done: (n, noun) =>
+      n === 1
+        ? `${capitalised(nounFor(1, noun))} moved to "${name}".`
+        : `${count(n)} ${nounFor(n, noun)} moved to "${name}".`,
+    failed: (n, noun) =>
+      n === 1
+        ? `Couldn't move the ${nounFor(1, noun)} to "${name}".`
+        : `Couldn't move ${count(n)} ${nounFor(n, noun)} to "${name}".`,
   };
 }
 
@@ -77,7 +91,12 @@ export function useLabelOps(current: LabelRoute | null): LabelOps {
         const conversations = await resolveConversations(client, threadIds, options);
         if (conversations.length === 0) return "nothing";
         const name = titleOf(labelId);
-        return actions.applyLabels(conversations, scope(), on ? { add: [labelId] } : { remove: [labelId] }, on ? addedCopy(name) : removedCopy(name));
+        return actions.applyLabels(
+          conversations,
+          scope(),
+          on ? { add: [labelId] } : { remove: [labelId] },
+          on ? addedCopy(name) : removedCopy(name),
+        );
       },
       async move(threadIds, labelId, options) {
         const conversations = await resolveConversations(client, threadIds, options);

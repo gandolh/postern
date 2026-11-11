@@ -9,7 +9,12 @@ import { addedCopy, movedCopy } from "../labels/useLabelOps";
 
 describe("actionCopy", () => {
   it("fills the count and the noun, singular and plural, conversation by default", () => {
-    const copy = actionCopy("{Thing} archived.", "{n} {things} archived.", "Couldn't archive the {thing}.", "Couldn't archive {n} {Things}.");
+    const copy = actionCopy(
+      "{Thing} archived.",
+      "{n} {things} archived.",
+      "Couldn't archive the {thing}.",
+      "Couldn't archive {n} {Things}.",
+    );
     expect(copy.done(1)).toBe("Conversation archived.");
     expect(copy.done(2_500)).toBe(`${(2_500).toLocaleString()} conversations archived.`);
     expect(copy.done(1, "message")).toBe("Message archived.");
@@ -19,7 +24,9 @@ describe("actionCopy", () => {
   });
 
   it("leaves copy without tokens as it is", () => {
-    expect(actionCopy("Message moved to Trash.", "Messages moved to Trash.", "x", "y").done(1, "conversation")).toBe("Message moved to Trash.");
+    expect(actionCopy("Message moved to Trash.", "Messages moved to Trash.", "x", "y").done(1, "conversation")).toBe(
+      "Message moved to Trash.",
+    );
   });
 
   it("names the row", () => {
@@ -41,8 +48,18 @@ describe("every toast says message with conversation view off", () => {
     ["star", COPY.star, "Message starred.", "2 messages starred."],
     ["unstar", COPY.unstar, "Star removed.", "Stars removed from 2 messages."],
     ["important", COPY.important, "Message marked as important.", "2 messages marked as important."],
-    ["report spam", REPORT_SPAM_COPY, "Message reported as spam. Your mail server learns from this.", "2 messages reported as spam. Your mail server learns from this."],
-    ["not spam", NOT_SPAM_COPY, "Message marked as not spam and moved to Inbox. Your mail server learns from this.", "2 messages marked as not spam and moved to Inbox. Your mail server learns from this."],
+    [
+      "report spam",
+      REPORT_SPAM_COPY,
+      "Message reported as spam. Your mail server learns from this.",
+      "2 messages reported as spam. Your mail server learns from this.",
+    ],
+    [
+      "not spam",
+      NOT_SPAM_COPY,
+      "Message marked as not spam and moved to Inbox. Your mail server learns from this.",
+      "2 messages marked as not spam and moved to Inbox. Your mail server learns from this.",
+    ],
     ["unsnooze", UNSNOOZE_COPY, "Message unsnoozed.", "2 messages unsnoozed."],
     ["move", movedCopy("Work"), 'Message moved to "Work".', '2 messages moved to "Work".'],
     ["label", addedCopy("Work"), 'Label "Work" added.', 'Label "Work" added to 2 messages.'],

@@ -5,7 +5,14 @@
 // (to Trash) reach existing mail; forwarding and "never send to Spam" are
 // about mail still to come.
 
-import { formatSearch, type EmailFilter, type FilterActions, type FilterCriteria, type Id, type MethodCaller } from "@postern/jmap";
+import {
+  formatSearch,
+  type EmailFilter,
+  type FilterActions,
+  type FilterCriteria,
+  type Id,
+  type MethodCaller,
+} from "@postern/jmap";
 import type { Conversation, ConversationMessage, ConversationScope } from "../actions/conversation";
 import { applyPatch, planEdits, type MessageEdit, type MessagePlan } from "../actions/patches";
 import { planArchive, planLabels, planRead, planStar, planTrash } from "../actions/plans";
@@ -64,10 +71,17 @@ export async function findMatchingConversations(
   const threadIds: Id[] = [];
   let total = 0;
   // Advance by what came back: a server may return fewer than asked without being at the end.
-  for (let position = 0; position < limit; ) {
+  for (let position = 0; position < limit;) {
     const page = await caller.call(
       "Email/query",
-      { filter, collapseThreads: true, sort: [{ property: "receivedAt", isAscending: false }], position, limit: Math.min(PAGE, limit - position), calculateTotal: true },
+      {
+        filter,
+        collapseThreads: true,
+        sort: [{ property: "receivedAt", isAscending: false }],
+        position,
+        limit: Math.min(PAGE, limit - position),
+        calculateTotal: true,
+      },
       { signal },
     );
     total = page.total ?? total;
@@ -80,7 +94,11 @@ export async function findMatchingConversations(
   if (threadIds.length === 0) return { conversations: [], total };
   const threads = await caller.call("Thread/get", { ids: threadIds }, { signal });
   const emailIds = threads.list.flatMap((t) => t.emailIds);
-  const messages = await caller.call("Email/get", { ids: emailIds, properties: ["threadId", "mailboxIds", "keywords", "receivedAt"] }, { signal });
+  const messages = await caller.call(
+    "Email/get",
+    { ids: emailIds, properties: ["threadId", "mailboxIds", "keywords", "receivedAt"] },
+    { signal },
+  );
   const byThread = new Map<Id, ConversationMessage[]>();
   for (const e of messages.list) {
     const m: ConversationMessage = {
@@ -109,7 +127,11 @@ export async function findMatchingConversations(
  * the state the previous step leaves, merged into one patch per message.
  * @throws MissingLabelError when archiving (or taking a label off) needs All Mail and there is none.
  */
-export function planFilterActions(conversations: readonly Conversation[], scope: ConversationScope, a: FilterActions): MessagePlan {
+export function planFilterActions(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  a: FilterActions,
+): MessagePlan {
   const steps: ((cs: readonly Conversation[]) => MessagePlan)[] = [];
   if (a.label) {
     const id = a.label.id;
@@ -123,16 +145,21 @@ export function planFilterActions(conversations: readonly Conversation[], scope:
   let current: readonly Conversation[] = conversations;
   for (const step of steps) {
     const plan = step(current);
-    current = current.map((c) => ({ ...c, messages: c.messages.map((m) => (plan.update[m.id] ? { ...m, ...applyPatch(m, plan.update[m.id]!) } : m)) }));
+    current = current.map((c) => ({
+      ...c,
+      messages: c.messages.map((m) => (plan.update[m.id] ? { ...m, ...applyPatch(m, plan.update[m.id]!) } : m)),
+    }));
   }
   const final = new Map(current.flatMap((c) => c.messages.map((m) => [m.id, m] as const)));
   return planEdits(conversations, (m): MessageEdit | null => {
     const end = final.get(m.id);
     if (!end || end === m) return null;
     const mailboxIds: Record<Id, boolean> = {};
-    for (const id of new Set([...Object.keys(m.mailboxIds), ...Object.keys(end.mailboxIds)])) mailboxIds[id] = end.mailboxIds[id] === true;
+    for (const id of new Set([...Object.keys(m.mailboxIds), ...Object.keys(end.mailboxIds)]))
+      mailboxIds[id] = end.mailboxIds[id] === true;
     const keywords: Record<string, boolean> = {};
-    for (const k of new Set([...Object.keys(m.keywords), ...Object.keys(end.keywords)])) keywords[k] = end.keywords[k] === true;
+    for (const k of new Set([...Object.keys(m.keywords), ...Object.keys(end.keywords)]))
+      keywords[k] = end.keywords[k] === true;
     return { mailboxIds, keywords };
   });
 }

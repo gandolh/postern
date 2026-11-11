@@ -82,7 +82,7 @@ export function dmarcPassed(authResults: readonly string[], sender: string): boo
   if (!top) return false;
   // Comments (RFC 5322, nestable) say nothing that counts; resinfo entries are ";"-separated after the authserv-id.
   let text = top;
-  for (let before = ""; before !== text; ) {
+  for (let before = ""; before !== text;) {
     before = text;
     text = text.replace(/\([^()]*\)/g, " ");
   }
@@ -146,7 +146,10 @@ export function useImageAllowance(account: string): {
 } {
   const v = useSyncExternalStore(subscribe, getVersion, getVersion);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allows = useCallback((sender: string, authResults: readonly string[]) => allowsImagesFrom(account, sender, authResults), [account, v]);
+  const allows = useCallback(
+    (sender: string, authResults: readonly string[]) => allowsImagesFrom(account, sender, authResults),
+    [account, v],
+  );
   const allow = useCallback((sender: string) => allowImagesFrom(account, sender), [account]);
   return { allows, allow };
 }

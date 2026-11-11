@@ -9,7 +9,14 @@
 // filed in Sent like any send. The answer is kept on the invite message as a
 // keyword, so every device shows it.
 
-import { escapePointer, JmapSetError, type EmailBodyPart, type Id, type Identity, type JmapClient } from "@postern/jmap";
+import {
+  escapePointer,
+  JmapSetError,
+  type EmailBodyPart,
+  type Id,
+  type Identity,
+  type JmapClient,
+} from "@postern/jmap";
 import { submitDraft } from "../send/submit";
 import { buildReply, type Invite, type Person } from "./ics";
 
@@ -30,12 +37,16 @@ const VERB: Record<Answer, { subject: string; text: string }> = {
 
 /** The answer kept on the message, if any. */
 export function answerOf(keywords: Readonly<Record<string, true>>): Answer | null {
-  for (const [answer, keyword] of Object.entries(ANSWER_KEYWORDS) as [Answer, string][]) if (keywords[keyword]) return answer;
+  for (const [answer, keyword] of Object.entries(ANSWER_KEYWORDS) as [Answer, string][])
+    if (keywords[keyword]) return answer;
   return null;
 }
 
 /** The attendee line that is me, and the identity to answer from: its address exactly. */
-export function myAttendance(invite: Invite, identities: readonly Pick<Identity, "id" | "email" | "name">[]): { me: Person & { partstat: string }; identity: Pick<Identity, "id" | "email" | "name"> } | null {
+export function myAttendance(
+  invite: Invite,
+  identities: readonly Pick<Identity, "id" | "email" | "name">[],
+): { me: Person & { partstat: string }; identity: Pick<Identity, "id" | "email" | "name"> } | null {
   for (const a of invite.attendees) {
     const identity = identities.find((i) => i.email.toLowerCase() === a.email.toLowerCase());
     if (identity) return { me: a, identity };
@@ -60,11 +71,24 @@ export interface ReplyArgs {
 export async function sendInviteReply(client: JmapClient, args: ReplyArgs): Promise<void> {
   const { invite, identity, answer } = args;
   const organizer = invite.organizer;
-  if (!organizer) throw new JmapSetError("Email/set", "reply", { type: "invalidProperties", description: "The invite names no organiser" });
-  const ics = buildReply(invite, { email: args.me.email, name: identity.name || args.me.name }, answer, args.now ?? new Date());
+  if (!organizer)
+    throw new JmapSetError("Email/set", "reply", {
+      type: "invalidProperties",
+      description: "The invite names no organiser",
+    });
+  const ics = buildReply(
+    invite,
+    { email: args.me.email, name: identity.name || args.me.name },
+    answer,
+    args.now ?? new Date(),
+  );
   const who = identity.name || identity.email;
   const title = invite.summary || "the event";
-  const mailboxIds: Record<Id, true> = args.draftsMailboxId ? { [args.draftsMailboxId]: true } : args.sentMailboxId ? { [args.sentMailboxId]: true } : {};
+  const mailboxIds: Record<Id, true> = args.draftsMailboxId
+    ? { [args.draftsMailboxId]: true }
+    : args.sentMailboxId
+      ? { [args.sentMailboxId]: true }
+      : {};
   const res = await client.call("Email/set", {
     create: {
       reply: {
@@ -79,7 +103,11 @@ export async function sendInviteReply(client: JmapClient, args: ReplyArgs): Prom
           // Stalwart takes the method parameter through the part's Content-Type header.
           subParts: [
             { partId: "text", type: "text/plain" },
-            { partId: "ics", type: "text/calendar", "header:Content-Type": " text/calendar; charset=utf-8; method=REPLY" },
+            {
+              partId: "ics",
+              type: "text/calendar",
+              "header:Content-Type": " text/calendar; charset=utf-8; method=REPLY",
+            },
           ] as unknown as EmailBodyPart[],
         },
         bodyValues: { text: { value: `${who} ${VERB[answer].text} ${title}.` }, ics: { value: ics } },
@@ -88,8 +116,14 @@ export async function sendInviteReply(client: JmapClient, args: ReplyArgs): Prom
   });
   const created = res.created?.["reply"];
   if (!created?.id) throw new JmapSetError("Email/set", "reply", res.notCreated?.["reply"] ?? { type: "serverFail" });
-  await submitDraft(client, { emailId: created.id, identityId: identity.id, draftsMailboxId: args.draftsMailboxId, sentMailboxId: args.sentMailboxId });
+  await submitDraft(client, {
+    emailId: created.id,
+    identityId: identity.id,
+    draftsMailboxId: args.draftsMailboxId,
+    sentMailboxId: args.sentMailboxId,
+  });
   const keywords: Record<string, boolean | null> = {};
-  for (const [a, k] of Object.entries(ANSWER_KEYWORDS)) keywords[`keywords/${escapePointer(k)}`] = a === answer ? true : null;
+  for (const [a, k] of Object.entries(ANSWER_KEYWORDS))
+    keywords[`keywords/${escapePointer(k)}`] = a === answer ? true : null;
   await client.call("Email/set", { update: { [args.messageId]: keywords } });
 }

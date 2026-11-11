@@ -22,8 +22,50 @@ interface Sender extends Address {
   kind: Kind;
 }
 
-const FIRST = ["Ana", "Ben", "Chloe", "Diego", "Elif", "Femi", "Greta", "Hamid", "Ines", "Jonas", "Kira", "Luca", "Maya", "Nils", "Olga", "Pavel", "Quinn", "Rosa", "Theo", "Uma", "Vera", "Wim", "Yara", "Zane"];
-const LAST = ["Abbott", "Berg", "Costa", "Dunn", "Eriksen", "Fox", "Garcia", "Holm", "Ito", "Jensen", "Klein", "Lund", "Moreno", "Novak", "Ortiz", "Petrov"];
+const FIRST = [
+  "Ana",
+  "Ben",
+  "Chloe",
+  "Diego",
+  "Elif",
+  "Femi",
+  "Greta",
+  "Hamid",
+  "Ines",
+  "Jonas",
+  "Kira",
+  "Luca",
+  "Maya",
+  "Nils",
+  "Olga",
+  "Pavel",
+  "Quinn",
+  "Rosa",
+  "Theo",
+  "Uma",
+  "Vera",
+  "Wim",
+  "Yara",
+  "Zane",
+];
+const LAST = [
+  "Abbott",
+  "Berg",
+  "Costa",
+  "Dunn",
+  "Eriksen",
+  "Fox",
+  "Garcia",
+  "Holm",
+  "Ito",
+  "Jensen",
+  "Klein",
+  "Lund",
+  "Moreno",
+  "Novak",
+  "Ortiz",
+  "Petrov",
+];
 const PERSONAL_DOMAINS = ["example.com", "example.org", "example.net", "mail.example.com", "post.example.org"];
 
 const SERVICES: Sender[] = [
@@ -59,21 +101,119 @@ function senders(rand: () => number): Sender[] {
 }
 
 const SUBJECTS: Record<Kind, string[]> = {
-  personal: ["Catching up", "Saturday plans", "That recipe", "Photos from the weekend", "Birthday drinks", "Quick question", "Book recommendation", "Moving house", "Running club", "Concert tickets"],
-  work: ["Notes from today's call", "Budget question", "Draft for review", "Agenda for Tuesday", "Hiring update", "Quarterly numbers", "Feedback on the proposal", "Timeline check", "Vendor shortlist", "Workshop follow-up"],
-  notification: ["New comment on issue #{n}", "Build #{n} passed", "Build #{n} failed", "Reminder: stand-up at 10:00", "Review requested on change #{n}", "Issue #{n} was closed", "You were mentioned in #{n}"],
-  receipt: ["Your order #{n} has shipped", "Receipt for order #{n}", "Your bill for this month", "Delivery scheduled for order #{n}", "Refund processed for order #{n}"],
-  travel: ["Booking confirmed: reference {n}", "Your journey on the {d}th", "Check-in is open", "Your stay: reservation {n}", "Seat reservation {n}"],
-  digest: ["Your weekly digest", "Top stories this week", "Ten things worth reading", "New in the forum this week", "This week's highlights"],
+  personal: [
+    "Catching up",
+    "Saturday plans",
+    "That recipe",
+    "Photos from the weekend",
+    "Birthday drinks",
+    "Quick question",
+    "Book recommendation",
+    "Moving house",
+    "Running club",
+    "Concert tickets",
+  ],
+  work: [
+    "Notes from today's call",
+    "Budget question",
+    "Draft for review",
+    "Agenda for Tuesday",
+    "Hiring update",
+    "Quarterly numbers",
+    "Feedback on the proposal",
+    "Timeline check",
+    "Vendor shortlist",
+    "Workshop follow-up",
+  ],
+  notification: [
+    "New comment on issue #{n}",
+    "Build #{n} passed",
+    "Build #{n} failed",
+    "Reminder: stand-up at 10:00",
+    "Review requested on change #{n}",
+    "Issue #{n} was closed",
+    "You were mentioned in #{n}",
+  ],
+  receipt: [
+    "Your order #{n} has shipped",
+    "Receipt for order #{n}",
+    "Your bill for this month",
+    "Delivery scheduled for order #{n}",
+    "Refund processed for order #{n}",
+  ],
+  travel: [
+    "Booking confirmed: reference {n}",
+    "Your journey on the {d}th",
+    "Check-in is open",
+    "Your stay: reservation {n}",
+    "Seat reservation {n}",
+  ],
+  digest: [
+    "Your weekly digest",
+    "Top stories this week",
+    "Ten things worth reading",
+    "New in the forum this week",
+    "This week's highlights",
+  ],
 };
 
 const SENTENCES: Record<Kind, string[]> = {
-  personal: ["Hope you are well.", "It has been far too long.", "Are you free at the weekend?", "The weather here has finally turned.", "I found the book you mentioned in a second-hand shop.", "Let me know what suits you.", "We should do this more often.", "The kids say hello.", "I am still laughing about last time.", "Bring a jumper, it gets cold by the river."],
-  work: ["Following up on our conversation.", "The numbers are in the attached sheet.", "Could you take a look before Friday?", "I have pencilled in an hour on Tuesday.", "Two open questions remain.", "Happy to discuss on a call.", "The vendor needs an answer this week.", "Let us keep the scope as agreed.", "I have updated the timeline accordingly.", "Thanks for the quick turnaround."],
-  notification: ["This is an automated message.", "Open the link to see the full discussion.", "You are receiving this because you are watching this project.", "No action is needed.", "The change is ready for review.", "All checks have completed."],
-  receipt: ["Thank you for your order.", "Your items are on their way.", "Keep this email for your records.", "Delivery usually takes two to three working days.", "The total includes VAT.", "Questions? Reply to this email."],
-  travel: ["Please arrive in good time.", "Your reference is shown above.", "Check-in opens 24 hours before departure.", "Breakfast is included.", "Show this email at the desk.", "Free cancellation until 48 hours before arrival."],
-  digest: ["Here is what happened this week.", "The most-read story was about tiny houses.", "Members posted 42 new topics.", "Read on for our editors' picks.", "Thanks for reading, as always.", "Reply to tell us what you would like more of."],
+  personal: [
+    "Hope you are well.",
+    "It has been far too long.",
+    "Are you free at the weekend?",
+    "The weather here has finally turned.",
+    "I found the book you mentioned in a second-hand shop.",
+    "Let me know what suits you.",
+    "We should do this more often.",
+    "The kids say hello.",
+    "I am still laughing about last time.",
+    "Bring a jumper, it gets cold by the river.",
+  ],
+  work: [
+    "Following up on our conversation.",
+    "The numbers are in the attached sheet.",
+    "Could you take a look before Friday?",
+    "I have pencilled in an hour on Tuesday.",
+    "Two open questions remain.",
+    "Happy to discuss on a call.",
+    "The vendor needs an answer this week.",
+    "Let us keep the scope as agreed.",
+    "I have updated the timeline accordingly.",
+    "Thanks for the quick turnaround.",
+  ],
+  notification: [
+    "This is an automated message.",
+    "Open the link to see the full discussion.",
+    "You are receiving this because you are watching this project.",
+    "No action is needed.",
+    "The change is ready for review.",
+    "All checks have completed.",
+  ],
+  receipt: [
+    "Thank you for your order.",
+    "Your items are on their way.",
+    "Keep this email for your records.",
+    "Delivery usually takes two to three working days.",
+    "The total includes VAT.",
+    "Questions? Reply to this email.",
+  ],
+  travel: [
+    "Please arrive in good time.",
+    "Your reference is shown above.",
+    "Check-in opens 24 hours before departure.",
+    "Breakfast is included.",
+    "Show this email at the desk.",
+    "Free cancellation until 48 hours before arrival.",
+  ],
+  digest: [
+    "Here is what happened this week.",
+    "The most-read story was about tiny houses.",
+    "Members posted 42 new topics.",
+    "Read on for our editors' picks.",
+    "Thanks for reading, as always.",
+    "Reply to tell us what you would like more of.",
+  ],
 };
 
 function body(rand: () => number, kind: Kind, paragraphs: number): string {
@@ -131,7 +271,11 @@ export function bulk(): SeedEmail[] {
         attach.push(
           rand() < 0.5
             ? { filename: `notes-${i}.txt`, type: "text/plain", data: body(rand, kind, 3) }
-            : { filename: `chart-${i}.png`, type: "image/png", data: png(64, 48, [Math.floor(rand() * 255), 90, 160], [240, Math.floor(rand() * 255), 120]) },
+            : {
+                filename: `chart-${i}.png`,
+                type: "image/png",
+                data: png(64, 48, [Math.floor(rand() * 255), 90, 160], [240, Math.floor(rand() * 255), 120]),
+              },
         );
       }
       const unread = !fromAlice && rand() < (day < 30 ? 0.4 : 0.04);

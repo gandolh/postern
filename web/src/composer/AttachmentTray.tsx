@@ -5,7 +5,15 @@ import { AlertCircle, Paperclip, X } from "lucide-react";
 import { formatSize, stripBidiControls } from "../attachments/kind";
 import type { ComposeSession, FileItem } from "./session";
 
-export function AttachmentTray({ session, files, inline }: { session: ComposeSession; files: readonly FileItem[]; inline: readonly FileItem[] }) {
+export function AttachmentTray({
+  session,
+  files,
+  inline,
+}: {
+  session: ComposeSession;
+  files: readonly FileItem[];
+  inline: readonly FileItem[];
+}) {
   const shown = [...files, ...inline.filter((f) => f.status !== "done")];
   if (shown.length === 0) return null;
   return (
@@ -15,7 +23,11 @@ export function AttachmentTray({ session, files, inline }: { session: ComposeSes
         const percent = f.size > 0 ? Math.min(100, Math.round((f.loaded / f.size) * 100)) : 0;
         return (
           <li key={f.key} className="compose-file" data-status={f.status}>
-            {f.status === "error" ? <AlertCircle aria-hidden="true" className="compose-file-icon" /> : <Paperclip aria-hidden="true" className="compose-file-icon" />}
+            {f.status === "error" ? (
+              <AlertCircle aria-hidden="true" className="compose-file-icon" />
+            ) : (
+              <Paperclip aria-hidden="true" className="compose-file-icon" />
+            )}
             <span className="compose-file-name" title={name}>
               {name}
             </span>
@@ -31,7 +43,12 @@ export function AttachmentTray({ session, files, inline }: { session: ComposeSes
                 formatSize(f.size)
               )}
             </span>
-            <button type="button" className="icon-btn compose-file-remove" aria-label={`Remove ${name}`} onClick={() => session.removeFile(f.key)}>
+            <button
+              type="button"
+              className="icon-btn compose-file-remove"
+              aria-label={`Remove ${name}`}
+              onClick={() => session.removeFile(f.key)}
+            >
               <X aria-hidden="true" />
             </button>
           </li>

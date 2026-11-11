@@ -45,7 +45,11 @@ export function Question({ title, body, confirmLabel, tone = "primary", onConfir
         <button type="button" className="btn" data-autofocus onClick={onCancel}>
           Cancel
         </button>
-        <button type="button" className={tone === "danger" ? "btn compose-question-danger" : "btn btn-primary"} onClick={onConfirm}>
+        <button
+          type="button"
+          className={tone === "danger" ? "btn compose-question-danger" : "btn btn-primary"}
+          onClick={onConfirm}
+        >
           {confirmLabel}
         </button>
       </div>

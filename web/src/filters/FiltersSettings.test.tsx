@@ -38,7 +38,10 @@ async function renderPage(io: FakeScripts, mail = new FakeMail({ mailboxes: MAIL
   return { user, mail };
 }
 
-const bob: MailFilter = { criteria: { ...emptyCriteria(), from: ["bob@postern.test"] }, actions: { ...emptyActions(), star: true } };
+const bob: MailFilter = {
+  criteria: { ...emptyCriteria(), from: ["bob@postern.test"] },
+  actions: { ...emptyActions(), star: true },
+};
 
 beforeEach(() => {
   window.history.replaceState(null, "", "#settings/filters");
@@ -63,7 +66,10 @@ describe("Settings → Filters", () => {
     expect(screen.getByText(/Skip the Inbox, Apply label "Work"/)).toBeTruthy();
     expect(io.active()).toBe("postern");
     expect(parseFilterScript(io.source("postern")).filters).toEqual([
-      { criteria: { ...emptyCriteria(), from: ["bob@postern.test"] }, actions: { ...emptyActions(), archive: true, label: { id: "i", name: "Work" } } },
+      {
+        criteria: { ...emptyCriteria(), from: ["bob@postern.test"] },
+        actions: { ...emptyActions(), archive: true, label: { id: "i", name: "Work" } },
+      },
     ]);
   });
 
@@ -109,14 +115,19 @@ describe("Settings → Filters", () => {
     expect(window.location.hash).toBe("#settings/filters");
     await renderPage(io);
     const form = screen.getByRole("form", { name: "Create a filter" });
-    expect((within(form).getByLabelText("From") as HTMLInputElement).value).toBe("bob@postern.test, carol@postern.test");
+    expect((within(form).getByLabelText("From") as HTMLInputElement).value).toBe(
+      "bob@postern.test, carol@postern.test",
+    );
   });
 
   it("applies a new filter to matching conversations too, with one Undo", async () => {
     const io = new FakeScripts();
     const mail = new FakeMail({
       mailboxes: MAILBOXES,
-      emails: [fakeEmail({ id: "m1", threadId: "t1" }), fakeEmail({ id: "m2", threadId: "t2", mailboxIds: { c: true } })],
+      emails: [
+        fakeEmail({ id: "m1", threadId: "t1" }),
+        fakeEmail({ id: "m2", threadId: "t2", mailboxIds: { c: true } }),
+      ],
     });
     const { user } = await renderPage(io, mail);
     await user.click(screen.getByRole("button", { name: "Create a new filter" }));
@@ -138,7 +149,11 @@ describe("Settings → Filters", () => {
     io.add("postern", generateSieve({ filters: [], blocked: ["spam@x.test", "junk@y.test"], includes: [] }), true);
     const { user } = await renderPage(io);
     const list = screen.getByRole("list", { name: "Blocked addresses" });
-    expect(within(list).getAllByRole("listitem").map((li) => li.querySelector(".filters-address")!.textContent)).toEqual(["spam@x.test", "junk@y.test"]);
+    expect(
+      within(list)
+        .getAllByRole("listitem")
+        .map((li) => li.querySelector(".filters-address")!.textContent),
+    ).toEqual(["spam@x.test", "junk@y.test"]);
     await user.click(within(list).getByRole("button", { name: "Unblock spam@x.test" }));
     await waitFor(() => expect(parseFilterScript(io.source("postern")).blocked).toEqual(["junk@y.test"]));
   });

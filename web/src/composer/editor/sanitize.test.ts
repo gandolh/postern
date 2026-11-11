@@ -8,7 +8,8 @@ import { HOSTILE_FIXTURES } from "../../render/hostileFixtures";
 import { CID_ATTR, dataUrlToFile, sanitizeForEditor, textToFragment } from "./sanitize";
 import { serializeEditor } from "./serialize";
 
-const DOT = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+const DOT =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
 function holder(fragment: DocumentFragment): HTMLDivElement {
   const div = document.createElement("div");
@@ -18,10 +19,14 @@ function holder(fragment: DocumentFragment): HTMLDivElement {
 
 /** Every element and attribute left, as "tag[attr,attr]". */
 function shape(root: Element): string[] {
-  return Array.from(root.querySelectorAll("*"), (el) => `${el.nodeName.toLowerCase()}[${Array.from(el.attributes, (a) => a.name).join(",")}]`);
+  return Array.from(
+    root.querySelectorAll("*"),
+    (el) => `${el.nodeName.toLowerCase()}[${Array.from(el.attributes, (a) => a.name).join(",")}]`,
+  );
 }
 
-const FORBIDDEN = /^(script|style|iframe|frame|object|embed|form|input|button|textarea|select|svg|math|link|meta|base|template|video|audio|noscript)\[/;
+const FORBIDDEN =
+  /^(script|style|iframe|frame|object|embed|form|input|button|textarea|select|svg|math|link|meta|base|template|video|audio|noscript)\[/;
 
 describe("pasted HTML", () => {
   it("drops scripts, handlers, frames, forms, SVG and remote images", () => {
@@ -36,7 +41,11 @@ describe("pasted HTML", () => {
     expect(pending).toHaveLength(0);
     expect(shape(root).filter((s) => FORBIDDEN.test(s))).toEqual([]);
     expect(root.querySelectorAll("img")).toHaveLength(0);
-    expect(Array.from(root.querySelectorAll("a"), (a) => a.getAttribute("href"))).toEqual([null, null, "https://ok.test/"]);
+    expect(Array.from(root.querySelectorAll("a"), (a) => a.getAttribute("href"))).toEqual([
+      null,
+      null,
+      "https://ok.test/",
+    ]);
     for (const el of Array.from(root.querySelectorAll("*"))) {
       for (const attr of Array.from(el.attributes)) expect(attr.name).not.toMatch(/^on|^style$|^target$|^id$/);
     }
@@ -57,7 +66,10 @@ describe("pasted HTML", () => {
   });
 
   it("keeps pasted data: images only to upload them as inline parts", () => {
-    const { fragment, pending } = sanitizeForEditor(`<p>x<img src="${DOT}" alt="dot"><img src="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="></p>`, { mode: "paste" });
+    const { fragment, pending } = sanitizeForEditor(
+      `<p>x<img src="${DOT}" alt="dot"><img src="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="></p>`,
+      { mode: "paste" },
+    );
     const root = holder(fragment);
     expect(pending).toHaveLength(1);
     expect(pending[0]?.img.getAttribute("alt")).toBe("dot");
@@ -69,7 +81,10 @@ describe("pasted HTML", () => {
   });
 
   it("drops every class from pasted HTML, so pasted text is never taken for a quote or a signature", () => {
-    const { fragment } = sanitizeForEditor(`<div class="gmail_quote evil" data-postern-cid="forged" id="x">q</div><div class="postern_signature gmail_signature">-- <br>Mallory</div>`, { mode: "paste" });
+    const { fragment } = sanitizeForEditor(
+      `<div class="gmail_quote evil" data-postern-cid="forged" id="x">q</div><div class="postern_signature gmail_signature">-- <br>Mallory</div>`,
+      { mode: "paste" },
+    );
     const root = holder(fragment);
     expect(root.querySelector("[class]")).toBeNull();
     expect(root.querySelector(`[${CID_ATTR}]`)).toBeNull();
@@ -86,7 +101,9 @@ describe("pasted HTML", () => {
   });
 
   it("collapses source whitespace the way a browser renders it", () => {
-    const { fragment } = sanitizeForEditor(`<div>\n  <p>one\n   two</p>\n  <p>three</p>\n</div><pre>a\n  b</pre>`, { mode: "paste" });
+    const { fragment } = sanitizeForEditor(`<div>\n  <p>one\n   two</p>\n  <p>three</p>\n</div><pre>a\n  b</pre>`, {
+      mode: "paste",
+    });
     const root = holder(fragment);
     expect(root.querySelector("p")?.textContent).toBe("one two");
     expect(root.querySelector("div")?.childNodes).toHaveLength(2);
@@ -98,10 +115,15 @@ describe("pasted HTML", () => {
     for (const fixture of HOSTILE_FIXTURES) {
       if (!fixture.html) continue;
       const root = holder(sanitizeForEditor(fixture.html, { mode: "paste" }).fragment);
-      expect(shape(root).filter((s) => FORBIDDEN.test(s)), fixture.slug).toEqual([]);
+      expect(
+        shape(root).filter((s) => FORBIDDEN.test(s)),
+        fixture.slug,
+      ).toEqual([]);
       for (const el of Array.from(root.querySelectorAll("*"))) {
         for (const attr of Array.from(el.attributes)) {
-          expect(attr.name, `${fixture.slug}: ${el.nodeName} ${attr.name}`).not.toMatch(/^on|^style$|^srcdoc$|^formaction$/);
+          expect(attr.name, `${fixture.slug}: ${el.nodeName} ${attr.name}`).not.toMatch(
+            /^on|^style$|^srcdoc$|^formaction$/,
+          );
           if (attr.name === "href") expect(attr.value, fixture.slug).toMatch(/^(https?:|mailto:)/);
           if (attr.name === "src") expect(attr.value, fixture.slug).toMatch(/^data:image\/(png|jpeg|gif|webp);base64,/);
         }
@@ -113,7 +135,10 @@ describe("pasted HTML", () => {
 describe("loading a draft", () => {
   it("shows the draft's own inline images through object URLs, and nothing remote", () => {
     const cidUrls = new Map([["img1@postern", "blob:http://localhost/1"]]);
-    const { fragment } = sanitizeForEditor(`<div>a<img src="cid:IMG1@postern" alt="dot"><img src="cid:other@x"><img src="https://evil.test/x.png"></div>`, { mode: "load", cidUrls });
+    const { fragment } = sanitizeForEditor(
+      `<div>a<img src="cid:IMG1@postern" alt="dot"><img src="cid:other@x"><img src="https://evil.test/x.png"></div>`,
+      { mode: "load", cidUrls },
+    );
     const imgs = holder(fragment).querySelectorAll("img");
     expect(imgs).toHaveLength(1);
     expect(imgs[0]?.getAttribute("src")).toBe("blob:http://localhost/1");
@@ -127,7 +152,9 @@ describe("loading a draft", () => {
 
   it("round-trips the composer's own output", () => {
     const html = `<div>Hello <b>Bob</b></div><ul><li>one</li></ul><blockquote style="margin:0px">q</blockquote><div><img src="cid:a@postern" alt="pic"></div>`;
-    const root = holder(sanitizeForEditor(html, { mode: "load", cidUrls: new Map([["a@postern", "blob:x"]]) }).fragment);
+    const root = holder(
+      sanitizeForEditor(html, { mode: "load", cidUrls: new Map([["a@postern", "blob:x"]]) }).fragment,
+    );
     expect(serializeEditor(root).html).toBe(
       `<div>Hello <b>Bob</b></div><ul><li>one</li></ul><blockquote style="margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex">q</blockquote><div><img src="cid:a@postern" alt="pic"></div>`,
     );

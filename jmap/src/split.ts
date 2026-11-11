@@ -37,7 +37,9 @@ function setEntryCount(args: Record<string, unknown>): number {
   const create = args["create"] as Record<string, unknown> | null | undefined;
   const update = args["update"] as Record<string, unknown> | null | undefined;
   const destroy = args["destroy"] as unknown[] | null | undefined;
-  return Object.keys(create ?? {}).length + Object.keys(update ?? {}).length + (Array.isArray(destroy) ? destroy.length : 0);
+  return (
+    Object.keys(create ?? {}).length + Object.keys(update ?? {}).length + (Array.isArray(destroy) ? destroy.length : 0)
+  );
 }
 
 /**
@@ -47,7 +49,10 @@ function setEntryCount(args: Record<string, unknown>): number {
  * call, or a /set carries `ifInState` or extra arguments, since splitting would
  * change what they mean.
  */
-export function expandCalls(calls: readonly WireCall[], limits: Pick<CoreCapability, "maxObjectsInGet" | "maxObjectsInSet">): Expansion {
+export function expandCalls(
+  calls: readonly WireCall[],
+  limits: Pick<CoreCapability, "maxObjectsInGet" | "maxObjectsInSet">,
+): Expansion {
   const referenced = new Set(calls.flatMap((c) => c.deps));
   const out: WireCall[] = [];
   const splits = new Map<string, SplitPart>();
@@ -84,8 +89,16 @@ export function expandCalls(calls: readonly WireCall[], limits: Pick<CoreCapabil
       // RFC 8620 §5.3 applies creates, then updates, then destroys; the parts keep that order.
       type Entry = ["create" | "update", string, unknown] | ["destroy", string];
       const entries: Entry[] = [
-        ...Object.entries((call.args["create"] ?? {}) as Record<string, unknown>).map(([k, v]): Entry => ["create", k, v]),
-        ...Object.entries((call.args["update"] ?? {}) as Record<string, unknown>).map(([k, v]): Entry => ["update", k, v]),
+        ...Object.entries((call.args["create"] ?? {}) as Record<string, unknown>).map(([k, v]): Entry => [
+          "create",
+          k,
+          v,
+        ]),
+        ...Object.entries((call.args["update"] ?? {}) as Record<string, unknown>).map(([k, v]): Entry => [
+          "update",
+          k,
+          v,
+        ]),
         ...((call.args["destroy"] ?? []) as string[]).map((id): Entry => ["destroy", id]),
       ];
       const parts = chunk(entries, limits.maxObjectsInSet).map((part, i) => {
@@ -173,7 +186,12 @@ function concat(parts: Record<string, unknown>[], key: string): unknown[] | null
 /** Join the responses of a split /get: lists and notFound concatenated, the last state. */
 export function mergeGetResponses(parts: Record<string, unknown>[]): Record<string, unknown> {
   const last = parts[parts.length - 1] ?? {};
-  return { ...parts[0], list: concat(parts, "list") ?? [], notFound: concat(parts, "notFound") ?? [], state: last["state"] };
+  return {
+    ...parts[0],
+    list: concat(parts, "list") ?? [],
+    notFound: concat(parts, "notFound") ?? [],
+    state: last["state"],
+  };
 }
 
 /** Join the responses of a split /set: maps merged, oldState from the first part, newState from the last. */

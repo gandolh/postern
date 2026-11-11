@@ -42,7 +42,10 @@ export function jmapSieveIo(client: JmapClient): SieveIo {
       return (await client.sieveScript.get({}, { signal })).list;
     },
     async read(script, signal) {
-      const res = await client.blob.download({ blobId: script.blobId, name: `${script.name ?? "script"}.sieve`, type: "text/plain" }, { signal });
+      const res = await client.blob.download(
+        { blobId: script.blobId, name: `${script.name ?? "script"}.sieve`, type: "text/plain" },
+        { signal },
+      );
       return res.text();
     },
     validate(source, signal) {
@@ -57,7 +60,8 @@ export function jmapSieveIo(client: JmapClient): SieveIo {
         { signal },
       );
       const refused = res.notCreated?.["postern"] ?? (id !== null ? res.notUpdated?.[id] : undefined);
-      if (refused) throw new SieveSaveError(refused.description ?? `The server refused the script (${refused.type}).`, refused);
+      if (refused)
+        throw new SieveSaveError(refused.description ?? `The server refused the script (${refused.type}).`, refused);
       const saved = id ?? res.created?.["postern"]?.id;
       if (!saved) throw new SieveSaveError("The server didn't say what it did with the script.");
       return saved;
@@ -65,7 +69,11 @@ export function jmapSieveIo(client: JmapClient): SieveIo {
     async activate(id, signal) {
       const res = await client.sieveScript.set({ onSuccessActivateScript: id }, { signal });
       const refused = res.notUpdated?.[id];
-      if (refused) throw new SieveSaveError(refused.description ?? `The server refused to turn the filters on (${refused.type}).`, refused);
+      if (refused)
+        throw new SieveSaveError(
+          refused.description ?? `The server refused to turn the filters on (${refused.type}).`,
+          refused,
+        );
     },
   };
 }

@@ -41,13 +41,12 @@ export function hostileFixtures(): HostileFixture[] {
       .filter((f) => f.endsWith(".eml"))
       .sort()
       .map((f) => `${prefix}${f}`);
-  return [...emls("", ""), ...emls("invites", "invites/")]
-    .map((file) => {
-      const raw = readFileSync(join(HOSTILE_DIR, file), "latin1");
-      const marker = headerValue(raw, HOSTILE_HEADER);
-      const slug = marker.replace(/^hostile\//, "");
-      return { slug, file, messageId: headerValue(raw, "Message-ID") };
-    });
+  return [...emls("", ""), ...emls("invites", "invites/")].map((file) => {
+    const raw = readFileSync(join(HOSTILE_DIR, file), "latin1");
+    const marker = headerValue(raw, HOSTILE_HEADER);
+    const slug = marker.replace(/^hostile\//, "");
+    return { slug, file, messageId: headerValue(raw, "Message-ID") };
+  });
 }
 
 export function hostile(): SeedEmail[] {

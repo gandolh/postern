@@ -52,9 +52,12 @@ export function setDisplaySettings(patch: Partial<DisplaySettings>): void {
     theme: patch.theme !== undefined && THEMES.includes(patch.theme) ? patch.theme : current.theme,
     density: patch.density !== undefined && DENSITIES.includes(patch.density) ? patch.density : current.density,
     readingPane:
-      patch.readingPane !== undefined && READING_PANES.includes(patch.readingPane) ? patch.readingPane : current.readingPane,
+      patch.readingPane !== undefined && READING_PANES.includes(patch.readingPane)
+        ? patch.readingPane
+        : current.readingPane,
   };
-  if (next.theme === current.theme && next.density === current.density && next.readingPane === current.readingPane) return;
+  if (next.theme === current.theme && next.density === current.density && next.readingPane === current.readingPane)
+    return;
   current = next;
   for (const listener of [...listeners]) listener(current);
 }
@@ -89,7 +92,9 @@ export function resetDisplaySettings(): void {
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 function darkQuery(): MediaQueryList | null {
-  return typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia(DARK_QUERY) : null;
+  return typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(DARK_QUERY)
+    : null;
 }
 
 /** The operating system's scheme right now. */

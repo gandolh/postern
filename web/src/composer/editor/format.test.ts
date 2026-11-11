@@ -1,6 +1,16 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from "vitest";
-import { activeFormats, clearFormatting, insertLink, isMarkActive, normalizeLinkInput, removeLink, toggleList, toggleMark, toggleQuote } from "./format";
+import {
+  activeFormats,
+  clearFormatting,
+  insertLink,
+  isMarkActive,
+  normalizeLinkInput,
+  removeLink,
+  toggleList,
+  toggleMark,
+  toggleQuote,
+} from "./format";
 
 function editor(html: string): HTMLDivElement {
   const root = document.createElement("div");

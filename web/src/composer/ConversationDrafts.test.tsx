@@ -38,7 +38,13 @@ function msg(id: string, extra: Partial<FakeEmail>): FakeEmail {
 }
 
 const original = msg("o1", { from: BOB, receivedAt: "2026-10-01T10:00:00Z", mailboxIds: { a: true } });
-const replyDraft = msg("d1", { from: ALICE, to: BOB, receivedAt: "2026-10-02T10:00:00Z", mailboxIds: { d: true }, keywords: { $seen: true, $draft: true } });
+const replyDraft = msg("d1", {
+  from: ALICE,
+  to: BOB,
+  receivedAt: "2026-10-02T10:00:00Z",
+  mailboxIds: { d: true },
+  keywords: { $seen: true, $draft: true },
+});
 
 function Screen({ route }: { route: LabelRoute }) {
   const labels = useLabels();
@@ -66,7 +72,8 @@ async function renderConversation(emails: FakeEmail[]) {
   return { mail, user };
 }
 
-const cards = () => Array.from(document.querySelectorAll("article[id^='conv-message-']"), (a) => a.id.replace("conv-message-", ""));
+const cards = () =>
+  Array.from(document.querySelectorAll("article[id^='conv-message-']"), (a) => a.id.replace("conv-message-", ""));
 
 beforeEach(() => {
   window.history.replaceState(null, "", "#inbox/T1");
@@ -83,7 +90,12 @@ describe("drafts in a conversation", () => {
   });
 
   it("keeps any other $draft message as a card, and does not open it inline", async () => {
-    const imported = msg("d2", { from: ALICE, receivedAt: "2026-10-02T10:00:00Z", mailboxIds: { a: true }, keywords: { $seen: true, $draft: true } });
+    const imported = msg("d2", {
+      from: ALICE,
+      receivedAt: "2026-10-02T10:00:00Z",
+      mailboxIds: { a: true },
+      keywords: { $seen: true, $draft: true },
+    });
     await renderConversation([original, imported]);
     await screen.findByRole("heading", { level: 1, name: "Plans" });
     await waitFor(() => expect(cards()).toEqual(["o1", "d2"]));
@@ -94,7 +106,9 @@ describe("drafts in a conversation", () => {
   it("leaves the reply draft alone when the conversation is deleted", async () => {
     const { mail, user } = await renderConversation([original, replyDraft]);
     await screen.findByRole("region", { name: "Reply" });
-    await user.click(within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Delete" }));
+    await user.click(
+      within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Delete" }),
+    );
     await waitFor(() => expect(Object.keys(mail.emails.get("o1")!.mailboxIds)).toEqual(["b"]));
     expect(mail.emails.get("d1")!.mailboxIds).toEqual({ d: true });
   });

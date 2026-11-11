@@ -12,7 +12,11 @@ const PASSWORD_URL = `${ORIGIN}/webmail-api/api/auth`;
 const KEY = "postern.session";
 
 /** The token and password posts a page makes from now on. */
-function recordAuthPosts(page: Page): { refreshGrants: () => Request[]; codeGrants: () => Request[]; passwordPosts: () => Request[] } {
+function recordAuthPosts(page: Page): {
+  refreshGrants: () => Request[];
+  codeGrants: () => Request[];
+  passwordPosts: () => Request[];
+} {
   const posts: Request[] = [];
   page.on("request", (r) => {
     if (r.method() === "POST" && (r.url() === TOKEN_URL || r.url() === PASSWORD_URL)) posts.push(r);
@@ -90,7 +94,9 @@ test("a reload after the idle deadline passed signs out, says why, and keeps not
   }, KEY);
   const posts = recordAuthPosts(page);
   await page.reload();
-  await expect(page.locator(".auth-notice")).toHaveText("You were signed out after a long time without activity. Sign in again to continue.");
+  await expect(page.locator(".auth-notice")).toHaveText(
+    "You were signed out after a long time without activity. Sign in again to continue.",
+  );
   expect(posts.refreshGrants()).toHaveLength(0);
   expect(await postern(page)).toEqual([]);
 });
@@ -108,7 +114,10 @@ test("a refused refresh token on reload shows the sign-in form and clears sessio
   expect(await postern(page)).toEqual([]);
 });
 
-test("two tabs with the same refresh token (a duplicated tab): each one's refresh leaves the other signed in", async ({ page, context }) => {
+test("two tabs with the same refresh token (a duplicated tab): each one's refresh leaves the other signed in", async ({
+  page,
+  context,
+}) => {
   await signIn(page);
   const kept = await page.evaluate((key) => sessionStorage.getItem(key), KEY);
   expect(kept).toBeTruthy();

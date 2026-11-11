@@ -21,7 +21,13 @@
 // Everything browser- or server-shaped comes in through WebPushDeps, so the
 // flows are tested with fakes (webPush.test.ts).
 
-import { JmapSetError, type EmailPushConfig, type Id, type PushSubscription, type PushSubscriptionCreate } from "@postern/jmap";
+import {
+  JmapSetError,
+  type EmailPushConfig,
+  type Id,
+  type PushSubscription,
+  type PushSubscriptionCreate,
+} from "@postern/jmap";
 import { TimeoutError, withDeadline, withTimeout } from "./deadline";
 import { base64UrlToBytes, deviceClientId, sameKey } from "./device";
 import { readChoice, writeChoice } from "./settings";
@@ -55,7 +61,10 @@ export interface BrowserSubscription {
 
 export interface PushManagerLike {
   getSubscription(): Promise<BrowserSubscription | null>;
-  subscribe(options: { userVisibleOnly: boolean; applicationServerKey: Uint8Array<ArrayBuffer> }): Promise<BrowserSubscription>;
+  subscribe(options: {
+    userVisibleOnly: boolean;
+    applicationServerKey: Uint8Array<ArrayBuffer>;
+  }): Promise<BrowserSubscription>;
 }
 
 export interface BrowserPush {
@@ -67,7 +76,10 @@ export interface BrowserPush {
 
 /** PushSubscription/* through @postern/jmap (JmapClient.pushSubscription). */
 export interface PushServer {
-  get(args: { properties: (keyof PushSubscription)[] }, options?: { signal?: AbortSignal }): Promise<{ list: Partial<PushSubscription>[] }>;
+  get(
+    args: { properties: (keyof PushSubscription)[] },
+    options?: { signal?: AbortSignal },
+  ): Promise<{ list: Partial<PushSubscription>[] }>;
   set(args: { destroy: Id[] }, options?: { signal?: AbortSignal }): Promise<unknown>;
   create(subscription: PushSubscriptionCreate, options?: { signal?: AbortSignal }): Promise<{ id: Id }>;
   verify(id: Id, code: string, options?: { signal?: AbortSignal }): Promise<void>;
@@ -150,7 +162,8 @@ export class WebPush {
     let problem: WebPushProblem | null = null;
     try {
       // Asked first, inside the click: Safari only shows the prompt for a user gesture.
-      const permission = this.#d.browser.permission() === "granted" ? "granted" : await this.#d.browser.requestPermission();
+      const permission =
+        this.#d.browser.permission() === "granted" ? "granted" : await this.#d.browser.requestPermission();
       const manager = permission === "granted" && this.supported ? await this.#d.browser.pushManager() : null;
       if (permission !== "granted") problem = "denied";
       else if (!manager) problem = "unavailable";
@@ -242,7 +255,9 @@ export class WebPush {
     const mine = await deviceClientId(this.#d.username, sub.endpoint);
     const previous = readChoice(this.#d.username).verified;
     const { list } = await this.#d.server.get({ properties: ["id", "deviceClientId"] }, { signal });
-    const ids = list.filter((s) => s.id && (s.deviceClientId === mine || (previous !== null && s.deviceClientId === previous))).map((s) => s.id as Id);
+    const ids = list
+      .filter((s) => s.id && (s.deviceClientId === mine || (previous !== null && s.deviceClientId === previous)))
+      .map((s) => s.id as Id);
     if (ids.length) await this.#d.server.set({ destroy: ids }, { signal });
   }
 
@@ -257,7 +272,11 @@ export class WebPush {
       await sub.unsubscribe().catch(() => false);
       sub = null;
     }
-    sub ??= await withTimeout(manager.subscribe({ userVisibleOnly: true, applicationServerKey: key }), this.#d.subscribeTimeoutMs ?? SUBSCRIBE_TIMEOUT_MS, "Subscribing to the browser's push service");
+    sub ??= await withTimeout(
+      manager.subscribe({ userVisibleOnly: true, applicationServerKey: key }),
+      this.#d.subscribeTimeoutMs ?? SUBSCRIBE_TIMEOUT_MS,
+      "Subscribing to the browser's push service",
+    );
     const keys = sub.toJSON().keys;
     if (!keys?.["p256dh"] || !keys["auth"]) throw new Error("The browser gave a subscription without encryption keys");
 
@@ -267,11 +286,19 @@ export class WebPush {
     const choice = readChoice(username);
     const { list } = await server.get({ properties: ["id", "deviceClientId", "types", "emailPush"] }, { signal });
     const mine = list.filter((s) => s.id && s.deviceClientId === id);
-    const stale = choice.verified !== null && choice.verified !== id ? list.filter((s) => s.id && s.deviceClientId === choice.verified) : [];
+    const stale =
+      choice.verified !== null && choice.verified !== id
+        ? list.filter((s) => s.id && s.deviceClientId === choice.verified)
+        : [];
 
     // Already registered and verified from here, asking for the same things: extend it.
     const current = mine.length === 1 ? mine[0] : undefined;
-    if (current?.id && choice.verified === id && sameTypes(current.types, PUSH_TYPES) && Boolean(current.emailPush) === Boolean(emailPush)) {
+    if (
+      current?.id &&
+      choice.verified === id &&
+      sameTypes(current.types, PUSH_TYPES) &&
+      Boolean(current.emailPush) === Boolean(emailPush)
+    ) {
       await server.update(current.id, { expires }, { signal });
       if (stale.length) await server.set({ destroy: stale.map((s) => s.id as Id) }, { signal });
       return;

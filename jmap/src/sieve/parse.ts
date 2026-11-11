@@ -42,7 +42,9 @@ function text(raw: string, at: { line: number }): string {
 
 /** The arguments' shape as a short signature, e.g. `:contains "s" [..]`, to compare with what Postern writes. */
 function shape(args: readonly Argument[]): string {
-  return args.map((a) => (a.kind === "tag" ? `:${a.name}` : a.kind === "number" ? "N" : a.kind === "string" ? "S" : "L")).join(" ");
+  return args
+    .map((a) => (a.kind === "tag" ? `:${a.name}` : a.kind === "number" ? "N" : a.kind === "string" ? "S" : "L"))
+    .join(" ");
 }
 
 function strings(arg: Argument | undefined, at: { line: number }): string[] {
@@ -53,7 +55,8 @@ function strings(arg: Argument | undefined, at: { line: number }): string[] {
 
 function rawIs(arg: Argument | undefined, ...values: string[]): boolean {
   if (arg?.kind === "string") return values.length === 1 && arg.raw.toLowerCase() === values[0]!.toLowerCase();
-  if (arg?.kind === "list") return arg.raws.length === values.length && arg.raws.every((r, i) => r.toLowerCase() === values[i]!.toLowerCase());
+  if (arg?.kind === "list")
+    return arg.raws.length === values.length && arg.raws.every((r, i) => r.toLowerCase() === values[i]!.toLowerCase());
   return false;
 }
 
@@ -83,7 +86,11 @@ function readCriterion(test: Test, c: FilterCriteria, seen: Set<string>): void {
     c.from = strings(test.args[2], test);
     return;
   }
-  if (test.name === "header" && (sig === ":contains L L" || sig === ":contains L S") && rawIs(test.args[1], "to", "cc")) {
+  if (
+    test.name === "header" &&
+    (sig === ":contains L L" || sig === ":contains L S") &&
+    rawIs(test.args[1], "to", "cc")
+  ) {
     once("to");
     c.to = strings(test.args[2], test);
     return;
@@ -93,7 +100,12 @@ function readCriterion(test: Test, c: FilterCriteria, seen: Set<string>): void {
     c.subject = text((test.args[2] as { raw: string }).raw, test);
     return;
   }
-  if (test.name === "header" && sig === ":mime :anychild :contains S S" && rawIs(test.args[3], "content-disposition") && rawIs(test.args[4], "attachment")) {
+  if (
+    test.name === "header" &&
+    sig === ":mime :anychild :contains S S" &&
+    rawIs(test.args[3], "content-disposition") &&
+    rawIs(test.args[4], "attachment")
+  ) {
     once("attachment");
     c.hasAttachment = true;
     return;
@@ -102,7 +114,11 @@ function readCriterion(test: Test, c: FilterCriteria, seen: Set<string>): void {
     once("size");
     const n = test.args[1] as { value: number; unit: string };
     if (n.unit === "G") fail("A size in G, which Postern never writes.", test);
-    c.size = { comparison: sig === ":over N" ? "larger" : "smaller", amount: n.value, unit: n.unit === "" ? "B" : (n.unit as "K" | "M") };
+    c.size = {
+      comparison: sig === ":over N" ? "larger" : "smaller",
+      amount: n.value,
+      unit: n.unit === "" ? "B" : (n.unit as "K" | "M"),
+    };
     return;
   }
   // anyof (header :contains "subject" W, body :text :contains W): one of "has the words".
@@ -167,7 +183,12 @@ interface PendingFilter {
 /** `if allof (...) { addflag ...; set ...; }`: the delivery part's `if allof` holds keep and stop instead. */
 function isFilterBlock(cmd: Command): boolean {
   const block = cmd.block ?? [];
-  return cmd.name === "if" && cmd.tests[0]?.name === "allof" && block.length > 0 && block.every((c) => c.name === "addflag" || c.name === "set");
+  return (
+    cmd.name === "if" &&
+    cmd.tests[0]?.name === "allof" &&
+    block.length > 0 &&
+    block.every((c) => c.name === "addflag" || c.name === "set")
+  );
 }
 
 function readFilterBlock(cmd: Command, n: number): PendingFilter {
@@ -228,13 +249,15 @@ function blockIs(cmd: Command, ...checks: ((c: Command | undefined) => boolean)[
 export function parseFilterScript(source: string): FilterSet {
   if (!isGenerated(source)) fail(`The script doesn't start with "${GENERATED_MARKER}".`);
   const format = /^# Postern filters, format (\d+)\s*$/m.exec(source);
-  if (!format || Number(format[1]) !== SCRIPT_FORMAT) fail(`The script isn't in Postern's filter format ${SCRIPT_FORMAT}.`);
+  if (!format || Number(format[1]) !== SCRIPT_FORMAT)
+    fail(`The script isn't in Postern's filter format ${SCRIPT_FORMAT}.`);
 
   let commands: Command[];
   try {
     commands = parseSyntax(source);
   } catch (e) {
-    if (e instanceof SieveSyntaxError) throw new FilterScriptParseError(e.message.replace(/^Line \d+: /, ""), e.line || null);
+    if (e instanceof SieveSyntaxError)
+      throw new FilterScriptParseError(e.message.replace(/^Line \d+: /, ""), e.line || null);
     throw e;
   }
 
@@ -245,7 +268,13 @@ export function parseFilterScript(source: string): FilterSet {
   // require [...];
   if (at()?.name === "require") {
     const r = at()!;
-    if (r.block !== null || r.tests.length > 0 || r.args.length !== 1 || (r.args[0]!.kind !== "list" && r.args[0]!.kind !== "string")) fail("A malformed require.", r);
+    if (
+      r.block !== null ||
+      r.tests.length > 0 ||
+      r.args.length !== 1 ||
+      (r.args[0]!.kind !== "list" && r.args[0]!.kind !== "string")
+    )
+      fail("A malformed require.", r);
     i++;
   }
 
@@ -255,7 +284,9 @@ export function parseFilterScript(source: string): FilterSet {
     const s = at()!;
     const name = shape(s.args) === "S S" ? (s.args[0] as { raw: string }).raw : "";
     const value = shape(s.args) === "S S" ? (s.args[1] as { raw: string }).raw : null;
-    const ok = (name === DOLLAR_VARIABLE && value === "$") || (/^postern_[a-z0-9_]+$/.test(name) && name !== DOLLAR_VARIABLE && value === "");
+    const ok =
+      (name === DOLLAR_VARIABLE && value === "$") ||
+      (/^postern_[a-z0-9_]+$/.test(name) && name !== DOLLAR_VARIABLE && value === "");
     if (!ok || declared.has(name)) fail("A state variable Postern doesn't write.", s);
     declared.add(name);
     i++;
@@ -270,7 +301,14 @@ export function parseFilterScript(source: string): FilterSet {
     shape(blocked.tests[0].args) === ":is S L" &&
     rawIs(blocked.tests[0].args[1], "from")
   ) {
-    if (!blockIs(blocked, (c) => isSpecialFileinto(c, "\\Junk", "$junk"), (c) => isPlain(c, "stop"))) fail("The blocked senders rule was changed.", blocked);
+    if (
+      !blockIs(
+        blocked,
+        (c) => isSpecialFileinto(c, "\\Junk", "$junk"),
+        (c) => isPlain(c, "stop"),
+      )
+    )
+      fail("The blocked senders rule was changed.", blocked);
     set.blocked = strings(blocked.tests[0].args[2], blocked);
     i++;
   }
@@ -293,8 +331,20 @@ export function parseFilterScript(source: string): FilterSet {
     const cond = cmd.tests[0];
     const v = setTest(cond);
     if (v && !v.negated && v.name === VAR.delete) {
-      if (!blockIs(cmd, (c) => isSpecialFileinto(c, "\\Trash", null), (c) => isPlain(c, "stop"))) fail("The delete rule was changed.", cmd);
-    } else if (cond?.name === "allof" && cond.tests.length === 2 && setTest(cond.tests[0])?.name === VAR.nospam && setTest(cond.tests[0])?.negated) {
+      if (
+        !blockIs(
+          cmd,
+          (c) => isSpecialFileinto(c, "\\Trash", null),
+          (c) => isPlain(c, "stop"),
+        )
+      )
+        fail("The delete rule was changed.", cmd);
+    } else if (
+      cond?.name === "allof" &&
+      cond.tests.length === 2 &&
+      setTest(cond.tests[0])?.name === VAR.nospam &&
+      setTest(cond.tests[0])?.negated
+    ) {
       const spam = cond.tests[1]!;
       const ok =
         spam.name === "spamtest" &&
@@ -302,7 +352,15 @@ export function parseFilterScript(source: string): FilterSet {
         (spam.args[2] as { raw: string }).raw === "ge" &&
         (spam.args[4] as { raw: string }).raw === "i;ascii-numeric" &&
         (spam.args[5] as { raw: string }).raw === String(SPAM_PERCENT);
-      if (!ok || !blockIs(cmd, (c) => isPlain(c, "keep"), (c) => isPlain(c, "stop"))) fail("The spam rule was changed.", cmd);
+      if (
+        !ok ||
+        !blockIs(
+          cmd,
+          (c) => isPlain(c, "keep"),
+          (c) => isPlain(c, "stop"),
+        )
+      )
+        fail("The spam rule was changed.", cmd);
       sawSpam = true;
     } else if (v && !v.negated && /^postern_label_\d+$/.test(v.name)) {
       const n = Number(v.name.slice("postern_label_".length));
@@ -321,18 +379,28 @@ export function parseFilterScript(source: string): FilterSet {
         fail("A label rule was changed.", cmd);
       }
       if (labels.has(n)) fail(`Filter ${n} has two label rules.`, cmd);
-      labels.set(n, { id: text((f.args[1] as { raw: string }).raw, f), name: text((f.args[2] as { raw: string }).raw, f) });
+      labels.set(n, {
+        id: text((f.args[1] as { raw: string }).raw, f),
+        name: text((f.args[2] as { raw: string }).raw, f),
+      });
     } else if (v && !v.negated && /^postern_forward_\d+$/.test(v.name)) {
       const n = Number(v.name.slice("postern_forward_".length));
       const b = cmd.block ?? [];
       const r = b[0];
-      if (b.length !== 1 || !r || r.name !== "redirect" || shape(r.args) !== ":copy S" || r.tests.length > 0) fail("A forwarding rule was changed.", cmd);
+      if (b.length !== 1 || !r || r.name !== "redirect" || shape(r.args) !== ":copy S" || r.tests.length > 0)
+        fail("A forwarding rule was changed.", cmd);
       if (forwards.has(n)) fail(`Filter ${n} has two forwarding rules.`, cmd);
       forwards.set(n, text((r.args[1] as { raw: string }).raw, r));
     } else if (v && !v.negated && v.name === VAR.skip) {
       // if skip { if not filed { All Mail } } elsif nospam { Inbox } elsif filed { keep }
       const inner = (cmd.block ?? [])[0];
-      const innerOk = inner && (cmd.block ?? []).length === 1 && inner.name === "if" && setTest(inner.tests[0])?.name === VAR.filed && setTest(inner.tests[0])?.negated && blockIs(inner, (c) => isSpecialFileinto(c, "\\Archive", null));
+      const innerOk =
+        inner &&
+        (cmd.block ?? []).length === 1 &&
+        inner.name === "if" &&
+        setTest(inner.tests[0])?.name === VAR.filed &&
+        setTest(inner.tests[0])?.negated &&
+        blockIs(inner, (c) => isSpecialFileinto(c, "\\Archive", null));
       const e1 = commands[i + 1];
       const e2 = commands[i + 2];
       const e1v = setTest(e1?.tests[0]);
@@ -358,12 +426,14 @@ export function parseFilterScript(source: string): FilterSet {
     i++;
   }
   if (pending.length > 0 && (!sawFinal || !sawSpam)) fail("The delivery rules are missing.");
-  if (pending.length === 0 && (labels.size > 0 || forwards.size > 0 || sawFinal)) fail("Delivery rules without filters.");
+  if (pending.length === 0 && (labels.size > 0 || forwards.size > 0 || sawFinal))
+    fail("Delivery rules without filters.");
 
   // include :personal :optional "name";
   while (at()?.name === "include") {
     const inc = at()!;
-    if (inc.block !== null || inc.tests.length > 0 || shape(inc.args) !== ":personal :optional S") fail("An include Postern doesn't write.", inc);
+    if (inc.block !== null || inc.tests.length > 0 || shape(inc.args) !== ":personal :optional S")
+      fail("An include Postern doesn't write.", inc);
     const name = text((inc.args[2] as { raw: string }).raw, inc);
     if (set.includes.includes(name)) fail(`The script includes ${JSON.stringify(name)} twice.`, inc);
     set.includes.push(name);

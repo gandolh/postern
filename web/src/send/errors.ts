@@ -1,7 +1,15 @@
 // Saying why a save or a send failed, in words a person can act on. The draft
 // is always kept, so every message ends on what to do next.
 
-import { isAbortError, JmapHttpError, JmapLimitError, JmapNetworkError, JmapSetError, SessionExpiredError, SignedOutError } from "@postern/jmap";
+import {
+  isAbortError,
+  JmapHttpError,
+  JmapLimitError,
+  JmapNetworkError,
+  JmapSetError,
+  SessionExpiredError,
+  SignedOutError,
+} from "@postern/jmap";
 
 function list(value: unknown): string {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string").join(", ") : "";
@@ -16,7 +24,8 @@ function bytes(value: unknown): string {
 
 /** Why sending failed. */
 export function explainSendError(err: unknown): string {
-  if (err instanceof SessionExpiredError || err instanceof SignedOutError) return "Your session ended before the message was sent. Sign in again, then press Send.";
+  if (err instanceof SessionExpiredError || err instanceof SignedOutError)
+    return "Your session ended before the message was sent. Sign in again, then press Send.";
   if (err instanceof JmapSetError) {
     const e = err.error;
     switch (err.type) {
@@ -29,7 +38,9 @@ export function explainSendError(err: unknown): string {
         return "Add at least one recipient.";
       case "invalidRecipients": {
         const who = list(e["invalidRecipients"]);
-        return who ? `The mail server refused these addresses: ${who}.` : "The mail server refused one of the addresses.";
+        return who
+          ? `The mail server refused these addresses: ${who}.`
+          : "The mail server refused one of the addresses.";
       }
       case "tooManyRecipients": {
         const max = typeof e["maxRecipients"] === "number" ? ` It takes up to ${e["maxRecipients"]}.` : "";
@@ -45,14 +56,19 @@ export function explainSendError(err: unknown): string {
         return "Your mailbox is full. Delete some mail, then try again.";
       case "invalidEmail":
       case "invalidProperties":
-        return e.description ? `The mail server couldn't send this message: ${e.description}` : "The mail server couldn't send this message.";
+        return e.description
+          ? `The mail server couldn't send this message: ${e.description}`
+          : "The mail server couldn't send this message.";
       case "notFound":
         return "The draft was changed or deleted somewhere else. Check Drafts, then send it again.";
       default:
-        return e.description ? `The mail server couldn't send the message: ${e.description}` : "The mail server couldn't send the message.";
+        return e.description
+          ? `The mail server couldn't send the message: ${e.description}`
+          : "The mail server couldn't send the message.";
     }
   }
-  if (err instanceof JmapNetworkError) return "Can't reach the mail server. Check your connection, then press Send again.";
+  if (err instanceof JmapNetworkError)
+    return "Can't reach the mail server. Check your connection, then press Send again.";
   if (err instanceof JmapHttpError) return `The mail server had a problem (${err.status}). Press Send to try again.`;
   return "Something went wrong while sending. Press Send to try again.";
 }

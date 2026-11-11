@@ -2,7 +2,11 @@
 // sanitiser's tests and the security suite's. Vite inlines the files (?raw), so this
 // module must only be imported from tests: never from app code.
 
-const files = import.meta.glob("../../../dev/seed/hostile/*.eml", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const files = import.meta.glob("../../../dev/seed/hostile/*.eml", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
 
 export interface FixturePart {
   type: string;
@@ -56,7 +60,10 @@ function leaves(raw: string): FixturePart[] {
     const boundary = param(headers["content-type"], "boundary");
     if (!boundary) return [];
     const chunks = body.split(`--${boundary}`);
-    return chunks.slice(1).filter((c) => !c.startsWith("--")).flatMap((c) => leaves(c.replace(/^\n/, "")));
+    return chunks
+      .slice(1)
+      .filter((c) => !c.startsWith("--"))
+      .flatMap((c) => leaves(c.replace(/^\n/, "")));
   }
   return [
     {

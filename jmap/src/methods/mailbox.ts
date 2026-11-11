@@ -1,7 +1,14 @@
 // Mailbox (RFC 8621 §2) and Thread (§3).
 
 import type { CallArgs } from "../request.js";
-import type { ChangesResponse, GetResponse, Id, QueryChangesResponse, QueryResponse, SetResponse } from "../types/core.js";
+import type {
+  ChangesResponse,
+  GetResponse,
+  Id,
+  QueryChangesResponse,
+  QueryResponse,
+  SetResponse,
+} from "../types/core.js";
 import type { Mailbox, MailboxChangesResponse, MailboxRole, Thread } from "../types/mail.js";
 import type { CallOptions, ChangesOptions, MethodCaller } from "./caller.js";
 

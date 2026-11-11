@@ -76,7 +76,11 @@ describe("the composer window", () => {
     await user.click(to);
     await user.paste("Carol <carol@example.org>; not-an-address");
     const chips = within(window).getByRole("list", { name: "To recipients" });
-    expect(within(chips).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["bob@postern.test", "Carol", "not-an-address (not a valid email address)", ""]);
+    expect(
+      within(chips)
+        .getAllByRole("listitem")
+        .map((li) => li.textContent),
+    ).toEqual(["bob@postern.test", "Carol", "not-an-address (not a valid email address)", ""]);
     expect(to.getAttribute("aria-invalid")).toBe("true");
     // Backspace takes the last chip back into the box to fix it.
     await user.type(to, "{Backspace}");
@@ -121,42 +125,49 @@ describe("the composer window", () => {
   });
 
   // Many steps of user input: more than the default 5 s on a loaded machine.
-  it("schedules from the menu beside Send: a preset, or a picked date and time, after the same checks", { timeout: 20_000 }, async () => {
-    const { user, window } = await renderComposer({ maxDelayedSend: 2_592_000 });
-    await user.click(within(window).getByRole("button", { name: "More send options" }));
-    await user.click(await screen.findByRole("menuitem", { name: "Schedule send" }));
-    let dialog = await screen.findByRole("dialog", { name: "Schedule send" });
-    await user.click(within(dialog).getByRole("button", { name: /^Tomorrow morning/ }));
-    // No recipient yet: the check Send makes stops it, and nothing is submitted.
-    expect(within(window).getByRole("alert").textContent).toBe("Add at least one recipient.");
-    expect(server.submissions).toHaveLength(0);
+  it(
+    "schedules from the menu beside Send: a preset, or a picked date and time, after the same checks",
+    { timeout: 20_000 },
+    async () => {
+      const { user, window } = await renderComposer({ maxDelayedSend: 2_592_000 });
+      await user.click(within(window).getByRole("button", { name: "More send options" }));
+      await user.click(await screen.findByRole("menuitem", { name: "Schedule send" }));
+      let dialog = await screen.findByRole("dialog", { name: "Schedule send" });
+      await user.click(within(dialog).getByRole("button", { name: /^Tomorrow morning/ }));
+      // No recipient yet: the check Send makes stops it, and nothing is submitted.
+      expect(within(window).getByRole("alert").textContent).toBe("Add at least one recipient.");
+      expect(server.submissions).toHaveLength(0);
 
-    await user.type(within(window).getByRole("combobox", { name: "To" }), "bob@postern.test{Enter}");
-    await user.type(within(window).getByRole("textbox", { name: "Subject" }), "Lunch");
-    write(window, "Noon?");
-    await user.click(within(window).getByRole("button", { name: "More send options" }));
-    await user.click(await screen.findByRole("menuitem", { name: "Schedule send" }));
-    dialog = await screen.findByRole("dialog", { name: "Schedule send" });
-    await user.click(within(dialog).getByRole("button", { name: "Pick date and time" }));
-    const date = within(dialog).getByLabelText("Date");
-    expect(document.activeElement).toBe(date);
-    fireEvent.change(date, { target: { value: "2020-01-01" } });
-    await user.click(within(dialog).getByRole("button", { name: "Schedule send" }));
-    expect(within(dialog).getByRole("alert").textContent).toBe("Choose a time at least a minute from now.");
-    const next = new Date();
-    next.setDate(next.getDate() + 2);
-    const day = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
-    fireEvent.change(date, { target: { value: day } });
-    fireEvent.change(within(dialog).getByLabelText("Time"), { target: { value: "09:30" } });
-    await user.click(within(dialog).getByRole("button", { name: "Schedule send" }));
+      await user.type(within(window).getByRole("combobox", { name: "To" }), "bob@postern.test{Enter}");
+      await user.type(within(window).getByRole("textbox", { name: "Subject" }), "Lunch");
+      write(window, "Noon?");
+      await user.click(within(window).getByRole("button", { name: "More send options" }));
+      await user.click(await screen.findByRole("menuitem", { name: "Schedule send" }));
+      dialog = await screen.findByRole("dialog", { name: "Schedule send" });
+      await user.click(within(dialog).getByRole("button", { name: "Pick date and time" }));
+      const date = within(dialog).getByLabelText("Date");
+      expect(document.activeElement).toBe(date);
+      fireEvent.change(date, { target: { value: "2020-01-01" } });
+      await user.click(within(dialog).getByRole("button", { name: "Schedule send" }));
+      expect(within(dialog).getByRole("alert").textContent).toBe("Choose a time at least a minute from now.");
+      const next = new Date();
+      next.setDate(next.getDate() + 2);
+      const day = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+      fireEvent.change(date, { target: { value: day } });
+      fireEvent.change(within(dialog).getByLabelText("Time"), { target: { value: "09:30" } });
+      await user.click(within(dialog).getByRole("button", { name: "Schedule send" }));
 
-    await screen.findByText(/^Send scheduled for /);
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: /Lunch/ })).toBeNull());
-    expect(server.submissions).toHaveLength(1);
-    const hold = (server.submissions[0]!["envelope"] as { mailFrom: { parameters: Record<string, string> } }).mailFrom.parameters["HOLDUNTIL"];
-    expect(new Date(hold!).getTime()).toBe(new Date(next.getFullYear(), next.getMonth(), next.getDate(), 9, 30).getTime());
-    expect([...server.emails.values()][0]!.keywords).toMatchObject({ $draft: true, $scheduled: true });
-  });
+      await screen.findByText(/^Send scheduled for /);
+      await waitFor(() => expect(screen.queryByRole("dialog", { name: /Lunch/ })).toBeNull());
+      expect(server.submissions).toHaveLength(1);
+      const hold = (server.submissions[0]!["envelope"] as { mailFrom: { parameters: Record<string, string> } }).mailFrom
+        .parameters["HOLDUNTIL"];
+      expect(new Date(hold!).getTime()).toBe(
+        new Date(next.getFullYear(), next.getMonth(), next.getDate(), 9, 30).getTime(),
+      );
+      expect([...server.emails.values()][0]!.keywords).toMatchObject({ $draft: true, $scheduled: true });
+    },
+  );
 
   it("before a sign-out, the message held for Undo goes out and the typed text is saved", async () => {
     setUndoSendDelay(60_000);

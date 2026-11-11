@@ -60,7 +60,16 @@ export function QuotaBar() {
         <p>
           {formatBytes(quota.used)} of {formatBytes(limit)} used ({percent}%)
         </p>
-        <div className="settings-meter" role="meter" aria-labelledby={headingId} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(quota.used, limit)} aria-valuetext={`${formatBytes(quota.used)} of ${formatBytes(limit)} used`} data-high={percent >= 90 ? "true" : undefined}>
+        <div
+          className="settings-meter"
+          role="meter"
+          aria-labelledby={headingId}
+          aria-valuemin={0}
+          aria-valuemax={limit}
+          aria-valuenow={Math.min(quota.used, limit)}
+          aria-valuetext={`${formatBytes(quota.used)} of ${formatBytes(limit)} used`}
+          data-high={percent >= 90 ? "true" : undefined}
+        >
           <div className="settings-meter-fill" style={{ width: `${percent}%` }} />
         </div>
       </>

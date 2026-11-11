@@ -20,7 +20,11 @@ export interface SendResult {
  * Send a plan's updates. Rejects only when the request as a whole fails
  * (network, session, method error); refused messages come back in `failed`.
  */
-export async function sendPlan(caller: MethodCaller, plan: MessagePlan, options: { signal?: AbortSignal } = {}): Promise<SendResult> {
+export async function sendPlan(
+  caller: MethodCaller,
+  plan: MessagePlan,
+  options: { signal?: AbortSignal } = {},
+): Promise<SendResult> {
   if (isEmptyPlan(plan)) return { plan, done: plan, failed: emptyPlan(), errors: {}, newState: null };
   const res = await caller.call("Email/set", { update: plan.update }, options);
   const errors = res.notUpdated ?? {};
@@ -28,8 +32,14 @@ export async function sendPlan(caller: MethodCaller, plan: MessagePlan, options:
   const ids = Object.keys(plan.update);
   return {
     plan,
-    done: subPlan(plan, ids.filter((id) => !refused.has(id))),
-    failed: subPlan(plan, ids.filter((id) => refused.has(id))),
+    done: subPlan(
+      plan,
+      ids.filter((id) => !refused.has(id)),
+    ),
+    failed: subPlan(
+      plan,
+      ids.filter((id) => refused.has(id)),
+    ),
     errors,
     newState: res.newState,
   };
@@ -41,7 +51,11 @@ export interface DestroyResult {
 }
 
 /** Delete messages forever (`Email/set destroy`). Cannot be undone. */
-export async function destroyMessages(caller: MethodCaller, ids: readonly Id[], options: { signal?: AbortSignal } = {}): Promise<DestroyResult> {
+export async function destroyMessages(
+  caller: MethodCaller,
+  ids: readonly Id[],
+  options: { signal?: AbortSignal } = {},
+): Promise<DestroyResult> {
   if (ids.length === 0) return { destroyed: [], errors: {} };
   const res = await caller.call("Email/set", { destroy: [...ids] }, options);
   return { destroyed: res.destroyed ?? [], errors: res.notDestroyed ?? {} };

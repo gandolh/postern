@@ -15,12 +15,20 @@ function conversations(mail: FakeMail, ...threadIds: string[]): Conversation[] {
     messages: [...mail.emails.values()]
       .filter((e) => e.threadId === id)
       .sort((a, b) => (a.receivedAt < b.receivedAt ? -1 : 1))
-      .map((e): ConversationMessage => ({ id: e.id, threadId: e.threadId, mailboxIds: { ...e.mailboxIds }, keywords: { ...e.keywords }, receivedAt: e.receivedAt })),
+      .map((e): ConversationMessage => ({
+        id: e.id,
+        threadId: e.threadId,
+        mailboxIds: { ...e.mailboxIds },
+        keywords: { ...e.keywords },
+        receivedAt: e.receivedAt,
+      })),
   }));
 }
 
 function snapshot(mail: FakeMail): Record<string, Pick<FakeEmail, "mailboxIds" | "keywords">> {
-  return Object.fromEntries([...mail.emails].map(([id, e]) => [id, { mailboxIds: { ...e.mailboxIds }, keywords: { ...e.keywords } }]));
+  return Object.fromEntries(
+    [...mail.emails].map(([id, e]) => [id, { mailboxIds: { ...e.mailboxIds }, keywords: { ...e.keywords } }]),
+  );
 }
 
 interface Harness {
@@ -37,9 +45,15 @@ let unsubscribe: (() => void) | null = null;
 
 async function harness(
   emails: FakeEmail[],
-  options: { roles?: Record<string, string>; maxObjectsInSet?: number; caller?: MethodCaller; noun?: () => "conversation" | "message" } = {},
+  options: {
+    roles?: Record<string, string>;
+    maxObjectsInSet?: number;
+    caller?: MethodCaller;
+    noun?: () => "conversation" | "message";
+  } = {},
 ): Promise<Harness> {
-  const mailboxes = options.roles && !options.roles["archive"] ? MAILBOXES.filter((m) => m.role !== "archive") : MAILBOXES;
+  const mailboxes =
+    options.roles && !options.roles["archive"] ? MAILBOXES.filter((m) => m.role !== "archive") : MAILBOXES;
   const mail = new FakeMail({ mailboxes, emails, maxObjectsInSet: options.maxObjectsInSet });
   const client = await mail.connect();
   const toasts: Harness["toasts"] = [];
@@ -84,13 +98,18 @@ describe("archive", () => {
 
     expect(await h.actions.archive(conversations(h.mail, "T1", "T2"), scope)).toBe("done");
 
-    expect(h.changes[0]).toEqual({ kind: "patch", update: { "1": { "mailboxIds/a": null, "mailboxIds/h": true }, "3": { "mailboxIds/a": null } } });
+    expect(h.changes[0]).toEqual({
+      kind: "patch",
+      update: { "1": { "mailboxIds/a": null, "mailboxIds/h": true }, "3": { "mailboxIds/a": null } },
+    });
     expect(h.changes.at(-1)).toEqual({ kind: "settled" });
     expect(h.mail.calls().slice(requestsBefore)).toEqual([["Email/set"]]);
     expect(h.mail.emails.get("1")!.mailboxIds).toEqual({ h: true });
     expect(h.mail.emails.get("3")!.mailboxIds).toEqual({ i: true });
     expect(h.syncLabels).toHaveBeenCalled();
-    expect(h.toasts).toEqual([{ message: "2 conversations archived.", action: { label: "Undo", onClick: expect.any(Function) } }]);
+    expect(h.toasts).toEqual([
+      { message: "2 conversations archived.", action: { label: "Undo", onClick: expect.any(Function) } },
+    ]);
     expect(peekUndo()).toEqual({ label: "2 conversations archived." });
 
     h.toasts[0]!.action!.onClick();
@@ -106,7 +125,9 @@ describe("archive", () => {
   });
 
   it("counts messages when the list's rows are messages, unless the caller says otherwise", async () => {
-    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })], { noun: () => "message" });
+    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })], {
+      noun: () => "message",
+    });
     await h.actions.archive(conversations(h.mail, "T1", "T2"), scope);
     expect(h.toasts[0]!.message).toBe("2 messages archived.");
     expect(peekUndo()?.label).toBe("2 messages archived.");
@@ -116,10 +137,15 @@ describe("archive", () => {
 
   it("creates All Mail on first need, uses it, and syncs the labels", async () => {
     const roles = { inbox: "a", trash: "b", junk: "c", sent: "e", drafts: "d" };
-    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })], { roles });
+    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T2" })], {
+      roles,
+    });
     expect(h.mail.mailboxes.some((m) => m.role === "archive")).toBe(false);
 
-    await Promise.all([h.actions.archive(conversations(h.mail, "T1"), scope), h.actions.archive(conversations(h.mail, "T2"), scope)]);
+    await Promise.all([
+      h.actions.archive(conversations(h.mail, "T1"), scope),
+      h.actions.archive(conversations(h.mail, "T2"), scope),
+    ]);
 
     const created = h.mail.mailboxes.filter((m) => m.role === "archive");
     expect(created).toEqual([{ id: expect.any(String), name: "Archive", role: "archive", parentId: null }]);
@@ -129,7 +155,10 @@ describe("archive", () => {
   });
 
   it("gives an existing top-level Archive folder the role rather than making a second", async () => {
-    const mailboxes = [...MAILBOXES.filter((m) => m.role !== "archive"), { id: "z", name: "Archive", role: null, parentId: null }];
+    const mailboxes = [
+      ...MAILBOXES.filter((m) => m.role !== "archive"),
+      { id: "z", name: "Archive", role: null, parentId: null },
+    ];
     const mail = new FakeMail({ mailboxes, emails: [] });
     const client = await mail.connect();
     const labels = { mailboxIdForRole: () => undefined, sync: vi.fn(async () => {}) };
@@ -165,7 +194,17 @@ describe("archive", () => {
     h.mail.failWith = (name, args) => {
       if (name !== "Email/set") return undefined;
       const update = args["update"] as Record<string, unknown>;
-      return ["Email/set", { accountId: "A", oldState: "s0", newState: "s1", updated: { "1": null }, notUpdated: { "2": { type: "forbidden" } }, ...(update ? {} : {}) }];
+      return [
+        "Email/set",
+        {
+          accountId: "A",
+          oldState: "s0",
+          newState: "s1",
+          updated: { "1": null },
+          notUpdated: { "2": { type: "forbidden" } },
+          ...(update ? {} : {}),
+        },
+      ];
     };
     expect(await h.actions.archive(conversations(h.mail, "T1", "T2"), scope)).toBe("partial");
     expect(h.changes[1]).toEqual({ kind: "patch", update: { "2": { "mailboxIds/a": true, "mailboxIds/h": null } } });
@@ -212,7 +251,10 @@ describe("the other actions", () => {
   });
 
   it("star without a toast is still undoable with undoLast (z)", async () => {
-    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T1", receivedAt: "2026-10-09T00:00:00Z" })]);
+    const h = await harness([
+      fakeEmail({ id: "1", threadId: "T1" }),
+      fakeEmail({ id: "2", threadId: "T1", receivedAt: "2026-10-09T00:00:00Z" }),
+    ]);
     await h.actions.star(conversations(h.mail, "T1"), scope, { toast: false });
     expect(h.toasts).toEqual([]);
     expect(h.mail.emails.get("2")!.keywords).toEqual({ $flagged: true });
@@ -256,7 +298,10 @@ describe("the other actions", () => {
   });
 
   it("mark read and unread act on every message shown", async () => {
-    const h = await harness([fakeEmail({ id: "1", threadId: "T1" }), fakeEmail({ id: "2", threadId: "T1", mailboxIds: { e: true } })]);
+    const h = await harness([
+      fakeEmail({ id: "1", threadId: "T1" }),
+      fakeEmail({ id: "2", threadId: "T1", mailboxIds: { e: true } }),
+    ]);
     await h.actions.markRead(conversations(h.mail, "T1"), scope);
     expect([...h.mail.emails.values()].map((e) => e.keywords)).toEqual([{ $seen: true }, { $seen: true }]);
     await h.actions.markUnread(conversations(h.mail, "T1"), scope);
@@ -272,7 +317,10 @@ describe("the other actions", () => {
   });
 
   it("delete forever destroys only the messages in Trash, with no undo", async () => {
-    const h = await harness([fakeEmail({ id: "1", threadId: "T1", mailboxIds: { b: true } }), fakeEmail({ id: "2", threadId: "T1", mailboxIds: { a: true } })]);
+    const h = await harness([
+      fakeEmail({ id: "1", threadId: "T1", mailboxIds: { b: true } }),
+      fakeEmail({ id: "2", threadId: "T1", mailboxIds: { a: true } }),
+    ]);
     expect(await h.actions.deleteForever(conversations(h.mail, "T1"), { kind: "trash", roles: ROLES })).toBe("done");
     expect([...h.mail.emails.keys()]).toEqual(["2"]);
     expect(h.changes[0]).toEqual({ kind: "patch", update: { "1": { mailboxIds: {} } } });

@@ -73,7 +73,9 @@ export function record(page: Page): Recording {
     topNavigations,
     foreignRequests: () => requests.map((r) => r.url()).filter((u) => !isPosternUrl(u)),
     cspConsole: () =>
-      consoleMessages.map((m) => m.text()).filter((t) => /Content Security Policy|Refused to (load|apply|execute|frame|connect|create)/i.test(t)),
+      consoleMessages
+        .map((m) => m.text())
+        .filter((t) => /Content Security Policy|Refused to (load|apply|execute|frame|connect|create)/i.test(t)),
     stop: () => {
       page.off("request", onRequest);
       page.off("console", onConsole);
@@ -91,13 +93,20 @@ export function record(page: Page): Recording {
  * The requests still show up in the recording.
  */
 export async function stubOutsideWorld(context: BrowserContext): Promise<void> {
-  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+    "base64",
+  );
   await context.route(
     (url) => url.protocol !== "data:" && url.protocol !== "blob:" && !isPosternUrl(url.href),
     async (route) => {
       const request = route.request();
       if (request.isNavigationRequest()) {
-        await route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>Outside Postern</title><p>A page outside Postern.</p>" });
+        await route.fulfill({
+          status: 200,
+          contentType: "text/html",
+          body: "<!doctype html><title>Outside Postern</title><p>A page outside Postern.</p>",
+        });
       } else if (new URL(request.url()).hostname === "track.evil.test") {
         await route.fulfill({ status: 200, contentType: "image/png", body: png });
       } else {
@@ -146,7 +155,9 @@ export function sawPasswordField(page: Page): Promise<boolean> {
 }
 
 /** Postern's session record in this tab's sessionStorage, parsed; null when there is none. Never print it. */
-export function keptSession(page: Page): Promise<{ refreshToken: string; username: string; lastActivity: number } | null> {
+export function keptSession(
+  page: Page,
+): Promise<{ refreshToken: string; username: string; lastActivity: number } | null> {
   return page.evaluate(() => {
     const raw = sessionStorage.getItem("postern.session");
     return raw ? (JSON.parse(raw) as { refreshToken: string; username: string; lastActivity: number }) : null;

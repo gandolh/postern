@@ -13,7 +13,12 @@ import { planRead } from "../actions/plans";
 import { isQuietError } from "../actions/runner";
 
 /** Mark the conversation's shown messages read. Resolves to whether anything was sent. Never rejects. */
-export async function markReadOnOpen(caller: MethodCaller, conversation: Conversation, scope: ConversationScope, syncLabels: () => void): Promise<boolean> {
+export async function markReadOnOpen(
+  caller: MethodCaller,
+  conversation: Conversation,
+  scope: ConversationScope,
+  syncLabels: () => void,
+): Promise<boolean> {
   const plan = planRead([conversation], scope, true);
   if (isEmptyPlan(plan)) return false;
   const answered = publishPending(plan.update);

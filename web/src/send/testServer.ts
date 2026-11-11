@@ -43,8 +43,19 @@ function session(maxDelayedSend: number): SessionObject {
       "urn:ietf:params:jmap:mail": {},
       "urn:ietf:params:jmap:submission": {},
     },
-    accounts: { [ACCOUNT]: { name: "alice@postern.test", isPersonal: true, isReadOnly: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {}, "urn:ietf:params:jmap:submission": submission } } },
-    primaryAccounts: { "urn:ietf:params:jmap:mail": ACCOUNT, "urn:ietf:params:jmap:core": ACCOUNT, "urn:ietf:params:jmap:submission": ACCOUNT },
+    accounts: {
+      [ACCOUNT]: {
+        name: "alice@postern.test",
+        isPersonal: true,
+        isReadOnly: false,
+        accountCapabilities: { "urn:ietf:params:jmap:mail": {}, "urn:ietf:params:jmap:submission": submission },
+      },
+    },
+    primaryAccounts: {
+      "urn:ietf:params:jmap:mail": ACCOUNT,
+      "urn:ietf:params:jmap:core": ACCOUNT,
+      "urn:ietf:params:jmap:submission": ACCOUNT,
+    },
     username: "alice@postern.test",
     apiUrl: "http://fake/jmap/",
     downloadUrl: "http://fake/download/{accountId}/{blobId}/{name}?accept={type}",
@@ -95,13 +106,29 @@ export class ComposeTestServer {
     const sub = this.held.get(id);
     if (sub?.undoStatus === "pending") sub.undoStatus = "final";
   }
-  identities: Args[] = [{ id: "I1", name: "Alice Archer", email: "alice@postern.test", replyTo: null, bcc: null, textSignature: "", htmlSignature: "", mayDelete: false }];
+  identities: Args[] = [
+    {
+      id: "I1",
+      name: "Alice Archer",
+      email: "alice@postern.test",
+      replyTo: null,
+      bcc: null,
+      textSignature: "",
+      htmlSignature: "",
+      mayDelete: false,
+    },
+  ];
   /** Make a call answer this instead (a method error or a refusal). */
   failWith: ((name: string, args: Args) => [string, Args] | "network" | undefined) | null = null;
   #next = 1;
 
   add(email: Partial<StoredEmail> & { id: Id }): void {
-    this.emails.set(email.id, { threadId: `T-${email.id}`, mailboxIds: { [MAILBOXES.inbox]: true }, keywords: {}, ...email });
+    this.emails.set(email.id, {
+      threadId: `T-${email.id}`,
+      mailboxIds: { [MAILBOXES.inbox]: true },
+      keywords: {},
+      ...email,
+    });
   }
 
   names(): string[] {
@@ -109,7 +136,11 @@ export class ComposeTestServer {
   }
 
   async connect(): Promise<JmapClient> {
-    const client = new JmapClient({ baseUrl: "http://fake", auth: { authorization: () => "Basic test" }, fetch: this.fetch });
+    const client = new JmapClient({
+      baseUrl: "http://fake",
+      auth: { authorization: () => "Basic test" },
+      fetch: this.fetch,
+    });
     await client.connect();
     return client;
   }
@@ -120,7 +151,9 @@ export class ComposeTestServer {
     if (url.startsWith("http://fake/download/")) {
       const blobId = decodeURIComponent(url.split("/")[5] ?? "");
       const blob = this.blobs.get(blobId);
-      return blob ? new Response(blob.bytes.slice().buffer, { headers: { "content-type": blob.type } }) : new Response("not found", { status: 404 });
+      return blob
+        ? new Response(blob.bytes.slice().buffer, { headers: { "content-type": blob.type } })
+        : new Response("not found", { status: 404 });
     }
     const body = JSON.parse(String(init.body)) as { methodCalls: Invocation[] };
     const responses: Invocation[] = [];
@@ -179,18 +212,53 @@ export class ComposeTestServer {
           unreadEmails: 0,
           totalThreads: 0,
           unreadThreads: 0,
-          myRights: { mayReadItems: true, mayAddItems: true, mayRemoveItems: true, maySetSeen: true, maySetKeywords: true, mayCreateChild: true, mayRename: true, mayDelete: true, maySubmit: true },
+          myRights: {
+            mayReadItems: true,
+            mayAddItems: true,
+            mayRemoveItems: true,
+            maySetSeen: true,
+            maySetKeywords: true,
+            mayCreateChild: true,
+            mayRename: true,
+            mayDelete: true,
+            maySubmit: true,
+          },
           isSubscribed: true,
         }));
         return [[name, { accountId: ACCOUNT, state: "m1", list, notFound: [] }]];
       }
       case "Mailbox/changes":
-        return [[name, { accountId: ACCOUNT, oldState: args["sinceState"], newState: "m1", hasMoreChanges: false, created: [], updated: [], destroyed: [], updatedProperties: null }]];
+        return [
+          [
+            name,
+            {
+              accountId: ACCOUNT,
+              oldState: args["sinceState"],
+              newState: "m1",
+              hasMoreChanges: false,
+              created: [],
+              updated: [],
+              destroyed: [],
+              updatedProperties: null,
+            },
+          ],
+        ];
       case "Identity/get":
         return [[name, { accountId: ACCOUNT, state: "i1", list: this.identities, notFound: [] }]];
       case "Mailbox/query": {
         const role = (args["filter"] as { role?: string } | undefined)?.role as keyof typeof MAILBOXES | undefined;
-        return [[name, { accountId: ACCOUNT, ids: role && MAILBOXES[role] ? [MAILBOXES[role]] : [], position: 0, queryState: "q", canCalculateChanges: false }]];
+        return [
+          [
+            name,
+            {
+              accountId: ACCOUNT,
+              ids: role && MAILBOXES[role] ? [MAILBOXES[role]] : [],
+              position: 0,
+              queryState: "q",
+              canCalculateChanges: false,
+            },
+          ],
+        ];
       }
       case "Email/query": {
         const filter = args["filter"] as { inMailbox?: Id; hasKeyword?: string; notKeyword?: string } | undefined;
@@ -203,12 +271,18 @@ export class ComposeTestServer {
       }
       case "Email/get": {
         const ids = (args["ids"] as Id[] | null) ?? [...this.emails.keys()];
-        const list = ids.map((id) => this.emails.get(id)).filter((e): e is StoredEmail => !!e).map((e) => structuredClone(e));
+        const list = ids
+          .map((id) => this.emails.get(id))
+          .filter((e): e is StoredEmail => !!e)
+          .map((e) => structuredClone(e));
         return [[name, { accountId: ACCOUNT, state: "e1", list, notFound: ids.filter((id) => !this.emails.has(id)) }]];
       }
       case "Thread/get": {
         const ids = (args["ids"] as Id[]) ?? [];
-        const list = ids.map((id) => ({ id, emailIds: [...this.emails.values()].filter((e) => e.threadId === id).map((e) => e.id) }));
+        const list = ids.map((id) => ({
+          id,
+          emailIds: [...this.emails.values()].filter((e) => e.threadId === id).map((e) => e.id),
+        }));
         return [[name, { accountId: ACCOUNT, state: "t1", list, notFound: [] }]];
       }
       case "Email/set":
@@ -226,10 +300,15 @@ export class ComposeTestServer {
             continue;
           }
           if ("sendAt" in sub) {
-            notCreated[key] = { type: "invalidProperties", description: "Field could not be set.", properties: ["sendAt"] };
+            notCreated[key] = {
+              type: "invalidProperties",
+              description: "Field could not be set.",
+              properties: ["sendAt"],
+            };
             continue;
           }
-          const hold = (sub["envelope"] as { mailFrom?: { parameters?: Record<string, string> | null } } | undefined)?.mailFrom?.parameters?.["HOLDUNTIL"];
+          const hold = (sub["envelope"] as { mailFrom?: { parameters?: Record<string, string> | null } } | undefined)
+            ?.mailFrom?.parameters?.["HOLDUNTIL"];
           if (hold && this.#maxDelayedSend === 0) {
             notCreated[key] = { type: "invalidEmail", description: "FUTURERELEASE is not supported" };
             continue;
@@ -237,9 +316,17 @@ export class ComposeTestServer {
           this.submissions.push(sub);
           const id = `S${this.#next++}`;
           const sendAt = hold ?? "2026-10-27T12:00:00Z";
-          this.held.set(id, { id, emailId: email.id, threadId: email.threadId, sendAt, undoStatus: hold ? "pending" : "final" });
+          this.held.set(id, {
+            id,
+            emailId: email.id,
+            threadId: email.threadId,
+            sendAt,
+            undoStatus: hold ? "pending" : "final",
+          });
           created[key] = { id, sendAt, undoStatus: "pending" };
-          const patch = (args["onSuccessUpdateEmail"] as Record<string, Record<string, unknown>> | undefined)?.[`#${key}`];
+          const patch = (args["onSuccessUpdateEmail"] as Record<string, Record<string, unknown>> | undefined)?.[
+            `#${key}`
+          ];
           if (patch) updates[email.id] = patch;
         }
         const updated: Record<Id, null> = {};
@@ -250,7 +337,8 @@ export class ComposeTestServer {
           else if (patch["undoStatus"] === "canceled" && sub.undoStatus === "pending") {
             sub.undoStatus = "canceled";
             updated[id] = null;
-          } else notUpdated[id] = { type: "cannotUnsend", description: "The requested message is no longer in the queue." };
+          } else
+            notUpdated[id] = { type: "cannotUnsend", description: "The requested message is no longer in the queue." };
         }
         out.push([
           name,
@@ -277,7 +365,10 @@ export class ComposeTestServer {
       }
       case "EmailSubmission/get": {
         const ids = (args["ids"] as Id[] | null) ?? [...this.held.keys()];
-        const list = ids.map((id) => this.held.get(id)).filter((s): s is StoredSubmission => !!s).map((s) => ({ ...s }));
+        const list = ids
+          .map((id) => this.held.get(id))
+          .filter((s): s is StoredSubmission => !!s)
+          .map((s) => ({ ...s }));
         return [[name, { accountId: ACCOUNT, state: "s1", list, notFound: ids.filter((id) => !this.held.has(id)) }]];
       }
       default:
@@ -290,14 +381,19 @@ export class ComposeTestServer {
     const notCreated: Record<string, Args> = {};
     for (const [key, email] of Object.entries((args["create"] as Record<string, Args>) ?? {})) {
       for (const field of ["to", "cc", "bcc", "replyTo"]) {
-        if (field in email && email[field] === null) notCreated[key] = { type: "invalidProperties", properties: [field] };
+        if (field in email && email[field] === null)
+          notCreated[key] = { type: "invalidProperties", properties: [field] };
       }
       if (notCreated[key]) continue;
       const id = `M${this.#next++}`;
       const messageId = (email["messageId"] as string[] | undefined)?.[0];
-      const sameThread = messageId ? [...this.emails.values()].find((e) => (e["messageId"] as string[] | undefined)?.[0] === messageId) : undefined;
+      const sameThread = messageId
+        ? [...this.emails.values()].find((e) => (e["messageId"] as string[] | undefined)?.[0] === messageId)
+        : undefined;
       const replyTo = (email["inReplyTo"] as string[] | undefined)?.[0];
-      const parent = replyTo ? [...this.emails.values()].find((e) => (e["messageId"] as string[] | undefined)?.[0] === replyTo) : undefined;
+      const parent = replyTo
+        ? [...this.emails.values()].find((e) => (e["messageId"] as string[] | undefined)?.[0] === replyTo)
+        : undefined;
       const threadId = sameThread?.threadId ?? parent?.threadId ?? `T-${id}`;
       this.emails.set(id, { ...structuredClone(email), id, threadId } as StoredEmail);
       created[key] = { id, threadId, blobId: `blob-${id}`, size: 1 };

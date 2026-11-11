@@ -31,7 +31,11 @@ function Host({ store }: { store: ComposerStore }) {
   useDraftConversations(store, useLabelsStore());
 
   const unsaved = sessions.some(
-    (s) => s.save === "dirty" || s.save === "saving" || s.save === "error" || [...s.files, ...s.inline].some((f) => f.status === "uploading"),
+    (s) =>
+      s.save === "dirty" ||
+      s.save === "saving" ||
+      s.save === "error" ||
+      [...s.files, ...s.inline].some((f) => f.status === "uploading"),
   );
   const warn = outbox.length > 0 || unsaved;
   useEffect(() => {
@@ -55,7 +59,10 @@ function Host({ store }: { store: ComposerStore }) {
 }
 
 /** A conversation that is only drafts opens as a composer, not as a conversation. */
-function useDraftConversations(store: ComposerStore, labels: Pick<LabelsStore, "mailboxIdForRole" | "subscribe">): void {
+function useDraftConversations(
+  store: ComposerStore,
+  labels: Pick<LabelsStore, "mailboxIdForRole" | "subscribe">,
+): void {
   useEffect(() => {
     let checking: string | null = null;
     let ac: AbortController | null = null;

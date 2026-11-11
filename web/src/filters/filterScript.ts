@@ -79,7 +79,11 @@ export async function loadFilters(io: SieveIo, signal?: AbortSignal): Promise<Lo
   const activeScript = scripts.find((s) => s.isActive) ?? null;
   const otherActive =
     activeScript && activeScript.id !== ours?.id
-      ? { id: activeScript.id, name: activeScript.name ?? "", vacation: (activeScript.name ?? "").toLowerCase() === VACATION_SCRIPT_NAME }
+      ? {
+          id: activeScript.id,
+          name: activeScript.name ?? "",
+          vacation: (activeScript.name ?? "").toLowerCase() === VACATION_SCRIPT_NAME,
+        }
       : null;
   const base = { scriptId: ours?.id ?? null, active: ours !== null && ours.isActive, otherActive };
   if (!ours) return { ...base, set: emptyFilterSet(), problem: null };
@@ -88,7 +92,8 @@ export async function loadFilters(io: SieveIo, signal?: AbortSignal): Promise<Lo
   try {
     return { ...base, set: parseFilterScript(source), problem: null };
   } catch (e) {
-    if (e instanceof FilterScriptParseError) return { ...base, set: emptyFilterSet(), problem: { kind: "unreadable", message: e.message } };
+    if (e instanceof FilterScriptParseError)
+      return { ...base, set: emptyFilterSet(), problem: { kind: "unreadable", message: e.message } };
     throw e;
   }
 }
@@ -112,11 +117,16 @@ export interface SaveOutcome {
  * server, save and (unless the vacation responder is on) activate.
  * @throws FilterScriptError for a reason to show (nothing was written).
  */
-export async function saveFilters(io: SieveIo, change: (set: FilterSet) => FilterSet, options: SaveOptions = {}): Promise<SaveOutcome> {
+export async function saveFilters(
+  io: SieveIo,
+  change: (set: FilterSet) => FilterSet,
+  options: SaveOptions = {},
+): Promise<SaveOutcome> {
   const { signal } = options;
   const loaded = await loadFilters(io, signal);
   if (loaded.problem?.kind === "foreign-name") throw new FilterScriptError(FOREIGN_NAME_MESSAGE);
-  if (loaded.problem?.kind === "unreadable" && !options.replaceUnreadable) throw new FilterScriptError(UNREADABLE_MESSAGE);
+  if (loaded.problem?.kind === "unreadable" && !options.replaceUnreadable)
+    throw new FilterScriptError(UNREADABLE_MESSAGE);
 
   const next = normalizeFilterSet(change(loaded.set));
   next.filters.forEach((f, i) => {
@@ -136,7 +146,10 @@ export async function saveFilters(io: SieveIo, change: (set: FilterSet) => Filte
   const source = generateSieve(next);
   const invalid = await io.validate(source, signal);
   if (invalid) throw new FilterScriptError(`The server refused the filters: ${invalid.description ?? invalid.type}`);
-  const id = await io.save({ id: loaded.scriptId, name: POSTERN_SCRIPT_NAME, source, activate: !heldByVacation }, signal);
+  const id = await io.save(
+    { id: loaded.scriptId, name: POSTERN_SCRIPT_NAME, source, activate: !heldByVacation },
+    signal,
+  );
   return {
     loaded: {
       set: next,
@@ -153,7 +166,8 @@ export async function saveFilters(io: SieveIo, change: (set: FilterSet) => Filte
 /** Turn the filters on: make Postern's script the active one (the vacation responder goes off). */
 export async function activateFilters(io: SieveIo, signal?: AbortSignal): Promise<LoadedFilters> {
   const loaded = await loadFilters(io, signal);
-  if (loaded.problem) throw new FilterScriptError(loaded.problem.kind === "foreign-name" ? FOREIGN_NAME_MESSAGE : UNREADABLE_MESSAGE);
+  if (loaded.problem)
+    throw new FilterScriptError(loaded.problem.kind === "foreign-name" ? FOREIGN_NAME_MESSAGE : UNREADABLE_MESSAGE);
   if (loaded.scriptId === null) return loaded;
   if (loaded.otherActive && !loaded.otherActive.vacation) {
     // A hand-written script took over since: run it from Postern's, then activate.

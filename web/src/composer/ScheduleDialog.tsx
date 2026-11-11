@@ -30,7 +30,8 @@ function dateValue(d: Date): string {
 function picked(date: string, time: string): Date {
   const [y, m, d] = date.split("-").map(Number);
   const [hh, mm] = time.split(":").map(Number);
-  if (!y || !m || !d || hh === undefined || mm === undefined || Number.isNaN(hh) || Number.isNaN(mm)) return new Date(NaN);
+  if (!y || !m || !d || hh === undefined || mm === undefined || Number.isNaN(hh) || Number.isNaN(mm))
+    return new Date(NaN);
   return new Date(y, m - 1, d, hh, mm, 0, 0);
 }
 

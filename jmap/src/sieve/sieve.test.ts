@@ -72,7 +72,15 @@ describe("round trip: model → Sieve → model", () => {
     ["never send to Spam", { neverSpam: true }],
     [
       "every action at once",
-      { archive: true, markRead: true, star: true, label: { id: "i", name: "Work" }, forwardTo: "carol@postern.test", delete: true, neverSpam: true },
+      {
+        archive: true,
+        markRead: true,
+        star: true,
+        label: { id: "i", name: "Work" },
+        forwardTo: "carol@postern.test",
+        delete: true,
+        neverSpam: true,
+      },
     ],
   ];
   for (const [name, a] of actions) {
@@ -189,29 +197,52 @@ describe("escaping a person's text", () => {
 describe("the Sieve written", () => {
   it("requires only what it uses", () => {
     const src = generateSieve(one(filter({ from: ["bob"] }, { star: true })));
-    expect(src).toMatch(/^require \["fileinto", "special-use", "imap4flags", "variables", "relational", "comparator-i;ascii-numeric", "spamtest", "spamtestplus"\];$/m);
-    expect(generateSieve({ filters: [], blocked: ["a@x.test"], includes: [] })).toMatch(/^require \["fileinto", "special-use", "imap4flags"\];$/m);
+    expect(src).toMatch(
+      /^require \["fileinto", "special-use", "imap4flags", "variables", "relational", "comparator-i;ascii-numeric", "spamtest", "spamtestplus"\];$/m,
+    );
+    expect(generateSieve({ filters: [], blocked: ["a@x.test"], includes: [] })).toMatch(
+      /^require \["fileinto", "special-use", "imap4flags"\];$/m,
+    );
     // :mailboxid needs "mailbox" too in Stalwart 0.16.25 (sieve-rs 0.7.3 checks that capability).
-    expect(generateSieve(one(filter({ from: ["bob"] }, { label: { id: "i", name: "Work" } })))).toContain('"fileinto", "mailbox", "mailboxid"');
+    expect(generateSieve(one(filter({ from: ["bob"] }, { label: { id: "i", name: "Work" } })))).toContain(
+      '"fileinto", "mailbox", "mailboxid"',
+    );
   });
 
   it("declares the shared variables at the top level", () => {
-    const src = generateSieve(one(filter({ from: ["bob"] }, { label: { id: "i", name: "Work" }, forwardTo: "c@x.test" })));
-    for (const v of ["postern_skip", "postern_nospam", "postern_delete", "postern_filed", "postern_label_1", "postern_forward_1"]) {
+    const src = generateSieve(
+      one(filter({ from: ["bob"] }, { label: { id: "i", name: "Work" }, forwardTo: "c@x.test" })),
+    );
+    for (const v of [
+      "postern_skip",
+      "postern_nospam",
+      "postern_delete",
+      "postern_filed",
+      "postern_label_1",
+      "postern_forward_1",
+    ]) {
       expect(src).toContain(`set "${v}" "";`);
     }
   });
 
   it("files labels by mailbox id with the name as the fallback, and blocked mail into Spam with $junk", () => {
-    const src = generateSieve({ filters: [filter({ from: ["bob"] }, { label: { id: "i", name: "Work" } })], blocked: ["x@y.test"], includes: [] });
+    const src = generateSieve({
+      filters: [filter({ from: ["bob"] }, { label: { id: "i", name: "Work" } })],
+      blocked: ["x@y.test"],
+      includes: [],
+    });
     expect(src).toContain('fileinto :mailboxid "i" "Work";');
     expect(src).toContain('fileinto :flags "$junk" :specialuse "\\\\Junk" "Junk Mail";');
   });
 
   it("lets Spam win unless a filter says never send it to Spam", () => {
     const src = generateSieve(one(filter({ from: ["bob"] }, { neverSpam: true })));
-    expect(src).toContain('if allof (not string :is "${postern_nospam}" "1", spamtest :percent :value "ge" :comparator "i;ascii-numeric" "50") {');
-    expect(src).toContain('} elsif string :is "${postern_nospam}" "1" {\r\n  fileinto :specialuse "\\\\Inbox" "INBOX";');
+    expect(src).toContain(
+      'if allof (not string :is "${postern_nospam}" "1", spamtest :percent :value "ge" :comparator "i;ascii-numeric" "50") {',
+    );
+    expect(src).toContain(
+      '} elsif string :is "${postern_nospam}" "1" {\r\n  fileinto :specialuse "\\\\Inbox" "INBOX";',
+    );
   });
 
   it("parses as Sieve with the generic reader", () => {
@@ -228,7 +259,12 @@ describe("the Sieve written", () => {
 
 describe("reading back refuses anything else", () => {
   const good = generateSieve({
-    filters: [filter({ from: ["bob@postern.test"] }, { label: { id: "i", name: "Work" }, archive: true, forwardTo: "c@x.test" })],
+    filters: [
+      filter(
+        { from: ["bob@postern.test"] },
+        { label: { id: "i", name: "Work" }, archive: true, forwardTo: "c@x.test" },
+      ),
+    ],
     blocked: ["spam@x.test"],
     includes: ["mine"],
   });
@@ -237,7 +273,7 @@ describe("reading back refuses anything else", () => {
   it("needs the marker and the format line", () => {
     expect(bad(good.replace(GENERATED_MARKER, "# My script"))).toThrow(FilterScriptParseError);
     expect(bad(good.replace("format 1", "format 2"))).toThrow(/format 1/);
-    expect(bad("require [\"fileinto\"];\r\nkeep;\r\n")).toThrow(/doesn't start with/);
+    expect(bad('require ["fileinto"];\r\nkeep;\r\n')).toThrow(/doesn't start with/);
   });
 
   it("refuses hand edits", () => {
@@ -246,7 +282,9 @@ describe("reading back refuses anything else", () => {
     expect(bad(good.replace('header :contains "from"', 'header :is "from"'))).toThrow(/doesn't write/);
     expect(bad(good + "discard;\r\n")).toThrow(/doesn't write here/);
     expect(bad(good.replace('redirect :copy "c@x.test";', 'redirect "c@x.test";'))).toThrow(/forwarding rule/);
-    expect(bad(good.replace('  set "postern_label_1" "1";\r\n', '  set "postern_label_7" "1";\r\n'))).toThrow(/variable/);
+    expect(bad(good.replace('  set "postern_label_1" "1";\r\n', '  set "postern_label_7" "1";\r\n'))).toThrow(
+      /variable/,
+    );
     expect(bad(good.replace('include :personal :optional "mine";', 'include :global "mine";'))).toThrow(/include/);
     expect(bad(good.replace('"bob@postern.test"', '"${evil}"'))).toThrow(/variable reference/);
   });
@@ -264,8 +302,12 @@ describe("reading back refuses anything else", () => {
     const sized = generateSieve(one(filter({ size: { comparison: "larger", amount: 10, unit: "K" } }, { star: true })));
     expect(parseFilterScript(sized).filters[0]!.criteria.size).toEqual({ comparison: "larger", amount: 10, unit: "K" });
     expect(bad(sized.replace("size :over 10K", "size :over 10G"))).toThrow(/in G/);
-    expect(bad(`${GENERATED_MARKER}\r\n# Postern filters, format 1\r\nrequire "x";\r\nif true { keep; }\r\n`)).toThrow(FilterScriptParseError);
-    expect(bad(`${GENERATED_MARKER}\r\n# Postern filters, format 1\r\nrequire text:\r\nx\r\n.\r\n;`)).toThrow(/multi-line/);
+    expect(bad(`${GENERATED_MARKER}\r\n# Postern filters, format 1\r\nrequire "x";\r\nif true { keep; }\r\n`)).toThrow(
+      FilterScriptParseError,
+    );
+    expect(bad(`${GENERATED_MARKER}\r\n# Postern filters, format 1\r\nrequire text:\r\nx\r\n.\r\n;`)).toThrow(
+      /multi-line/,
+    );
   });
 
   it("ignores comments and whitespace", () => {
@@ -288,14 +330,25 @@ describe("the model", () => {
   });
 
   it("says what is missing", () => {
-    expect(filterProblems(filter({}, {}))).toEqual(["Fill in at least one search criterion.", "Choose at least one thing to do with matching messages."]);
-    expect(filterProblems(filter({ subject: "x" }, { forwardTo: "not an address" }))).toEqual(["The forwarding address doesn't look like an email address."]);
-    expect(filterProblems(filter({ size: { comparison: "larger", amount: 0, unit: "K" } }, { star: true }))).toHaveLength(1);
+    expect(filterProblems(filter({}, {}))).toEqual([
+      "Fill in at least one search criterion.",
+      "Choose at least one thing to do with matching messages.",
+    ]);
+    expect(filterProblems(filter({ subject: "x" }, { forwardTo: "not an address" }))).toEqual([
+      "The forwarding address doesn't look like an email address.",
+    ]);
+    expect(
+      filterProblems(filter({ size: { comparison: "larger", amount: 0, unit: "K" } }, { star: true })),
+    ).toHaveLength(1);
     expect(filterProblems(filter({ subject: "x" }, { star: true }))).toEqual([]);
   });
 
   it("normalises blocked addresses and refuses to include Postern's or the vacation script", () => {
-    const set = normalizeFilterSet({ filters: [], blocked: [" Bob@X.test ", "bob@x.test", "<c@y.test>"], includes: ["postern", "vacation", "mine", "mine"] });
+    const set = normalizeFilterSet({
+      filters: [],
+      blocked: [" Bob@X.test ", "bob@x.test", "<c@y.test>"],
+      includes: ["postern", "vacation", "mine", "mine"],
+    });
     expect(set).toEqual({ filters: [], blocked: ["bob@x.test", "c@y.test"], includes: ["mine"] });
     expect(withBlocked(set, "BOB@x.test")).toBe(set);
     expect(withoutBlocked(set, "Bob@X.test").blocked).toEqual(["c@y.test"]);

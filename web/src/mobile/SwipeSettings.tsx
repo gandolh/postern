@@ -12,14 +12,27 @@ const TITLES: Record<SwipeAction, string> = {
   none: "Nothing",
 };
 
-function SwipeSelect({ label, value, onChange }: { label: string; value: SwipeAction; onChange: (value: SwipeAction) => void }) {
+function SwipeSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: SwipeAction;
+  onChange: (value: SwipeAction) => void;
+}) {
   const id = useId();
   return (
     <div className="settings-field">
       <label htmlFor={id} className="settings-label">
         {label}
       </label>
-      <select id={id} className="input settings-select" value={value} onChange={(e) => onChange(e.target.value as SwipeAction)}>
+      <select
+        id={id}
+        className="input settings-select"
+        value={value}
+        onChange={(e) => onChange(e.target.value as SwipeAction)}
+      >
         {SWIPE_ACTIONS.map((action) => (
           <option key={action} value={action}>
             {TITLES[action]}

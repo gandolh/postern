@@ -41,7 +41,10 @@ export function useApplyToExisting(): (filter: MailFilter) => Promise<void> {
         found = await findMatchingConversations(client, parsed.filter);
       } catch (e) {
         // Session trouble is the sign-in layer's to show.
-        if (!isQuietError(e)) toast.show({ message: `Couldn't look for matching conversations: ${e instanceof Error ? e.message : "unknown error"}` });
+        if (!isQuietError(e))
+          toast.show({
+            message: `Couldn't look for matching conversations: ${e instanceof Error ? e.message : "unknown error"}`,
+          });
         return;
       }
       if (found.conversations.length === 0) {

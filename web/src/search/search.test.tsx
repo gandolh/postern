@@ -16,9 +16,24 @@ import { SearchBox } from "./SearchBox";
 import { SearchRoute } from "./SearchRoute";
 
 const EMAILS: FakeEmail[] = [
-  fakeEmail({ id: "m1", threadId: "t1", subject: "Roadmap review", from: [{ name: "Bob Baker", email: "bob@postern.test" }] }),
-  fakeEmail({ id: "m2", threadId: "t2", subject: "Lunch plans", from: [{ name: "Carol Chen", email: "carol@northwind.example.com" }] }),
-  fakeEmail({ id: "m3", threadId: "t3", subject: "Roadmap budget", from: [{ name: "Carol Chen", email: "carol@northwind.example.com" }] }),
+  fakeEmail({
+    id: "m1",
+    threadId: "t1",
+    subject: "Roadmap review",
+    from: [{ name: "Bob Baker", email: "bob@postern.test" }],
+  }),
+  fakeEmail({
+    id: "m2",
+    threadId: "t2",
+    subject: "Lunch plans",
+    from: [{ name: "Carol Chen", email: "carol@northwind.example.com" }],
+  }),
+  fakeEmail({
+    id: "m3",
+    threadId: "t3",
+    subject: "Roadmap budget",
+    from: [{ name: "Carol Chen", email: "carol@northwind.example.com" }],
+  }),
   fakeEmail({ id: "m4", threadId: "t4", subject: "Roadmap in the trash", mailboxIds: { b: true } }),
 ];
 
@@ -73,7 +88,10 @@ describe("the search box", () => {
     const option = await screen.findByRole("option", { name: /Carol Chen/ });
     await user.click(option);
     expect((box as HTMLInputElement).value).toBe("from:carol@northwind.example.com ");
-    const fetches = () => mail.posts.filter((p) => JSON.stringify(p).includes('"Email/query"') && JSON.stringify(p).includes('"properties":["from"]')).length;
+    const fetches = () =>
+      mail.posts.filter(
+        (p) => JSON.stringify(p).includes('"Email/query"') && JSON.stringify(p).includes('"properties":["from"]'),
+      ).length;
     expect(fetches()).toBe(1);
     await user.type(box, "bob");
     await screen.findByRole("option", { name: /Bob Baker/ });
@@ -143,7 +161,13 @@ describe("the search results", () => {
   it("lists what the query matches, outside Trash and Spam, with highlighted snippets", async () => {
     await setup(() => <SearchRoute route={route("subject:roadmap")} />);
     const grid = await screen.findByRole("grid", { name: /that match this search/ });
-    await waitFor(() => expect(within(grid).getAllByRole("row").filter((r) => r.getAttribute("aria-busy") !== "true").length).toBe(2));
+    await waitFor(() =>
+      expect(
+        within(grid)
+          .getAllByRole("row")
+          .filter((r) => r.getAttribute("aria-busy") !== "true").length,
+      ).toBe(2),
+    );
     expect(grid.querySelectorAll("mark.list-mark").length).toBeGreaterThan(0);
     expect(within(grid).queryByText(/in the trash/)).toBeNull();
   });
@@ -168,7 +192,9 @@ describe("the search results", () => {
     const grid = await screen.findByRole("grid");
     const row = await within(grid).findByRole("row", { name: /Lunch plans/ });
     await user.click(within(row).getByRole("checkbox"));
-    await user.click(within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }));
+    await user.click(
+      within(screen.getByRole("toolbar", { name: "Conversation actions" })).getByRole("button", { name: "Archive" }),
+    );
     expect(await screen.findByText("Conversation archived.")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Undo" }));
     expect(await screen.findByText("Action undone.")).toBeTruthy();

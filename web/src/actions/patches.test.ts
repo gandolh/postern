@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { applyPatch, editToPatch, invertPatch, NoMailboxError, planEdits, reversePlan, subPlan, type MessageState } from "./patches";
+import {
+  applyPatch,
+  editToPatch,
+  invertPatch,
+  NoMailboxError,
+  planEdits,
+  reversePlan,
+  subPlan,
+  type MessageState,
+} from "./patches";
 
 const msg = (id: string, mailboxIds: string[], keywords: string[] = []): MessageState => ({
   id,
@@ -14,11 +23,19 @@ describe("editToPatch", () => {
       "mailboxIds/inbox": null,
       "mailboxIds/all": true,
     });
-    expect(editToPatch(m, { keywords: { $seen: false, $flagged: true } })).toEqual({ "keywords/$seen": null, "keywords/$flagged": true });
+    expect(editToPatch(m, { keywords: { $seen: false, $flagged: true } })).toEqual({
+      "keywords/$seen": null,
+      "keywords/$flagged": true,
+    });
   });
 
   it("is null when the message already looks like that", () => {
-    expect(editToPatch(msg("1", ["inbox"], ["$seen"]), { mailboxIds: { inbox: true }, keywords: { $seen: true, $flagged: false } })).toBeNull();
+    expect(
+      editToPatch(msg("1", ["inbox"], ["$seen"]), {
+        mailboxIds: { inbox: true },
+        keywords: { $seen: true, $flagged: false },
+      }),
+    ).toBeNull();
   });
 
   it("escapes ids and keywords with / and ~", () => {
@@ -56,7 +73,12 @@ describe("invertPatch", () => {
   const cases: [string, MessageState, Record<string, boolean>, Record<string, boolean>][] = [
     ["inbox only, archived", msg("1", ["inbox"], ["$seen"]), { inbox: false, all: true }, {}],
     ["inbox and Work, archived", msg("2", ["inbox", "work"]), { inbox: false }, {}],
-    ["several labels, trashed", msg("3", ["inbox", "work", "travel"], ["$flagged"]), { inbox: false, work: false, travel: false, trash: true }, {}],
+    [
+      "several labels, trashed",
+      msg("3", ["inbox", "work", "travel"], ["$flagged"]),
+      { inbox: false, work: false, travel: false, trash: true },
+      {},
+    ],
     ["starred and read", msg("4", ["inbox"]), {}, { $flagged: true, $seen: true }],
     ["unstarred", msg("5", ["work"], ["$flagged", "$seen"]), {}, { $flagged: false }],
   ];

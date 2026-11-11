@@ -36,7 +36,12 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
     const dialog = ref.current;
     return () => {
       const active = document.activeElement;
-      if (from instanceof HTMLElement && from.isConnected && (active === document.body || active === null || dialog?.contains(active) || !active.isConnected)) from.focus();
+      if (
+        from instanceof HTMLElement &&
+        from.isConnected &&
+        (active === document.body || active === null || dialog?.contains(active) || !active.isConnected)
+      )
+        from.focus();
     };
   }, []);
 
@@ -117,8 +122,20 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
           )}
         </h2>
         <span className="compose-titlebar-actions">
-          {!fullscreen ? <IconButton label={minimised ? "Restore" : "Minimise"} icon={Minus} tooltip="end" onClick={toggleMinimise} /> : null}
-          <IconButton label={fullscreen ? "Exit full screen" : "Full screen"} icon={fullscreen ? Minimize2 : Maximize2} tooltip="end" onClick={toggleFullscreen} />
+          {!fullscreen ? (
+            <IconButton
+              label={minimised ? "Restore" : "Minimise"}
+              icon={Minus}
+              tooltip="end"
+              onClick={toggleMinimise}
+            />
+          ) : null}
+          <IconButton
+            label={fullscreen ? "Exit full screen" : "Full screen"}
+            icon={fullscreen ? Minimize2 : Maximize2}
+            tooltip="end"
+            onClick={toggleFullscreen}
+          />
           <IconButton label="Save & close" icon={X} tooltip="end" onClick={close} />
         </span>
       </div>

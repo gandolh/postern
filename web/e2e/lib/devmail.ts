@@ -108,11 +108,16 @@ let hostile: Promise<HostileSet> | undefined;
 export function hostileSet(): Promise<HostileSet> {
   hostile ??= (async () => {
     const jmap = await devJmap("alice");
-    const boxes = await jmap.one<{ list: { id: string; name: string; parentId: string | null }[] }>("Mailbox/get", { ids: null, properties: ["name", "parentId"] });
+    const boxes = await jmap.one<{ list: { id: string; name: string; parentId: string | null }[] }>("Mailbox/get", {
+      ids: null,
+      properties: ["name", "parentId"],
+    });
     const label = boxes.list.find((b) => b.name === manifest().hostile.label && b.parentId === null);
     if (!label) throw new Error("alice has no Hostile label; is dev/ seeded?");
     const query = await jmap.one<{ ids: string[] }>("Email/query", { filter: { inMailbox: label.id }, limit: 100 });
-    const got = await jmap.one<{ list: { id: string; threadId: string; "header:X-Postern-Fixture:asText": string | null }[] }>("Email/get", {
+    const got = await jmap.one<{
+      list: { id: string; threadId: string; "header:X-Postern-Fixture:asText": string | null }[];
+    }>("Email/get", {
       ids: query.ids,
       properties: ["threadId", "header:X-Postern-Fixture:asText"],
     });
@@ -135,7 +140,10 @@ export function hostileSet(): Promise<HostileSet> {
 export async function threadBySubject(subject: string): Promise<{ threadId: string; emailIds: string[] }> {
   const jmap = await devJmap("alice");
   const query = await jmap.one<{ ids: string[] }>("Email/query", { filter: { subject }, limit: 20 });
-  const got = await jmap.one<{ list: { id: string; threadId: string; subject: string }[] }>("Email/get", { ids: query.ids, properties: ["threadId", "subject"] });
+  const got = await jmap.one<{ list: { id: string; threadId: string; subject: string }[] }>("Email/get", {
+    ids: query.ids,
+    properties: ["threadId", "subject"],
+  });
   const hit = got.list.find((e) => e.subject === subject);
   if (!hit) throw new Error(`no message with the subject "${subject}" in alice's mailbox`);
   return { threadId: hit.threadId, emailIds: got.list.filter((e) => e.threadId === hit.threadId).map((e) => e.id) };
@@ -144,7 +152,10 @@ export async function threadBySubject(subject: string): Promise<{ threadId: stri
 /** A label's mailbox id by name (top level). */
 export async function labelId(name: string): Promise<string> {
   const jmap = await devJmap("alice");
-  const boxes = await jmap.one<{ list: { id: string; name: string; parentId: string | null }[] }>("Mailbox/get", { ids: null, properties: ["name", "parentId"] });
+  const boxes = await jmap.one<{ list: { id: string; name: string; parentId: string | null }[] }>("Mailbox/get", {
+    ids: null,
+    properties: ["name", "parentId"],
+  });
   const box = boxes.list.find((b) => b.name === name && b.parentId === null);
   if (!box) throw new Error(`alice has no label ${name}`);
   return box.id;
@@ -173,7 +184,7 @@ export interface LabelCounts {
 
 async function allIds(jmap: DevJmap, filter: Record<string, unknown>): Promise<string[]> {
   const ids: string[] = [];
-  for (let position = 0; ; ) {
+  for (let position = 0; ;) {
     const page = await jmap.one<{ ids: string[] }>("Email/query", { filter, position, limit: 1000 });
     ids.push(...page.ids);
     if (page.ids.length < 1000) return ids;
@@ -183,10 +194,16 @@ async function allIds(jmap: DevJmap, filter: Record<string, unknown>): Promise<s
 
 export async function labelCounts(): Promise<LabelCounts> {
   const jmap = await devJmap("alice");
-  const boxes = await jmap.one<{ list: { id: string; name: string; role: string | null; totalEmails: number; totalThreads: number; unreadThreads: number }[] }>(
-    "Mailbox/get",
-    { ids: null, properties: ["name", "role", "totalEmails", "totalThreads", "unreadThreads"] },
-  );
+  const boxes = await jmap.one<{
+    list: {
+      id: string;
+      name: string;
+      role: string | null;
+      totalEmails: number;
+      totalThreads: number;
+      unreadThreads: number;
+    }[];
+  }>("Mailbox/get", { ids: null, properties: ["name", "role", "totalEmails", "totalThreads", "unreadThreads"] });
   const pick = (b: { totalEmails: number; totalThreads: number; unreadThreads: number } | undefined) => ({
     messages: b?.totalEmails ?? -1,
     threads: b?.totalThreads ?? -1,
@@ -213,7 +230,10 @@ export async function snapshotMail(): Promise<MailSnapshot> {
   const jmap = await devJmap("alice");
   const state = await jmap.one<{ state: string }>("Email/get", { ids: [], properties: ["id"] });
   const unread = await allIds(jmap, { notKeyword: "$seen" });
-  const identities = await jmap.one<{ list: IdentitySnapshot[] }>("Identity/get", { ids: null, properties: ["name", "textSignature", "htmlSignature", "replyTo"] });
+  const identities = await jmap.one<{ list: IdentitySnapshot[] }>("Identity/get", {
+    ids: null,
+    properties: ["name", "textSignature", "htmlSignature", "replyTo"],
+  });
   return { emailState: state.state, unread, counts: await labelCounts(), identities: identities.list };
 }
 
@@ -231,12 +251,20 @@ export async function restoreMail(snapshot: MailSnapshot): Promise<RestoreReport
   const report: RestoreReport = { markedUnread: 0, draftsRemoved: 0, identitiesRestored: 0, unexpected: [] };
 
   // Identities (the signature preview in settings writes one, then clears it).
-  const now = await jmap.one<{ list: IdentitySnapshot[] }>("Identity/get", { ids: null, properties: ["name", "textSignature", "htmlSignature", "replyTo"] });
+  const now = await jmap.one<{ list: IdentitySnapshot[] }>("Identity/get", {
+    ids: null,
+    properties: ["name", "textSignature", "htmlSignature", "replyTo"],
+  });
   const update: Record<string, Partial<IdentitySnapshot>> = {};
   for (const before of snapshot.identities) {
     const after = now.list.find((i) => i.id === before.id);
     if (!after) continue;
-    const fields = (i: IdentitySnapshot) => ({ name: i.name, textSignature: i.textSignature, htmlSignature: i.htmlSignature, replyTo: i.replyTo });
+    const fields = (i: IdentitySnapshot) => ({
+      name: i.name,
+      textSignature: i.textSignature,
+      htmlSignature: i.htmlSignature,
+      replyTo: i.replyTo,
+    });
     if (JSON.stringify(fields(after)) !== JSON.stringify(fields(before))) update[before.id] = fields(before);
   }
   if (Object.keys(update).length > 0) {
@@ -246,7 +274,7 @@ export async function restoreMail(snapshot: MailSnapshot): Promise<RestoreReport
 
   // What the run created, from the changes since the snapshot.
   const created: string[] = [];
-  for (let since = snapshot.emailState; ; ) {
+  for (let since = snapshot.emailState; ;) {
     const changes = await jmap.one<{ created: string[]; newState: string; hasMoreChanges: boolean }>("Email/changes", {
       sinceState: since,
       maxChanges: 500,
@@ -256,7 +284,10 @@ export async function restoreMail(snapshot: MailSnapshot): Promise<RestoreReport
     since = changes.newState;
   }
   if (created.length > 0) {
-    const got = await jmap.one<{ list: { id: string; keywords: Record<string, boolean> }[] }>("Email/get", { ids: created, properties: ["keywords"] });
+    const got = await jmap.one<{ list: { id: string; keywords: Record<string, boolean> }[] }>("Email/get", {
+      ids: created,
+      properties: ["keywords"],
+    });
     const drafts = got.list.filter((e) => e.keywords["$draft"] === true).map((e) => e.id);
     report.unexpected = got.list.filter((e) => e.keywords["$draft"] !== true).map((e) => e.id);
     if (drafts.length > 0) {
@@ -269,7 +300,10 @@ export async function restoreMail(snapshot: MailSnapshot): Promise<RestoreReport
   const wasUnread = snapshot.unread;
   for (let i = 0; i < wasUnread.length; i += 500) {
     const ids = wasUnread.slice(i, i + 500);
-    const got = await jmap.one<{ list: { id: string; keywords: Record<string, boolean> }[] }>("Email/get", { ids, properties: ["keywords"] });
+    const got = await jmap.one<{ list: { id: string; keywords: Record<string, boolean> }[] }>("Email/get", {
+      ids,
+      properties: ["keywords"],
+    });
     const read = got.list.filter((e) => e.keywords["$seen"] === true).map((e) => e.id);
     if (read.length === 0) continue;
     const update: Record<string, Record<string, null>> = {};

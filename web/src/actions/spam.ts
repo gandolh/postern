@@ -52,12 +52,20 @@ export function planNotSpam(conversations: readonly Conversation[], scope: Conve
 }
 
 /** Report the conversations as spam. Resolves with what the server did; `plan.inverse` undoes it. */
-export async function reportSpam(caller: MethodCaller, conversations: readonly Conversation[], scope: ConversationScope): Promise<SendResult> {
+export async function reportSpam(
+  caller: MethodCaller,
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+): Promise<SendResult> {
   return sendPlan(caller, planReportSpam(conversations, scope));
 }
 
 /** Take the conversations out of Spam, into the Inbox. */
-export async function notSpam(caller: MethodCaller, conversations: readonly Conversation[], scope: ConversationScope): Promise<SendResult> {
+export async function notSpam(
+  caller: MethodCaller,
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+): Promise<SendResult> {
   return sendPlan(caller, planNotSpam(conversations, scope));
 }
 
@@ -113,13 +121,22 @@ const PAGE = 500;
  * other label than Spam and Trash) and those to take out (also in a label, so
  * deleting them forever would take them from that label too). Read-only.
  */
-export async function listEmptyable(caller: MethodCaller, roles: MailboxRoles, label: EmptyableLabel, options: { signal?: AbortSignal } = {}): Promise<EmptyPlan> {
+export async function listEmptyable(
+  caller: MethodCaller,
+  roles: MailboxRoles,
+  label: EmptyableLabel,
+  options: { signal?: AbortSignal } = {},
+): Promise<EmptyPlan> {
   const mailboxId = roles[label];
   if (mailboxId === undefined) throw new MissingLabelError(label);
   const ids: Id[] = [];
   // Advance by what came back: a server may return fewer than asked without being at the end.
   for (;;) {
-    const page = await caller.call("Email/query", { filter: { inMailbox: mailboxId }, position: ids.length, limit: PAGE, calculateTotal: true }, options);
+    const page = await caller.call(
+      "Email/query",
+      { filter: { inMailbox: mailboxId }, position: ids.length, limit: PAGE, calculateTotal: true },
+      options,
+    );
     ids.push(...page.ids);
     if (page.ids.length === 0 || (typeof page.total === "number" && ids.length >= page.total)) break;
   }
@@ -137,7 +154,11 @@ export async function listEmptyable(caller: MethodCaller, roles: MailboxRoles, l
 }
 
 /** Run an EmptyPlan: one Email/set (the client splits it by the server's limits). Cannot be undone. */
-export async function emptyLabel(caller: MethodCaller, plan: EmptyPlan, options: { signal?: AbortSignal } = {}): Promise<EmptyResult> {
+export async function emptyLabel(
+  caller: MethodCaller,
+  plan: EmptyPlan,
+  options: { signal?: AbortSignal } = {},
+): Promise<EmptyResult> {
   if (plan.destroy.length === 0 && plan.release.length === 0) return { destroyed: 0, released: 0, failed: 0 };
   const update = Object.fromEntries(plan.release.map((id) => [id, { [`mailboxIds/${plan.mailboxId}`]: null }]));
   const res = await caller.call("Email/set", { update, destroy: plan.destroy }, options);

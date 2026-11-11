@@ -41,15 +41,55 @@ function mailbox(m: Partial<Mailbox> & Pick<Mailbox, "id" | "name">): Mailbox {
 
 /** Alice on the dev server (dev/seed/manifest.json), in Stalwart's order and names. */
 const ALICE: Mailbox[] = [
-  mailbox({ id: "j", name: "Clients", parentId: "i", unreadThreads: 1, totalThreads: 2, unreadEmails: 1, totalEmails: 2 }),
+  mailbox({
+    id: "j",
+    name: "Clients",
+    parentId: "i",
+    unreadThreads: 1,
+    totalThreads: 2,
+    unreadEmails: 1,
+    totalEmails: 2,
+  }),
   mailbox({ id: "i", name: "Work", unreadThreads: 14, totalThreads: 225, unreadEmails: 15, totalEmails: 245 }),
-  mailbox({ id: "h", name: "Archive", role: "archive", unreadThreads: 19, totalThreads: 403, unreadEmails: 19, totalEmails: 437 }),
+  mailbox({
+    id: "h",
+    name: "Archive",
+    role: "archive",
+    unreadThreads: 19,
+    totalThreads: 403,
+    unreadEmails: 19,
+    totalEmails: 437,
+  }),
   mailbox({ id: "e", name: "Sent Items", role: "sent", totalThreads: 157, totalEmails: 224 }),
-  mailbox({ id: "b", name: "Deleted Items", role: "trash", unreadThreads: 1, totalThreads: 3, unreadEmails: 1, totalEmails: 3 }),
-  mailbox({ id: "c", name: "Junk Mail", role: "junk", unreadThreads: 3, totalThreads: 4, unreadEmails: 3, totalEmails: 4 }),
+  mailbox({
+    id: "b",
+    name: "Deleted Items",
+    role: "trash",
+    unreadThreads: 1,
+    totalThreads: 3,
+    unreadEmails: 1,
+    totalEmails: 3,
+  }),
+  mailbox({
+    id: "c",
+    name: "Junk Mail",
+    role: "junk",
+    unreadThreads: 3,
+    totalThreads: 4,
+    unreadEmails: 3,
+    totalEmails: 4,
+  }),
   mailbox({ id: "m", name: "Hostile", unreadThreads: 5, totalThreads: 17, unreadEmails: 5, totalEmails: 17 }),
   mailbox({ id: "d", name: "Drafts", role: "drafts", totalThreads: 2, totalEmails: 2 }),
-  mailbox({ id: "a", name: "Inbox", role: "inbox", unreadThreads: 127, totalThreads: 2035, unreadEmails: 128, totalEmails: 2144 }),
+  mailbox({
+    id: "a",
+    name: "Inbox",
+    role: "inbox",
+    unreadThreads: 127,
+    totalThreads: 2035,
+    unreadEmails: 128,
+    totalEmails: 2144,
+  }),
   mailbox({ id: "k", name: "Receipts", unreadThreads: 15, totalThreads: 240, unreadEmails: 15, totalEmails: 240 }),
   mailbox({ id: "l", name: "Travel", unreadThreads: 5, totalThreads: 138, unreadEmails: 5, totalEmails: 147 }),
 ];
@@ -105,7 +145,11 @@ describe("buildLabels", () => {
   });
 
   it("finds Snoozed by name, a system label outside the user labels", () => {
-    const b = buildLabels([...ALICE, mailbox({ id: "s", name: "Snoozed", isSubscribed: false }), mailbox({ id: "t", name: "Snoozed", parentId: "i" })]);
+    const b = buildLabels([
+      ...ALICE,
+      mailbox({ id: "s", name: "Snoozed", isSubscribed: false }),
+      mailbox({ id: "t", name: "Snoozed", parentId: "i" }),
+    ]);
     expect(b.system.snoozed.label?.id).toBe("s");
     expect(b.system.snoozed.title).toBe("Snoozed");
     expect(b.labels.find((l) => l.id === "s")?.system).toBe("snoozed");
@@ -127,7 +171,10 @@ describe("buildLabels", () => {
   });
 
   it("honours sortOrder before name", () => {
-    const b = buildLabels([mailbox({ id: "1", name: "Alpha", sortOrder: 5 }), mailbox({ id: "2", name: "Zulu", sortOrder: 1 })]);
+    const b = buildLabels([
+      mailbox({ id: "1", name: "Alpha", sortOrder: 5 }),
+      mailbox({ id: "2", name: "Zulu", sortOrder: 1 }),
+    ]);
     expect(b.tree.map((n) => n.label.title)).toEqual(["Zulu", "Alpha"]);
   });
 
@@ -159,12 +206,24 @@ describe("resolveLabelRoute", () => {
   const built = buildLabels(ALICE);
 
   it("resolves system labels by role, Starred to the $flagged keyword", () => {
-    expect(resolveLabelRoute({ kind: "system", view: "spam" }, built)).toMatchObject({ title: "Spam", mailboxId: "c", view: "spam" });
-    expect(resolveLabelRoute({ kind: "system", view: "starred" }, built)).toMatchObject({ title: "Starred", mailboxId: undefined, keyword: "$flagged" });
+    expect(resolveLabelRoute({ kind: "system", view: "spam" }, built)).toMatchObject({
+      title: "Spam",
+      mailboxId: "c",
+      view: "spam",
+    });
+    expect(resolveLabelRoute({ kind: "system", view: "starred" }, built)).toMatchObject({
+      title: "Starred",
+      mailboxId: undefined,
+      keyword: "$flagged",
+    });
   });
 
   it("resolves user labels by id, and an unknown id to null", () => {
-    expect(resolveLabelRoute({ kind: "label", labelId: "j" }, built)).toMatchObject({ title: "Clients", mailboxId: "j", view: null });
+    expect(resolveLabelRoute({ kind: "label", labelId: "j" }, built)).toMatchObject({
+      title: "Clients",
+      mailboxId: "j",
+      view: null,
+    });
     expect(resolveLabelRoute({ kind: "label", labelId: "nope" }, built)).toBeNull();
   });
 
@@ -202,8 +261,19 @@ describe("LabelsStore", () => {
     let inbox = ALICE.find((m) => m.id === "a")!;
     const { caller, calls } = fakeServer({
       "Mailbox/get": (args) =>
-        args["ids"] === null ? { accountId: "A", state: "s1", list: ALICE, notFound: [] } : { accountId: "A", state: "s2", list: [inbox], notFound: [] },
-      "Mailbox/changes": () => ({ accountId: "A", oldState: "s1", newState: "s2", hasMoreChanges: false, created: [], updated: ["a"], destroyed: [], updatedProperties: null }),
+        args["ids"] === null
+          ? { accountId: "A", state: "s1", list: ALICE, notFound: [] }
+          : { accountId: "A", state: "s2", list: [inbox], notFound: [] },
+      "Mailbox/changes": () => ({
+        accountId: "A",
+        oldState: "s1",
+        newState: "s2",
+        hasMoreChanges: false,
+        created: [],
+        updated: ["a"],
+        destroyed: [],
+        updatedProperties: null,
+      }),
     });
     const store = new LabelsStore(caller, () => "A");
     const seen: string[] = [];
@@ -234,7 +304,12 @@ describe("LabelsStore", () => {
   it("loads everything again when the server cannot calculate changes", async () => {
     let loads = 0;
     const { caller } = fakeServer({
-      "Mailbox/get": () => ({ accountId: "A", state: `s${++loads}`, list: loads === 1 ? ALICE : ALICE.filter((m) => m.id !== "m"), notFound: [] }),
+      "Mailbox/get": () => ({
+        accountId: "A",
+        state: `s${++loads}`,
+        list: loads === 1 ? ALICE : ALICE.filter((m) => m.id !== "m"),
+        notFound: [],
+      }),
       "Mailbox/changes": () => {
         throw new JmapMethodError("Mailbox/changes", "c0", { type: "cannotCalculateChanges" });
       },
@@ -261,7 +336,16 @@ describe("LabelsStore", () => {
       },
       "Mailbox/changes": () => {
         changes++;
-        return { accountId: "A", oldState: "s1", newState: "s1", hasMoreChanges: false, created: [], updated: [], destroyed: [], updatedProperties: null };
+        return {
+          accountId: "A",
+          oldState: "s1",
+          newState: "s1",
+          hasMoreChanges: false,
+          created: [],
+          updated: [],
+          destroyed: [],
+          updatedProperties: null,
+        };
       },
     });
     const store = new LabelsStore(caller, () => "A");
@@ -280,7 +364,16 @@ describe("LabelsStore", () => {
       "Mailbox/get": () => ({ accountId: "A", state: "s1", list: ALICE, notFound: [] }),
       "Mailbox/changes": () => {
         if (fail) throw new JmapNetworkError("down");
-        return { accountId: "A", oldState: "s1", newState: "s1", hasMoreChanges: false, created: [], updated: [], destroyed: [], updatedProperties: null };
+        return {
+          accountId: "A",
+          oldState: "s1",
+          newState: "s1",
+          hasMoreChanges: false,
+          created: [],
+          updated: [],
+          destroyed: [],
+          updatedProperties: null,
+        };
       },
     });
     const store = new LabelsStore(caller, () => "A");
@@ -317,7 +410,9 @@ describe("LabelsStore", () => {
   });
 
   it("stops publishing once disposed", async () => {
-    const { caller } = fakeServer({ "Mailbox/get": () => ({ accountId: "A", state: "s1", list: ALICE, notFound: [] }) });
+    const { caller } = fakeServer({
+      "Mailbox/get": () => ({ accountId: "A", state: "s1", list: ALICE, notFound: [] }),
+    });
     const store = new LabelsStore(caller, () => "A");
     store.dispose();
     await store.sync();

@@ -16,13 +16,72 @@
 
 export type AttachmentKind = "image" | "pdf" | "active" | "other";
 
-const RASTER = new Set(["image/png", "image/jpeg", "image/jpg", "image/pjpeg", "image/gif", "image/webp", "image/avif", "image/bmp"]);
+const RASTER = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/pjpeg",
+  "image/gif",
+  "image/webp",
+  "image/avif",
+  "image/bmp",
+]);
 const RASTER_EXT = new Set(["png", "jpg", "jpeg", "jfif", "gif", "webp", "avif", "bmp"]);
 
-const ACTIVE_TYPES = [/^text\/html/, /^application\/xhtml/, /^image\/svg/, /xml$/, /^text\/xml/, /^application\/(x-)?javascript/, /^text\/javascript/, /^multipart\/related/, /^message\/rfc822/];
-const ACTIVE_EXT = new Set(["html", "htm", "shtml", "xhtml", "xht", "svg", "svgz", "xml", "xsl", "xslt", "js", "mjs", "mht", "mhtml", "hta", "eml"]);
+const ACTIVE_TYPES = [
+  /^text\/html/,
+  /^application\/xhtml/,
+  /^image\/svg/,
+  /xml$/,
+  /^text\/xml/,
+  /^application\/(x-)?javascript/,
+  /^text\/javascript/,
+  /^multipart\/related/,
+  /^message\/rfc822/,
+];
+const ACTIVE_EXT = new Set([
+  "html",
+  "htm",
+  "shtml",
+  "xhtml",
+  "xht",
+  "svg",
+  "svgz",
+  "xml",
+  "xsl",
+  "xslt",
+  "js",
+  "mjs",
+  "mht",
+  "mhtml",
+  "hta",
+  "eml",
+]);
 /** Extensions that run as programs when opened on the desktop: a double extension ending in one is the classic trick. */
-const EXECUTABLE_EXT = new Set(["exe", "scr", "bat", "cmd", "com", "pif", "vbs", "vbe", "js", "jse", "wsf", "wsh", "ps1", "msi", "jar", "lnk", "hta", "html", "htm", "svg", "iso", "img"]);
+const EXECUTABLE_EXT = new Set([
+  "exe",
+  "scr",
+  "bat",
+  "cmd",
+  "com",
+  "pif",
+  "vbs",
+  "vbe",
+  "js",
+  "jse",
+  "wsf",
+  "wsh",
+  "ps1",
+  "msi",
+  "jar",
+  "lnk",
+  "hta",
+  "html",
+  "htm",
+  "svg",
+  "iso",
+  "img",
+]);
 
 /**
  * Characters that reorder the text around them: embeddings, overrides and

@@ -27,7 +27,9 @@ describe("the keyword", () => {
 
   it("takes the earliest time among a conversation's messages", () => {
     expect(snoozedUntil([{ keywords: { $seen: true } }])).toBeNull();
-    expect(snoozedUntil([{ keywords: { "$snoozed-20261029T0700Z": true } }, { keywords: { [KW]: true } }])?.toISOString()).toBe("2026-10-28T07:00:00.000Z");
+    expect(
+      snoozedUntil([{ keywords: { "$snoozed-20261029T0700Z": true } }, { keywords: { [KW]: true } }])?.toISOString(),
+    ).toBe("2026-10-28T07:00:00.000Z");
   });
 });
 
@@ -42,7 +44,9 @@ describe("the times offered", () => {
       ["This weekend", new Date(2026, 9, 31, 8, 0).toString()],
       ["Next week", new Date(2026, 10, 2, 8, 0).toString()],
     ]);
-    expect(snoozePresets(new Date(2026, 9, 27, 15, 40))[0]!.at.toString()).toBe(new Date(2026, 9, 27, 19, 0).toString());
+    expect(snoozePresets(new Date(2026, 9, 27, 15, 40))[0]!.at.toString()).toBe(
+      new Date(2026, 9, 27, 19, 0).toString(),
+    );
   });
 
   it("leaves out later today late at night, and this weekend at the weekend", () => {
@@ -62,26 +66,44 @@ describe("the times offered", () => {
 /** A message of conversation T: its labels and keywords by name. */
 function msg(id: string, day: number, mailboxes: string[], keywords: string[]): ConversationMessage {
   const set = (names: string[]) => Object.fromEntries(names.map((n) => [n, true as const]));
-  return { id, threadId: "T", receivedAt: `2026-10-0${day}T00:00:00Z`, mailboxIds: set(mailboxes), keywords: set(keywords) };
+  return {
+    id,
+    threadId: "T",
+    receivedAt: `2026-10-0${day}T00:00:00Z`,
+    mailboxIds: set(mailboxes),
+    keywords: set(keywords),
+  };
 }
 
 describe("the plans", () => {
   const conversation = (): Conversation => ({
     id: "T",
-    messages: [msg("1", 1, ["a", "i"], ["$seen"]), msg("2", 2, ["a"], ["$seen", "$snoozed-20261027T0700Z"]), msg("d", 3, ["d"], ["$draft"])],
+    messages: [
+      msg("1", 1, ["a", "i"], ["$seen"]),
+      msg("2", 2, ["a"], ["$seen", "$snoozed-20261027T0700Z"]),
+      msg("d", 3, ["d"], ["$draft"]),
+    ],
   });
 
   it("snoozes: out of the Inbox into Snoozed with the new time, other labels and a reply draft left alone", () => {
     const plan = planSnooze([conversation()], scope, SNOOZED, new Date("2026-10-28T07:00:00Z"));
     expect(plan.update).toEqual({
       "1": { "mailboxIds/z": true, "mailboxIds/a": null, [`keywords/${KW}`]: true },
-      "2": { "mailboxIds/z": true, "mailboxIds/a": null, "keywords/$snoozed-20261027T0700Z": null, [`keywords/${KW}`]: true },
+      "2": {
+        "mailboxIds/z": true,
+        "mailboxIds/a": null,
+        "keywords/$snoozed-20261027T0700Z": null,
+        [`keywords/${KW}`]: true,
+      },
     });
     expect(plan.inverse["1"]).toEqual({ "mailboxIds/z": null, "mailboxIds/a": true, [`keywords/${KW}`]: null });
   });
 
   it("unsnoozes back to the Inbox; waking also marks the newest unread and $woken", () => {
-    const snoozed: Conversation = { id: "T", messages: [msg("1", 1, ["z", "i"], ["$seen", KW]), msg("2", 2, ["z"], ["$seen", KW])] };
+    const snoozed: Conversation = {
+      id: "T",
+      messages: [msg("1", 1, ["z", "i"], ["$seen", KW]), msg("2", 2, ["z"], ["$seen", KW])],
+    };
     expect(planUnsnooze([snoozed], ROLES, SNOOZED).update).toEqual({
       "1": { "mailboxIds/a": true, "mailboxIds/z": null, [`keywords/${KW}`]: null },
       "2": { "mailboxIds/a": true, "mailboxIds/z": null, [`keywords/${KW}`]: null },
@@ -100,12 +122,36 @@ describe("waking", () => {
   const boxes = [...MAILBOXES, { id: SNOOZED, name: "Snoozed", role: null, parentId: null }];
   const snoozedMail = () => [
     // Due: snoozed until 07:00.
-    fakeEmail({ id: "d1", threadId: "D", receivedAt: "2026-10-01T00:00:00Z", mailboxIds: { [SNOOZED]: true }, keywords: { $seen: true, [KW]: true } }),
-    fakeEmail({ id: "d2", threadId: "D", receivedAt: "2026-10-02T00:00:00Z", mailboxIds: { [SNOOZED]: true, i: true }, keywords: { $seen: true, [KW]: true } }),
+    fakeEmail({
+      id: "d1",
+      threadId: "D",
+      receivedAt: "2026-10-01T00:00:00Z",
+      mailboxIds: { [SNOOZED]: true },
+      keywords: { $seen: true, [KW]: true },
+    }),
+    fakeEmail({
+      id: "d2",
+      threadId: "D",
+      receivedAt: "2026-10-02T00:00:00Z",
+      mailboxIds: { [SNOOZED]: true, i: true },
+      keywords: { $seen: true, [KW]: true },
+    }),
     // Not yet: 09:00.
-    fakeEmail({ id: "w1", threadId: "W", receivedAt: "2026-10-01T00:00:00Z", mailboxIds: { [SNOOZED]: true }, keywords: { $seen: true, "$snoozed-20261028T0900Z": true } }),
+    fakeEmail({
+      id: "w1",
+      threadId: "W",
+      receivedAt: "2026-10-01T00:00:00Z",
+      mailboxIds: { [SNOOZED]: true },
+      keywords: { $seen: true, "$snoozed-20261028T0900Z": true },
+    }),
     // Not yet, but a reply came into the Inbox.
-    fakeEmail({ id: "r1", threadId: "R", receivedAt: "2026-10-01T00:00:00Z", mailboxIds: { [SNOOZED]: true }, keywords: { $seen: true, "$snoozed-20261030T0900Z": true } }),
+    fakeEmail({
+      id: "r1",
+      threadId: "R",
+      receivedAt: "2026-10-01T00:00:00Z",
+      mailboxIds: { [SNOOZED]: true },
+      keywords: { $seen: true, "$snoozed-20261030T0900Z": true },
+    }),
     fakeEmail({ id: "r2", threadId: "R", receivedAt: "2026-10-28T06:00:00Z", mailboxIds: { a: true } }),
     // Woken earlier and read since: loses $woken.
     fakeEmail({ id: "old", threadId: "O", mailboxIds: { a: true }, keywords: { $seen: true, [WOKEN]: true } }),
@@ -135,12 +181,20 @@ describe("waking", () => {
     await wakeSnoozed(client, SNOOZED, "a", Date.parse("2026-10-28T07:00:30Z"));
     const sets = () => mail.calls().filter((c) => c.includes("Email/set")).length;
     const before = sets();
-    expect(await wakeSnoozed(client, SNOOZED, "a", Date.parse("2026-10-28T07:00:40Z"))).toEqual({ due: [], replied: [], unmarked: [], next: Date.parse("2026-10-28T09:00:00Z") });
+    expect(await wakeSnoozed(client, SNOOZED, "a", Date.parse("2026-10-28T07:00:40Z"))).toEqual({
+      due: [],
+      replied: [],
+      unmarked: [],
+      next: Date.parse("2026-10-28T09:00:00Z"),
+    });
     expect(sets()).toBe(before);
   });
 
   it("only tidies $woken while the account has no Snoozed label", async () => {
-    const mail = new FakeMail({ mailboxes: MAILBOXES, emails: [fakeEmail({ id: "old", threadId: "O", mailboxIds: { h: true }, keywords: { [WOKEN]: true } })] });
+    const mail = new FakeMail({
+      mailboxes: MAILBOXES,
+      emails: [fakeEmail({ id: "old", threadId: "O", mailboxIds: { h: true }, keywords: { [WOKEN]: true } })],
+    });
     const client = await mail.connect();
     expect((await wakeSnoozed(client, undefined, "a", Date.now())).unmarked).toEqual(["old"]);
   });
@@ -153,7 +207,12 @@ describe("waking", () => {
       vi.setSystemTime(new Date("2026-10-28T08:59:20Z"));
       const { mail, client } = await setup();
       const looks = () => mail.calls().filter((c) => c[0] === "Email/query" && c.includes("Thread/get")).length;
-      const labels = { snoozedId: () => SNOOZED, mailboxIdForRole: () => "a", sync: vi.fn(async () => {}), subscribe: () => () => {} };
+      const labels = {
+        snoozedId: () => SNOOZED,
+        mailboxIdForRole: () => "a",
+        sync: vi.fn(async () => {}),
+        subscribe: () => () => {},
+      };
       const sync = new SnoozeSync(client, labels, { busGapMs: 0 });
       sync.start();
       // The first look wakes D and R; the mail change it announces brings one more look, which finds nothing.
@@ -179,7 +238,11 @@ describe("waking", () => {
       const mail = new FakeMail({ mailboxes: boxes, emails: [] });
       const client = await mail.connect();
       const looks = () => mail.calls().filter((c) => c[0] === "Email/query").length;
-      const sync = new SnoozeSync(client, { snoozedId: () => SNOOZED, mailboxIdForRole: () => "a", sync: async () => {}, subscribe: () => () => {} }, { busGapMs: 5_000 });
+      const sync = new SnoozeSync(
+        client,
+        { snoozedId: () => SNOOZED, mailboxIdForRole: () => "a", sync: async () => {}, subscribe: () => () => {} },
+        { busGapMs: 5_000 },
+      );
       sync.start();
       await vi.waitFor(() => expect(looks()).toBe(1));
       publishMailChange({ kind: "settled" });

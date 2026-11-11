@@ -46,7 +46,10 @@ export function useVirtualRows(
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const update = () => setViewport((v) => (v.top === el.scrollTop && v.height === el.clientHeight ? v : { top: el.scrollTop, height: el.clientHeight }));
+    const update = () =>
+      setViewport((v) =>
+        v.top === el.scrollTop && v.height === el.clientHeight ? v : { top: el.scrollTop, height: el.clientHeight },
+      );
     update();
     let frame = 0;
     const onScroll = () => {

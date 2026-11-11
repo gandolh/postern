@@ -15,12 +15,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ACCOUNTS, Jmap, getMailboxes, loadDevEnv, mailboxPath } from "./lib.ts";
 import type { DevAccount, MailboxInfo } from "./lib.ts";
-import {
-  accountLabels,
-  allEmails,
-  buildManifest,
-  labelKey,
-} from "./seed/fixtures.ts";
+import { accountLabels, allEmails, buildManifest, labelKey } from "./seed/fixtures.ts";
 import type { LabelCounts, Manifest } from "./seed/fixtures.ts";
 import type { MailboxRef, SeedEmail } from "./seed/types.ts";
 
@@ -37,7 +32,9 @@ const WRITE_MANIFEST = args.has("--write-manifest");
 if (WRITE_MANIFEST) {
   const manifest = buildManifest();
   writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + "\n");
-  console.log(`wrote ${MANIFEST_PATH} (${manifest.accounts.alice.totalMessages} for alice, ${manifest.accounts.bob.totalMessages} for bob)`);
+  console.log(
+    `wrote ${MANIFEST_PATH} (${manifest.accounts.alice.totalMessages} for alice, ${manifest.accounts.bob.totalMessages} for bob)`,
+  );
   // Generation needs no server; a seed run imports and then verifies.
   process.exit(0);
 }
@@ -90,7 +87,12 @@ function toCrlfBytes(message: string): Uint8Array {
   return Buffer.from(message.replace(/\r\n/g, "\n").replace(/\n/g, "\r\n"), "latin1");
 }
 
-async function importAll(jmap: Jmap, emails: SeedEmail[], blobs: Map<string, string>, toId: (r: MailboxRef) => string): Promise<void> {
+async function importAll(
+  jmap: Jmap,
+  emails: SeedEmail[],
+  blobs: Map<string, string>,
+  toId: (r: MailboxRef) => string,
+): Promise<void> {
   for (let start = 0; start < emails.length; start += IMPORT_BATCH) {
     const batch = emails.slice(start, start + IMPORT_BATCH);
     const create: Record<string, unknown> = {};
@@ -117,7 +119,9 @@ async function seedAccount(account: DevAccount): Promise<boolean> {
   const jmap = await Jmap.connect(account);
   const mailboxes = await getMailboxes(jmap);
   if (!FORCE && alreadySeeded(mailboxes)) {
-    console.log(`  ${account.email}: already has mail (${totalMail(mailboxes)} messages); skipping. Reset with \`npm run dev:mail:reset && npm run dev:mail\`, or re-run \`node dev/seed.ts --force\`.`);
+    console.log(
+      `  ${account.email}: already has mail (${totalMail(mailboxes)} messages); skipping. Reset with \`npm run dev:mail:reset && npm run dev:mail\`, or re-run \`node dev/seed.ts --force\`.`,
+    );
     return false;
   }
   const mine = allEmails().filter((e) => e.account === account.name);
@@ -164,7 +168,8 @@ function account(jmap: Jmap): DevAccount["name"] {
 function diffCounts(label: string, expected: LabelCounts, actual: LabelCounts): string[] {
   const problems: string[] = [];
   for (const key of Object.keys(expected) as Array<keyof LabelCounts>) {
-    if (expected[key] !== actual[key]) problems.push(`${label}.${key}: manifest ${expected[key]} vs server ${actual[key]}`);
+    if (expected[key] !== actual[key])
+      problems.push(`${label}.${key}: manifest ${expected[key]} vs server ${actual[key]}`);
   }
   return problems;
 }

@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { ConversationMessage } from "../actions/conversation";
-import { chipLabels, formatFullDate, formatListDate, parseHighlights, summarizeSenders, type ChipLabel } from "./format";
+import {
+  chipLabels,
+  formatFullDate,
+  formatListDate,
+  parseHighlights,
+  summarizeSenders,
+  type ChipLabel,
+} from "./format";
 
 const ME = "alice@postern.test";
 const alice = { name: "Alice Archer", email: ME };
@@ -10,7 +17,11 @@ const dan = { name: "Dan", email: "dan@example.com" };
 const erin = { name: null, email: "erin@example.com" };
 
 let n = 0;
-function m(from: { name: string | null; email: string } | null, keywords: string[] = ["$seen"], to: { name: string | null; email: string }[] = [alice]): ConversationMessage {
+function m(
+  from: { name: string | null; email: string } | null,
+  keywords: string[] = ["$seen"],
+  to: { name: string | null; email: string }[] = [alice],
+): ConversationMessage {
   n++;
   return {
     id: `m${n}`,

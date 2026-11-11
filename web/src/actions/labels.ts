@@ -19,11 +19,16 @@ export type LabelCheck = "checked" | "unchecked" | "indeterminate";
  * Per label, whether the selected conversations carry it. A conversation
  * carries a label when any message it shows is in it, as Gmail counts.
  */
-export function labelChecks(conversations: readonly Conversation[], scope: ConversationScope, labelIds: readonly Id[]): Map<Id, LabelCheck> {
+export function labelChecks(
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  labelIds: readonly Id[],
+): Map<Id, LabelCheck> {
   const counts = new Map<Id, number>(labelIds.map((id) => [id, 0]));
   for (const conversation of conversations) {
     const carried = new Set<Id>();
-    for (const message of shownMessages(conversation, scope)) for (const id of Object.keys(message.mailboxIds)) carried.add(id);
+    for (const message of shownMessages(conversation, scope))
+      for (const id of Object.keys(message.mailboxIds)) carried.add(id);
     for (const id of carried) if (counts.has(id)) counts.set(id, (counts.get(id) ?? 0) + 1);
   }
   const total = conversations.length;
@@ -70,14 +75,22 @@ export function cleanLabelName(name: string): string {
  * the same parent, system ones included) must differ, ignoring case.
  * `selfId` is the label being renamed or moved.
  */
-export function validateLabelName(name: string, parentId: Id | null, labels: readonly LabelShape[], selfId?: Id): string | null {
+export function validateLabelName(
+  name: string,
+  parentId: Id | null,
+  labels: readonly LabelShape[],
+  selfId?: Id,
+): string | null {
   const clean = cleanLabelName(name);
   if (clean === "") return "Enter a name.";
   if (clean.includes("/")) return "A label name can't contain a slash. Nest it under another label instead.";
   if (clean.length > MAX_LABEL_NAME) return `A label name can have at most ${MAX_LABEL_NAME} characters.`;
   const lower = clean.toLocaleLowerCase();
   const clash = labels.find((l) => l.id !== selfId && l.parentId === parentId && l.name.toLocaleLowerCase() === lower);
-  if (clash) return parentId === null ? `A label called "${clash.name}" already exists.` : `A label called "${clash.name}" already exists there.`;
+  if (clash)
+    return parentId === null
+      ? `A label called "${clash.name}" already exists.`
+      : `A label called "${clash.name}" already exists there.`;
   return null;
 }
 
@@ -142,7 +155,11 @@ export interface LabelRemoval {
  * `archiveId` may be undefined while there are no orphans.
  * @throws Error if there are orphans and no archiveId.
  */
-export function planLabelRemoval(messages: readonly MessageMailboxes[], labelId: Id, archiveId: Id | undefined): LabelRemoval {
+export function planLabelRemoval(
+  messages: readonly MessageMailboxes[],
+  labelId: Id,
+  archiveId: Id | undefined,
+): LabelRemoval {
   const update: Record<Id, PatchObject> = {};
   const orphans: Id[] = [];
   for (const m of messages) {
@@ -164,15 +181,21 @@ export function planLabelRemoval(messages: readonly MessageMailboxes[], labelId:
  * deleted label's parent (Gmail deletes only the label). Returns the
  * Mailbox/set updates, or the first name clash at the new level.
  */
-export function planPromoteChildren(labels: readonly LabelShape[], id: Id): { update: Record<Id, { parentId: Id | null }> } | { error: string } {
+export function planPromoteChildren(
+  labels: readonly LabelShape[],
+  id: Id,
+): { update: Record<Id, { parentId: Id | null }> } | { error: string } {
   const self = labels.find((l) => l.id === id);
   if (!self) return { error: "That label doesn't exist." };
   const children = labels.filter((l) => l.parentId === id);
-  const taken = new Set(labels.filter((l) => l.parentId === self.parentId && l.id !== id).map((l) => l.name.toLocaleLowerCase()));
+  const taken = new Set(
+    labels.filter((l) => l.parentId === self.parentId && l.id !== id).map((l) => l.name.toLocaleLowerCase()),
+  );
   const update: Record<Id, { parentId: Id | null }> = {};
   for (const child of children) {
     const key = child.name.toLocaleLowerCase();
-    if (taken.has(key)) return { error: `Can't keep "${child.name}": a label with that name already exists one level up.` };
+    if (taken.has(key))
+      return { error: `Can't keep "${child.name}": a label with that name already exists one level up.` };
     taken.add(key);
     update[child.id] = { parentId: self.parentId };
   }

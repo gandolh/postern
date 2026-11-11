@@ -27,15 +27,18 @@ export interface CssContext extends ImageUrlContext {
 
 /** Decode one level of CSS escapes (`\75`, `\"`, line continuations) to the characters they stand for. */
 function decodeOnce(css: string): string {
-  return css.replace(/\\(?:([0-9a-f]{1,6})[ \t\n\r\f]?|(\r\n|[\n\r\f])|([\s\S]))/gi, (_whole, hex: string | undefined, newline: string | undefined, char: string | undefined) => {
-    if (newline !== undefined) return "";
-    if (hex !== undefined) {
-      const code = parseInt(hex, 16);
-      if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return "�";
-      return String.fromCodePoint(code);
-    }
-    return char ?? "";
-  });
+  return css.replace(
+    /\\(?:([0-9a-f]{1,6})[ \t\n\r\f]?|(\r\n|[\n\r\f])|([\s\S]))/gi,
+    (_whole, hex: string | undefined, newline: string | undefined, char: string | undefined) => {
+      if (newline !== undefined) return "";
+      if (hex !== undefined) {
+        const code = parseInt(hex, 16);
+        if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return "�";
+        return String.fromCodePoint(code);
+      }
+      return char ?? "";
+    },
+  );
 }
 
 /** Passes of decoding before giving up and dropping every backslash left. */
@@ -148,7 +151,10 @@ const SAFE_POSITIONS = new Set(["static", "relative", "inherit", "initial", "uns
 function neutralisePositions(css: string): string {
   // Any non-name character before it: whitespace, ; { } ( and, with CSS nesting, a closing brace.
   return css.replace(/(^|[^\w-])position\s*:([^;}]*)/gi, (whole, lead: string, value: string) => {
-    const bare = value.replace(/!\s*important/i, "").trim().toLowerCase();
+    const bare = value
+      .replace(/!\s*important/i, "")
+      .trim()
+      .toLowerCase();
     return SAFE_POSITIONS.has(bare) ? whole : `${lead}position:static`;
   });
 }
@@ -169,7 +175,10 @@ export function sanitizeCss(css: string, ctx: CssContext): string {
     return "none";
   });
   out = neutralisePositions(out);
-  out = out.replace(/expression\s*\(/gi, "none(").replace(/-moz-binding/gi, "-x-binding").replace(/(^|[^\w-])behavior\s*:/gi, "$1-x-behavior:");
+  out = out
+    .replace(/expression\s*\(/gi, "none(")
+    .replace(/-moz-binding/gi, "-x-binding")
+    .replace(/(^|[^\w-])behavior\s*:/gi, "$1-x-behavior:");
   return out;
 }
 

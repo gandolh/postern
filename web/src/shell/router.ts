@@ -26,7 +26,16 @@ import { useSyncExternalStore } from "react";
  */
 export type SystemView = "inbox" | "starred" | "snoozed" | "sent" | "drafts" | "spam" | "trash" | "all";
 
-export const SYSTEM_VIEWS: readonly SystemView[] = ["inbox", "starred", "snoozed", "sent", "drafts", "spam", "trash", "all"];
+export const SYSTEM_VIEWS: readonly SystemView[] = [
+  "inbox",
+  "starred",
+  "snoozed",
+  "sent",
+  "drafts",
+  "spam",
+  "trash",
+  "all",
+];
 
 /** A system label's list, or a conversation opened from it: `#inbox`, `#inbox/<id>`. */
 export interface SystemLabelRoute {

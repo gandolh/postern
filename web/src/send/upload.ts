@@ -43,11 +43,17 @@ export function xhrUploadTransport(createXhr: () => XMLHttpRequest = () => new X
         xhr.setRequestHeader("Authorization", req.authorization);
         xhr.setRequestHeader("Content-Type", req.contentType);
         xhr.responseType = "text";
-        xhr.upload.onprogress = (event) => req.onProgress?.({ loaded: event.loaded, total: event.lengthComputable ? event.total : total });
+        xhr.upload.onprogress = (event) =>
+          req.onProgress?.({ loaded: event.loaded, total: event.lengthComputable ? event.total : total });
         xhr.onload = () => {
           done();
           if (xhr.status >= 200 && xhr.status < 300) req.onProgress?.({ loaded: total, total });
-          resolve({ status: xhr.status, statusText: xhr.statusText, body: xhr.responseText, contentType: xhr.getResponseHeader("content-type") });
+          resolve({
+            status: xhr.status,
+            statusText: xhr.statusText,
+            body: xhr.responseText,
+            contentType: xhr.getResponseHeader("content-type"),
+          });
         };
         xhr.onerror = () => {
           done();
@@ -80,10 +86,15 @@ export interface UploadedBlob {
 }
 
 /** Upload one file to the mail account's blob store. @throws JmapLimitError when it is over the server's limit. */
-export async function uploadFile(client: JmapClient, file: Blob, options: UploadFileOptions = {}): Promise<UploadedBlob> {
+export async function uploadFile(
+  client: JmapClient,
+  file: Blob,
+  options: UploadFileOptions = {},
+): Promise<UploadedBlob> {
   const session = await client.ensureSession(options.signal);
   const limit = session.limits.maxSizeUpload;
-  if (file.size > limit) throw new JmapLimitError("maxSizeUpload", `The file is ${file.size} bytes; the server takes up to ${limit}.`);
+  if (file.size > limit)
+    throw new JmapLimitError("maxSizeUpload", `The file is ${file.size} bytes; the server takes up to ${limit}.`);
   const transport = options.transport ?? xhrUploadTransport();
   const type = file.type || "application/octet-stream";
   const attempt = async () =>
@@ -96,10 +107,16 @@ export async function uploadFile(client: JmapClient, file: Blob, options: Upload
       onProgress: options.onProgress,
     });
   let result = await attempt();
-  if (result.status === 401 && client.auth.onUnauthorized && (await client.auth.onUnauthorized())) result = await attempt();
+  if (result.status === 401 && client.auth.onUnauthorized && (await client.auth.onUnauthorized()))
+    result = await attempt();
   if (result.status === 401) throw new JmapUnauthorizedError();
   if (result.status < 200 || result.status > 299) {
-    throw new JmapHttpError(result.status, result.status === 413 ? "The file is too large for the mail server." : `Upload failed (${result.status} ${result.statusText ?? ""})`.trim());
+    throw new JmapHttpError(
+      result.status,
+      result.status === 413
+        ? "The file is too large for the mail server."
+        : `Upload failed (${result.status} ${result.statusText ?? ""})`.trim(),
+    );
   }
   let parsed: { blobId?: unknown; type?: unknown; size?: unknown };
   try {
@@ -108,5 +125,9 @@ export async function uploadFile(client: JmapClient, file: Blob, options: Upload
     throw new JmapProtocolError("The upload answer is not JSON");
   }
   if (typeof parsed.blobId !== "string") throw new JmapProtocolError("The upload answer has no blobId");
-  return { blobId: parsed.blobId, type: typeof parsed.type === "string" ? parsed.type : type, size: typeof parsed.size === "number" ? parsed.size : file.size };
+  return {
+    blobId: parsed.blobId,
+    type: typeof parsed.type === "string" ? parsed.type : type,
+    size: typeof parsed.size === "number" ? parsed.size : file.size,
+  };
 }

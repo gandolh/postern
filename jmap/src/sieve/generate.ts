@@ -33,7 +33,12 @@ import { DOLLAR_VARIABLE, quoteSieve } from "./escape.js";
 import { GENERATED_MARKER, SCRIPT_FORMAT, type MailFilter, type FilterCriteria, type FilterSet } from "./model.js";
 
 /** Fallback names for the system labels, should the server lack the special-use mailbox (Stalwart's defaults). */
-export const FALLBACK_NAMES = { junk: "Junk Mail", trash: "Deleted Items", archive: "Archive", inbox: "INBOX" } as const;
+export const FALLBACK_NAMES = {
+  junk: "Junk Mail",
+  trash: "Deleted Items",
+  archive: "Archive",
+  inbox: "INBOX",
+} as const;
 
 /** The spam verdict Stalwart acts on: 50 % or more (crates/email/src/message/delivery.rs `is_spam`). */
 export const SPAM_PERCENT = 50;
@@ -123,7 +128,9 @@ function criteriaTests(w: Writer, c: FilterCriteria): string[] {
     tests.push(`header :mime :anychild :contains "content-disposition" "attachment"`);
   }
   if (c.size) {
-    tests.push(`size ${c.size.comparison === "larger" ? ":over" : ":under"} ${c.size.amount}${c.size.unit === "B" ? "" : c.size.unit}`);
+    tests.push(
+      `size ${c.size.comparison === "larger" ? ":over" : ":under"} ${c.size.amount}${c.size.unit === "B" ? "" : c.size.unit}`,
+    );
   }
   return tests;
 }
@@ -162,7 +169,9 @@ function writeDelivery(w: Writer, set: FilterSet): void {
   }
   // Spam stays in Spam (Stalwart files a kept message there) unless a filter says otherwise.
   w.need("spamtest", "spamtestplus", "relational", "comparator-i;ascii-numeric");
-  w.line(`if allof (not ${isSet(VAR.nospam)}, spamtest :percent :value "ge" :comparator "i;ascii-numeric" "${SPAM_PERCENT}") {`);
+  w.line(
+    `if allof (not ${isSet(VAR.nospam)}, spamtest :percent :value "ge" :comparator "i;ascii-numeric" "${SPAM_PERCENT}") {`,
+  );
   w.line(`  keep;`);
   w.line(`  stop;`);
   w.line(`}`);

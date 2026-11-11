@@ -77,7 +77,15 @@ export function emptyCriteria(): FilterCriteria {
 }
 
 export function emptyActions(): FilterActions {
-  return { archive: false, markRead: false, star: false, label: null, forwardTo: null, delete: false, neverSpam: false };
+  return {
+    archive: false,
+    markRead: false,
+    star: false,
+    label: null,
+    forwardTo: null,
+    delete: false,
+    neverSpam: false,
+  };
 }
 
 export function emptyFilterSet(): FilterSet {
@@ -94,7 +102,10 @@ export function isGenerated(source: string): boolean {
 /** Control characters out (a header value has no line breaks), runs of space to one, trimmed. */
 export function cleanText(value: string): string {
   // eslint-disable-next-line no-control-regex
-  return value.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -170,7 +181,15 @@ export function normalizeFilter(filter: MailFilter): MailFilter {
 
 /** Is any criterion set? */
 export function hasCriteria(c: FilterCriteria): boolean {
-  return c.from.length > 0 || c.to.length > 0 || c.subject !== "" || c.words.length > 0 || c.notWords.length > 0 || c.hasAttachment || c.size !== null;
+  return (
+    c.from.length > 0 ||
+    c.to.length > 0 ||
+    c.subject !== "" ||
+    c.words.length > 0 ||
+    c.notWords.length > 0 ||
+    c.hasAttachment ||
+    c.size !== null
+  );
 }
 
 /** Is any action chosen? */
@@ -190,7 +209,8 @@ export function filterProblems(filter: MailFilter): string[] {
     problems.push("Size must be a whole number from 1 to 1,000,000.");
   }
   if (!hasActions(a)) problems.push("Choose at least one thing to do with matching messages.");
-  if (a.forwardTo !== null && !isAddress(a.forwardTo)) problems.push("The forwarding address doesn't look like an email address.");
+  if (a.forwardTo !== null && !isAddress(a.forwardTo))
+    problems.push("The forwarding address doesn't look like an email address.");
   if (a.label && !a.label.id) problems.push("Choose a label to apply.");
   return problems;
 }

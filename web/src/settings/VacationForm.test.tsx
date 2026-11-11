@@ -17,7 +17,10 @@ function setup(withFilters: boolean) {
   const io = new FakeScripts();
   io.add("vacation", 'require "vacation";');
   if (withFilters) {
-    const filter = { criteria: { ...emptyCriteria(), from: ["bob@postern.test"] }, actions: { ...emptyActions(), star: true } };
+    const filter = {
+      criteria: { ...emptyCriteria(), from: ["bob@postern.test"] },
+      actions: { ...emptyActions(), star: true },
+    };
     io.add("postern", generateSieve({ filters: [filter], blocked: [], includes: [] }), true);
   }
   const vacationId = io.scripts.find((s) => s.name === "vacation")!.id;

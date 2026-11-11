@@ -43,7 +43,11 @@ export function messageRowRoute<R extends MailRoute>(route: R, row: MessageRowRe
  * The list (conversation view off) hands over its rows after every render.
  * Returns the release, for its unmount: the rows stay, the loader goes.
  */
-export function holdMessageRows(route: MailRoute, rows: readonly MessageRowRef[], loadMore: (count: number) => void): () => void {
+export function holdMessageRows(
+  route: MailRoute,
+  rows: readonly MessageRowRef[],
+  loadMore: (count: number) => void,
+): () => void {
   const mine: Held = { list: formatRoute(withoutConversation(route)), rows, loadMore };
   held = mine;
   return () => {

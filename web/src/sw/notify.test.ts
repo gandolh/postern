@@ -1,12 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { anyVisible, appWindows, clickHash, hashFor, notificationsFor, parsePushPayload, windowForClick, type WindowLike } from "./notify";
+import {
+  anyVisible,
+  appWindows,
+  clickHash,
+  hashFor,
+  notificationsFor,
+  parsePushPayload,
+  windowForClick,
+  type WindowLike,
+} from "./notify";
 import { mayRequestUpdate, OPEN, PUSH_VERIFICATION, readWorkerMessage, WILL_NOTIFY } from "./protocol";
 
 const IMAGES = { icon: "/webmail/pwa-192x192.png", badge: "/webmail/pwa-badge-96x96.png" };
 
 describe("parsePushPayload", () => {
   it("reads Stalwart's verification push", () => {
-    expect(parsePushPayload({ "@type": "PushVerification", pushSubscriptionId: "b", verificationCode: "abc123" })).toEqual({
+    expect(
+      parsePushPayload({ "@type": "PushVerification", pushSubscriptionId: "b", verificationCode: "abc123" }),
+    ).toEqual({
       kind: "verification",
       message: { type: PUSH_VERIFICATION, pushSubscriptionId: "b", verificationCode: "abc123" },
     });
@@ -17,9 +28,20 @@ describe("parsePushPayload", () => {
     const payload = parsePushPayload({
       "@type": "EmailPush",
       accountId: "b",
-      emails: [{ id: "e1", threadId: "T1", from: [{ name: "Bob Baker", email: "bob@postern.test" }], subject: "Lunch?", preview: "never shown" }],
+      emails: [
+        {
+          id: "e1",
+          threadId: "T1",
+          from: [{ name: "Bob Baker", email: "bob@postern.test" }],
+          subject: "Lunch?",
+          preview: "never shown",
+        },
+      ],
     });
-    expect(payload).toEqual({ kind: "mail", messages: [{ threadId: "T1", from: [{ name: "Bob Baker", email: "bob@postern.test" }], subject: "Lunch?" }] });
+    expect(payload).toEqual({
+      kind: "mail",
+      messages: [{ threadId: "T1", from: [{ name: "Bob Baker", email: "bob@postern.test" }], subject: "Lunch?" }],
+    });
   });
 
   it("falls back to a delivery when an EmailPush has no usable email", () => {
@@ -27,7 +49,9 @@ describe("parsePushPayload", () => {
   });
 
   it("tells a delivery StateChange from other changes", () => {
-    expect(parsePushPayload({ "@type": "StateChange", changed: { b: { EmailDelivery: "s1", Email: "s2" } } }).kind).toBe("delivery");
+    expect(
+      parsePushPayload({ "@type": "StateChange", changed: { b: { EmailDelivery: "s1", Email: "s2" } } }).kind,
+    ).toBe("delivery");
     expect(parsePushPayload({ "@type": "StateChange", changed: { b: { Mailbox: "s3" } } }).kind).toBe("quiet");
   });
 
@@ -40,13 +64,28 @@ describe("parsePushPayload", () => {
 
 describe("notificationsFor", () => {
   it("shows sender and subject per conversation, opening it on click", () => {
-    const [n, ...rest] = notificationsFor({ kind: "mail", messages: [{ threadId: "T1", from: [{ name: "Bob Baker", email: "bob@postern.test" }], subject: "Lunch?" }] }, IMAGES);
+    const [n, ...rest] = notificationsFor(
+      {
+        kind: "mail",
+        messages: [{ threadId: "T1", from: [{ name: "Bob Baker", email: "bob@postern.test" }], subject: "Lunch?" }],
+      },
+      IMAGES,
+    );
     expect(rest).toEqual([]);
-    expect(n).toEqual({ title: "Bob Baker", options: { ...IMAGES, body: "Lunch?", tag: "T1", data: { hash: "#inbox/T1" } } });
+    expect(n).toEqual({
+      title: "Bob Baker",
+      options: { ...IMAGES, body: "Lunch?", tag: "T1", data: { hash: "#inbox/T1" } },
+    });
   });
 
   it("uses the address without a name, and a placeholder without a subject", () => {
-    const [n] = notificationsFor({ kind: "mail", messages: [{ threadId: "T1", from: [{ name: null, email: "bob@postern.test" }], subject: "  " }] }, IMAGES);
+    const [n] = notificationsFor(
+      {
+        kind: "mail",
+        messages: [{ threadId: "T1", from: [{ name: null, email: "bob@postern.test" }], subject: "  " }],
+      },
+      IMAGES,
+    );
     expect(n?.title).toBe("bob@postern.test");
     expect(n?.options.body).toBe("(no subject)");
   });
@@ -70,13 +109,23 @@ describe("notificationsFor", () => {
 
   it("shows nothing for a verification or a non-delivery change", () => {
     expect(notificationsFor({ kind: "quiet" }, IMAGES)).toEqual([]);
-    expect(notificationsFor({ kind: "verification", message: { type: PUSH_VERIFICATION, pushSubscriptionId: "b", verificationCode: "c" } }, IMAGES)).toEqual([]);
+    expect(
+      notificationsFor(
+        { kind: "verification", message: { type: PUSH_VERIFICATION, pushSubscriptionId: "b", verificationCode: "c" } },
+        IMAGES,
+      ),
+    ).toEqual([]);
   });
 });
 
 describe("windows", () => {
   const ORIGIN = "https://estate.example";
-  const win = (path: string, visibilityState: DocumentVisibilityState = "hidden", focused = false, origin = ORIGIN): WindowLike & { name: string } => ({
+  const win = (
+    path: string,
+    visibilityState: DocumentVisibilityState = "hidden",
+    focused = false,
+    origin = ORIGIN,
+  ): WindowLike & { name: string } => ({
     url: `${origin}${path}`,
     visibilityState,
     focused,
@@ -84,7 +133,11 @@ describe("windows", () => {
   });
 
   it("counts only Postern's own windows", () => {
-    const all = [win("/webmail/#inbox"), win("/atrium/", "visible", true), win("/webmail/", "hidden", false, "https://other.example")];
+    const all = [
+      win("/webmail/#inbox"),
+      win("/atrium/", "visible", true),
+      win("/webmail/", "hidden", false, "https://other.example"),
+    ];
     expect(appWindows(all, ORIGIN, "/webmail/").map((w) => w.name)).toEqual(["/webmail/#inbox"]);
   });
 
@@ -96,7 +149,9 @@ describe("windows", () => {
   });
 
   it("sends a click to a focused window, else a visible one, else any", () => {
-    expect(windowForClick([win("/webmail/a"), win("/webmail/b", "visible"), win("/webmail/c", "hidden", true)])?.name).toBe("/webmail/c");
+    expect(
+      windowForClick([win("/webmail/a"), win("/webmail/b", "visible"), win("/webmail/c", "hidden", true)])?.name,
+    ).toBe("/webmail/c");
     expect(windowForClick([win("/webmail/a"), win("/webmail/b", "visible")])?.name).toBe("/webmail/b");
     expect(windowForClick([win("/webmail/a")])?.name).toBe("/webmail/a");
     expect(windowForClick([])).toBeNull();
@@ -132,7 +187,12 @@ describe("readWorkerMessage", () => {
 
 describe("mayRequestUpdate (finding F7)", () => {
   const ORIGIN = "https://estate.example";
-  const client = (url: string, over: Record<string, unknown> = {}) => ({ type: "window", frameType: "top-level", url, ...over });
+  const client = (url: string, over: Record<string, unknown> = {}) => ({
+    type: "window",
+    frameType: "top-level",
+    url,
+    ...over,
+  });
 
   it("lets only a top-level Postern window make a waiting worker take over", () => {
     expect(mayRequestUpdate(client(`${ORIGIN}/webmail/#inbox`), ORIGIN, "/webmail/")).toBe(true);

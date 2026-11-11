@@ -45,7 +45,11 @@ export function fileName(part: AttachmentRef): string {
 /** Image previews are a base64 data: URL in a srcdoc: larger images are offered as a download instead. */
 export const MAX_PREVIEW_BYTES = 20_000_000;
 
-async function bytesOf(client: JmapClient, part: AttachmentRef, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
+async function bytesOf(
+  client: JmapClient,
+  part: AttachmentRef,
+  signal?: AbortSignal,
+): Promise<Uint8Array<ArrayBuffer>> {
   const params: DownloadParams = { blobId: part.blobId, name: fileName(part), type: "application/octet-stream" };
   const res = await client.blob.download(params, { signal });
   return new Uint8Array(await res.arrayBuffer());
@@ -99,7 +103,8 @@ export async function openPdf(client: JmapClient, part: AttachmentRef): Promise<
 /** A data: URL for a raster image attachment, typed by its signature, for the sandboxed viewer frame. */
 export async function imageDataUrl(client: JmapClient, part: AttachmentRef, signal?: AbortSignal): Promise<string> {
   const bytes = await bytesOf(client, part, signal);
-  if (bytes.length > MAX_PREVIEW_BYTES) throw new NotPreviewableError("This image is too large to preview. Download it instead.");
+  if (bytes.length > MAX_PREVIEW_BYTES)
+    throw new NotPreviewableError("This image is too large to preview. Download it instead.");
   const url = rasterDataUrl(bytes);
   if (!url) throw new NotPreviewableError("This file isn't an image Postern can show.");
   return url;

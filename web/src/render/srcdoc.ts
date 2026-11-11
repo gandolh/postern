@@ -90,7 +90,10 @@ export function frameScheme(clean: Pick<SanitizedHtml, "ownColours">, theme: "li
 }
 
 /** The srcdoc for a sanitised message. Every piece is either Postern's own text or the sanitiser's output. */
-export function buildSrcdoc(clean: Pick<SanitizedHtml, "headHtml" | "bodyHtml" | "ownColours">, view: FrameView): string {
+export function buildSrcdoc(
+  clean: Pick<SanitizedHtml, "headHtml" | "bodyHtml" | "ownColours">,
+  view: FrameView,
+): string {
   const scheme = frameScheme(clean, view.theme);
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="${frameCsp(view.allowRemote)}">
@@ -105,6 +108,9 @@ ${clean.headHtml}
 
 /** A plain-text part as HTML, for a message that mixes text and HTML parts. Escaped: text is never markup. */
 export function textAsHtml(text: string): string {
-  const escaped = text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
+  const escaped = text.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
+  );
   return `<div style="white-space:pre-wrap">${escaped}</div>`;
 }

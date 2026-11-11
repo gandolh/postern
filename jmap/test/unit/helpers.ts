@@ -2,7 +2,13 @@
 // for its method and path, and every request is recorded.
 
 import { readFileSync } from "node:fs";
-import { JmapClient, type AuthProvider, type FetchLike, type JmapClientOptions, type SessionObject } from "../../src/index.js";
+import {
+  JmapClient,
+  type AuthProvider,
+  type FetchLike,
+  type JmapClientOptions,
+  type SessionObject,
+} from "../../src/index.js";
 
 export const FIXTURES = new URL("../fixtures/", import.meta.url);
 
@@ -75,7 +81,11 @@ export class FakeServer {
   };
 
   /** Requests to the API endpoint, parsed. */
-  posts(): { using: string[]; methodCalls: [string, Record<string, unknown>, string][]; createdIds?: Record<string, string> }[] {
+  posts(): {
+    using: string[];
+    methodCalls: [string, Record<string, unknown>, string][];
+    createdIds?: Record<string, string>;
+  }[] {
     return this.requests.filter((r) => r.method === "POST" && r.url.endsWith("/jmap/")).map((r) => r.json as never);
   }
 }
@@ -85,7 +95,10 @@ export const BASE = "http://127.0.0.1:18080";
 export const basicAuth = (value = "Basic dGVzdDp0ZXN0"): AuthProvider => ({ authorization: () => value });
 
 /** A FakeServer that serves the recorded session, and a client on it. */
-export function setup(options: Partial<JmapClientOptions> & { session?: SessionObject } = {}): { server: FakeServer; client: JmapClient } {
+export function setup(options: Partial<JmapClientOptions> & { session?: SessionObject } = {}): {
+  server: FakeServer;
+  client: JmapClient;
+} {
   const server = new FakeServer();
   server.always("GET /jmap/session", () => json(options.session ?? SESSION));
   const client = new JmapClient({ baseUrl: BASE, auth: basicAuth(), fetch: server.fetch, ...options });
@@ -95,15 +108,24 @@ export function setup(options: Partial<JmapClientOptions> & { session?: SessionO
 /** Answer API posts by echoing a response per call, built by `answer`. */
 export function apiAnswers(
   server: FakeServer,
-  answer: (name: string, args: Record<string, unknown>, id: string) => [string, Record<string, unknown>] | [string, Record<string, unknown>][],
+  answer: (
+    name: string,
+    args: Record<string, unknown>,
+    id: string,
+  ) => [string, Record<string, unknown>] | [string, Record<string, unknown>][],
   sessionState = SESSION.state,
 ): void {
   server.always("POST /jmap/", (req) => {
-    const body = req.json as { methodCalls: [string, Record<string, unknown>, string][]; createdIds?: Record<string, string> };
+    const body = req.json as {
+      methodCalls: [string, Record<string, unknown>, string][];
+      createdIds?: Record<string, string>;
+    };
     const methodResponses: [string, Record<string, unknown>, string][] = [];
     for (const [name, args, id] of body.methodCalls) {
       const out = answer(name, args, id);
-      const list = Array.isArray(out[0]) ? (out as [string, Record<string, unknown>][]) : [out as [string, Record<string, unknown>]];
+      const list = Array.isArray(out[0])
+        ? (out as [string, Record<string, unknown>][])
+        : [out as [string, Record<string, unknown>]];
       for (const [n, a] of list) methodResponses.push([n, a, id]);
     }
     const res: Record<string, unknown> = { methodResponses, sessionState };

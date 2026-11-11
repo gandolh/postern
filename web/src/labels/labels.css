@@ -17,15 +17,33 @@
   --label-gray: light-dark(oklch(55% 0.02 260), oklch(72% 0.02 260));
 }
 
-[data-label-color="red"] { --label-color: var(--label-red); }
-[data-label-color="orange"] { --label-color: var(--label-orange); }
-[data-label-color="yellow"] { --label-color: var(--label-yellow); }
-[data-label-color="green"] { --label-color: var(--label-green); }
-[data-label-color="teal"] { --label-color: var(--label-teal); }
-[data-label-color="blue"] { --label-color: var(--label-blue); }
-[data-label-color="purple"] { --label-color: var(--label-purple); }
-[data-label-color="pink"] { --label-color: var(--label-pink); }
-[data-label-color="gray"] { --label-color: var(--label-gray); }
+[data-label-color="red"] {
+  --label-color: var(--label-red);
+}
+[data-label-color="orange"] {
+  --label-color: var(--label-orange);
+}
+[data-label-color="yellow"] {
+  --label-color: var(--label-yellow);
+}
+[data-label-color="green"] {
+  --label-color: var(--label-green);
+}
+[data-label-color="teal"] {
+  --label-color: var(--label-teal);
+}
+[data-label-color="blue"] {
+  --label-color: var(--label-blue);
+}
+[data-label-color="purple"] {
+  --label-color: var(--label-purple);
+}
+[data-label-color="pink"] {
+  --label-color: var(--label-pink);
+}
+[data-label-color="gray"] {
+  --label-color: var(--label-gray);
+}
 
 /* The list's chips and the navigation's icons take the colour. */
 .chip.list-chip[data-label-color] {

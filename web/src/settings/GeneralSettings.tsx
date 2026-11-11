@@ -8,13 +8,24 @@ import { UNDO_SEND_SECONDS, usePrefs, type ImagesPreference, type UndoSendSecond
 import { SwipeSettings } from "../mobile/SwipeSettings";
 import { WebPushToggle } from "../push/WebPushToggle";
 import { forgetImagesFrom, imageAllowanceList, useImageAllowance } from "../render/allowance";
-import { DENSITIES, READING_PANES, THEMES, useTheme, type Density, type ReadingPane, type ThemePreference } from "../theme";
+import {
+  DENSITIES,
+  READING_PANES,
+  THEMES,
+  useTheme,
+  type Density,
+  type ReadingPane,
+  type ThemePreference,
+} from "../theme";
 import { VacationForm } from "./VacationForm";
 
 const THEME_TITLES: Record<ThemePreference, string> = { system: "Same as the device", light: "Light", dark: "Dark" };
 const DENSITY_TITLES: Record<Density, string> = { default: "Default", comfortable: "Comfortable", compact: "Compact" };
 const PANE_TITLES: Record<ReadingPane, string> = { none: "No split", right: "Right of inbox", below: "Below inbox" };
-const IMAGE_TITLES: Record<ImagesPreference, string> = { ask: "Ask before displaying external images", always: "Always display external images" };
+const IMAGE_TITLES: Record<ImagesPreference, string> = {
+  ask: "Ask before displaying external images",
+  always: "Always display external images",
+};
 
 export function GeneralSettings() {
   const { theme, density, readingPane, setTheme, setDensity, setReadingPane } = useTheme();
@@ -23,10 +34,28 @@ export function GeneralSettings() {
     <div className="settings-form">
       <p className="settings-hint">Display settings are kept in this browser. A new device starts from the defaults.</p>
       <Choice legend="Theme" name="theme" options={THEMES} titles={THEME_TITLES} value={theme} onChange={setTheme} />
-      <Choice legend="Density" name="density" options={DENSITIES} titles={DENSITY_TITLES} value={density} onChange={setDensity} />
-      <Choice legend="Reading pane" name="reading-pane" options={READING_PANES} titles={PANE_TITLES} value={readingPane} onChange={setReadingPane} />
+      <Choice
+        legend="Density"
+        name="density"
+        options={DENSITIES}
+        titles={DENSITY_TITLES}
+        value={density}
+        onChange={setDensity}
+      />
+      <Choice
+        legend="Reading pane"
+        name="reading-pane"
+        options={READING_PANES}
+        titles={PANE_TITLES}
+        value={readingPane}
+        onChange={setReadingPane}
+      />
       <label className="settings-check">
-        <input type="checkbox" checked={prefs.conversationView} onChange={(e) => setPrefs({ conversationView: e.target.checked })} />
+        <input
+          type="checkbox"
+          checked={prefs.conversationView}
+          onChange={(e) => setPrefs({ conversationView: e.target.checked })}
+        />
         Conversation view: group replies into one row
       </label>
       <UndoSendChoice value={prefs.undoSendSeconds} onChange={(undoSendSeconds) => setPrefs({ undoSendSeconds })} />
@@ -58,7 +87,12 @@ function UndoSendChoice({ value, onChange }: { value: UndoSendSeconds; onChange:
       <label htmlFor={id} className="settings-label">
         Undo send: cancellation period
       </label>
-      <select id={id} className="input settings-select" value={value} onChange={(e) => onChange(Number(e.target.value) as UndoSendSeconds)}>
+      <select
+        id={id}
+        className="input settings-select"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value) as UndoSendSeconds)}
+      >
         {UNDO_SEND_SECONDS.map((s) => (
           <option key={s} value={s}>
             {s} seconds
@@ -76,7 +110,13 @@ function NotificationsToggle() {
   return (
     <div className="settings-field">
       <label className="settings-check">
-        <input type="checkbox" checked={enabled} disabled={denied} aria-describedby={denied ? "settings-notify-denied" : undefined} onChange={(e) => void setEnabled(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={denied}
+          aria-describedby={denied ? "settings-notify-denied" : undefined}
+          onChange={(e) => void setEnabled(e.target.checked)}
+        />
         Desktop notifications for new mail
       </label>
       {denied ? (
@@ -99,13 +139,20 @@ function ImageSenders() {
         Senders whose images are always displayed
       </h2>
       {senders.length === 0 ? (
-        <p className="settings-hint">None. Use &ldquo;Always display images from&rdquo; on a message to add a sender.</p>
+        <p className="settings-hint">
+          None. Use &ldquo;Always display images from&rdquo; on a message to add a sender.
+        </p>
       ) : (
         <ul className="settings-list">
           {senders.map((sender) => (
             <li key={sender}>
               <span>{sender}</span>
-              <button type="button" className="btn btn-quiet" aria-label={`Remove ${sender}`} onClick={() => forgetImagesFrom(username, sender)}>
+              <button
+                type="button"
+                className="btn btn-quiet"
+                aria-label={`Remove ${sender}`}
+                onClick={() => forgetImagesFrom(username, sender)}
+              >
                 Remove
               </button>
             </li>
@@ -132,7 +179,14 @@ export function Choice<T extends string>({ legend, name, options, titles, value,
       <legend>{legend}</legend>
       {options.map((option) => (
         <label key={option} htmlFor={`${id}-${option}`}>
-          <input id={`${id}-${option}`} type="radio" name={name} value={option} checked={value === option} onChange={() => onChange(option)} />
+          <input
+            id={`${id}-${option}`}
+            type="radio"
+            name={name}
+            value={option}
+            checked={value === option}
+            onChange={() => onChange(option)}
+          />
           {titles[option]}
         </label>
       ))}

@@ -120,9 +120,21 @@ function isIana(tzid: string): boolean {
 
 /** The offset of an IANA zone at an instant, in ms (wall time minus UTC). */
 function ianaOffset(ms: number, tz: string): number {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(new Date(ms));
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(ms));
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
-  return Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second")) - Math.floor(ms / 1000) * 1000;
+  return (
+    Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second")) -
+    Math.floor(ms / 1000) * 1000
+  );
 }
 
 /** The UTC instant of a wall time in an IANA zone. */
@@ -153,7 +165,12 @@ function eventTime(line: Line | undefined, zones: ReadonlyMap<string, Zone>): Ev
   if (date || line.params["VALUE"]?.toUpperCase() === "DATE") {
     const m = date ?? /^(\d{4})(\d{2})(\d{2})/.exec(v);
     if (!m) return null;
-    return { at: new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))), allDay: true, tzid: null, floating: false };
+    return {
+      at: new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))),
+      allDay: true,
+      tzid: null,
+      floating: false,
+    };
   }
   const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/i.exec(v);
   if (!m) return null;
@@ -177,7 +194,8 @@ export function parseInvite(ics: string): Invite | null {
   const zones = new Map<string, Zone>();
   let event: Line[] | null = null;
   let current: Line[] | null = null;
-  let zone: { id: string; rule: { month: number; day: number; offsetMinutes: number } | null; zone: Zone } | null = null;
+  let zone: { id: string; rule: { month: number; day: number; offsetMinutes: number } | null; zone: Zone } | null =
+    null;
   const stack: string[] = [];
   for (const line of lines) {
     if (line.name === "BEGIN") {
@@ -263,11 +281,19 @@ function fold(line: string): string {
 }
 
 function utcStamp(d: Date): string {
-  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return d
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 
 /** The METHOD:REPLY an attendee sends the organiser. */
-export function buildReply(invite: Invite, me: Person, partstat: "ACCEPTED" | "DECLINED" | "TENTATIVE", now: Date): string {
+export function buildReply(
+  invite: Invite,
+  me: Person,
+  partstat: "ACCEPTED" | "DECLINED" | "TENTATIVE",
+  now: Date,
+): string {
   const organizer = invite.organizer;
   const lines = [
     "BEGIN:VCALENDAR",
@@ -278,9 +304,17 @@ export function buildReply(invite: Invite, me: Person, partstat: "ACCEPTED" | "D
     `UID:${invite.uid.replace(/[\r\n]/g, "")}`,
     `SEQUENCE:${invite.sequence}`,
     `DTSTAMP:${utcStamp(now)}`,
-    ...(invite.start && !invite.start.floating ? [invite.start.allDay ? `DTSTART;VALUE=DATE:${utcStamp(invite.start.at).slice(0, 8)}` : `DTSTART:${utcStamp(invite.start.at)}`] : []),
+    ...(invite.start && !invite.start.floating
+      ? [
+          invite.start.allDay
+            ? `DTSTART;VALUE=DATE:${utcStamp(invite.start.at).slice(0, 8)}`
+            : `DTSTART:${utcStamp(invite.start.at)}`,
+        ]
+      : []),
     ...(invite.summary ? [`SUMMARY:${escapeText(invite.summary)}`] : []),
-    ...(organizer ? [`ORGANIZER${organizer.name ? `;CN=${param(organizer.name)}` : ""}:mailto:${organizer.email}`] : []),
+    ...(organizer
+      ? [`ORGANIZER${organizer.name ? `;CN=${param(organizer.name)}` : ""}:mailto:${organizer.email}`]
+      : []),
     `ATTENDEE;PARTSTAT=${partstat}${me.name ? `;CN=${param(me.name)}` : ""}:mailto:${me.email}`,
     "END:VEVENT",
     "END:VCALENDAR",

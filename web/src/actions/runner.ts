@@ -11,7 +11,14 @@
 // Framework-free so it is testable; useMailActions() wires it to the session,
 // the labels store and the shell's toast.
 
-import { isAbortError, SessionExpiredError, SignedOutError, type Id, type MethodCaller, type PatchObject } from "@postern/jmap";
+import {
+  isAbortError,
+  SessionExpiredError,
+  SignedOutError,
+  type Id,
+  type MethodCaller,
+  type PatchObject,
+} from "@postern/jmap";
 import { publishMailChange, publishPending } from "./bus";
 import { shownMessages, type Conversation, type ConversationScope, type MailboxRoles } from "./conversation";
 import { actionCopy, type ActionCopy, type RowNoun } from "./copy";
@@ -35,7 +42,11 @@ import { runUndo, setUndo, type UndoEntry } from "./undo";
 
 /** The part of the shell's toast API the actions use. */
 export interface ActionToast {
-  show(options: { message: string; action?: { label: string; onClick: () => void }; duration?: number | null }): unknown;
+  show(options: {
+    message: string;
+    action?: { label: string; onClick: () => void };
+    duration?: number | null;
+  }): unknown;
 }
 
 export interface MailActionDeps {
@@ -66,7 +77,11 @@ export interface ActionOptions {
   noun?: RowNoun;
 }
 
-type Scoped = (conversations: readonly Conversation[], scope: ConversationScope, options?: ActionOptions) => Promise<ActionOutcome>;
+type Scoped = (
+  conversations: readonly Conversation[],
+  scope: ConversationScope,
+  options?: ActionOptions,
+) => Promise<ActionOutcome>;
 
 export interface MailActions {
   archive: Scoped;
@@ -83,11 +98,29 @@ export interface MailActions {
   markImportant: Scoped;
   markNotImportant: Scoped;
   /** Apply and remove labels, with the same optimistic update, toast and undo. */
-  applyLabels(conversations: readonly Conversation[], scope: ConversationScope, change: LabelChange, copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
+  applyLabels(
+    conversations: readonly Conversation[],
+    scope: ConversationScope,
+    change: LabelChange,
+    copy: ActionCopy,
+    options?: ActionOptions,
+  ): Promise<ActionOutcome>;
   /** Gmail's "Move to" (out of `from`, into `to`). */
-  moveTo(conversations: readonly Conversation[], scope: ConversationScope, from: Id | undefined, to: Id, copy: ActionCopy, options?: ActionOptions): Promise<ActionOutcome>;
+  moveTo(
+    conversations: readonly Conversation[],
+    scope: ConversationScope,
+    from: Id | undefined,
+    to: Id,
+    copy: ActionCopy,
+    options?: ActionOptions,
+  ): Promise<ActionOutcome>;
   /** Snooze until `at` (the Snoozed label is made on first use). */
-  snooze(conversations: readonly Conversation[], scope: ConversationScope, at: Date, options?: ActionOptions): Promise<ActionOutcome>;
+  snooze(
+    conversations: readonly Conversation[],
+    scope: ConversationScope,
+    at: Date,
+    options?: ActionOptions,
+  ): Promise<ActionOutcome>;
   /** Back to the Inbox now. */
   unsnooze: Scoped;
   /** Run any plan the same way. `make` may throw (MissingLabelError): that is reported as a failure. */
@@ -96,16 +129,51 @@ export interface MailActions {
 
 // "{Thing}" and "{things}" are the conversation, or the message with conversation view off (./copy).
 export const COPY = {
-  archive: actionCopy("{Thing} archived.", "{n} {things} archived.", "Couldn't archive the {thing}.", "Couldn't archive {n} {things}."),
-  trash: actionCopy("{Thing} moved to Trash.", "{n} {things} moved to Trash.", "Couldn't delete the {thing}.", "Couldn't delete {n} {things}."),
-  deleteForever: actionCopy("{Thing} deleted forever.", "{n} {things} deleted forever.", "Couldn't delete the {thing}.", "Couldn't delete {n} {things}."),
+  archive: actionCopy(
+    "{Thing} archived.",
+    "{n} {things} archived.",
+    "Couldn't archive the {thing}.",
+    "Couldn't archive {n} {things}.",
+  ),
+  trash: actionCopy(
+    "{Thing} moved to Trash.",
+    "{n} {things} moved to Trash.",
+    "Couldn't delete the {thing}.",
+    "Couldn't delete {n} {things}.",
+  ),
+  deleteForever: actionCopy(
+    "{Thing} deleted forever.",
+    "{n} {things} deleted forever.",
+    "Couldn't delete the {thing}.",
+    "Couldn't delete {n} {things}.",
+  ),
   // Spam's own words: Stalwart trains its spam filter on both (spam.ts).
   reportSpam: REPORT_SPAM_COPY,
   notSpam: NOT_SPAM_COPY,
-  read: actionCopy("{Thing} marked as read.", "{n} {things} marked as read.", "Couldn't mark the {thing} as read.", "Couldn't mark {n} {things} as read."),
-  unread: actionCopy("{Thing} marked as unread.", "{n} {things} marked as unread.", "Couldn't mark the {thing} as unread.", "Couldn't mark {n} {things} as unread."),
-  star: actionCopy("{Thing} starred.", "{n} {things} starred.", "Couldn't star the {thing}.", "Couldn't star {n} {things}."),
-  unstar: actionCopy("Star removed.", "Stars removed from {n} {things}.", "Couldn't remove the star.", "Couldn't remove the stars from {n} {things}."),
+  read: actionCopy(
+    "{Thing} marked as read.",
+    "{n} {things} marked as read.",
+    "Couldn't mark the {thing} as read.",
+    "Couldn't mark {n} {things} as read.",
+  ),
+  unread: actionCopy(
+    "{Thing} marked as unread.",
+    "{n} {things} marked as unread.",
+    "Couldn't mark the {thing} as unread.",
+    "Couldn't mark {n} {things} as unread.",
+  ),
+  star: actionCopy(
+    "{Thing} starred.",
+    "{n} {things} starred.",
+    "Couldn't star the {thing}.",
+    "Couldn't star {n} {things}.",
+  ),
+  unstar: actionCopy(
+    "Star removed.",
+    "Stars removed from {n} {things}.",
+    "Couldn't remove the star.",
+    "Couldn't remove the stars from {n} {things}.",
+  ),
   important: actionCopy(
     "{Thing} marked as important.",
     "{n} {things} marked as important.",
@@ -173,7 +241,11 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     toast(isEmptyPlan(result.failed) ? UNDONE_MESSAGE : UNDO_FAILED_MESSAGE);
   }
 
-  async function run(make: MessagePlan | (() => MessagePlan), copy: ActionCopy, options: ActionOptions = {}): Promise<ActionOutcome> {
+  async function run(
+    make: MessagePlan | (() => MessagePlan),
+    copy: ActionCopy,
+    options: ActionOptions = {},
+  ): Promise<ActionOutcome> {
     const noun = nounOf(options);
     let plan: MessagePlan;
     try {
@@ -208,7 +280,10 @@ export function createMailActions(deps: MailActionDeps): MailActions {
       toast(copy.failed(count, noun));
       return "failed";
     }
-    const entry: UndoEntry = { label: copy.done(result.done.conversationIds.length, noun), undo: () => undoDone(result.done) };
+    const entry: UndoEntry = {
+      label: copy.done(result.done.conversationIds.length, noun),
+      undo: () => undoDone(result.done),
+    };
     setUndo(entry);
     if (failedCount > 0) {
       toast(copy.failed(failedCount, noun), entry);
@@ -218,7 +293,11 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     return "done";
   }
 
-  async function deleteForever(conversations: readonly Conversation[], scope: ConversationScope, options: ActionOptions = {}): Promise<ActionOutcome> {
+  async function deleteForever(
+    conversations: readonly Conversation[],
+    scope: ConversationScope,
+    options: ActionOptions = {},
+  ): Promise<ActionOutcome> {
     const s = fresh(scope);
     const noun = nounOf(options);
     const ids = new Set(destroyIds(conversations, s));
@@ -251,7 +330,10 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     }
     const refused = Object.keys(errors);
     if (refused.length > 0) {
-      publishMailChange({ kind: "patch", update: Object.fromEntries(refused.flatMap((id) => (restore[id] ? [[id, restore[id]]] : []))) });
+      publishMailChange({
+        kind: "patch",
+        update: Object.fromEntries(refused.flatMap((id) => (restore[id] ? [[id, restore[id]]] : []))),
+      });
     }
     settle();
     const failedCount = new Set(refused.map((id) => conversationOf.get(id))).size;
@@ -263,7 +345,11 @@ export function createMailActions(deps: MailActionDeps): MailActions {
     return "done";
   }
 
-  async function archive(conversations: readonly Conversation[], scope: ConversationScope, options?: ActionOptions): Promise<ActionOutcome> {
+  async function archive(
+    conversations: readonly Conversation[],
+    scope: ConversationScope,
+    options?: ActionOptions,
+  ): Promise<ActionOutcome> {
     let s = fresh(scope);
     if (s.roles.archive === undefined && archiveNeedsAllMail(conversations, s)) {
       try {
@@ -277,7 +363,10 @@ export function createMailActions(deps: MailActionDeps): MailActions {
   }
 
   const scoped =
-    (plan: (conversations: readonly Conversation[], scope: ConversationScope) => MessagePlan, copy: ActionCopy): Scoped =>
+    (
+      plan: (conversations: readonly Conversation[], scope: ConversationScope) => MessagePlan,
+      copy: ActionCopy,
+    ): Scoped =>
     (conversations, scope, options) =>
       run(() => plan(conversations, fresh(scope)), copy, options);
 
@@ -321,7 +410,8 @@ export function createMailActions(deps: MailActionDeps): MailActions {
       }
       return run(() => planSnooze(conversations, fresh(scope), snoozedId, at), copy, options);
     },
-    unsnooze: (conversations, scope, options) => run(() => planUnsnooze(conversations, fresh(scope).roles, deps.snoozedId?.()), UNSNOOZE_COPY, options),
+    unsnooze: (conversations, scope, options) =>
+      run(() => planUnsnooze(conversations, fresh(scope).roles, deps.snoozedId?.()), UNSNOOZE_COPY, options),
     run,
   };
 }

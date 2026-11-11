@@ -79,7 +79,9 @@ export function ScheduledRoute() {
       if (composer) await composer.cancelScheduled(message.submissionId, message.emailId);
       else {
         const outcome = await cancelScheduled(client, message.submissionId, message.emailId);
-        toast.show({ message: outcome === "sent" ? "The message was already sent." : "Send canceled. The message is in Drafts." });
+        toast.show({
+          message: outcome === "sent" ? "The message was already sent." : "Send canceled. The message is in Drafts.",
+        });
       }
     } catch (err) {
       if (!isQuietError(err)) toast.show({ message: "Couldn't cancel the send. Try again in a moment." });
@@ -113,7 +115,13 @@ export function ScheduledRoute() {
           const subject = m.subject.trim() || "(no subject)";
           return (
             <li key={m.submissionId} className="scheduled-item" data-open={expanded || undefined}>
-              <button type="button" className="scheduled-summary" aria-expanded={expanded} aria-controls={panelId} onClick={() => setOpen(expanded ? null : m.submissionId)}>
+              <button
+                type="button"
+                className="scheduled-summary"
+                aria-expanded={expanded}
+                aria-controls={panelId}
+                onClick={() => setOpen(expanded ? null : m.submissionId)}
+              >
                 <span className="scheduled-to">To: {names(m)}</span>
                 <span className="scheduled-text">
                   <span className="scheduled-subject">{subject}</span>
@@ -126,10 +134,16 @@ export function ScheduledRoute() {
               {expanded ? (
                 <div id={panelId} className="scheduled-panel">
                   <p className="scheduled-panel-line">
-                    Sends {formatSendTime(m.sendAt)} to {m.to.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(", ")}.
+                    Sends {formatSendTime(m.sendAt)} to{" "}
+                    {m.to.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(", ")}.
                   </p>
                   {m.preview ? <p className="scheduled-panel-preview">{m.preview}</p> : null}
-                  <button type="button" className="btn" disabled={cancelling === m.submissionId} onClick={() => void cancel(m)}>
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={cancelling === m.submissionId}
+                    onClick={() => void cancel(m)}
+                  >
                     Cancel send
                   </button>
                 </div>

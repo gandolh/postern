@@ -13,7 +13,9 @@ describe("rebaseUrl", () => {
   const stalwart = "https://mail.postern.test/jmap/download/{accountId}/{blobId}/{name}?accept={type}";
 
   it("swaps Stalwart's origin for a relative base, keeping path, query and templates", () => {
-    expect(rebaseUrl(stalwart, "/webmail-api")).toBe("/webmail-api/jmap/download/{accountId}/{blobId}/{name}?accept={type}");
+    expect(rebaseUrl(stalwart, "/webmail-api")).toBe(
+      "/webmail-api/jmap/download/{accountId}/{blobId}/{name}?accept={type}",
+    );
   });
 
   it("swaps it for an absolute base", () => {
@@ -28,7 +30,10 @@ describe("rebaseUrl", () => {
 
   it("keeps the event-source query templates intact", () => {
     expect(
-      rebaseUrl("https://mail.postern.test/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}", "/webmail-api"),
+      rebaseUrl(
+        "https://mail.postern.test/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}",
+        "/webmail-api",
+      ),
     ).toBe("/webmail-api/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}");
   });
 
@@ -44,9 +49,13 @@ describe("rebaseUrl", () => {
 
 describe("expandTemplate", () => {
   it("encodes values as RFC 6570 level 1", () => {
-    expect(expandTemplate("/d/{blobId}/{name}?accept={type}", { blobId: "Gab", name: "my file (1).pdf", type: "application/pdf" })).toBe(
-      "/d/Gab/my%20file%20%281%29.pdf?accept=application%2Fpdf",
-    );
+    expect(
+      expandTemplate("/d/{blobId}/{name}?accept={type}", {
+        blobId: "Gab",
+        name: "my file (1).pdf",
+        type: "application/pdf",
+      }),
+    ).toBe("/d/Gab/my%20file%20%281%29.pdf?accept=application%2Fpdf");
   });
 
   it("refuses a missing variable", () => {
@@ -65,7 +74,9 @@ describe("Session", () => {
     expect(session.apiUrl).toBe("/webmail-api/jmap/");
     expect(session.uploadUrl).toBe("/webmail-api/jmap/upload/{accountId}/");
     expect(session.downloadUrl).toBe("/webmail-api/jmap/download/{accountId}/{blobId}/{name}?accept={type}");
-    expect(session.eventSourceUrl).toBe("/webmail-api/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}");
+    expect(session.eventSourceUrl).toBe(
+      "/webmail-api/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}",
+    );
     expect(session.raw.apiUrl).toBe("https://mail.postern.test/jmap/");
   });
 
@@ -91,7 +102,9 @@ describe("Session", () => {
     expect(session.state).toBe(SESSION.state);
     expect(session.hasCapability("urn:ietf:params:jmap:sieve")).toBe(true);
     expect(session.hasCapability("urn:ietf:params:jmap:nope")).toBe(false);
-    expect(session.accountCapability<{ maxSizeScript: number }>("urn:ietf:params:jmap:sieve")?.maxSizeScript).toBe(102400);
+    expect(session.accountCapability<{ maxSizeScript: number }>("urn:ietf:params:jmap:sieve")?.maxSizeScript).toBe(
+      102400,
+    );
   });
 
   it("fills the URL templates", () => {
@@ -133,10 +146,12 @@ describe("JmapClient.connect", () => {
 
   it("refetches the session when an API response reports a new sessionState", async () => {
     const { server, client } = setup();
-    server.always("POST /jmap/", () =>
-      new Response(JSON.stringify({ methodResponses: [["Core/echo", {}, "0"]], sessionState: "changed" }), {
-        headers: { "content-type": "application/json" },
-      }),
+    server.always(
+      "POST /jmap/",
+      () =>
+        new Response(JSON.stringify({ methodResponses: [["Core/echo", {}, "0"]], sessionState: "changed" }), {
+          headers: { "content-type": "application/json" },
+        }),
     );
     await client.call("Core/echo", {});
     expect(server.requests.filter((r) => r.url.endsWith("/session"))).toHaveLength(1);

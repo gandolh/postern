@@ -7,7 +7,10 @@ import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { ConversationStore, type ConversationSnapshot } from "./conversationStore";
 import { registerConversationStore } from "./registry";
 
-export function useConversationStore(client: JmapClient, conversationId: Id): { store: ConversationStore; snapshot: ConversationSnapshot } {
+export function useConversationStore(
+  client: JmapClient,
+  conversationId: Id,
+): { store: ConversationStore; snapshot: ConversationSnapshot } {
   const store = useMemo(
     () =>
       new ConversationStore(client, conversationId, {

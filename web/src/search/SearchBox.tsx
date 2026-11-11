@@ -141,93 +141,114 @@ export function SearchBox({ query }: SearchBoxProps) {
         onOpenChange={(next, details) => {
           // A press in the search box itself leaves the form open, as before; anywhere else closes it.
           const target = details.event.target;
-          if (!next && details.reason === "outside-press" && target instanceof Node && rootRef.current?.contains(target)) return;
+          if (
+            !next &&
+            details.reason === "outside-press" &&
+            target instanceof Node &&
+            rootRef.current?.contains(target)
+          )
+            return;
           setAdvanced(next);
         }}
       >
-      <div className="search-box" role="search">
-        <button type="button" className="icon-btn search-box-submit" aria-label="Search" onClick={() => search(value)}>
-          <Search aria-hidden="true" />
-        </button>
-        <input
-          ref={setInput}
-          className="search-box-input"
-          type="text"
-          name="q"
-          role="combobox"
-          aria-label="Search mail"
-          aria-autocomplete="list"
-          aria-expanded={open}
-          aria-controls={listId}
-          aria-activedescendant={activeId}
-          placeholder="Search mail"
-          autoComplete="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-            setDismissed(false);
-          }}
-          onKeyDown={onKeyDown}
-          onFocus={() => setDismissed(false)}
-        />
-        {value !== "" && (
+        <div className="search-box" role="search">
           <button
             type="button"
-            className="icon-btn search-box-clear"
-            aria-label="Clear search"
-            onClick={() => {
-              setValue("");
-              inputRef.current?.focus();
-            }}
+            className="icon-btn search-box-submit"
+            aria-label="Search"
+            onClick={() => search(value)}
           >
-            <X aria-hidden="true" />
+            <Search aria-hidden="true" />
           </button>
-        )}
-        <Popover.Trigger className="icon-btn search-box-options" aria-label="Search options" onClick={() => setDismissed(true)}>
-          <SlidersHorizontal aria-hidden="true" />
-        </Popover.Trigger>
-      </div>
-      <ul id={listId} role="listbox" aria-label="Search suggestions" className="search-suggestions" hidden={!open}>
-        {open &&
-          groups.map((g) => (
-            <li key={g.source.id} role="presentation" className="search-group">
-              <div className="search-group-heading" role="presentation">
-                {g.source.heading}
-              </div>
-              <ul role="group" aria-label={g.source.heading} className="search-group-items">
-                {g.items.map((item) => {
-                  optionIndex++;
-                  const index = optionIndex;
-                  return (
-                    <li
-                      key={item.key}
-                      id={`${listId}-opt-${index}`}
-                      role="option"
-                      aria-selected={index === active}
-                      className="search-option"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onMouseMove={() => setActive(index)}
-                      onClick={() => choose(item)}
-                    >
-                      <span className="search-option-label">{item.label}</span>
-                      {item.detail && <span className="search-option-detail">{item.detail}</span>}
-                    </li>
-                  );
-                })}
-              </ul>
-            </li>
-          ))}
-      </ul>
-      {/* Portalled into the search root, so focus in the form still counts as in the search. */}
-      <Popover.Portal container={rootRef}>
-        <Popover.Positioner className="search-advanced-positioner" anchor={rootRef} side="bottom" align="start" sideOffset={4}>
-          <Popover.Popup className="search-advanced" aria-label="Advanced search" finalFocus={inputRef}>
-            <AdvancedSearch onSearch={search} onClose={() => setAdvanced(false)} />
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
+          <input
+            ref={setInput}
+            className="search-box-input"
+            type="text"
+            name="q"
+            role="combobox"
+            aria-label="Search mail"
+            aria-autocomplete="list"
+            aria-expanded={open}
+            aria-controls={listId}
+            aria-activedescendant={activeId}
+            placeholder="Search mail"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setDismissed(false);
+            }}
+            onKeyDown={onKeyDown}
+            onFocus={() => setDismissed(false)}
+          />
+          {value !== "" && (
+            <button
+              type="button"
+              className="icon-btn search-box-clear"
+              aria-label="Clear search"
+              onClick={() => {
+                setValue("");
+                inputRef.current?.focus();
+              }}
+            >
+              <X aria-hidden="true" />
+            </button>
+          )}
+          <Popover.Trigger
+            className="icon-btn search-box-options"
+            aria-label="Search options"
+            onClick={() => setDismissed(true)}
+          >
+            <SlidersHorizontal aria-hidden="true" />
+          </Popover.Trigger>
+        </div>
+        <ul id={listId} role="listbox" aria-label="Search suggestions" className="search-suggestions" hidden={!open}>
+          {open &&
+            groups.map((g) => (
+              <li key={g.source.id} role="presentation" className="search-group">
+                <div className="search-group-heading" role="presentation">
+                  {g.source.heading}
+                </div>
+                <ul role="group" aria-label={g.source.heading} className="search-group-items">
+                  {g.items.map((item) => {
+                    optionIndex++;
+                    const index = optionIndex;
+                    return (
+                      <li
+                        key={item.key}
+                        id={`${listId}-opt-${index}`}
+                        role="option"
+                        aria-selected={index === active}
+                        className="search-option"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onMouseMove={() => setActive(index)}
+                        onClick={() => choose(item)}
+                      >
+                        <span className="search-option-label">{item.label}</span>
+                        {item.detail && <span className="search-option-detail">{item.detail}</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            ))}
+        </ul>
+        {/* Portalled into the search root, so focus in the form still counts as in the search. */}
+        <Popover.Portal container={rootRef}>
+          <Popover.Positioner
+            className="search-advanced-positioner"
+            anchor={rootRef}
+            side="bottom"
+            align="start"
+            sideOffset={4}
+          >
+            <Popover.Popup className="search-advanced" aria-label="Advanced search" finalFocus={inputRef}>
+              <AdvancedSearch onSearch={search} onClose={() => setAdvanced(false)} />
+            </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
       </Popover.Root>
     </div>
   );

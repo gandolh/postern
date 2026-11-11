@@ -10,7 +10,16 @@
 // regains focus or the browser comes back online. Live updates add push:
 // `useLabelsStore().applyStateChange(change)` for every StateChange.
 
-import { createContext, createElement, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { useJmap } from "../auth";
 import type { LabelRoute } from "../shell/router";
 import { LabelsStore, resolveLabelRoute, type LabelsSnapshot, type ResolvedLabel } from "./labelsStore";

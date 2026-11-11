@@ -32,7 +32,10 @@ export function ListRoute({ route, label }: ListRouteProps) {
   // A new object only when a role's mailbox changes, not on every count change.
   const rolesKey = JSON.stringify(rolesFrom(labels.store));
   const roles = useMemo(() => JSON.parse(rolesKey) as MailboxRoles, [rolesKey]);
-  const view = useMemo(() => labelListView({ view: label.view, mailboxId: label.mailboxId }, roles), [label.view, label.mailboxId, roles]);
+  const view = useMemo(
+    () => labelListView({ view: label.view, mailboxId: label.mailboxId }, roles),
+    [label.view, label.mailboxId, roles],
+  );
   // A list of messages (conversation view off) says so.
   const noun = rowNoun(usePrefs().prefs.conversationView);
   const emptyMessage = label.view === "starred" ? `No starred ${noun}s` : emptyLabelMessage(label.title, noun);

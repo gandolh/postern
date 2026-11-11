@@ -17,7 +17,14 @@ export {
 } from "./compose";
 export { ComposerHost } from "./ComposerHost";
 export { getComposer } from "./registry";
-export { composeNew, composeFromConversation, sendFocusedComposer, isTypingInComposer, composerKeyOf, COMPOSER_ATTR } from "./shortcuts";
+export {
+  composeNew,
+  composeFromConversation,
+  sendFocusedComposer,
+  isTypingInComposer,
+  composerKeyOf,
+  COMPOSER_ATTR,
+} from "./shortcuts";
 export { recipientSource, type RecipientSource, type RecipientSuggestion } from "./recipients";
 export type { ComposerStore } from "./store";
 export type { ComposeSnapshot, Placement } from "./session";

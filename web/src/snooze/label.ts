@@ -40,7 +40,9 @@ async function findOrCreate(caller: MethodCaller): Promise<Id> {
   const { list } = await caller.call("Mailbox/get", { ids: null, properties: ["id", "name", "parentId", "role"] });
   const existing = (list as Pick<Mailbox, "id" | "name" | "parentId" | "role">[]).find(isSnoozedMailbox);
   if (existing) return existing.id;
-  const res = await caller.call("Mailbox/set", { create: { snoozed: { name: SNOOZED_LABEL, parentId: null, isSubscribed: false } } });
+  const res = await caller.call("Mailbox/set", {
+    create: { snoozed: { name: SNOOZED_LABEL, parentId: null, isSubscribed: false } },
+  });
   const id = res.created?.["snoozed"]?.id;
   if (!id) throw new JmapSetError("Mailbox/set", "snoozed", res.notCreated?.["snoozed"] ?? { type: "serverFail" });
   return id;

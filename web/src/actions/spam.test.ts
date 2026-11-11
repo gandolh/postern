@@ -5,7 +5,16 @@ import { describe, expect, it } from "vitest";
 import { fakeEmail, FakeMail, MAILBOXES, ROLES } from "./fakeMail";
 import type { Conversation } from "./conversation";
 import { COPY, createMailActions } from "./runner";
-import { emptyConfirmText, emptyDoneText, emptyLabel, listEmptyable, LEARNS, NOT_SPAM_COPY, REPORT_SPAM_COPY, REPORT_SPAM_MESSAGE_COPY } from "./spam";
+import {
+  emptyConfirmText,
+  emptyDoneText,
+  emptyLabel,
+  listEmptyable,
+  LEARNS,
+  NOT_SPAM_COPY,
+  REPORT_SPAM_COPY,
+  REPORT_SPAM_MESSAGE_COPY,
+} from "./spam";
 
 function server() {
   return new FakeMail({
@@ -47,7 +56,9 @@ describe("emptying Spam and Trash", () => {
   });
 
   it("pages through a large label", async () => {
-    const emails = Array.from({ length: 1203 }, (_, i) => fakeEmail({ id: `j${i}`, threadId: `t${i}`, mailboxIds: { c: true } }));
+    const emails = Array.from({ length: 1203 }, (_, i) =>
+      fakeEmail({ id: `j${i}`, threadId: `t${i}`, mailboxIds: { c: true } }),
+    );
     const mail = new FakeMail({ mailboxes: MAILBOXES, emails, maxObjectsInGet: 2000, maxObjectsInSet: 5000 });
     const client = await mail.connect();
     const plan = await listEmptyable(client, ROLES, "junk");
@@ -85,10 +96,16 @@ describe("emptying Spam and Trash", () => {
   it("says what will happen and what happened", () => {
     const text = emptyConfirmText({ label: "junk", mailboxId: "c", destroy: ["a", "b"], release: ["c"] });
     expect(text.title).toBe("Delete all spam messages?");
-    expect(text.body).toBe("2 messages in Spam will be deleted forever. You can't undo this. One message that also has another label will only be taken out of Spam.");
-    expect(emptyConfirmText({ label: "trash", mailboxId: "b", destroy: ["a"], release: [] }).confirm).toBe("Empty Trash");
+    expect(text.body).toBe(
+      "2 messages in Spam will be deleted forever. You can't undo this. One message that also has another label will only be taken out of Spam.",
+    );
+    expect(emptyConfirmText({ label: "trash", mailboxId: "b", destroy: ["a"], release: [] }).confirm).toBe(
+      "Empty Trash",
+    );
     expect(emptyDoneText("trash", { destroyed: 1, released: 0, failed: 0 })).toBe("1 message deleted forever.");
-    expect(emptyDoneText("junk", { destroyed: 1, released: 0, failed: 2 })).toBe("Couldn't empty Spam: 2 messages were left.");
+    expect(emptyDoneText("junk", { destroyed: 1, released: 0, failed: 2 })).toBe(
+      "Couldn't empty Spam: 2 messages were left.",
+    );
   });
 });
 
@@ -114,7 +131,12 @@ describe("Report spam copy", () => {
       syncLabels: () => {},
       toast: { show: (o) => toasts.push(o.message) },
     });
-    const conversation: Conversation = { id: "t1", messages: [{ id: "m1", threadId: "t1", receivedAt: "2026-10-01T12:00:00Z", mailboxIds: { a: true }, keywords: {} }] };
+    const conversation: Conversation = {
+      id: "t1",
+      messages: [
+        { id: "m1", threadId: "t1", receivedAt: "2026-10-01T12:00:00Z", mailboxIds: { a: true }, keywords: {} },
+      ],
+    };
     expect(await actions.reportSpam([conversation], { kind: "normal", roles: ROLES })).toBe("done");
     expect(toasts.at(-1)).toBe(`Conversation reported as spam. ${LEARNS}`);
     expect(mail.emails.get("m1")!.mailboxIds).toEqual({ c: true });

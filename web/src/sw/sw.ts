@@ -15,10 +15,27 @@
 // arrive in the push itself (Stalwart's emailPush extension), encrypted to
 // this browser's subscription keys; the push service sees ciphertext only.
 
-import { anyVisible, appWindows, clickHash, notificationsFor, openMessage, parsePushPayload, windowForClick } from "./notify";
+import {
+  anyVisible,
+  appWindows,
+  clickHash,
+  notificationsFor,
+  openMessage,
+  parsePushPayload,
+  windowForClick,
+} from "./notify";
 import { mayRequestUpdate, SKIP_WAITING, WILL_NOTIFY } from "./protocol";
 import { scopePath } from "./routing";
-import { cacheNameFor, cleanupCaches, installShell, pick, serve, shellFiles, type ManifestEntry, type ShellDeps } from "./shell";
+import {
+  cacheNameFor,
+  cleanupCaches,
+  installShell,
+  pick,
+  serve,
+  shellFiles,
+  type ManifestEntry,
+  type ShellDeps,
+} from "./shell";
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | ManifestEntry)[] };
 

@@ -25,11 +25,15 @@ let hasDraft = false;
 
 async function jmapState(ids: readonly string[]): Promise<Map<string, { inInbox: boolean; seen: boolean }>> {
   const jmap = await devJmap("alice");
-  const got = await jmap.one<{ list: { id: string; mailboxIds: Record<string, boolean>; keywords: Record<string, boolean> }[] }>("Email/get", {
+  const got = await jmap.one<{
+    list: { id: string; mailboxIds: Record<string, boolean>; keywords: Record<string, boolean> }[];
+  }>("Email/get", {
     ids,
     properties: ["mailboxIds", "keywords"],
   });
-  return new Map(got.list.map((e) => [e.id, { inInbox: e.mailboxIds[inbox] === true, seen: e.keywords["$seen"] === true }]));
+  return new Map(
+    got.list.map((e) => [e.id, { inInbox: e.mailboxIds[inbox] === true, seen: e.keywords["$seen"] === true }]),
+  );
 }
 
 test.describe.configure({ mode: "serial" });
@@ -38,13 +42,22 @@ test.use({ viewport: { width: 1280, height: 1200 } });
 
 test.beforeAll(async () => {
   const jmap = await devJmap("alice");
-  const boxes = await jmap.one<{ list: { id: string; role: string | null }[] }>("Mailbox/get", { ids: null, properties: ["role"] });
+  const boxes = await jmap.one<{ list: { id: string; role: string | null }[] }>("Mailbox/get", {
+    ids: null,
+    properties: ["role"],
+  });
   inbox = boxes.list.find((b) => b.role === "inbox")!.id;
   const query = await jmap.one<{ ids: string[] }>("Email/query", { filter: { subject: SUBJECT }, limit: 50 });
-  const got = await jmap.one<{ list: { id: string; threadId: string; subject: string; mailboxIds: Record<string, boolean>; keywords: Record<string, boolean>; receivedAt: string }[] }>(
-    "Email/get",
-    { ids: query.ids, properties: ["threadId", "subject", "mailboxIds", "keywords", "receivedAt"] },
-  );
+  const got = await jmap.one<{
+    list: {
+      id: string;
+      threadId: string;
+      subject: string;
+      mailboxIds: Record<string, boolean>;
+      keywords: Record<string, boolean>;
+      receivedAt: string;
+    }[];
+  }>("Email/get", { ids: query.ids, properties: ["threadId", "subject", "mailboxIds", "keywords", "receivedAt"] });
   threadId = got.list.find((e) => e.subject === SUBJECT)!.threadId;
   hasDraft = got.list.some((e) => e.threadId === threadId && e.keywords["$draft"] === true);
   three = got.list
@@ -69,7 +82,10 @@ test.afterAll(async () => {
 /** Sign in with conversation view off on this device. */
 async function start(page: Page): Promise<void> {
   await stubOutsideWorld(page.context());
-  await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [PREFS_KEY, JSON.stringify({ version: 1, conversationView: false })] as const);
+  await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [
+    PREFS_KEY,
+    JSON.stringify({ version: 1, conversationView: false }),
+  ] as const);
   await watchPasswordField(page);
   await signIn(page);
   await expect(page.getByRole("grid", { name: "Messages in Inbox" })).toBeVisible();
@@ -84,7 +100,9 @@ async function expectResumed(page: Page): Promise<void> {
 const row = (page: Page, id: string) => page.locator(`[role=row][data-row-id="${id}"]`);
 const cards = (page: Page) => page.locator(".conv-page [id^='conv-message-']");
 
-test("a message row opens alone, marks only itself read, and survives a reload; Back returns to the list", async ({ page }) => {
+test("a message row opens alone, marks only itself read, and survives a reload; Back returns to the list", async ({
+  page,
+}) => {
   const [o, n, m] = three as [Original, Original, Original];
   await start(page);
   // Three unread rows of one conversation (m is further down the list, past the rows drawn).
@@ -113,10 +131,14 @@ test("a message row opens alone, marks only itself read, and survives a reload; 
   await expect(row(page, o.id)).toHaveAttribute("data-unread");
 });
 
-test("Reply quotes the open message, j / k open the next and previous rows, Archive moves only it", async ({ page }) => {
+test("Reply quotes the open message, j / k open the next and previous rows, Archive moves only it", async ({
+  page,
+}) => {
   const [o, n] = three as [Original, Original, Original];
   await start(page);
-  const order = await page.locator("[role=row][data-row-id]").evaluateAll((rows) => rows.map((r) => r.getAttribute("data-row-id")));
+  const order = await page
+    .locator("[role=row][data-row-id]")
+    .evaluateAll((rows) => rows.map((r) => r.getAttribute("data-row-id")));
   const below = order[order.indexOf(n.id) + 1];
   expect(below).toBeTruthy();
 
@@ -125,7 +147,8 @@ test("Reply quotes the open message, j / k open the next and previous rows, Arch
 
   // Reply on the open message (Dave's) quotes it, not the conversation's newest (Carol's).
   // The seed's reply draft in this conversation opens inline first: the new composer is the other one.
-  const keys = () => page.locator("[data-compose-key]").evaluateAll((els) => els.map((e) => e.getAttribute("data-compose-key") ?? ""));
+  const keys = () =>
+    page.locator("[data-compose-key]").evaluateAll((els) => els.map((e) => e.getAttribute("data-compose-key") ?? ""));
   if (hasDraft) await expect(page.locator(".conv-inline-reply [data-compose-key]")).toBeVisible();
   const before = await keys();
   await page.locator(`#conv-message-${n.id}`).getByRole("button", { name: "Reply", exact: true }).first().click();
@@ -134,7 +157,9 @@ test("Reply quotes the open message, j / k open the next and previous rows, Arch
   const composer = page.locator(`[data-compose-key="${key}"]`);
   await expect(composer).toBeVisible();
   await composer.getByRole("button", { name: "Show trimmed content" }).click();
-  await expect.poll(async () => /On [^\n]*? wrote:/.exec(await composer.innerText())?.[0] ?? "").toContain("Dave Okafor");
+  await expect
+    .poll(async () => /On [^\n]*? wrote:/.exec(await composer.innerText())?.[0] ?? "")
+    .toContain("Dave Okafor");
   await composer.getByRole("button", { name: "Discard draft" }).click();
   await page.getByRole("button", { name: "Discard", exact: true }).click();
   await expect(composer).toHaveCount(0);
@@ -168,9 +193,13 @@ test("archiving two rows says 2 messages; the selection and Select all count mes
   await expect(page.getByText("2 messages selected")).toBeAttached();
   await page.getByRole("toolbar", { name: "Conversation actions" }).getByRole("button", { name: "Archive" }).click();
   await expect(page.getByRole("status").getByText("2 messages archived.")).toBeVisible();
-  await expect.poll(async () => [...(await jmapState([o.id, n.id])).values()].map((s) => s.inInbox)).toEqual([false, false]);
+  await expect
+    .poll(async () => [...(await jmapState([o.id, n.id])).values()].map((s) => s.inInbox))
+    .toEqual([false, false]);
   await page.getByRole("button", { name: "Undo" }).click();
-  await expect.poll(async () => [...(await jmapState([o.id, n.id])).values()].map((s) => s.inInbox)).toEqual([true, true]);
+  await expect
+    .poll(async () => [...(await jmapState([o.id, n.id])).values()].map((s) => s.inInbox))
+    .toEqual([true, true]);
   await expect(row(page, n.id)).toBeVisible();
 
   await page.getByRole("checkbox", { name: "Select all" }).check();

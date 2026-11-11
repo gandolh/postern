@@ -110,7 +110,11 @@ export class EventStreamParser {
 
   #dispatch(): void {
     if (this.#hasData) {
-      this.#handlers.onEvent({ type: this.#type || "message", data: this.#data.join("\n"), lastEventId: this.#lastEventId });
+      this.#handlers.onEvent({
+        type: this.#type || "message",
+        data: this.#data.join("\n"),
+        lastEventId: this.#lastEventId,
+      });
     }
     this.#reset();
   }

@@ -20,7 +20,13 @@ export interface SessionExpiredDialogProps {
 
 export function SessionExpiredDialog({ username, onSignIn, onSignOut }: SessionExpiredDialogProps) {
   return (
-    <Modal className="auth-dialog" label="Session expired" dismissible={false} onClose={() => {}} initialFocus="input[name=password]">
+    <Modal
+      className="auth-dialog"
+      label="Session expired"
+      dismissible={false}
+      onClose={() => {}}
+      initialFocus="input[name=password]"
+    >
       <SignInForm
         onSignIn={onSignIn}
         username={username}

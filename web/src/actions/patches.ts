@@ -172,5 +172,10 @@ export function subPlan(plan: MessagePlan, messageIds: Iterable<Id>): MessagePla
 
 /** The plan that undoes `plan` (its inverse as the update, and back). */
 export function reversePlan(plan: MessagePlan): MessagePlan {
-  return { update: plan.inverse, inverse: plan.update, conversationIds: plan.conversationIds, conversationOf: plan.conversationOf };
+  return {
+    update: plan.inverse,
+    inverse: plan.update,
+    conversationIds: plan.conversationIds,
+    conversationOf: plan.conversationOf,
+  };
 }

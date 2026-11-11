@@ -69,7 +69,10 @@ describe("subjects", () => {
 
 describe("threading headers", () => {
   it("replies to a first message", () => {
-    expect(threadingHeaders({ messageId: ["a@x"], inReplyTo: null, references: null })).toEqual({ inReplyTo: ["a@x"], references: ["a@x"] });
+    expect(threadingHeaders({ messageId: ["a@x"], inReplyTo: null, references: null })).toEqual({
+      inReplyTo: ["a@x"],
+      references: ["a@x"],
+    });
   });
 
   it("extends References with the original's Message-ID", () => {
@@ -80,11 +83,17 @@ describe("threading headers", () => {
   });
 
   it("falls back to In-Reply-To when References is missing", () => {
-    expect(threadingHeaders({ messageId: ["b@x"], inReplyTo: ["a@x"], references: null }).references).toEqual(["a@x", "b@x"]);
+    expect(threadingHeaders({ messageId: ["b@x"], inReplyTo: ["a@x"], references: null }).references).toEqual([
+      "a@x",
+      "b@x",
+    ]);
   });
 
   it("does not repeat an id", () => {
-    expect(threadingHeaders({ messageId: ["b@x"], inReplyTo: null, references: ["a@x", "b@x"] }).references).toEqual(["a@x", "b@x"]);
+    expect(threadingHeaders({ messageId: ["b@x"], inReplyTo: null, references: ["a@x", "b@x"] }).references).toEqual([
+      "a@x",
+      "b@x",
+    ]);
   });
 
   it("trims a long References list, keeping the first and the newest", () => {
@@ -97,7 +106,10 @@ describe("threading headers", () => {
   });
 
   it("has nothing to point at without a Message-ID", () => {
-    expect(threadingHeaders({ messageId: null, inReplyTo: null, references: null })).toEqual({ inReplyTo: null, references: null });
+    expect(threadingHeaders({ messageId: null, inReplyTo: null, references: null })).toEqual({
+      inReplyTo: null,
+      references: null,
+    });
   });
 
   it("makes a Message-ID at the sender's domain", () => {
@@ -108,16 +120,38 @@ describe("threading headers", () => {
 
 describe("addresses", () => {
   it("validates plain addresses", () => {
-    for (const ok of ["bob@postern.test", "a.b+c@sub.example.org", "x_y@ex-ample.co.uk", "o'neil@example.ie", "jürgen@münchen.de"]) {
+    for (const ok of [
+      "bob@postern.test",
+      "a.b+c@sub.example.org",
+      "x_y@ex-ample.co.uk",
+      "o'neil@example.ie",
+      "jürgen@münchen.de",
+    ]) {
       expect(isValidEmail(ok), ok).toBe(true);
     }
-    for (const bad of ["", "bob", "bob@", "@x.test", "bob@localhost", "bob@x", "bob@@x.test", "a..b@x.test", ".a@x.test", "bob@x.t", "bob@-x.test", "bob @x.test", "bob@x.test>"]) {
+    for (const bad of [
+      "",
+      "bob",
+      "bob@",
+      "@x.test",
+      "bob@localhost",
+      "bob@x",
+      "bob@@x.test",
+      "a..b@x.test",
+      ".a@x.test",
+      "bob@x.t",
+      "bob@-x.test",
+      "bob @x.test",
+      "bob@x.test>",
+    ]) {
       expect(isValidEmail(bad), bad).toBe(false);
     }
   });
 
   it("parses a pasted list", () => {
-    const list = parseAddressList(`Bob Baker <bob@postern.test>, "Smith, Jo" <jo@example.org>; carol@example.org\ndave@example.org (Dave D), not an address, <eve@example.org>, mailto:fay@example.org`);
+    const list = parseAddressList(
+      `Bob Baker <bob@postern.test>, "Smith, Jo" <jo@example.org>; carol@example.org\ndave@example.org (Dave D), not an address, <eve@example.org>, mailto:fay@example.org`,
+    );
     expect(list.map((a) => [a.name, a.email, a.valid])).toEqual([
       ["Bob Baker", "bob@postern.test", true],
       ["Smith, Jo", "jo@example.org", true],
@@ -134,11 +168,16 @@ describe("addresses", () => {
     expect(formatAddress(bob)).toBe("Bob Baker <bob@postern.test>");
     expect(formatAddress({ name: "Smith, Jo", email: "jo@x.test" })).toBe('"Smith, Jo" <jo@x.test>');
     expect(formatAddress({ name: null, email: "jo@x.test" })).toBe("jo@x.test");
-    expect(parseAddressList(formatAddress({ name: 'Jo "JJ" Smith', email: "jo@x.test" }))[0]).toMatchObject({ name: 'Jo "JJ" Smith', email: "jo@x.test" });
+    expect(parseAddressList(formatAddress({ name: 'Jo "JJ" Smith', email: "jo@x.test" }))[0]).toMatchObject({
+      name: 'Jo "JJ" Smith',
+      email: "jo@x.test",
+    });
   });
 
   it("dedupes case-insensitively and excludes", () => {
-    expect(dedupeAddresses([bob, { name: null, email: "BOB@postern.test" }, carol], ["carol@EXAMPLE.org"])).toEqual([bob]);
+    expect(dedupeAddresses([bob, { name: null, email: "BOB@postern.test" }, carol], ["carol@EXAMPLE.org"])).toEqual([
+      bob,
+    ]);
   });
 });
 
@@ -146,7 +185,11 @@ describe("reply recipients", () => {
   const me = ["alice@postern.test", "alice@other.test"];
 
   it("replies to the sender", () => {
-    expect(replyRecipients({ from: [bob], to: [alice, carol], cc: [dave], replyTo: null }, "reply", me)).toEqual({ to: [bob], cc: [], bcc: [] });
+    expect(replyRecipients({ from: [bob], to: [alice, carol], cc: [dave], replyTo: null }, "reply", me)).toEqual({
+      to: [bob],
+      cc: [],
+      bcc: [],
+    });
   });
 
   it("uses Reply-To over From", () => {
@@ -154,24 +197,46 @@ describe("reply recipients", () => {
   });
 
   it("replies to all: sender and To in To, Cc kept, me left out", () => {
-    const r = replyRecipients({ from: [bob], to: [alice, carol], cc: [dave, { name: "Alice", email: "ALICE@postern.test" }], replyTo: null }, "replyAll", me);
+    const r = replyRecipients(
+      { from: [bob], to: [alice, carol], cc: [dave, { name: "Alice", email: "ALICE@postern.test" }], replyTo: null },
+      "replyAll",
+      me,
+    );
     expect(r).toEqual({ to: [bob, carol], cc: [dave], bcc: [] });
   });
 
   it("leaves out every identity, not just the account", () => {
-    const r = replyRecipients({ from: [bob], to: [{ name: null, email: "alice@other.test" }, carol], cc: null, replyTo: null }, "replyAll", me);
+    const r = replyRecipients(
+      { from: [bob], to: [{ name: null, email: "alice@other.test" }, carol], cc: null, replyTo: null },
+      "replyAll",
+      me,
+    );
     expect(r.to).toEqual([bob, carol]);
   });
 
   it("does not repeat an address in To and Cc", () => {
-    const r = replyRecipients({ from: [bob], to: [carol], cc: [{ name: null, email: "Carol@example.org" }, dave, bob], replyTo: null }, "replyAll", me);
+    const r = replyRecipients(
+      { from: [bob], to: [carol], cc: [{ name: null, email: "Carol@example.org" }, dave, bob], replyTo: null },
+      "replyAll",
+      me,
+    );
     expect(r).toEqual({ to: [bob, carol], cc: [dave], bcc: [] });
   });
 
   it("follows up on my own message to the same people", () => {
-    const own = { from: [alice], to: [bob, carol], cc: [dave], bcc: [{ name: null, email: "eve@example.org" }], replyTo: null };
+    const own = {
+      from: [alice],
+      to: [bob, carol],
+      cc: [dave],
+      bcc: [{ name: null, email: "eve@example.org" }],
+      replyTo: null,
+    };
     expect(replyRecipients(own, "reply", me)).toEqual({ to: [bob, carol], cc: [], bcc: [] });
-    expect(replyRecipients(own, "replyAll", me)).toEqual({ to: [bob, carol], cc: [dave], bcc: [{ name: null, email: "eve@example.org" }] });
+    expect(replyRecipients(own, "replyAll", me)).toEqual({
+      to: [bob, carol],
+      cc: [dave],
+      bcc: [{ name: null, email: "eve@example.org" }],
+    });
   });
 
   it("keeps me when I am the only one (a note to myself)", () => {
@@ -179,22 +244,39 @@ describe("reply recipients", () => {
   });
 
   it("moves Cc to To when To would be empty", () => {
-    expect(replyRecipients({ from: [alice], to: [], cc: [carol], replyTo: null }, "replyAll", me)).toEqual({ to: [carol], cc: [], bcc: [] });
+    expect(replyRecipients({ from: [alice], to: [], cc: [carol], replyTo: null }, "replyAll", me)).toEqual({
+      to: [carol],
+      cc: [],
+      bcc: [],
+    });
   });
 
   it("picks the identity the original was sent to", () => {
-    expect(replyIdentityEmail({ to: [bob], cc: [{ name: null, email: "ALICE@other.test" }] }, me)).toBe("alice@other.test");
+    expect(replyIdentityEmail({ to: [bob], cc: [{ name: null, email: "ALICE@other.test" }] }, me)).toBe(
+      "alice@other.test",
+    );
     expect(replyIdentityEmail({ to: [bob] }, me)).toBeNull();
   });
 });
 
 describe("quoting", () => {
-  const original = { from: [bob], to: [alice], cc: [carol], subject: "Lisbon", sentAt: "2026-10-20T10:05:00Z", receivedAt: "2026-10-20T10:06:00Z" };
+  const original = {
+    from: [bob],
+    to: [alice],
+    cc: [carol],
+    subject: "Lisbon",
+    sentAt: "2026-10-20T10:05:00Z",
+    receivedAt: "2026-10-20T10:06:00Z",
+  };
   const fmt = { locale: "en-US", timeZone: "UTC" };
 
   it("writes Gmail's attribution line", () => {
-    expect(quoteAttribution(original, fmt)).toBe("On Tue, Oct 20, 2026 at 10:05 AM, Bob Baker <bob@postern.test> wrote:");
-    expect(quoteAttribution({ ...original, from: [dave], sentAt: null }, fmt)).toBe("On Tue, Oct 20, 2026 at 10:06 AM, dave@example.org wrote:");
+    expect(quoteAttribution(original, fmt)).toBe(
+      "On Tue, Oct 20, 2026 at 10:05 AM, Bob Baker <bob@postern.test> wrote:",
+    );
+    expect(quoteAttribution({ ...original, from: [dave], sentAt: null }, fmt)).toBe(
+      "On Tue, Oct 20, 2026 at 10:06 AM, dave@example.org wrote:",
+    );
   });
 
   it("prefixes quoted lines", () => {
@@ -202,8 +284,14 @@ describe("quoting", () => {
   });
 
   it("builds the reply quote from text, escaped", () => {
-    const q = replyQuote({ ...original, from: [{ name: "Bob <script>", email: "bob@postern.test" }] }, "Hi <b>Alice</b> & co\n\nBob\n", fmt);
-    expect(q.text).toBe("On Tue, Oct 20, 2026 at 10:05 AM, Bob <script> <bob@postern.test> wrote:\n> Hi <b>Alice</b> & co\n>\n> Bob");
+    const q = replyQuote(
+      { ...original, from: [{ name: "Bob <script>", email: "bob@postern.test" }] },
+      "Hi <b>Alice</b> & co\n\nBob\n",
+      fmt,
+    );
+    expect(q.text).toBe(
+      "On Tue, Oct 20, 2026 at 10:05 AM, Bob <script> <bob@postern.test> wrote:\n> Hi <b>Alice</b> & co\n>\n> Bob",
+    );
     expect(q.html).toContain('<div class="gmail_quote postern_quote">');
     expect(q.html).toContain("Bob &lt;script&gt; &lt;bob@postern.test&gt; wrote:");
     expect(q.html).toContain("<div>Hi &lt;b&gt;Alice&lt;/b&gt; &amp; co</div><div><br></div><div>Bob</div>");
@@ -243,13 +331,24 @@ describe("quoting", () => {
 
 describe("the attached warning", () => {
   it("notices the words Gmail notices", () => {
-    for (const text of ["I've attached the plan.", "See the attachment", "Attachments below", "Enclosed is the invoice", "attaching the file now"]) {
+    for (const text of [
+      "I've attached the plan.",
+      "See the attachment",
+      "Attachments below",
+      "Enclosed is the invoice",
+      "attaching the file now",
+    ]) {
       expect(mentionsAttachment(text), text).toBe(true);
     }
   });
 
   it("ignores other words and quoted lines", () => {
-    for (const text of ["Thanks, see you Tuesday", "The detachment arrived", "> I attached it last time", "unattached"]) {
+    for (const text of [
+      "Thanks, see you Tuesday",
+      "The detachment arrived",
+      "> I attached it last time",
+      "unattached",
+    ]) {
       expect(mentionsAttachment(text), text).toBe(false);
     }
   });
@@ -260,7 +359,10 @@ describe("the MIME body", () => {
   const png = { blobId: "B-png", type: "image/png", name: "dot.png", cid: "img1@postern" };
 
   it("is text/plain alone in plain-text mode", () => {
-    expect(buildBody({ html: null, text: "Hi", attachments: [] })).toEqual({ bodyStructure: { partId: "text", type: "text/plain" }, bodyValues: { text: { value: "Hi" } } });
+    expect(buildBody({ html: null, text: "Hi", attachments: [] })).toEqual({
+      bodyStructure: { partId: "text", type: "text/plain" },
+      bodyValues: { text: { value: "Hi" } },
+    });
   });
 
   it("is multipart/alternative with HTML", () => {
@@ -276,7 +378,12 @@ describe("the MIME body", () => {
   });
 
   it("puts inline images with the HTML in multipart/related, and attachments in multipart/mixed", () => {
-    const { bodyStructure } = buildBody({ html: '<div>Hi<img src="cid:img1@postern"></div>', text: "Hi", attachments: [pdf], inline: [png] });
+    const { bodyStructure } = buildBody({
+      html: '<div>Hi<img src="cid:img1@postern"></div>',
+      text: "Hi",
+      attachments: [pdf],
+      inline: [png],
+    });
     expect(bodyStructure).toEqual({
       type: "multipart/mixed",
       subParts: [
@@ -305,7 +412,11 @@ describe("the MIME body", () => {
   });
 
   it("finds cid references however they are quoted", () => {
-    expect([...referencedCids(`<img src="cid:A@x"><img src='cid:b%40y'><img src=cid:c@z>`)]).toEqual(["a@x", "b@y", "c@z"]);
+    expect([...referencedCids(`<img src="cid:A@x"><img src='cid:b%40y'><img src=cid:c@z>`)]).toEqual([
+      "a@x",
+      "b@y",
+      "c@z",
+    ]);
   });
 
   it("builds a reply draft", () => {
@@ -343,13 +454,27 @@ describe("the MIME body", () => {
   });
 
   it("forwards attachments by blobId", () => {
-    expect(forwardAttachments([{ blobId: "x", type: "", name: "a.bin", size: 3 }, { blobId: null, type: "text/plain", name: null, size: 0 }])).toEqual([
-      { blobId: "x", type: "application/octet-stream", name: "a.bin", size: 3 },
-    ]);
+    expect(
+      forwardAttachments([
+        { blobId: "x", type: "", name: "a.bin", size: 3 },
+        { blobId: null, type: "text/plain", name: null, size: 0 },
+      ]),
+    ).toEqual([{ blobId: "x", type: "application/octet-stream", name: "a.bin", size: 3 }]);
   });
 
   it("reads a saved draft's files back", () => {
-    const part = (p: Partial<EmailBodyPart>): EmailBodyPart => ({ partId: null, blobId: null, size: 0, name: null, type: "", charset: null, disposition: null, cid: null, location: null, ...p });
+    const part = (p: Partial<EmailBodyPart>): EmailBodyPart => ({
+      partId: null,
+      blobId: null,
+      size: 0,
+      name: null,
+      type: "",
+      charset: null,
+      disposition: null,
+      cid: null,
+      location: null,
+      ...p,
+    });
     const structure = part({
       type: "multipart/mixed",
       subParts: [
@@ -357,10 +482,30 @@ describe("the MIME body", () => {
           type: "multipart/alternative",
           subParts: [
             part({ partId: "1", blobId: "t", type: "text/plain" }),
-            part({ type: "multipart/related", subParts: [part({ partId: "2", blobId: "h", type: "text/html" }), part({ partId: "3", blobId: "i", type: "image/png", cid: "img1@postern", disposition: "inline", name: "dot.png" })] }),
+            part({
+              type: "multipart/related",
+              subParts: [
+                part({ partId: "2", blobId: "h", type: "text/html" }),
+                part({
+                  partId: "3",
+                  blobId: "i",
+                  type: "image/png",
+                  cid: "img1@postern",
+                  disposition: "inline",
+                  name: "dot.png",
+                }),
+              ],
+            }),
           ],
         }),
-        part({ partId: "4", blobId: "p", type: "application/pdf", name: "plan.pdf", disposition: "attachment", size: 9 }),
+        part({
+          partId: "4",
+          blobId: "p",
+          type: "application/pdf",
+          name: "plan.pdf",
+          disposition: "attachment",
+          size: 9,
+        }),
         part({ partId: "5", blobId: "n", type: "text/plain", name: "notes.txt", disposition: "attachment" }),
       ],
     });

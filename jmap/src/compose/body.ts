@@ -103,19 +103,27 @@ export function buildBody(content: Pick<DraftContent, "html" | "text" | "attachm
       return true;
     });
     const htmlSide: Partial<EmailBodyPart> = inline.length
-      ? { type: "multipart/related", subParts: [htmlPart, ...inline.map((a) => blobPart(a, "inline"))] as EmailBodyPart[] }
+      ? {
+          type: "multipart/related",
+          subParts: [htmlPart, ...inline.map((a) => blobPart(a, "inline"))] as EmailBodyPart[],
+        }
       : htmlPart;
     main = { type: "multipart/alternative", subParts: [textPart, htmlSide] as EmailBodyPart[] };
   }
 
   const bodyStructure: Partial<EmailBodyPart> = content.attachments.length
-    ? { type: "multipart/mixed", subParts: [main, ...content.attachments.map((a) => blobPart(a, "attachment"))] as EmailBodyPart[] }
+    ? {
+        type: "multipart/mixed",
+        subParts: [main, ...content.attachments.map((a) => blobPart(a, "attachment"))] as EmailBodyPart[],
+      }
     : main;
   return { bodyStructure, bodyValues };
 }
 
 const list = (addresses: readonly EmailAddress[] | null | undefined): EmailAddress[] | null =>
-  addresses && addresses.length ? addresses.map((a) => ({ name: a.name?.trim() || null, email: a.email.trim() })) : null;
+  addresses && addresses.length
+    ? addresses.map((a) => ({ name: a.name?.trim() || null, email: a.email.trim() }))
+    : null;
 
 /** The Email/set create object for a draft in the Drafts mailbox, with `$draft` and `$seen`. */
 export function buildDraftEmail(content: DraftContent, placement: DraftPlacement): EmailCreate {
@@ -146,7 +154,9 @@ export function buildDraftEmail(content: DraftContent, placement: DraftPlacement
 }
 
 /** The parts of a message a forward carries: its attachments, reused by blobId (no download, no upload). */
-export function forwardAttachments(parts: readonly Pick<EmailBodyPart, "blobId" | "type" | "name" | "size">[] | null | undefined): DraftAttachment[] {
+export function forwardAttachments(
+  parts: readonly Pick<EmailBodyPart, "blobId" | "type" | "name" | "size">[] | null | undefined,
+): DraftAttachment[] {
   const out: DraftAttachment[] = [];
   for (const p of parts ?? []) {
     if (!p.blobId) continue;
@@ -160,7 +170,10 @@ export function forwardAttachments(parts: readonly Pick<EmailBodyPart, "blobId" 
  * inside multipart/related) and attachments (everything else that is not one
  * of the two bodies).
  */
-export function draftParts(bodyStructure: EmailBodyPart | null | undefined): { attachments: DraftAttachment[]; inline: DraftAttachment[] } {
+export function draftParts(bodyStructure: EmailBodyPart | null | undefined): {
+  attachments: DraftAttachment[];
+  inline: DraftAttachment[];
+} {
   const attachments: DraftAttachment[] = [];
   const inline: DraftAttachment[] = [];
   const bodiesSeen = { text: false, html: false };
@@ -182,7 +195,8 @@ export function draftParts(bodyStructure: EmailBodyPart | null | undefined): { a
       return;
     }
     const file: DraftAttachment = { blobId: part.blobId, type: part.type, name: part.name, size: part.size };
-    if (part.cid && !isAttachment && (inRelated || part.disposition?.toLowerCase() === "inline")) inline.push({ ...file, cid: part.cid });
+    if (part.cid && !isAttachment && (inRelated || part.disposition?.toLowerCase() === "inline"))
+      inline.push({ ...file, cid: part.cid });
     else attachments.push(file);
   };
   if (bodyStructure) walk(bodyStructure, false);

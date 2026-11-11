@@ -129,7 +129,11 @@ export interface LabelsSnapshot {
 }
 
 function byOrder(a: Label, b: Label): number {
-  return a.sortOrder - b.sortOrder || a.title.localeCompare(b.title, undefined, { sensitivity: "base" }) || (a.id < b.id ? -1 : 1);
+  return (
+    a.sortOrder - b.sortOrder ||
+    a.title.localeCompare(b.title, undefined, { sensitivity: "base" }) ||
+    (a.id < b.id ? -1 : 1)
+  );
 }
 
 function pathOf(mailbox: Mailbox, byId: ReadonlyMap<Id, Mailbox>): string {
@@ -153,7 +157,9 @@ function systemBadge(info: SystemLabelInfo, label: Label | undefined): number | 
 }
 
 /** The parts of a snapshot built from the mailboxes. Pure. */
-export function buildLabels(mailboxes: readonly Mailbox[]): Pick<LabelsSnapshot, "labels" | "byId" | "system" | "tree" | "hidden"> {
+export function buildLabels(
+  mailboxes: readonly Mailbox[],
+): Pick<LabelsSnapshot, "labels" | "byId" | "system" | "tree" | "hidden"> {
   const mailboxById = new Map<Id, Mailbox>(mailboxes.map((m) => [m.id, m]));
 
   // A role belongs to the first mailbox holding it; a second one is an ordinary label.
@@ -247,7 +253,10 @@ export interface ResolvedLabel {
  * The label a route shows. Null when it is a user label the account does not
  * have (deleted, or a stale link), or while the labels are still loading.
  */
-export function resolveLabelRoute(route: LabelRoute, snapshot: Pick<LabelsSnapshot, "byId" | "system">): ResolvedLabel | null {
+export function resolveLabelRoute(
+  route: LabelRoute,
+  snapshot: Pick<LabelsSnapshot, "byId" | "system">,
+): ResolvedLabel | null {
   if (route.kind === "system") {
     const entry = snapshot.system[route.view];
     return {

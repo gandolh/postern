@@ -7,7 +7,15 @@
 // and make an object URL.
 
 import { JmapLimitError, JmapProtocolError } from "./errors.js";
-import { assertOk, authorizedFetch, httpError, safeFetch, withAuthRetry, type AuthProvider, type FetchLike } from "./http.js";
+import {
+  assertOk,
+  authorizedFetch,
+  httpError,
+  safeFetch,
+  withAuthRetry,
+  type AuthProvider,
+  type FetchLike,
+} from "./http.js";
 import type { Limiter } from "./limiter.js";
 import type { DownloadParams, Session } from "./session.js";
 import type { Id, UploadResponse } from "./types/core.js";
@@ -72,7 +80,12 @@ export function fetchUploadTransport(fetchImpl: FetchLike): UploadTransport {
       });
       const text = await res.text();
       if (res.ok) req.onProgress?.({ loaded: total, total });
-      return { status: res.status, statusText: res.statusText, body: text, contentType: res.headers.get("content-type") };
+      return {
+        status: res.status,
+        statusText: res.statusText,
+        body: text,
+        contentType: res.headers.get("content-type"),
+      };
     },
   };
 }
@@ -111,7 +124,10 @@ export class BlobMethods {
     const session = await this.#d.ensureSession(options.signal);
     const size = bodySize(body);
     if (size > session.limits.maxSizeUpload) {
-      throw new JmapLimitError("maxSizeUpload", `Upload of ${size} bytes is over the server's ${session.limits.maxSizeUpload}`);
+      throw new JmapLimitError(
+        "maxSizeUpload",
+        `Upload of ${size} bytes is over the server's ${session.limits.maxSizeUpload}`,
+      );
     }
     const url = session.uploadUrlFor(options.accountId);
     const result = await this.#d.uploads.run(() =>
@@ -135,7 +151,8 @@ export class BlobMethods {
     } catch {
       throw new JmapProtocolError("Upload response is not JSON");
     }
-    if (!parsed || typeof (parsed as UploadResponse).blobId !== "string") throw new JmapProtocolError("Upload response has no blobId");
+    if (!parsed || typeof (parsed as UploadResponse).blobId !== "string")
+      throw new JmapProtocolError("Upload response has no blobId");
     return parsed as UploadResponse;
   }
 
@@ -147,7 +164,9 @@ export class BlobMethods {
   /** Download a blob with Authorization. Turn it into an object URL or save it. @throws JmapHttpError on 404 etc. */
   async download(params: DownloadParams, options: { signal?: AbortSignal } = {}): Promise<Response> {
     const session = await this.#d.ensureSession(options.signal);
-    const res = await authorizedFetch(this.#d.fetch, this.#d.auth, session.downloadUrlFor(params), { signal: options.signal });
+    const res = await authorizedFetch(this.#d.fetch, this.#d.auth, session.downloadUrlFor(params), {
+      signal: options.signal,
+    });
     return assertOk(res);
   }
 

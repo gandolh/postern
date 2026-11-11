@@ -27,17 +27,34 @@ function attachments(): SeedEmail[] {
     messageId: INLINE_IMAGES_MESSAGE_ID,
     text: "Two favourites from the offsite are inline below; the group photo is attached.\n\nBob",
     html:
-      "<html><body><div dir=\"ltr\"><p>Two favourites from the offsite:</p>\n" +
+      '<html><body><div dir="ltr"><p>Two favourites from the offsite:</p>\n' +
       '<p><img src="cid:offsite-1@postern.test" alt="The lake at dawn" width="240" height="160"></p>\n' +
       '<p><img src="cid:offsite-2@postern.test" alt="The boathouse at sunset" width="240" height="160"></p>\n' +
       "<p>The group photo is attached.</p><p>Bob</p></div></body></html>",
     inline: [
-      { filename: "lake.png", type: "image/png", data: png(240, 160, [14, 116, 144], [134, 239, 172]), contentId: "offsite-1@postern.test" },
-      { filename: "boathouse.png", type: "image/png", data: png(240, 160, [91, 33, 182], [251, 146, 60]), contentId: "offsite-2@postern.test" },
+      {
+        filename: "lake.png",
+        type: "image/png",
+        data: png(240, 160, [14, 116, 144], [134, 239, 172]),
+        contentId: "offsite-1@postern.test",
+      },
+      {
+        filename: "boathouse.png",
+        type: "image/png",
+        data: png(240, 160, [91, 33, 182], [251, 146, 60]),
+        contentId: "offsite-2@postern.test",
+      },
     ],
-    attachments: [{ filename: "group-photo.png", type: "image/png", data: png(320, 200, [190, 18, 60], [253, 224, 71]) }],
+    attachments: [
+      { filename: "group-photo.png", type: "image/png", data: png(320, 200, [190, 18, 60], [253, 224, 71]) },
+    ],
   };
-  out.push(seed({ ...offsite, key: "alice/offsite" }, { account: "alice", mailboxes: ["inbox"], keywords: ["$seen", "$flagged"] }));
+  out.push(
+    seed(
+      { ...offsite, key: "alice/offsite" },
+      { account: "alice", mailboxes: ["inbox"], keywords: ["$seen", "$flagged"] },
+    ),
+  );
   out.push(seed({ ...offsite, key: "bob/offsite" }, { account: "bob", mailboxes: ["sent"] }));
 
   const contract: MessageSpec = {
@@ -63,7 +80,12 @@ function attachments(): SeedEmail[] {
       },
     ],
   };
-  out.push(seed({ ...contract, key: "alice/contract" }, { account: "alice", mailboxes: ["inbox", "label:Work", "label:Work/Clients"], keywords: [] }));
+  out.push(
+    seed(
+      { ...contract, key: "alice/contract" },
+      { account: "alice", mailboxes: ["inbox", "label:Work", "label:Work/Clients"], keywords: [] },
+    ),
+  );
   out.push(seed({ ...contract, key: "bob/contract" }, { account: "bob", mailboxes: ["sent"] }));
 
   // A calendar invitation: the iCalendar as an alternative part and as a file.
@@ -169,7 +191,9 @@ function attachments(): SeedEmail[] {
         messageId: LARGE_MESSAGE_ID,
         text: "Alice, the full export from the summer survey is attached (about 5 MB of CSV). Shout if the columns need explaining.\n\nDave",
         get attachments() {
-          return [{ filename: "survey-2026-full.csv", type: "text/csv", data: largeCsv(LARGE_ATTACHMENT_BYTES, 20261001) }];
+          return [
+            { filename: "survey-2026-full.csv", type: "text/csv", data: largeCsv(LARGE_ATTACHMENT_BYTES, 20261001) },
+          ];
         },
       },
       { account: "alice", mailboxes: ["inbox", "label:Work"] },
@@ -269,43 +293,217 @@ interface Simple {
 function simple(account: SeedEmail["account"], s: Simple): SeedEmail {
   const domain = s.from.email.slice(s.from.email.indexOf("@") + 1);
   return seed(
-    { key: `${account}/${s.slug}`, from: s.from, to: s.to, subject: s.subject, date: s.date, messageId: `${s.slug}@${domain}`, text: s.text },
+    {
+      key: `${account}/${s.slug}`,
+      from: s.from,
+      to: s.to,
+      subject: s.subject,
+      date: s.date,
+      messageId: `${s.slug}@${domain}`,
+      text: s.text,
+    },
     { account, mailboxes: s.mailboxes, keywords: s.keywords },
   );
 }
 
 const ALICE_PLAIN: Simple[] = [
-  { slug: "sam-climbing", from: P.sam, to: [P.alice], subject: "Climbing on Thursday?", text: "The wall has a new set of routes. Thursday at 7?\n\nSam", date: daysBefore(0, 8, 10), mailboxes: ["inbox"], keywords: [] },
-  { slug: "marta-boiler", from: P.marta, to: [P.alice], subject: "Boiler service on the 14th", text: "Dear Alice,\n\nThe engineer will service the boiler on the 14th between 9 and 12. Please make sure someone is in.\n\nKind regards,\nMarta Kowalski\nLettings", date: daysBefore(11, 9, 0), mailboxes: ["inbox"] },
-  { slug: "parcel-locker", from: { name: "Parcel Lockers", email: "noreply@lockers.example.com" }, to: [P.alice], subject: "Your parcel is ready to collect", text: "Your parcel is in locker 14 at Mill Street station.\nCollect within 72 hours.", date: daysBefore(4, 16, 45), mailboxes: ["inbox"] },
-  { slug: "erin-postcard", from: P.erin, to: [P.alice], subject: "A postcard from Porto", text: "Porto is all hills and tiles. I thought of our Lisbon week the whole time.\n\nE.", date: daysBefore(25, 19, 30), mailboxes: ["archive"] },
-  { slug: "dave-rates", from: P.dave, to: [P.alice], subject: "Day rates for 2027", text: "Hi Alice,\n\nMy day rate goes up 5% from January. Happy to talk it through.\n\nDave", date: daysBefore(33, 10, 0), mailboxes: ["label:Work"] },
+  {
+    slug: "sam-climbing",
+    from: P.sam,
+    to: [P.alice],
+    subject: "Climbing on Thursday?",
+    text: "The wall has a new set of routes. Thursday at 7?\n\nSam",
+    date: daysBefore(0, 8, 10),
+    mailboxes: ["inbox"],
+    keywords: [],
+  },
+  {
+    slug: "marta-boiler",
+    from: P.marta,
+    to: [P.alice],
+    subject: "Boiler service on the 14th",
+    text: "Dear Alice,\n\nThe engineer will service the boiler on the 14th between 9 and 12. Please make sure someone is in.\n\nKind regards,\nMarta Kowalski\nLettings",
+    date: daysBefore(11, 9, 0),
+    mailboxes: ["inbox"],
+  },
+  {
+    slug: "parcel-locker",
+    from: { name: "Parcel Lockers", email: "noreply@lockers.example.com" },
+    to: [P.alice],
+    subject: "Your parcel is ready to collect",
+    text: "Your parcel is in locker 14 at Mill Street station.\nCollect within 72 hours.",
+    date: daysBefore(4, 16, 45),
+    mailboxes: ["inbox"],
+  },
+  {
+    slug: "erin-postcard",
+    from: P.erin,
+    to: [P.alice],
+    subject: "A postcard from Porto",
+    text: "Porto is all hills and tiles. I thought of our Lisbon week the whole time.\n\nE.",
+    date: daysBefore(25, 19, 30),
+    mailboxes: ["archive"],
+  },
+  {
+    slug: "dave-rates",
+    from: P.dave,
+    to: [P.alice],
+    subject: "Day rates for 2027",
+    text: "Hi Alice,\n\nMy day rate goes up 5% from January. Happy to talk it through.\n\nDave",
+    date: daysBefore(33, 10, 0),
+    mailboxes: ["label:Work"],
+  },
 ];
 
 /** Alice writes to people she has no other mail from: Other contacts. */
 const ALICE_SENT: Simple[] = [
-  { slug: "to-erin-photos", from: P.alice, to: [P.erin], subject: "Lisbon photos", text: "Erin, my Lisbon photos are in the shared album now. The terrace sunset came out well.", date: daysBefore(130, 20, 0), mailboxes: ["sent"] },
-  { slug: "to-marta-keys", from: P.alice, to: [P.marta], subject: "Spare keys", text: "Hi Marta, could you post the spare keys? The ones I have stick in the lock.", date: daysBefore(40, 8, 30), mailboxes: ["sent"] },
-  { slug: "to-plumber", from: P.alice, to: [{ name: "FixIt Plumbing", email: "info@fixit.example.com" }], subject: "Leaking kitchen tap", text: "Hello, the kitchen tap drips constantly. Could someone come this week?", date: daysBefore(55, 7, 45), mailboxes: ["sent"] },
-  { slug: "to-clinic", from: P.alice, to: [{ name: "Riverside Clinic", email: "appointments@clinic.example.org" }], subject: "Moving my appointment", text: "Could I move my appointment on the 3rd to the following week?", date: daysBefore(70, 9, 5), mailboxes: ["sent"] },
-  { slug: "to-gina", from: P.alice, to: [{ name: "Gina Rossi", email: "gina.rossi@example.com" }], subject: "Recipe, as promised", text: "Gina, here is the lentil soup recipe: lentils, onion, cumin, lemon. Lots of lemon.", date: daysBefore(95, 18, 20), mailboxes: ["sent"] },
-  { slug: "to-tomasz", from: P.alice, to: [{ name: "Tomasz Nowak", email: "tomasz@nowak.example.net" }], subject: "Bike for sale", text: "Hi Tomasz, is the blue bike still for sale? I could come by on Saturday.", date: daysBefore(210, 12, 0), mailboxes: ["sent"] },
-  { slug: "to-bob-slides", from: P.alice, to: [P.bob], subject: "Slides for Thursday", text: "Bob, the slides for Thursday are in the shared folder. Comments welcome.", date: daysBefore(15, 17, 0), mailboxes: ["sent"] },
-  { slug: "to-priya-book", from: P.alice, to: [P.priya], subject: "Borrowing your copy", text: "Priya, could I borrow your copy of the Le Guin? Mine has vanished.", date: daysBefore(45, 21, 10), mailboxes: ["sent"] },
+  {
+    slug: "to-erin-photos",
+    from: P.alice,
+    to: [P.erin],
+    subject: "Lisbon photos",
+    text: "Erin, my Lisbon photos are in the shared album now. The terrace sunset came out well.",
+    date: daysBefore(130, 20, 0),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-marta-keys",
+    from: P.alice,
+    to: [P.marta],
+    subject: "Spare keys",
+    text: "Hi Marta, could you post the spare keys? The ones I have stick in the lock.",
+    date: daysBefore(40, 8, 30),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-plumber",
+    from: P.alice,
+    to: [{ name: "FixIt Plumbing", email: "info@fixit.example.com" }],
+    subject: "Leaking kitchen tap",
+    text: "Hello, the kitchen tap drips constantly. Could someone come this week?",
+    date: daysBefore(55, 7, 45),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-clinic",
+    from: P.alice,
+    to: [{ name: "Riverside Clinic", email: "appointments@clinic.example.org" }],
+    subject: "Moving my appointment",
+    text: "Could I move my appointment on the 3rd to the following week?",
+    date: daysBefore(70, 9, 5),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-gina",
+    from: P.alice,
+    to: [{ name: "Gina Rossi", email: "gina.rossi@example.com" }],
+    subject: "Recipe, as promised",
+    text: "Gina, here is the lentil soup recipe: lentils, onion, cumin, lemon. Lots of lemon.",
+    date: daysBefore(95, 18, 20),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-tomasz",
+    from: P.alice,
+    to: [{ name: "Tomasz Nowak", email: "tomasz@nowak.example.net" }],
+    subject: "Bike for sale",
+    text: "Hi Tomasz, is the blue bike still for sale? I could come by on Saturday.",
+    date: daysBefore(210, 12, 0),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-bob-slides",
+    from: P.alice,
+    to: [P.bob],
+    subject: "Slides for Thursday",
+    text: "Bob, the slides for Thursday are in the shared folder. Comments welcome.",
+    date: daysBefore(15, 17, 0),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "to-priya-book",
+    from: P.alice,
+    to: [P.priya],
+    subject: "Borrowing your copy",
+    text: "Priya, could I borrow your copy of the Le Guin? Mine has vanished.",
+    date: daysBefore(45, 21, 10),
+    mailboxes: ["sent"],
+  },
 ];
 
 /** Obvious, harmless junk for the Spam label. */
 const ALICE_SPAM: Simple[] = [
-  { slug: "spam-socks", from: { name: "Prize Desk", email: "prizes@lucky.example.net" }, to: [P.alice], subject: "You have won a lifetime supply of socks!!!", text: "CONGRATULATIONS! Reply now to claim your socks. Offer ends soon!!!", date: daysBefore(2, 3, 14), mailboxes: ["junk"], keywords: ["$junk"] },
-  { slug: "spam-gnomes", from: { name: "Gnome Emporium", email: "sale@gnomes.example.org" }, to: [P.alice], subject: "Garden gnomes, 90% off, today only", text: "Every gnome must go. Bulk discounts for 50 gnomes or more.", date: daysBefore(5, 4, 2), mailboxes: ["junk"], keywords: ["$junk"] },
-  { slug: "spam-seo", from: { name: "Rank Wizard", email: "hello@rankwizard.example.com" }, to: [P.alice], subject: "Re: your website ranking", text: "Dear website owner, we can put you on page one of every search engine by Friday.", date: daysBefore(9, 2, 50), mailboxes: ["junk"], keywords: ["$junk", "$seen"] },
-  { slug: "spam-timeshare", from: { name: "Sunny Shares", email: "offers@sunnyshares.example.net" }, to: [P.alice], subject: "Your free holiday is waiting", text: "Spend 90 minutes with our advisers and win a free weekend away.", date: daysBefore(13, 5, 30), mailboxes: ["junk"], keywords: ["$junk"] },
+  {
+    slug: "spam-socks",
+    from: { name: "Prize Desk", email: "prizes@lucky.example.net" },
+    to: [P.alice],
+    subject: "You have won a lifetime supply of socks!!!",
+    text: "CONGRATULATIONS! Reply now to claim your socks. Offer ends soon!!!",
+    date: daysBefore(2, 3, 14),
+    mailboxes: ["junk"],
+    keywords: ["$junk"],
+  },
+  {
+    slug: "spam-gnomes",
+    from: { name: "Gnome Emporium", email: "sale@gnomes.example.org" },
+    to: [P.alice],
+    subject: "Garden gnomes, 90% off, today only",
+    text: "Every gnome must go. Bulk discounts for 50 gnomes or more.",
+    date: daysBefore(5, 4, 2),
+    mailboxes: ["junk"],
+    keywords: ["$junk"],
+  },
+  {
+    slug: "spam-seo",
+    from: { name: "Rank Wizard", email: "hello@rankwizard.example.com" },
+    to: [P.alice],
+    subject: "Re: your website ranking",
+    text: "Dear website owner, we can put you on page one of every search engine by Friday.",
+    date: daysBefore(9, 2, 50),
+    mailboxes: ["junk"],
+    keywords: ["$junk", "$seen"],
+  },
+  {
+    slug: "spam-timeshare",
+    from: { name: "Sunny Shares", email: "offers@sunnyshares.example.net" },
+    to: [P.alice],
+    subject: "Your free holiday is waiting",
+    text: "Spend 90 minutes with our advisers and win a free weekend away.",
+    date: daysBefore(13, 5, 30),
+    mailboxes: ["junk"],
+    keywords: ["$junk"],
+  },
 ];
 
 const ALICE_TRASH: Simple[] = [
-  { slug: "trash-webinar", from: { name: "Webinars Weekly", email: "events@webinars.example.com" }, to: [P.alice], subject: "Last chance: productivity webinar", text: "Starts in one hour. Save your seat.", date: daysBefore(6, 12, 0), mailboxes: ["trash"] },
-  { slug: "trash-survey", from: { name: "Customer Care", email: "survey@shop.example.org" }, to: [P.alice], subject: "How did we do?", text: "Rate your recent order from 1 to 10.", date: daysBefore(18, 15, 30), mailboxes: ["trash"] },
-  { slug: "trash-old-plan", from: P.sam, to: [P.alice], subject: "Old plan for Saturday", text: "Ignore this one, plans changed.", date: daysBefore(22, 9, 45), mailboxes: ["trash"], keywords: [] },
+  {
+    slug: "trash-webinar",
+    from: { name: "Webinars Weekly", email: "events@webinars.example.com" },
+    to: [P.alice],
+    subject: "Last chance: productivity webinar",
+    text: "Starts in one hour. Save your seat.",
+    date: daysBefore(6, 12, 0),
+    mailboxes: ["trash"],
+  },
+  {
+    slug: "trash-survey",
+    from: { name: "Customer Care", email: "survey@shop.example.org" },
+    to: [P.alice],
+    subject: "How did we do?",
+    text: "Rate your recent order from 1 to 10.",
+    date: daysBefore(18, 15, 30),
+    mailboxes: ["trash"],
+  },
+  {
+    slug: "trash-old-plan",
+    from: P.sam,
+    to: [P.alice],
+    subject: "Old plan for Saturday",
+    text: "Ignore this one, plans changed.",
+    date: daysBefore(22, 9, 45),
+    mailboxes: ["trash"],
+    keywords: [],
+  },
 ];
 
 function drafts(): SeedEmail[] {
@@ -342,12 +540,63 @@ function drafts(): SeedEmail[] {
 }
 
 const BOB_MAIL: Simple[] = [
-  { slug: "bob-sam-climbing", from: P.sam, to: [P.bob], subject: "Climbing on Thursday?", text: "Bob, are you coming on Thursday? Alice is.", date: daysBefore(0, 8, 12), mailboxes: ["inbox"], keywords: [] },
-  { slug: "bob-carol-kickoff", from: P.carol, to: [P.bob], subject: "Northwind kickoff notes", text: "Bob, my notes from the kickoff are below. Action items are yours and mine.", date: daysBefore(20, 14, 0), mailboxes: ["archive"] },
-  { slug: "bob-to-dave", from: P.bob, to: [P.dave], subject: "Illustration days", text: "Dave, confirming the two days in the week of the 12th.", date: daysBefore(19, 10, 30), mailboxes: ["sent"] },
-  { slug: "bob-spam", from: { name: "Prize Desk", email: "prizes@lucky.example.net" }, to: [P.bob], subject: "You have won a lifetime supply of socks!!!", text: "CONGRATULATIONS! Reply now to claim your socks.", date: daysBefore(2, 3, 15), mailboxes: ["junk"], keywords: ["$junk"] },
-  { slug: "bob-trash", from: { name: "Webinars Weekly", email: "events@webinars.example.com" }, to: [P.bob], subject: "Last chance: productivity webinar", text: "Starts in one hour.", date: daysBefore(6, 12, 1), mailboxes: ["trash"] },
-  { slug: "bob-draft", from: P.bob, to: [P.alice], subject: "Re: Slides for Thursday", text: "Alice, two small comments on slide 4:", date: daysBefore(1, 20, 0), mailboxes: ["drafts"], keywords: ["$draft", "$seen"] },
+  {
+    slug: "bob-sam-climbing",
+    from: P.sam,
+    to: [P.bob],
+    subject: "Climbing on Thursday?",
+    text: "Bob, are you coming on Thursday? Alice is.",
+    date: daysBefore(0, 8, 12),
+    mailboxes: ["inbox"],
+    keywords: [],
+  },
+  {
+    slug: "bob-carol-kickoff",
+    from: P.carol,
+    to: [P.bob],
+    subject: "Northwind kickoff notes",
+    text: "Bob, my notes from the kickoff are below. Action items are yours and mine.",
+    date: daysBefore(20, 14, 0),
+    mailboxes: ["archive"],
+  },
+  {
+    slug: "bob-to-dave",
+    from: P.bob,
+    to: [P.dave],
+    subject: "Illustration days",
+    text: "Dave, confirming the two days in the week of the 12th.",
+    date: daysBefore(19, 10, 30),
+    mailboxes: ["sent"],
+  },
+  {
+    slug: "bob-spam",
+    from: { name: "Prize Desk", email: "prizes@lucky.example.net" },
+    to: [P.bob],
+    subject: "You have won a lifetime supply of socks!!!",
+    text: "CONGRATULATIONS! Reply now to claim your socks.",
+    date: daysBefore(2, 3, 15),
+    mailboxes: ["junk"],
+    keywords: ["$junk"],
+  },
+  {
+    slug: "bob-trash",
+    from: { name: "Webinars Weekly", email: "events@webinars.example.com" },
+    to: [P.bob],
+    subject: "Last chance: productivity webinar",
+    text: "Starts in one hour.",
+    date: daysBefore(6, 12, 1),
+    mailboxes: ["trash"],
+  },
+  {
+    slug: "bob-draft",
+    from: P.bob,
+    to: [P.alice],
+    subject: "Re: Slides for Thursday",
+    text: "Alice, two small comments on slide 4:",
+    date: daysBefore(1, 20, 0),
+    mailboxes: ["drafts"],
+    keywords: ["$draft", "$seen"],
+  },
 ];
 
 export function singles(): SeedEmail[] {

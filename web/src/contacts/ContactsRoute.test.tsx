@@ -23,7 +23,10 @@ function renderPage(fake: FakeContacts) {
 
 describe("filterCards", () => {
   it("sorts by name and matches name, address, phone and note", () => {
-    const cards = [card("2", "Zed", ["z@x.test"]), card("1", "Ann", ["a@x.test"], { notes: { n1: { note: "met in Cluj" } } })];
+    const cards = [
+      card("2", "Zed", ["z@x.test"]),
+      card("1", "Ann", ["a@x.test"], { notes: { n1: { note: "met in Cluj" } } }),
+    ];
     expect(filterCards(cards, "").map((c) => c.id)).toEqual(["1", "2"]);
     expect(filterCards(cards, "cluj").map((c) => c.id)).toEqual(["1"]);
     expect(filterCards(cards, "Z@X").map((c) => c.id)).toEqual(["2"]);
@@ -66,7 +69,11 @@ describe("Contacts page", () => {
     await user.type(emails, "bobby@x.test");
     await user.type(screen.getByLabelText("Note"), "likes tea");
     await user.click(screen.getByRole("button", { name: "Save" }));
-    await waitFor(() => expect(fake.cards.find((c) => c.id === "2")?.emails).toEqual({ e1: { "@type": "EmailAddress", address: "bobby@x.test" } }));
+    await waitFor(() =>
+      expect(fake.cards.find((c) => c.id === "2")?.emails).toEqual({
+        e1: { "@type": "EmailAddress", address: "bobby@x.test" },
+      }),
+    );
     expect(fake.cards.find((c) => c.id === "2")?.notes?.["n1"]?.note).toBe("likes tea");
 
     await user.click(await screen.findByText("Bob Baker"));
@@ -79,7 +86,10 @@ describe("Contacts page", () => {
 
   it("lists a group with its member count and offers only delete", async () => {
     const user = userEvent.setup();
-    const fake = new FakeContacts([card("1", "Ann", ["a@x.test"]), card("3", "Team", [], { kind: "group", uid: "urn:uuid:g", members: { "urn:uuid:1": true } })]);
+    const fake = new FakeContacts([
+      card("1", "Ann", ["a@x.test"]),
+      card("3", "Team", [], { kind: "group", uid: "urn:uuid:g", members: { "urn:uuid:1": true } }),
+    ]);
     renderPage(fake);
     expect(await screen.findByText("Group, 1 members")).toBeTruthy();
     await user.click(screen.getByText("Team"));

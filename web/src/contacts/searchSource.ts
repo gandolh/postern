@@ -11,7 +11,8 @@ export function contactsSource(client: JmapClient, limit = 5): SuggestionSource 
     heading: "Contacts",
     async suggest(q, signal) {
       const operator = q.operator;
-      if (operator !== null && operator !== "from" && operator !== "to" && operator !== "cc" && operator !== "bcc") return [];
+      if (operator !== null && operator !== "from" && operator !== "to" && operator !== "cc" && operator !== "bcc")
+        return [];
       if (operator === null && q.rest.length < 2) return [];
       if (!q.rest) return [];
       const directory = contactsDirectory(client);

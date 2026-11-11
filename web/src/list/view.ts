@@ -34,7 +34,10 @@ function inSome(message: RowMessage, ids: readonly Id[]): boolean {
 }
 
 /** The list for a label, or null when its mailbox is missing (an account without Sent, say). */
-export function labelListView(label: Pick<ResolvedLabel, "view" | "mailboxId">, roles: MailboxRoles): LabelListView | null {
+export function labelListView(
+  label: Pick<ResolvedLabel, "view" | "mailboxId">,
+  roles: MailboxRoles,
+): LabelListView | null {
   const view = label.view;
   const scope: ConversationScope = { kind: view === "trash" ? "trash" : view === "spam" ? "spam" : "normal", roles };
   const presentation: ListPresentation = {
@@ -91,5 +94,8 @@ export function labelListView(label: Pick<ResolvedLabel, "view" | "mailboxId">, 
       presentation,
     };
   }
-  return { query: { filter: { inMailbox: mailboxId }, scope, matches: (m) => m.mailboxIds[mailboxId] === true }, presentation };
+  return {
+    query: { filter: { inMailbox: mailboxId }, scope, matches: (m) => m.mailboxIds[mailboxId] === true },
+    presentation,
+  };
 }

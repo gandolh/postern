@@ -27,7 +27,14 @@ export interface SignInFormProps {
 
 const CODE = /^\d{6,8}$/;
 
-export function SignInForm({ onSignIn, username: fixedUsername, title, subtitle, headingLevel = 1, secondary }: SignInFormProps) {
+export function SignInForm({
+  onSignIn,
+  username: fixedUsername,
+  title,
+  subtitle,
+  headingLevel = 1,
+  secondary,
+}: SignInFormProps) {
   const id = useId();
   const [step, setStep] = useState<SignInStep>("password");
   const [email, setEmail] = useState(fixedUsername ?? "");
@@ -156,7 +163,16 @@ export function SignInForm({ onSignIn, username: fixedUsername, title, subtitle,
       {fixedUsername ? (
         <>
           {/* For password managers: the account this password belongs to. */}
-          <input className="auth-visually-hidden" type="email" name="username" autoComplete="username" value={fixedUsername} readOnly tabIndex={-1} aria-hidden="true" />
+          <input
+            className="auth-visually-hidden"
+            type="email"
+            name="username"
+            autoComplete="username"
+            value={fixedUsername}
+            readOnly
+            tabIndex={-1}
+            aria-hidden="true"
+          />
           <p className="auth-chip">{fixedUsername}</p>
         </>
       ) : (

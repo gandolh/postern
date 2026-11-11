@@ -24,7 +24,11 @@ export class SignInError extends JmapError {
   /** Seconds to wait, from `Retry-After`, when the server sent one. */
   readonly retryAfter: number | undefined;
 
-  constructor(reason: SignInFailure, message: string, options: { status?: number; retryAfter?: number; cause?: unknown } = {}) {
+  constructor(
+    reason: SignInFailure,
+    message: string,
+    options: { status?: number; retryAfter?: number; cause?: unknown } = {},
+  ) {
     super(message, options.cause === undefined ? undefined : { cause: options.cause });
     this.reason = reason;
     this.status = options.status;
@@ -56,7 +60,12 @@ export class TokenEndpointError extends JmapError {
  */
 export class SessionExpiredError extends JmapUnauthorizedError {
   constructor() {
-    super({ type: "about:blank", status: 401, title: "Session expired", detail: "The session expired; sign in again." });
+    super({
+      type: "about:blank",
+      status: 401,
+      title: "Session expired",
+      detail: "The session expired; sign in again.",
+    });
   }
 }
 
