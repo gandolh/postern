@@ -1,0 +1,25 @@
+# Markdown stays out of Prettier (decided 2026-11-10): the corpus is prose that corpus/lint.sh governs.
+*.md
+
+# The vendored copy.
+vendor/house-style/
+
+# Recorded server responses, byte for byte.
+jmap/test/fixtures/
+
+# Hostile mail samples and seed data, which must stay byte-exact.
+/dev/seed/hostile/
+/dev/plan.ndjson
+
+# Lockfile, build output, local data, test output.
+package-lock.json
+dist/
+dev-dist/
+coverage/
+/dev/data/
+web/e2e/screenshots/
+test-results/
+playwright-report/
+
+# Icons and SVGs.
+web/public/

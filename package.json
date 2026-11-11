@@ -22,7 +22,9 @@
     "typecheck": "tsc -b && tsc -p jmap/tsconfig.test.json && tsc -p web --noEmit && tsc -p web/tsconfig.test.json && tsc -p dev && tsc -p web/e2e",
     "lint": "eslint .",
     "check": "npm run typecheck && npm run lint && npm run test",
-    "house-style:sync": "node vendor/house-style/bin/sync.mjs"
+    "house-style:sync": "node vendor/house-style/bin/sync.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
