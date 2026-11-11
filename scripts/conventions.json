@@ -1,4 +1,5 @@
 {
   "$schema": "../vendor/house-style/conventions.schema.json",
-  "web": ["web/src"]
+  "web": ["web/src"],
+  "shared": ["jmap/src"]
 }

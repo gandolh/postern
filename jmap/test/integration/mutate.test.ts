@@ -61,7 +61,6 @@ describe.skipIf(!live)("against the dev Stalwart: changes", () => {
     // Belt and braces: unstar anything a failed test left starred.
     if (starred.size > 0) await alice.email.setKeywords([...starred], { $flagged: false });
     // The server is left as it was found.
-    // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
     expect(await allStarred()).toEqual(starredBefore);
   });
 

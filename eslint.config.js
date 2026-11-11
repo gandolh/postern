@@ -9,11 +9,10 @@ export default [
   ...houseStyle({
     root: import.meta.dirname,
     web: "web/src",
-    // Scripts run by hand: the seed and mail-server helpers, and the Playwright support code. They print
-    // and read the environment directly.
-    scripts: ["dev", "web/e2e"],
-    // Playwright specs are not vitest files, so the vitest rules stay off them.
-    tests: ["**/*.test.{ts,tsx}"],
+    // Scripts run by hand: the seed and mail-server helpers. They print and read the environment directly.
+    scripts: ["dev"],
+    // Playwright specs and their support code: test relaxations, and no vitest rules.
+    playwright: ["web/e2e/**"],
     // `fast` is the performance tests' own helper around `expect`.
     assertFunctionNames: ["expect", "expectTypeOf", "fast"],
     // projectService looks for the nearest tsconfig.json, and the tests sit in tsconfig.test.json files
@@ -47,17 +46,5 @@ export default [
         },
       ],
     },
-  },
-  {
-    // The live-server helpers read the dev account passwords from the environment, as tests do.
-    name: "postern/test-helpers",
-    files: ["jmap/test/**", "web/test/**"],
-    rules: { "n/no-process-env": "off" },
-  },
-  {
-    // A Playwright spec fails loudly at the line that broke, so `!` is a warning there as in unit tests.
-    name: "postern/e2e-specs",
-    files: ["web/e2e/**/*.spec.ts"],
-    rules: { "@typescript-eslint/no-non-null-assertion": "warn" },
   },
 ];

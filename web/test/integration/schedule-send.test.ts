@@ -77,7 +77,6 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
     ).list;
     const seeded = manifest.accounts.alice.labels;
     for (const role of ["inbox", "drafts", "sent"] as const)
-      // eslint-disable-next-line vitest/no-standalone-expect -- a setup or teardown hook, not a test: it proves the server is as the seed left it.
       expect(list.find((m) => m.role === role)?.totalEmails).toBe(seeded[role]!.messages);
   });
 
