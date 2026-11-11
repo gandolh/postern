@@ -192,11 +192,12 @@ export class KeyEngine {
   private readonly firstKeys = new Map<string, Shortcut[]>();
   private readonly now: () => number;
   private readonly isBlocked: (target: EventTarget | null) => boolean;
+  private readonly actions: KeyActions;
+  private readonly options: KeyEngineOptions;
 
-  constructor(
-    private readonly actions: KeyActions,
-    private readonly options: KeyEngineOptions,
-  ) {
+  constructor(actions: KeyActions, options: KeyEngineOptions) {
+    this.actions = actions;
+    this.options = options;
     this.now = options.now ?? (() => Date.now());
     this.isBlocked = options.isBlocked ?? isTypingTarget;
     for (const shortcut of SHORTCUTS) {

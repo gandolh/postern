@@ -26,10 +26,12 @@ function keyBytes(): ArrayBuffer {
 
 class FakeSubscription implements BrowserSubscription {
   unsubscribed = false;
-  constructor(
-    readonly endpoint: string,
-    readonly options = { applicationServerKey: keyBytes() as ArrayBuffer | null },
-  ) {}
+  readonly endpoint: string;
+  readonly options: { applicationServerKey: ArrayBuffer | null };
+  constructor(endpoint: string, options = { applicationServerKey: keyBytes() as ArrayBuffer | null }) {
+    this.endpoint = endpoint;
+    this.options = options;
+  }
   toJSON() {
     return { keys: { p256dh: "BP256", auth: "AUTH" } };
   }
