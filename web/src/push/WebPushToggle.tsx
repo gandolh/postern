@@ -3,6 +3,7 @@
 // notification permission and subscribes this device; off unsubscribes it.
 
 import { useId, useSyncExternalStore } from "react";
+import { Switch } from "../components/ui/Switch";
 import { useActiveWebPush } from "./active";
 import { needsHomeScreen } from "./browser";
 import type { WebPush, WebPushProblem, WebPushSnapshot } from "./webPush";
@@ -43,16 +44,14 @@ export function WebPushToggle() {
   const describedBy = [hintId, snapshot.problem ? problemId : null].filter(Boolean).join(" ");
   return (
     <div className="settings-field">
-      <label className="settings-check">
-        <input
-          type="checkbox"
-          checked={snapshot.on}
-          disabled={snapshot.busy}
-          aria-describedby={describedBy}
-          onChange={(e) => void (e.target.checked ? push.enable() : push.disable())}
-        />
+      <Switch
+        checked={snapshot.on}
+        disabled={snapshot.busy}
+        aria-describedby={describedBy}
+        onCheckedChange={(on) => void (on ? push.enable() : push.disable())}
+      >
         Notifications for new mail when Postern is closed
-      </label>
+      </Switch>
       <p id={hintId} className="settings-hint">
         {snapshot.busy
           ? snapshot.on

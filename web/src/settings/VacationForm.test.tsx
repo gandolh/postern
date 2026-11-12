@@ -56,7 +56,7 @@ describe("the vacation responder and filters", () => {
   it("warns before turning the responder on when filters exist, and does nothing on Cancel", async () => {
     const { io, set, user } = setup(true);
     await screen.findByText(FILTERS_STOP_WARNING);
-    await user.click(screen.getByRole("checkbox", { name: "Vacation responder on" }));
+    await user.click(screen.getByRole("switch", { name: "Vacation responder on" }));
     expect(screen.getByRole("heading", { name: "Turn on the vacation responder?" })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     expect(set).not.toHaveBeenCalled();
@@ -66,13 +66,13 @@ describe("the vacation responder and filters", () => {
   it("turns it on after confirming, then off again with the filters back on", async () => {
     const { io, set, user } = setup(true);
     await screen.findByText(FILTERS_STOP_WARNING);
-    await user.click(screen.getByRole("checkbox", { name: "Vacation responder on" }));
+    await user.click(screen.getByRole("switch", { name: "Vacation responder on" }));
     await user.click(screen.getByRole("button", { name: "Turn it on" }));
     expect(set).toHaveBeenLastCalledWith({ isEnabled: true });
     expect(io.active()).toBe("vacation");
     await screen.findByText("Your filters are off while the vacation responder is on.");
 
-    await user.click(screen.getByRole("checkbox", { name: "Vacation responder on" }));
+    await user.click(screen.getByRole("switch", { name: "Vacation responder on" }));
     expect(set).toHaveBeenLastCalledWith({ isEnabled: false });
     await screen.findByText("Your filters are on again.");
     expect(io.active()).toBe("postern");
@@ -80,7 +80,7 @@ describe("the vacation responder and filters", () => {
 
   it("asks nothing and activates nothing when there are no filters", async () => {
     const { io, set, user } = setup(false);
-    const box = await screen.findByRole("checkbox", { name: "Vacation responder on" });
+    const box = await screen.findByRole("switch", { name: "Vacation responder on" });
     await waitFor(() => expect(screen.queryByText(FILTERS_STOP_WARNING)).toBeNull());
     await user.click(box);
     expect(set).toHaveBeenLastCalledWith({ isEnabled: true });

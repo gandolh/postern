@@ -17,6 +17,7 @@ import {
   type ReadingPane,
   type ThemePreference,
 } from "../theme";
+import { Switch } from "../components/ui/Switch";
 import { VacationForm } from "./VacationForm";
 
 const THEME_TITLES: Record<ThemePreference, string> = { system: "Same as the device", light: "Light", dark: "Dark" };
@@ -50,14 +51,9 @@ export function GeneralSettings() {
         value={readingPane}
         onChange={setReadingPane}
       />
-      <label className="settings-check">
-        <input
-          type="checkbox"
-          checked={prefs.conversationView}
-          onChange={(e) => setPrefs({ conversationView: e.target.checked })}
-        />
+      <Switch checked={prefs.conversationView} onCheckedChange={(on) => setPrefs({ conversationView: on })}>
         Conversation view: group replies into one row
-      </label>
+      </Switch>
       <UndoSendChoice value={prefs.undoSendSeconds} onChange={(undoSendSeconds) => setPrefs({ undoSendSeconds })} />
       <Choice
         legend="Images"
@@ -68,10 +64,9 @@ export function GeneralSettings() {
         onChange={(images) => setPrefs({ images })}
       />
       <ImageSenders />
-      <label className="settings-check">
-        <input type="checkbox" checked={prefs.shortcuts} onChange={(e) => setPrefs({ shortcuts: e.target.checked })} />
+      <Switch checked={prefs.shortcuts} onCheckedChange={(on) => setPrefs({ shortcuts: on })}>
         Keyboard shortcuts on
-      </label>
+      </Switch>
       <NotificationsToggle />
       <WebPushToggle />
       <SwipeSettings />
@@ -109,16 +104,14 @@ function NotificationsToggle() {
   const denied = permission === "denied";
   return (
     <div className="settings-field">
-      <label className="settings-check">
-        <input
-          type="checkbox"
-          checked={enabled}
-          disabled={denied}
-          aria-describedby={denied ? "settings-notify-denied" : undefined}
-          onChange={(e) => void setEnabled(e.target.checked)}
-        />
+      <Switch
+        checked={enabled}
+        disabled={denied}
+        aria-describedby={denied ? "settings-notify-denied" : undefined}
+        onCheckedChange={(on) => void setEnabled(on)}
+      >
         Desktop notifications for new mail
-      </label>
+      </Switch>
       {denied ? (
         <p id="settings-notify-denied" className="settings-hint">
           Blocked in your browser&rsquo;s site settings.

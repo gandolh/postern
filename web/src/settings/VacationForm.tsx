@@ -13,6 +13,7 @@ import type { VacationResponse } from "@postern/jmap";
 import { useEffect, useId, useState } from "react";
 import { useJmap } from "../auth";
 import { useFilters } from "../filters/store";
+import { Switch } from "../components/ui/Switch";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
 import { serverHas } from "./capability";
@@ -127,10 +128,9 @@ export function VacationForm() {
       <h2 id={`${id}-h`} className="settings-heading">
         Vacation responder
       </h2>
-      <label className="settings-check">
-        <input type="checkbox" checked={value.isEnabled} onChange={(e) => toggle(e.target.checked)} />
+      <Switch checked={value.isEnabled} onCheckedChange={toggle}>
         Vacation responder on
-      </label>
+      </Switch>
       {hasFilters ? (
         <p className="settings-hint">
           {value.isEnabled ? "Your filters are off while the vacation responder is on." : FILTERS_STOP_WARNING}

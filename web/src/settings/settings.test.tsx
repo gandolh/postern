@@ -144,8 +144,8 @@ describe("General", () => {
 
   it("conversation view is on by default and turns off", async () => {
     renderSettings("general");
-    const box = screen.getByRole("checkbox", { name: "Conversation view: group replies into one row" });
-    expect(box).toHaveProperty("checked", true);
+    const box = screen.getByRole("switch", { name: "Conversation view: group replies into one row" });
+    expect(box.getAttribute("aria-checked")).toBe("true");
     await userEvent.setup().click(box);
     expect(getPrefs().conversationView).toBe(false);
     expect(JSON.parse(localStorage.getItem(`postern.prefs.${ME}`)!)).toMatchObject({ conversationView: false });
@@ -158,7 +158,7 @@ describe("General", () => {
       within(screen.getByRole("group", { name: "Images" })).getByRole("radio", { name: /Ask before/ }),
     ).toHaveProperty("checked", true);
     await user.click(screen.getByRole("radio", { name: "Always display external images" }));
-    await user.click(screen.getByRole("checkbox", { name: "Keyboard shortcuts on" }));
+    await user.click(screen.getByRole("switch", { name: "Keyboard shortcuts on" }));
     expect(getPrefs()).toMatchObject({ images: "always", shortcuts: false });
   });
 
@@ -175,7 +175,7 @@ describe("General", () => {
     const { s } = renderSettings("general");
     const user = userEvent.setup();
     await screen.findByLabelText("Subject");
-    await user.click(screen.getByRole("checkbox", { name: "Vacation responder on" }));
+    await user.click(screen.getByRole("switch", { name: "Vacation responder on" }));
     expect(s.vacationSet).toHaveBeenLastCalledWith({ isEnabled: true });
     await user.type(screen.getByLabelText("Subject"), "Away");
     expect(s.vacationSet).toHaveBeenCalledTimes(1);
@@ -192,7 +192,7 @@ describe("General", () => {
     s.vacationSet.mockRejectedValueOnce(new Error("nope"));
     renderSettings("general", s);
     await screen.findByLabelText("Subject");
-    await userEvent.setup().click(screen.getByRole("checkbox", { name: "Vacation responder on" }));
+    await userEvent.setup().click(screen.getByRole("switch", { name: "Vacation responder on" }));
     await waitFor(() =>
       expect(screen.getAllByRole("status").some((n) => n.textContent === "Could not save: nope")).toBe(true),
     );
