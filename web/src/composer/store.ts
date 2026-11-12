@@ -352,7 +352,8 @@ export class ComposerStore {
       session.setPlacement("minimised");
       this.#add(session);
       // Session trouble is the sign-in layer's to show (actions/runner.ts).
-      if (!isQuietError(err)) this.#deps.toast.show({ message: explainSaveError(err) || "Couldn't save the draft." });
+      if (!isQuietError(err))
+        this.#deps.toast.show({ message: explainSaveError(err) || "Couldn't save the draft.", duration: null });
       return;
     }
     for (const id of session.draftIds()) this.#closed.add(id);
@@ -379,7 +380,7 @@ export class ComposerStore {
       this.#settled();
     } catch (err) {
       if (isQuietError(err)) return;
-      this.#deps.toast.show({ message: "Couldn't discard the draft. It's still in Drafts." });
+      this.#deps.toast.show({ message: "Couldn't discard the draft. It's still in Drafts.", duration: null });
     }
   }
 
@@ -464,7 +465,8 @@ export class ComposerStore {
           session.setPlacement("docked");
         if (session.state.placement === "minimised") session.setPlacement("docked");
         session.requestFocus("window");
-        if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't send the message. It's saved in Drafts." });
+        if (!isQuietError(err))
+          this.#deps.toast.show({ message: "Couldn't send the message. It's saved in Drafts.", duration: null });
       },
     });
     if (delay > 0) {
@@ -548,7 +550,7 @@ export class ComposerStore {
       if (session.state.placement === "minimised") session.setPlacement("docked");
       session.requestFocus("window");
       if (!isQuietError(err))
-        this.#deps.toast.show({ message: "Couldn't schedule the message. It's saved in Drafts." });
+        this.#deps.toast.show({ message: "Couldn't schedule the message. It's saved in Drafts.", duration: null });
       return;
     }
     this.#remove(session);
@@ -582,7 +584,8 @@ export class ComposerStore {
       }
       return outcome;
     } catch (err) {
-      if (!isQuietError(err)) this.#deps.toast.show({ message: "Couldn't cancel the send. Try again in a moment." });
+      if (!isQuietError(err))
+        this.#deps.toast.show({ message: "Couldn't cancel the send. Try again in a moment.", duration: null });
       return "failed";
     }
   }

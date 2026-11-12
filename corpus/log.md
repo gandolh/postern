@@ -602,3 +602,11 @@ until the server answers), the navigation below the wide breakpoint is a Base UI
 kept in `ShellLayout`), the toast is Base UI's, five settings are switches, the
 settings choices a `RadioGroup`, the invite answer a guarded `ToggleGroup`. Two
 class hooks became `data-` attributes. See [overlays.md](wiki/overlays.md).
+
+## [2026-11-12] fix | Failure toasts stay until dismissed
+
+The 17 `toast.show` calls that report a failure now pass `duration: null` (the
+standing estate ruling), so none times out; the toast wrapper already supported
+it. One assertion in the composer store's tests covers the send failure. A todo
+records the three `compose-send` integration tests that fail against the dev
+Stalwart, from before brief 02: [todo](todos/compose-send-integration-failures.md).

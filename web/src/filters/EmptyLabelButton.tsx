@@ -37,7 +37,10 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
     } catch (e) {
       // Session trouble is the sign-in layer's to show.
       if (!isQuietError(e))
-        toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
+        toast.show({
+          message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}`,
+          duration: null,
+        });
     } finally {
       setBusy(false);
     }
@@ -55,7 +58,10 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
     } catch (e) {
       answered();
       if (!isQuietError(e))
-        toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
+        toast.show({
+          message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}`,
+          duration: null,
+        });
     } finally {
       answered();
       setPlan(null);

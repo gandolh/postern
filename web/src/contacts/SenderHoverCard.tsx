@@ -105,6 +105,7 @@ function HoverCardBody({ id, address, close }: { id: string; address: EmailAddre
       if (!isQuietError(e)) {
         toast.show({
           message: e instanceof Error ? `Could not add the contact: ${e.message}` : "Could not add the contact",
+          duration: null,
         });
       }
     } finally {

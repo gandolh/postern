@@ -84,7 +84,8 @@ export function ScheduledRoute() {
         });
       }
     } catch (err) {
-      if (!isQuietError(err)) toast.show({ message: "Couldn't cancel the send. Try again in a moment." });
+      if (!isQuietError(err))
+        toast.show({ message: "Couldn't cancel the send. Try again in a moment.", duration: null });
     } finally {
       setCancelling(null);
       setOpen(null);

@@ -109,7 +109,10 @@ function AttachmentChip({
       await what();
     } catch (err) {
       if (!isQuietError(err))
-        toast.show({ message: err instanceof Error && err.name === "NotPreviewableError" ? err.message : failure });
+        toast.show({
+          message: err instanceof Error && err.name === "NotPreviewableError" ? err.message : failure,
+          duration: null,
+        });
     } finally {
       setBusy(false);
     }

@@ -49,7 +49,7 @@ export function useBlockSender(): BlockSender {
         toast.show({ message: `${address} unblocked.` });
       } catch (e) {
         // Session trouble is the sign-in layer's to show.
-        if (!isQuietError(e)) toast.show({ message: `Couldn't unblock ${address}: ${errorText(e)}` });
+        if (!isQuietError(e)) toast.show({ message: `Couldn't unblock ${address}: ${errorText(e)}`, duration: null });
       }
     },
     [store, toast],
@@ -62,7 +62,7 @@ export function useBlockSender(): BlockSender {
       try {
         outcome = await store.save((set) => withBlocked(set, address));
       } catch (e) {
-        if (!isQuietError(e)) toast.show({ message: `Couldn't block ${address}: ${errorText(e)}` });
+        if (!isQuietError(e)) toast.show({ message: `Couldn't block ${address}: ${errorText(e)}`, duration: null });
         return;
       }
       const entry: UndoEntry = { label: `${address} blocked.`, undo: () => unblock(address) };

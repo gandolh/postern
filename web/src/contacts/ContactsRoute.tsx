@@ -78,6 +78,7 @@ export function ContactsRoute() {
       if (isQuietError(e)) return;
       toast.show({
         message: e instanceof Error ? `Could not delete: ${e.message}` : "Could not delete the contact",
+        duration: null,
       });
     }
   }
@@ -161,6 +162,7 @@ export function ContactsRoute() {
                 if (isQuietError(e)) return;
                 toast.show({
                   message: e instanceof Error ? `Could not save: ${e.message}` : "Could not save the contact",
+                  duration: null,
                 });
               }
             }}

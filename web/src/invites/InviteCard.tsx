@@ -177,7 +177,8 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
       toast.show({ message: `Reply sent: ${ANSWERS.find((a) => a.answer === choice)?.label ?? choice}.` });
       void labels.sync();
     } catch (err) {
-      if (!isQuietError(err)) toast.show({ message: "Couldn't send your reply. Try again in a moment." });
+      if (!isQuietError(err))
+        toast.show({ message: "Couldn't send your reply. Try again in a moment.", duration: null });
     } finally {
       setBusy(false);
     }

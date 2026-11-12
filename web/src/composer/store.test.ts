@@ -190,7 +190,10 @@ describe("sending", () => {
     await vi.waitFor(() => expect(s.state.sendError).toMatch(/won't send from this address/));
     expect(s.state.sending).toBe(false);
     expect(drafts()).toHaveLength(1);
-    expect(toasts.at(-1)?.message).toBe("Couldn't send the message. It's saved in Drafts.");
+    expect(toasts.at(-1)).toMatchObject({
+      message: "Couldn't send the message. It's saved in Drafts.",
+      duration: null,
+    });
   });
 
   it("does not send when the draft cannot be saved", async () => {

@@ -44,6 +44,7 @@ export function useApplyToExisting(): (filter: MailFilter) => Promise<void> {
         if (!isQuietError(e))
           toast.show({
             message: `Couldn't look for matching conversations: ${e instanceof Error ? e.message : "unknown error"}`,
+            duration: null,
           });
         return;
       }
@@ -55,7 +56,7 @@ export function useApplyToExisting(): (filter: MailFilter) => Promise<void> {
         try {
           roles = { ...roles, archive: await ensureAllMail(client, store) };
         } catch (e) {
-          if (!isQuietError(e)) toast.show({ message: APPLY_COPY.failed(found.conversations.length) });
+          if (!isQuietError(e)) toast.show({ message: APPLY_COPY.failed(found.conversations.length), duration: null });
           return;
         }
       }
