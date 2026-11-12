@@ -242,7 +242,7 @@ describe("the theme", () => {
       </ThemeProvider>,
     );
     const root = document.documentElement;
-    expect(root.dataset["theme"]).toBe("system");
+    expect(root.dataset["theme"]).toBe("light");
     expect(root.dataset["density"]).toBe("default");
     act(() => {
       setTheme("dark");

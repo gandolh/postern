@@ -23,7 +23,7 @@ import { VacationForm } from "./VacationForm";
 import { Button } from "../components/ui/Button";
 import { inputClass } from "../components/ui/Input";
 
-const THEME_TITLES: Record<ThemePreference, string> = { system: "Same as the device", light: "Light", dark: "Dark" };
+const THEME_TITLES: Record<ThemePreference, string> = { light: "Light", dark: "Dark", system: "System" };
 const DENSITY_TITLES: Record<Density, string> = { default: "Default", comfortable: "Comfortable", compact: "Compact" };
 const PANE_TITLES: Record<ReadingPane, string> = { none: "No split", right: "Right of inbox", below: "Below inbox" };
 const IMAGE_TITLES: Record<ImagesPreference, string> = {
@@ -173,7 +173,7 @@ interface ChoiceProps<T extends string> {
 export function Choice<T extends string>({ legend, name, options, titles, value, onChange }: ChoiceProps<T>) {
   return (
     <RadioGroup
-      className="m-0 flex flex-wrap gap-x-6 gap-y-2 border-0 p-0 [&_label]:inline-flex [&_label]:min-h-8 [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2 [&_legend]:mb-2 [&_legend]:w-full [&_legend]:p-0 [&_legend]:font-semibold max-sm:[&_label]:min-h-11"
+      className="m-0 flex flex-wrap gap-x-6 gap-y-2 border-0 p-0 [&_label]:inline-flex [&_label]:min-h-8 [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2 max-sm:[&_label]:min-h-11 [&_legend]:mb-2 [&_legend]:w-full [&_legend]:p-0 [&_legend]:font-semibold"
       legend={legend}
       name={name}
       options={options.map((option) => ({ value: option, label: titles[option] }))}

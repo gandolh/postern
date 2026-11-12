@@ -25,12 +25,13 @@ export interface DisplaySettings {
   readingPane: ReadingPane;
 }
 
-export const THEMES: readonly ThemePreference[] = ["system", "light", "dark"];
+export const THEMES: readonly ThemePreference[] = ["light", "dark", "system"];
 export const DENSITIES: readonly Density[] = ["default", "comfortable", "compact"];
 export const READING_PANES: readonly ReadingPane[] = ["none", "right", "below"];
 
 export const DEFAULT_DISPLAY_SETTINGS: Readonly<DisplaySettings> = Object.freeze({
-  theme: "system",
+  // Light on a first visit, whatever the system prefers; a stored choice is restored over it.
+  theme: "light",
   density: "default",
   readingPane: "none",
 });

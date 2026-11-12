@@ -38,10 +38,10 @@ test("the display choices are radio groups: the arrow keys choose", async ({ pag
   await signIn(page);
   await goTo(page, "#settings/general");
   const theme = page.getByRole("radiogroup", { name: "Theme" });
-  const same = theme.getByRole("radio", { name: "Same as the device" });
-  await same.focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(theme.getByRole("radio", { name: "Light" })).toBeChecked();
+  const light = theme.getByRole("radio", { name: "Light" });
+  await light.focus();
   await page.keyboard.press("ArrowRight");
   await expect(theme.getByRole("radio", { name: "Dark" })).toBeChecked();
+  await page.keyboard.press("ArrowRight");
+  await expect(theme.getByRole("radio", { name: "System" })).toBeChecked();
 });
