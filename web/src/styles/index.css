@@ -1,6 +1,6 @@
 /* Postern's one stylesheet. The layer order comes first: it fixes the order for the whole page.
-   Tailwind's reset sits in `base`, its utilities in `utilities`; every stylesheet still waiting to be
-   moved is imported into `legacy`, between them, so a leftover rule can never beat a utility. */
+   Tailwind's reset sits in `base` and its utilities in `utilities`; third-party CSS (the fonts) goes in
+   `vendor`, after `base`, so the reset can't beat it; `components` holds the few element rules no class reaches. */
 @layer theme, base, vendor, components, utilities;
 
 @import "tailwindcss";
@@ -24,7 +24,7 @@
 /* Postern's own names, in Tailwind's namespaces. Tailwind's default colours, sizes, radii, shadows
    and animations are cleared, so only these exist. Every value is light-dark(light, dark),
    resolved by the color-scheme of <html>. `static` keeps every variable in the output, because the
-   stylesheets in `legacy` read them with var(). Contrast ratios for each pair: corpus/wiki/design.md. */
+   base layer and arbitrary values read them with var(). Contrast ratios for each pair: corpus/wiki/design.md. */
 @theme static {
   --color-*: initial;
   --text-*: initial;
@@ -105,10 +105,6 @@
   --text-2xl: 1.5rem; /* 24px: page titles, sign-in */
   --leading-tight: 1.25;
   --leading-normal: 1.45;
-  --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
 
   /* ---- Shape ----------------------------------------------------------- */
   --radius-sm: 0.25rem;
@@ -195,24 +191,6 @@
   :root {
     color-scheme: light;
 
-    /* ---- Type and space, by the names the stylesheets in `legacy` still use ---- */
-    --leading-tight: 1.25;
-    --leading-normal: 1.45;
-    --weight-regular: 400;
-    --weight-medium: 500;
-    --weight-semibold: 600;
-    --weight-bold: 700;
-    --space-0: 0.125rem;
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.25rem;
-    --space-6: 1.5rem;
-    --space-8: 2rem;
-    --space-10: 2.5rem;
-    --space-12: 3rem;
-
     /* ---- Motion ---- */
     --duration-fast: 120ms;
     --duration-normal: 200ms;
@@ -228,7 +206,7 @@
 
     /* ---- Density: default (changes at run time with data-density on <html>) ---- */
     --row-height: 3rem;
-    --row-padding-inline: var(--space-4);
+    --row-padding-inline: 1rem;
     --nav-item-height: 2rem;
     --toolbar-height: 3rem;
   }
@@ -243,14 +221,14 @@
 
   :root[data-density="comfortable"] {
     --row-height: 2.5rem;
-    --row-padding-inline: var(--space-4);
+    --row-padding-inline: 1rem;
     --nav-item-height: 2rem;
     --toolbar-height: 3rem;
   }
 
   :root[data-density="compact"] {
     --row-height: 2rem;
-    --row-padding-inline: var(--space-3);
+    --row-padding-inline: 0.75rem;
     --nav-item-height: 1.75rem;
     --toolbar-height: 2.5rem;
   }
@@ -272,7 +250,7 @@
   h1,
   h2,
   h3 {
-    font-weight: var(--weight-semibold);
+    font-weight: 600;
     line-height: var(--leading-tight);
     text-wrap: balance;
   }
