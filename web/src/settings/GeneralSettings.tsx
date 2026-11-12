@@ -17,6 +17,7 @@ import {
   type ReadingPane,
   type ThemePreference,
 } from "../theme";
+import { RadioGroup } from "../components/ui/RadioGroup";
 import { Switch } from "../components/ui/Switch";
 import { VacationForm } from "./VacationForm";
 
@@ -166,23 +167,14 @@ interface ChoiceProps<T extends string> {
 }
 
 export function Choice<T extends string>({ legend, name, options, titles, value, onChange }: ChoiceProps<T>) {
-  const id = useId();
   return (
-    <fieldset className="settings-choice">
-      <legend>{legend}</legend>
-      {options.map((option) => (
-        <label key={option} htmlFor={`${id}-${option}`}>
-          <input
-            id={`${id}-${option}`}
-            type="radio"
-            name={name}
-            value={option}
-            checked={value === option}
-            onChange={() => onChange(option)}
-          />
-          {titles[option]}
-        </label>
-      ))}
-    </fieldset>
+    <RadioGroup
+      className="settings-choice"
+      legend={legend}
+      name={name}
+      options={options.map((option) => ({ value: option, label: titles[option] }))}
+      value={value}
+      onValueChange={onChange}
+    />
   );
 }

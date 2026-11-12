@@ -236,6 +236,27 @@ describe("the card", () => {
     expect(server.submissions).toHaveLength(2);
   });
 
+  it("moves focus between the answers with the arrow keys without sending a reply, and Space sends one", async () => {
+    const { server, user } = await renderCard(LISBON);
+    const card = await screen.findByRole("region", { name: "Planning, round two" });
+    const going = within(card).getByRole("group", { name: "Going?" });
+    await user.click(within(going).getByRole("button", { name: "Yes" }));
+    expect(await screen.findByText("Reply sent: Yes.")).toBeTruthy();
+    expect(server.submissions).toHaveLength(1);
+
+    within(going).getByRole("button", { name: "Yes" }).focus();
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(within(going).getByRole("button", { name: "No" }));
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(within(going).getByRole("button", { name: "Maybe" }));
+    expect(server.submissions).toHaveLength(1);
+    expect(within(going).getByRole("button", { name: "Yes" }).getAttribute("aria-pressed")).toBe("true");
+
+    await user.keyboard(" ");
+    await waitFor(() => expect(server.submissions).toHaveLength(2));
+    expect(within(going).getByRole("button", { name: "Maybe" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
   it("marks the answer kept on the message", async () => {
     await renderCard(LISBON, { keywords: { "$rsvp-tentative": true } });
     const card = await screen.findByRole("region", { name: "Planning, round two" });

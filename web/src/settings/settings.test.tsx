@@ -122,14 +122,14 @@ describe("tabs", () => {
 });
 
 describe("General", () => {
-  it("applies display settings at once and groups radios in labelled fieldsets", async () => {
+  it("applies display settings at once and groups radios in labelled groups", async () => {
     renderSettings("general");
     const user = userEvent.setup();
-    const theme = screen.getByRole("group", { name: "Theme" });
+    const theme = screen.getByRole("radiogroup", { name: "Theme" });
     await user.click(within(theme).getByRole("radio", { name: "Dark" }));
     expect(getDisplaySettings().theme).toBe("dark");
     await user.click(
-      within(screen.getByRole("group", { name: "Reading pane" })).getByRole("radio", { name: "Right of inbox" }),
+      within(screen.getByRole("radiogroup", { name: "Reading pane" })).getByRole("radio", { name: "Right of inbox" }),
     );
     expect(getDisplaySettings().readingPane).toBe("right");
     expect(JSON.parse(localStorage.getItem("postern.display")!)).toMatchObject({ theme: "dark", readingPane: "right" });
@@ -155,8 +155,10 @@ describe("General", () => {
     renderSettings("general");
     const user = userEvent.setup();
     expect(
-      within(screen.getByRole("group", { name: "Images" })).getByRole("radio", { name: /Ask before/ }),
-    ).toHaveProperty("checked", true);
+      within(screen.getByRole("radiogroup", { name: "Images" }))
+        .getByRole("radio", { name: /Ask before/ })
+        .getAttribute("aria-checked"),
+    ).toBe("true");
     await user.click(screen.getByRole("radio", { name: "Always display external images" }));
     await user.click(screen.getByRole("switch", { name: "Keyboard shortcuts on" }));
     expect(getPrefs()).toMatchObject({ images: "always", shortcuts: false });

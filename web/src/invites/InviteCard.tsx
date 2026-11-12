@@ -15,6 +15,7 @@ import { useEffect, useId, useState } from "react";
 import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
+import { ToggleGroup } from "../components/ui/ToggleGroup";
 import { useToast } from "../components/ui/Toast";
 import { parseInvite, type EventTime, type Invite } from "./ics";
 import { answerOf, myAttendance, sendInviteReply, type Answer } from "./reply";
@@ -229,23 +230,17 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
           ) : null}
         </dl>
         {mine ? (
-          <div className="invite-answer" role="group" aria-label="Going?">
-            <span className="invite-answer-label" aria-hidden="true">
-              Going?
-            </span>
-            {ANSWERS.map(({ answer: a, label }) => (
-              <button
-                key={a}
-                type="button"
-                className="btn invite-answer-btn"
-                aria-pressed={current === a}
-                disabled={busy}
-                onClick={() => void reply(a)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <ToggleGroup
+            label="Going?"
+            heading="Going?"
+            headingClassName="invite-answer-label"
+            className="invite-answer"
+            itemClassName="btn invite-answer-btn"
+            options={ANSWERS.map(({ answer: value, label }) => ({ value, label }))}
+            value={current}
+            disabled={busy}
+            onValueChange={(choice) => void reply(choice)}
+          />
         ) : null}
       </div>
     </section>
