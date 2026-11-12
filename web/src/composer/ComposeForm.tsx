@@ -19,7 +19,7 @@ import {
 import { useEffect, useId, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { IconButton } from "../shell/IconButton";
-import { useLayer } from "../shell/Modal";
+import { useLayer } from "../components/ui/Modal";
 import { useComposerStore } from "./compose";
 import { Editor } from "./editor/Editor";
 import { AttachmentTray } from "./AttachmentTray";

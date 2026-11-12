@@ -9,7 +9,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { ensureAllMail } from "../actions/allMail";
 import { useJmap } from "../auth";
 import { useLabels } from "../labels/useLabels";
-import { ConfirmDialog } from "../list/ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
 import { useSaved } from "../settings/useSaved";
 import { FILTERS_OFF_NOTE } from "./BlockSender";

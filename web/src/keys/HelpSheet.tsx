@@ -1,9 +1,9 @@
-// The keyboard-shortcut sheet: a modal Base UI dialog (shell/Modal), grouped as in
+// The keyboard-shortcut sheet: a modal Base UI dialog (components/ui/Modal), grouped as in
 // Gmail, with a search box. The shell renders it once; useHelpSheet().open() shows it.
 
 import { Fragment, useId, useState, useSyncExternalStore } from "react";
 import { X } from "lucide-react";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 import { getShortcutsEnabled, subscribeShortcutsEnabled } from "../prefs";
 import { useHelpSheet } from "./helpSheet";
 import { displayKeys, filterShortcuts } from "./shortcuts";
@@ -28,9 +28,9 @@ export function HelpSheet() {
   const groups = filterShortcuts(query);
 
   return (
-    <Modal open={isOpen} className="keys-sheet" labelledBy="keys-sheet-title" onClose={dismiss}>
+    <Modal open={isOpen} className="keys-sheet" onClose={dismiss}>
       <div className="keys-sheet-head">
-        <h2 id="keys-sheet-title">Keyboard shortcuts</h2>
+        <Modal.Title>Keyboard shortcuts</Modal.Title>
         <button type="button" className="icon-btn" aria-label="Close keyboard shortcuts" onClick={dismiss}>
           <X aria-hidden="true" />
         </button>

@@ -1,11 +1,11 @@
 // "Schedule send", from the menu beside Send: Gmail's three
 // choices with their times, and "Pick date and time". Times are this
 // browser's time zone; Postern keeps no time zone of its own for the account.
-// A modal dialog through shell/Modal, so it opens inside the composer window
+// A modal dialog through components/ui/Modal, so it opens inside the composer window
 // when that is full screen.
 
 import { useId, useMemo, useState } from "react";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 import { checkSendTime, formatSendTime, schedulePresets } from "../send/schedule";
 
 export interface ScheduleDialogProps {
@@ -60,7 +60,7 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
   return (
     <Modal
       className="compose-question compose-schedule"
-      labelledBy={`${id}-title`}
+      disablePointerDismissal
       onClose={onCancel}
       onKeyDown={(event) => {
         // Escape is this dialog's, not the composer window's around it.
@@ -71,9 +71,7 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
         }
       }}
     >
-      <h2 id={`${id}-title`} className="compose-question-title">
-        Schedule send
-      </h2>
+      <Modal.Title className="compose-question-title">Schedule send</Modal.Title>
       {!picking ? (
         <>
           <ul className="compose-schedule-list">

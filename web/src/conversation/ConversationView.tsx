@@ -47,7 +47,7 @@ import { lendConversation } from "../labels/conversations";
 import { LabelMenu } from "../labels/LabelMenu";
 import type { ResolvedLabel } from "../labels/labelsStore";
 import { useLabels } from "../labels/useLabels";
-import { ConfirmDialog } from "../list/ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { chipLabels, type ChipLabel } from "../list/format";
 import { openNeighbourRow } from "../list/openMessage";
 import { requestReturnFocus } from "../list/returnFocus";

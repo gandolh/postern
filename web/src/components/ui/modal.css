@@ -1,4 +1,4 @@
-/* shell/Modal: what the browser gave a modal <dialog> before Base UI. The
+/* components/ui/Modal: what the browser gave a modal <dialog> before Base UI. The
    popup is fixed in the middle of the window at its own size, over the whole
    app (the docked composer, the toasts and the menus included). Each dialog's
    own class sets its look and wins over these, since :where() weighs nothing. */

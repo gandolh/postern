@@ -10,7 +10,7 @@
 
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog } from "@base-ui/react/dialog";
-import { useCallback, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import "./modal.css";
 
 /** Whether `element` is a native <dialog> in the top layer. jsdom's selector engine doesn't know :modal. */
@@ -59,10 +59,11 @@ export interface ModalProps {
   onClose: () => void;
   /** False: nothing closes it but its own buttons (the session expired). */
   dismissible?: boolean;
+  /** A press outside doesn't close it; Escape and its own buttons still do. For a dialog people type into. */
+  disablePointerDismissal?: boolean;
   /** The popup's own look. */
   className: string;
-  label?: string;
-  labelledBy?: string;
+  /** The id of the text that describes it. Its name is its `Modal.Title`. */
   describedBy?: string;
   /** What takes focus on open, inside the popup. Default the first `[data-autofocus]`, else the first tabbable. */
   initialFocus?: string;
@@ -75,9 +76,8 @@ export function Modal({
   open = true,
   onClose,
   dismissible = true,
+  disablePointerDismissal = false,
   className,
-  label,
-  labelledBy,
   describedBy,
   initialFocus = "[data-autofocus]",
   onKeyDown,
@@ -94,9 +94,8 @@ export function Modal({
   const popup = {
     ref: popupRef,
     className: `modal ${className}`,
-    "aria-label": label,
-    "aria-labelledby": labelledBy,
-    "aria-describedby": describedBy,
+    // Left out when unset, so it can't override what Base UI sets.
+    ...(describedBy ? { "aria-describedby": describedBy } : {}),
     initialFocus: () => popupRef.current?.querySelector<HTMLElement>(initialFocus) ?? true,
     onKeyDown,
   };
@@ -106,16 +105,34 @@ export function Modal({
       <span hidden ref={anchor} />
       <AlertDialog.Portal container={container}>
         <AlertDialog.Backdrop className="modal-backdrop" />
-        <AlertDialog.Popup {...popup}>{children}</AlertDialog.Popup>
+        <AlertDialog.Popup {...popup}>
+          <AlertContext.Provider value={true}>{children}</AlertContext.Provider>
+        </AlertDialog.Popup>
       </AlertDialog.Portal>
     </AlertDialog.Root>
   ) : (
-    <Dialog.Root open={open} onOpenChange={onOpenChange} disablePointerDismissal={!dismissible}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      disablePointerDismissal={!dismissible || disablePointerDismissal}
+    >
       <span hidden ref={anchor} />
       <Dialog.Portal container={container}>
         <Dialog.Backdrop className="modal-backdrop" />
-        <Dialog.Popup {...popup}>{children}</Dialog.Popup>
+        <Dialog.Popup {...popup}>
+          <AlertContext.Provider value={false}>{children}</AlertContext.Provider>
+        </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
+
+const AlertContext = createContext(false);
+
+/** The dialog's title: it names the popup (`aria-labelledby`), as a heading. A hidden one goes in `className="visually-hidden"`. */
+function ModalTitle({ className, children }: { className?: string; children: ReactNode }) {
+  const Title = useContext(AlertContext) ? AlertDialog.Title : Dialog.Title;
+  return <Title className={className}>{children}</Title>;
+}
+
+Modal.Title = ModalTitle;

@@ -9,7 +9,7 @@ import { AttachmentList } from "../attachments/AttachmentList";
 import { SenderHoverCard } from "../contacts/SenderHoverCard";
 import { InviteCard } from "../invites/InviteCard";
 import { formatFullDate } from "../list/format";
-import { MenuButton } from "../list/Menu";
+import { MenuButton } from "../components/ui/Menu";
 import { IconButton } from "../shell/IconButton";
 import type { BodyState, ConvMessage } from "./conversationStore";
 import { MessageBody } from "./MessageBody";

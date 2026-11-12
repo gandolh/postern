@@ -6,7 +6,7 @@
 import { Menu } from "@base-ui/react/menu";
 import type { LucideIcon } from "lucide-react";
 import { useRef } from "react";
-import { IconButton } from "../shell/IconButton";
+import { IconButton } from "../../shell/IconButton";
 
 export interface MenuItem {
   label: string;

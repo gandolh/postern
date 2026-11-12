@@ -13,7 +13,7 @@ import type { VacationResponse } from "@postern/jmap";
 import { useEffect, useId, useState } from "react";
 import { useJmap } from "../auth";
 import { useFilters } from "../filters/store";
-import { ConfirmDialog } from "../list/ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
 import { serverHas } from "./capability";
 import { useSaved } from "./useSaved";

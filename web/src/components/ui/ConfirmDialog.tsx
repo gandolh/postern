@@ -1,8 +1,8 @@
 // "Delete forever?": a modal confirmation (Base UI's AlertDialog, through
-// shell/Modal), the only confirmation the list asks for (Gmail asks before
+// components/ui/Modal), the only confirmation the list asks for (Gmail asks before
 // deleting from Trash or Spam for good). Cancel takes focus first.
 
-import { Modal } from "../shell/Modal";
+import { Modal } from "./Modal";
 
 export interface ConfirmDialogProps {
   title: string;
@@ -14,16 +14,8 @@ export interface ConfirmDialogProps {
 
 export function ConfirmDialog({ title, body, confirmLabel, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
-    <Modal
-      alert
-      className="list-confirm"
-      labelledBy="list-confirm-title"
-      describedBy="list-confirm-body"
-      onClose={onCancel}
-    >
-      <h2 id="list-confirm-title" className="list-confirm-title">
-        {title}
-      </h2>
+    <Modal alert className="list-confirm" describedBy="list-confirm-body" onClose={onCancel}>
+      <Modal.Title className="list-confirm-title">{title}</Modal.Title>
       <p id="list-confirm-body" className="list-confirm-body">
         {body}
       </p>

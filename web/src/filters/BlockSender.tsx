@@ -11,7 +11,7 @@ import { withBlocked, withoutBlocked, type EmailAddress } from "@postern/jmap";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { isQuietError } from "../actions/runner";
 import { runUndo, setUndo, type UndoEntry } from "../actions/undo";
-import { ConfirmDialog } from "../list/ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
 import { useToast } from "../shell/toast";
 import type { SaveOutcome } from "./filterScript";

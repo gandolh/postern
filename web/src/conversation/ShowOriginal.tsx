@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useJmap } from "../auth";
 import { saveAttachment } from "../attachments/files";
 import { IconButton } from "../shell/IconButton";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 import type { ConvMessage } from "./conversationStore";
 import { readAuthenticationResults } from "./people";
 
@@ -43,11 +43,9 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
   const cut = state.text !== null && state.text.length > ORIGINAL_SHOWN_CHARS;
 
   return (
-    <Modal className="conv-original" labelledBy="conv-original-title" onClose={onClose}>
+    <Modal className="conv-original" onClose={onClose}>
       <header className="conv-original-bar">
-        <h2 id="conv-original-title" className="conv-original-title">
-          Original message
-        </h2>
+        <Modal.Title className="conv-original-title">Original message</Modal.Title>
         <IconButton
           label="Download original"
           icon={Download}

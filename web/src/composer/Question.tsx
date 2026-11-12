@@ -1,10 +1,10 @@
 // A question the composer asks before going on ("Did you mean to attach
 // files?", "Discard this draft?"): a modal confirmation (Base UI's
-// AlertDialog, through shell/Modal) with Cancel focused first. It opens inside
-// the composer window when that is full screen (shell/Modal's layer).
+// AlertDialog, through components/ui/Modal) with Cancel focused first. It opens inside
+// the composer window when that is full screen (components/ui/Modal's layer).
 
 import { useId } from "react";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 
 export interface QuestionProps {
   title: string;
@@ -23,7 +23,6 @@ export function Question({ title, body, confirmLabel, tone = "primary", onConfir
     <Modal
       alert
       className="compose-question"
-      labelledBy={`${id}-title`}
       describedBy={`${id}-body`}
       onClose={onCancel}
       onKeyDown={(event) => {
@@ -35,9 +34,7 @@ export function Question({ title, body, confirmLabel, tone = "primary", onConfir
         }
       }}
     >
-      <h2 id={`${id}-title`} className="compose-question-title">
-        {title}
-      </h2>
+      <Modal.Title className="compose-question-title">{title}</Modal.Title>
       <p id={`${id}-body`} className="compose-question-body">
         {body}
       </p>

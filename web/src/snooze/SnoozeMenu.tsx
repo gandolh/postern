@@ -7,7 +7,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { Clock } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 import { IconButton } from "../shell/IconButton";
 import { checkSnoozeTime, formatSnoozeTime, snoozePresets } from "./times";
 import "./snooze.css";
@@ -150,10 +150,8 @@ export function SnoozeDialog({
   };
 
   return (
-    <Modal className="snooze-dialog" labelledBy={`${id}-title`} describedBy={`${id}-help`} onClose={onCancel}>
-      <h2 id={`${id}-title`} className="snooze-dialog-title">
-        Snooze until
-      </h2>
+    <Modal className="snooze-dialog" describedBy={`${id}-help`} disablePointerDismissal onClose={onCancel}>
+      <Modal.Title className="snooze-dialog-title">Snooze until</Modal.Title>
       <p id={`${id}-help`} className="snooze-dialog-help">
         {SNOOZE_HELP}
       </p>

@@ -9,7 +9,7 @@ import { Download, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { isAbortError } from "@postern/jmap";
 import { IconButton } from "../shell/IconButton";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 import { VIEWER_FRAME_SANDBOX } from "../render/srcdoc";
 import { fileName, imageDataUrl, saveAttachment, type AttachmentRef } from "./files";
 
@@ -46,9 +46,9 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
   }, [client, part]);
 
   return (
-    <Modal className="att-viewer" label={`Preview of ${name}`} onClose={onClose}>
+    <Modal className="att-viewer" onClose={onClose}>
       <header className="att-viewer-bar">
-        <h2 className="att-viewer-title">{name}</h2>
+        <Modal.Title className="att-viewer-title">{name}</Modal.Title>
         <IconButton
           label={`Download ${name}`}
           icon={Download}

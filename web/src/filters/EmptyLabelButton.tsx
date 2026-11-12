@@ -15,7 +15,7 @@ import {
 import { rolesFrom } from "../actions/useMailActions";
 import { useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
-import { ConfirmDialog } from "../list/ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
 import { useToast } from "../shell/toast";
 import "./filters.css";

@@ -15,7 +15,7 @@ import { IconButton } from "../shell/IconButton";
 import type { LabelRoute } from "../shell/router";
 import { SnoozeMenu } from "../snooze/SnoozeMenu";
 import type { SelectKind } from "./controller";
-import { MenuButton, type MenuItem } from "./Menu";
+import { MenuButton, type MenuItem } from "../components/ui/Menu";
 import { getActiveList } from "./registry";
 import type { ListPresentation } from "./types";
 

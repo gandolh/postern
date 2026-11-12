@@ -3,13 +3,13 @@
 // again picks up where the user was.
 //
 // It cannot be dismissed: the only ways out are signing in again as the same
-// account, or signing out. A Base UI dialog (shell/Modal) that ignores Escape
+// account, or signing out. A Base UI dialog (components/ui/Modal) that ignores Escape
 // and a press on the backdrop, so there is no browser close request to fight.
 // It is only mounted while the session is expired, and it opens over the
 // composer if that is full screen.
 
 import type { SignInOutcome } from "@postern/jmap";
-import { Modal } from "../shell/Modal";
+import { Modal } from "../components/ui/Modal";
 import { SignInForm } from "./SignInForm";
 
 export interface SessionExpiredDialogProps {
@@ -20,13 +20,8 @@ export interface SessionExpiredDialogProps {
 
 export function SessionExpiredDialog({ username, onSignIn, onSignOut }: SessionExpiredDialogProps) {
   return (
-    <Modal
-      className="auth-dialog"
-      label="Session expired"
-      dismissible={false}
-      onClose={() => {}}
-      initialFocus="input[name=password]"
-    >
+    <Modal className="auth-dialog" dismissible={false} onClose={() => {}} initialFocus="input[name=password]">
+      <Modal.Title className="visually-hidden">Session expired</Modal.Title>
       <SignInForm
         onSignIn={onSignIn}
         username={username}

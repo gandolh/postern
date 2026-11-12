@@ -17,7 +17,7 @@ import { Plus, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
-import { ConfirmDialog } from "../list/ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { EmptyState } from "../shell/states";
 import { useToast } from "../shell/toast";
 import "./contacts.css";

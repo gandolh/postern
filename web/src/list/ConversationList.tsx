@@ -28,7 +28,7 @@ import { usePrefs } from "../prefs/usePrefs";
 import { navigate, withConversation, type LabelRoute, type MailRoute } from "../shell/router";
 import { ConnectionLost, EmptyState, ListSkeleton } from "../shell/states";
 import { useMinuteClock } from "./clock";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import type { ListController, SelectKind } from "./controller";
 import type { ChipLabel } from "./format";
 import type { ListStore } from "./listStore";
