@@ -610,3 +610,23 @@ standing estate ruling), so none times out; the toast wrapper already supported
 it. One assertion in the composer store's tests covers the send failure. A todo
 records the three `compose-send` integration tests that fail against the dev
 Stalwart, from before brief 02: [todo](todos/compose-send-integration-failures.md).
+
+## [2026-11-12] decision | Tailwind, with Base UI
+
+The owner's call of 2026-11-09 (the Tailwind half of "Base UI under the overlays; the
+composer window stays native") is in force: Postern's web app is Tailwind v4 on
+Base UI wrappers, one stylesheet (`web/src/styles/index.css`), tokens as `@theme`.
+The composer window, the two comboboxes and the sender card stay as they were.
+See [decisions.md](wiki/decisions.md).
+
+## [2026-11-12] feat | The web app to Tailwind
+
+All 22 stylesheets became utilities (a script did the class moves, then each
+class and selector was checked by hand against screenshots: 1280, 390, 1024 and 800
+px, light and dark, pixelmatch against the build before). `Button`, `Input` and the
+`IconButton` classes are the shared looks. The theme is Light, Dark or System, light
+on a first visit, with `web/public/theme-boot.js` setting the kept choice before the
+first paint. The 60 class-based test and e2e selectors moved to roles (the message
+frame's iframes carry `data-testid`). Brief 03 done; the owner deploys with
+`node cli.ts postern deploy`.
+

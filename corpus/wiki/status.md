@@ -57,7 +57,13 @@ on 2026-11-02 (see [log.md](../log.md)).
   Menu, Popover, NavDrawer, Toast, Switch, RadioGroup, ToggleGroup), a Title on
   every dialog, forms ignore a press outside, a pending confirm, the navigation
   drawer swipes closed, the settings switches, the guarded invite answer. See
-  [overlays.md](overlays.md). The Tailwind move (brief 03) is next.
+  [overlays.md](overlays.md).
+- **The web app on Tailwind** (2026-11-12). Built, local on `main`, not deployed:
+  all 22 stylesheets are gone, `web/src/styles/index.css` is the one, `Button`, `Input`
+  and `IconButton` carry the shared looks, the theme is Light, Dark or System (light on
+  a first visit, a kept choice on the page before the first paint), tests and e2e select
+  by role, `check-base-ui` and the Tailwind lint are strict. See
+  [design.md](design.md) and the revisit in [decisions.md](decisions.md).
 
 ## Owner steps
 

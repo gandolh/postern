@@ -29,8 +29,8 @@ Base UI is imported only here (the base-ui skill's rule 3; the checker looks in
 | `RadioGroup.tsx` | a `fieldset` and legend over Base UI's `RadioGroup` |
 | `ToggleGroup.tsx` | a guarded `ToggleGroup`: arrows move focus, one item stays pressed |
 
-Their CSS files (`modal.css`, `navDrawer.css`, `switch.css`, `radio.css`) sit
-beside them until the Tailwind move.
+Their looks are Tailwind classes on the parts, in each wrapper (2026-11-12: the
+Tailwind move); there are no stylesheets beside them.
 
 ## Dialogs: `Modal`
 
@@ -53,9 +53,9 @@ wrapper:
   dialog's title is visually hidden: the sign-in form draws its own heading.
 - **Ignores a press outside on a form** (`disablePointerDismissal`):
   `ScheduleDialog` and the snooze date dialog close with Cancel or Escape.
-- **Styles the layer** in `components/ui/modal.css`: fixed, centred,
-  `z-index: 200` over the docked composer (55) and the toasts (60), one
-  `.modal-backdrop`.
+- **Styles the layer** with utilities in `Modal.tsx`: fixed, centred,
+  `z-modal` (200) over the docked composer (`z-compose`, 55) and the toasts
+  (`z-popup`, 60), one backdrop.
 
 Per dialog: `Question` keeps its own Escape handler so the composer around it
 stays open; `SessionExpiredDialog` can't be dismissed (Escape and the backdrop

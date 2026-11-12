@@ -1,6 +1,6 @@
 ---
 summary: How Postern looks and behaves. Gmail's familiar layout (top bar with search, left navigation with Compose, conversation list, reading pane, floating composer) in Postern's own visual identity, never Google's colours, logo or wordmark. The chosen visual system (2026-10-20) - patina-on-limestone palette with light and dark hex values and contrast ratios, Atkinson Hyperlegible Next and Mono, lucide icons, the three density metrics, the mark - plus the settings it supports and the motion and accessibility targets. Read before any UI brief; impeccable works within it.
-updated: 2026-11-02
+updated: 2026-11-12
 ---
 
 # Design
@@ -33,13 +33,14 @@ borrow; its brand is not.
 
 Built with `impeccable` in Operate mode, on the familiar path the owner asked
 for: Gmail's arrangement played straight, at the craft level of Gmail and
-Fastmail. Every value lives in
-[tokens.css](../../web/src/theme/tokens.css); component CSS uses tokens only.
+Fastmail. Every value lives in the `@theme` of
+[index.css](../../web/src/styles/index.css), the app's one stylesheet; a class
+names a token (`bg-surface-raised`, `text-text-muted`) and never a raw colour.
 
 **Palette: patina on limestone.** Restrained: warm grey-green stone neutrals
 and one accent, the green of weathered copper on an old gate. Nothing in it is
 a Google blue, red, yellow or green. Each colour is `light-dark(light, dark)`,
-so the theme follows the system with no script. Pairs that carry text or must
+so `color-scheme` on `<html>` picks one (see "Theme" below). Pairs that carry text or must
 be seen, as contrast ratios (AA: 4.5 text, 3 for large text and graphics):
 
 | Pair | Light | Ratio | Dark | Ratio |
@@ -77,8 +78,8 @@ panel titles), 24 px; weights 400, 500, 600, 700. Unread is bold, as in Gmail.
 
 **Icons: lucide-react 1.52.0** (ISC), bundled at build time, no icon font.
 Import each by name (`import { Archive } from "lucide-react"`); the
-ThemeProvider sets 20 px and stroke 1.75, and `.lucide` in base.css sizes them
-by `--icon-size`. Icon-only controls use `IconButton` (web/src/shell), which
+ThemeProvider sets 20 px and stroke 1.75, and `.lucide` in the base layer of
+index.css sizes them by `--icon-size`. Icon-only controls use `IconButton` (web/src/shell), which
 requires a label. System labels: Inbox, Star, Send, File (Drafts),
 ShieldAlert (Spam), Trash2, Mails (All Mail); user labels: Tag.
 
@@ -110,7 +111,7 @@ over the page; under 600 px it is hidden until the menu opens it.
 
 ## Settings the design must support
 
-- Theme: light and dark, defaulting to the system setting.
+- Theme: Light, Dark or System, **light on a first visit** (2026-11-12, the owner's call of 2026-11-10). `data-theme` on `<html>` is `light`, `dark` or `system`; `color-scheme` follows it in index.css (`system` follows the operating system live); a small external script, `web/public/theme-boot.js`, puts a kept choice on the page before the first paint.
 - Density: default, comfortable, compact.
 - Reading pane: none, right, below.
 - Conversation view on or off (off shows single messages).

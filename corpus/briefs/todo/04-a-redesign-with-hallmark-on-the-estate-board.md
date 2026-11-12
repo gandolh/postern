@@ -4,7 +4,7 @@
 
 - In Postern:
   - [brief 02](../done/02-base-ui-by-the-conventions.md), which settles the Base UI wrappers in `web/src/components/ui/`;
-  - [brief 03](03-the-web-app-to-tailwind.md), which puts the whole web app on one Tailwind stylesheet and token set (`web/src/styles/index.css`) and makes the Light / Dark / System choice and the light first visit sure. A redesign is then mostly a new token set and layout.
+  - [brief 03](../done/03-the-web-app-to-tailwind.md), which puts the whole web app on one Tailwind stylesheet and token set (`web/src/styles/index.css`) and makes the Light / Dark / System choice and the light first visit sure. A redesign is then mostly a new token set and layout.
 - In the owner's skills library:
   - brief 24, which vendors Hallmark as the design skill and adopts taste-skill 2.5's ideas (palettes and type dealt by trade, its copy layer);
   - the estate redesign board: one artifact with a page per app, owned by the skills library.

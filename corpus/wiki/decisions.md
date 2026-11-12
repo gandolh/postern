@@ -1,6 +1,6 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; the access token in memory and the refresh token in sessionStorage, so a reload keeps the session and closing the tab ends it (owner, 2026-10-28, revisiting 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native. How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
-updated: 2026-10-28
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; the access token in memory and the refresh token in sessionStorage, so a reload keeps the session and closing the tab ends it (owner, 2026-10-28, revisiting 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native, styled with Tailwind since 2026-11-12. How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
+updated: 2026-11-12
 ---
 
 # Decisions
@@ -163,41 +163,42 @@ this stack, and so does the owner's muscle memory.
 _2026-10-23_, the owner's call, to match their other apps (atrium,
 imbatranimOS, sports-app, trips and others). The modal dialogs are Base UI
 `Dialog`/`AlertDialog` through one wrapper, `web/src/components/ui/Modal.tsx`
-(moved from `shell/` on 2026-11-12), and the menus and popovers
-are Base UI `Menu`/`Popover` (the 2026-10-23 work). Base UI owns the focus trap, Escape, the inert page and
-focus return, and Postern keeps its CSS. Rejected: keeping native `<dialog>`
-with hand-built wiring, and shadcn, which brings Tailwind.
+(moved from `shell/` on 2026-11-12), and the menus and popovers are Base UI
+`Menu`/`Popover`. Base UI owns the focus trap, Escape, the inert page and focus return.
+Rejected: native `<dialog>` with hand-built wiring, and shadcn, which brings Tailwind
+(revisited 2026-11-12, below).
 
-The composer window stays a native `<dialog>`. It switches between docked
-(non-modal) and full screen (modal) while the editor keeps its state, and
-`show()`/`showModal()` on one element does that without remounting. Because
-it is modal in the top layer when full screen, `Modal` portals any dialog
-opened inside it, or while it is up, into it. LabelManager's delete
-confirmation also stays: it is an inline box in a table cell, not an overlay.
+The composer window stays a native `<dialog>`. It switches between docked (non-modal)
+and full screen (modal) while the editor keeps its state: `show()`/`showModal()` on one
+element does that without remounting. Being modal in the top layer when full screen,
+it receives any dialog opened inside it, which `Modal` portals into it. LabelManager's
+delete confirmation also stays: an inline box in a table cell, not an overlay.
 The two comboboxes (recipients, search) stay hand-built, and so does the sender
 card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
 card holds actions that keyboard users reach by Tab.
 
 _2026-11-12_, the owner's conventions (the base-ui skill): Base UI is imported
 only under `web/src/components/ui/`, and features import the wrapper. The
-navigation drawer, the toast, the settings switches and radios and the invite
-answer moved onto it ([overlays.md](overlays.md) maps each). Text, date and time
-inputs, the `<select>`s and the form checkboxes stay native (Q16). The tooltip
-and the toolbars stay as they are, open for the owner.
+navigation drawer, the toast, the settings switches and radios and the invite answer
+moved onto it ([overlays.md](overlays.md)). Text, date and time inputs, the `<select>`s
+and the form checkboxes stay native (Q16). The tooltip and toolbars stay open for the owner.
+
+_2026-11-12, revisit: Tailwind._ The first entry rejected shadcn because it brings
+Tailwind; the owner's call of 2026-11-09 reverses that half. The web app is
+Tailwind v4 on Base UI wrappers (brief 03): one stylesheet,
+`web/src/styles/index.css`, its tokens the `@theme`. Unchanged: Base UI behind
+`components/ui/`, the native composer `<dialog>`, the hand-built comboboxes and
+sender card; shadcn stays rejected, since the wrappers are Postern's own.
 
 ## The house style, formatted and checked
-_2026-11-11_. The estate's house-style harness, vendored at 1.1.0 into
-`vendor/house-style/` (refreshed by `npm run house-style:sync`; no git or
-`github:` dependency): Prettier at width 120, the house tsconfig flags, a thin
-ESLint config with six typed rules, and `check` / `check:fast`.
+_2026-11-11_. The house-style harness, vendored into `vendor/house-style/` (refreshed by
+`npm run house-style:sync`; no git or `github:` dependency): Prettier at width 120, the
+house tsconfig flags, a thin ESLint config, `check` and `check:fast`.
 
-- **Width 120.** One reformat commit (279 files), listed in `.git-blame-ignore-revs`.
-  Rejected: 180, which changes fewer lines but is far from the estate's width.
-- **Markdown stays out of Prettier**: the corpus is prose that `corpus/lint.sh` governs.
+- **Width 120**, one reformat commit (279 files, in `.git-blame-ignore-revs`); rejected: 180.
+  Markdown stays out of Prettier: `corpus/lint.sh` governs the corpus.
 - **Typed lint through an explicit `project` list**: `projectService` found no project
-  for 165 files, whose tests sit in `tsconfig.test.json` files.
-- **`!`**: an error in source (83 narrowed), a warning in tests (453 left).
-- **The integration tests still skip without the local Stalwart**, so `check` is then
-  not the whole gate (the root `CLAUDE.md` says so). Rejected for now: an env variable
-  that turns the skip into a failure.
-- **No `check-structure`**: no server. `jmap` not importing `web` is ESLint's rule.
+  for 165 files, whose tests sit in `tsconfig.test.json` files. `!` is an error in source, a warning in tests.
+- **The integration tests still skip without the local Stalwart**, so `check` is then not the whole gate
+  (the root `CLAUDE.md` says so). Rejected for now: an env variable that turns the skip into a failure.
+- `jmap` not importing `web` is ESLint's rule.
