@@ -17,8 +17,8 @@ import {
   Type,
 } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
-import { Menu } from "@base-ui/react/menu";
 import { IconButton } from "../shell/IconButton";
+import { Menu } from "../components/ui/Menu";
 import { useLayer } from "../components/ui/Modal";
 import { useComposerStore } from "./compose";
 import { Editor } from "./editor/Editor";
@@ -324,44 +324,37 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
               >
                 <ChevronDown aria-hidden="true" />
               </Menu.Trigger>
-              <Menu.Portal container={sendMenuContainer}>
-                <Menu.Positioner
-                  className="compose-menu-positioner"
-                  side="top"
-                  align="start"
-                  sideOffset={4}
-                  collisionPadding={8}
+              <Menu.Popup
+                container={sendMenuContainer}
+                positionerClassName="compose-menu-positioner"
+                side="top"
+                className="compose-menu"
+                onKeyDown={(e) => {
+                  // Escape is the menu's: not the composer's, nor the browser's close request for its window.
+                  if (e.key !== "Escape") return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSendMenu(false);
+                }}
+                // The dialog opens once focus is back on the button, so it returns there when it closes.
+                finalFocus={() => {
+                  const choice = sendMenuChoice.current;
+                  if (!choice) return true;
+                  sendMenuChoice.current = null;
+                  sendMenuButton.current?.focus();
+                  choice();
+                  return false;
+                }}
+              >
+                <Menu.Item
+                  className="compose-menu-item compose-menu-plain"
+                  onClick={() => {
+                    sendMenuChoice.current = () => setPicking(true);
+                  }}
                 >
-                  <Menu.Popup
-                    className="compose-menu"
-                    onKeyDown={(e) => {
-                      // Escape is the menu's: not the composer's, nor the browser's close request for its window.
-                      if (e.key !== "Escape") return;
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSendMenu(false);
-                    }}
-                    // The dialog opens once focus is back on the button, so it returns there when it closes.
-                    finalFocus={() => {
-                      const choice = sendMenuChoice.current;
-                      if (!choice) return true;
-                      sendMenuChoice.current = null;
-                      sendMenuButton.current?.focus();
-                      choice();
-                      return false;
-                    }}
-                  >
-                    <Menu.Item
-                      className="compose-menu-item compose-menu-plain"
-                      onClick={() => {
-                        sendMenuChoice.current = () => setPicking(true);
-                      }}
-                    >
-                      Schedule send
-                    </Menu.Item>
-                  </Menu.Popup>
-                </Menu.Positioner>
-              </Menu.Portal>
+                  Schedule send
+                </Menu.Item>
+              </Menu.Popup>
             </Menu.Root>
           ) : null}
         </span>
@@ -381,49 +374,42 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         <span className="compose-menu-wrap" ref={menuAnchor}>
           <Menu.Root modal={false} open={menu} onOpenChange={setMenu}>
             <Menu.Trigger ref={menuButton} render={<IconButton label="More options" icon={MoreVertical} />} />
-            <Menu.Portal container={menuContainer}>
-              <Menu.Positioner
-                className="compose-menu-positioner"
-                side="top"
-                align="start"
-                sideOffset={4}
-                collisionPadding={8}
+            <Menu.Popup
+              container={menuContainer}
+              positionerClassName="compose-menu-positioner"
+              side="top"
+              className="compose-menu"
+              onKeyDown={(e) => {
+                // Escape is the menu's: not the composer's, nor the browser's close request for its window.
+                if (e.key !== "Escape") return;
+                e.preventDefault();
+                e.stopPropagation();
+                setMenu(false);
+              }}
+              // The choice runs once focus is back on the button, so the question it may ask keeps focus.
+              finalFocus={() => {
+                const choice = menuChoice.current;
+                if (!choice) return true;
+                menuChoice.current = null;
+                menuButton.current?.focus();
+                choice();
+                return false;
+              }}
+            >
+              <Menu.CheckboxItem
+                className="compose-menu-item"
+                checked={state.plain}
+                closeOnClick
+                onClick={() => {
+                  menuChoice.current = () => {
+                    if (state.plain) session.setPlain(false);
+                    else setQuestion("plain");
+                  };
+                }}
               >
-                <Menu.Popup
-                  className="compose-menu"
-                  onKeyDown={(e) => {
-                    // Escape is the menu's: not the composer's, nor the browser's close request for its window.
-                    if (e.key !== "Escape") return;
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setMenu(false);
-                  }}
-                  // The choice runs once focus is back on the button, so the question it may ask keeps focus.
-                  finalFocus={() => {
-                    const choice = menuChoice.current;
-                    if (!choice) return true;
-                    menuChoice.current = null;
-                    menuButton.current?.focus();
-                    choice();
-                    return false;
-                  }}
-                >
-                  <Menu.CheckboxItem
-                    className="compose-menu-item"
-                    checked={state.plain}
-                    closeOnClick
-                    onClick={() => {
-                      menuChoice.current = () => {
-                        if (state.plain) session.setPlain(false);
-                        else setQuestion("plain");
-                      };
-                    }}
-                  >
-                    Plain text mode
-                  </Menu.CheckboxItem>
-                </Menu.Popup>
-              </Menu.Positioner>
-            </Menu.Portal>
+                Plain text mode
+              </Menu.CheckboxItem>
+            </Menu.Popup>
           </Menu.Root>
         </span>
         {variant === "inline" && onPopOut ? (

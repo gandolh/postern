@@ -4,9 +4,9 @@
 // call: it runs in the browser). A choice runs once focus is back on the
 // button, so the date dialog returns focus there.
 
-import { Menu } from "@base-ui/react/menu";
 import { Clock } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
+import { Menu } from "../components/ui/Menu";
 import { Modal } from "../components/ui/Modal";
 import { IconButton } from "../shell/IconButton";
 import { checkSnoozeTime, formatSnoozeTime, snoozePresets } from "./times";
@@ -42,66 +42,57 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
         }}
       >
         <Menu.Trigger ref={button} render={<IconButton label="Snooze" icon={Clock} />} />
-        <Menu.Portal>
-          <Menu.Positioner
-            className="list-menu-positioner"
-            side="bottom"
-            align="start"
-            sideOffset={4}
-            collisionPadding={8}
-          >
-            <Menu.Popup
-              className="list-menu-popup snooze-menu"
-              aria-label="Snooze until"
-              aria-describedby={helpId}
-              finalFocus={() => {
-                const choice = chosen.current;
-                if (!choice) return true;
-                chosen.current = null;
-                button.current?.focus();
-                choice();
-                return false;
+        <Menu.Popup
+          positionerClassName="list-menu-positioner"
+          className="list-menu-popup snooze-menu"
+          aria-label="Snooze until"
+          aria-describedby={helpId}
+          finalFocus={() => {
+            const choice = chosen.current;
+            if (!choice) return true;
+            chosen.current = null;
+            button.current?.focus();
+            choice();
+            return false;
+          }}
+        >
+          <p id={helpId} className="snooze-help">
+            Snooze until… {SNOOZE_HELP}
+          </p>
+          {presets.map((p) => (
+            <Menu.Item
+              key={p.id}
+              className="list-menu-item snooze-item"
+              onClick={() => {
+                chosen.current = () => onSnooze(p.at);
               }}
             >
-              <p id={helpId} className="snooze-help">
-                Snooze until… {SNOOZE_HELP}
-              </p>
-              {presets.map((p) => (
-                <Menu.Item
-                  key={p.id}
-                  className="list-menu-item snooze-item"
-                  onClick={() => {
-                    chosen.current = () => onSnooze(p.at);
-                  }}
-                >
-                  <span>{p.label}</span>
-                  <span className="snooze-item-time">{formatSnoozeTime(p.at, openedAt)}</span>
-                </Menu.Item>
-              ))}
+              <span>{p.label}</span>
+              <span className="snooze-item-time">{formatSnoozeTime(p.at, openedAt)}</span>
+            </Menu.Item>
+          ))}
+          <Menu.Item
+            className="list-menu-item snooze-item"
+            onClick={() => {
+              chosen.current = () => setPicking(true);
+            }}
+          >
+            Pick date and time
+          </Menu.Item>
+          {onUnsnooze ? (
+            <>
+              <Menu.Separator className="snooze-separator" />
               <Menu.Item
                 className="list-menu-item snooze-item"
                 onClick={() => {
-                  chosen.current = () => setPicking(true);
+                  chosen.current = onUnsnooze;
                 }}
               >
-                Pick date and time
+                Unsnooze
               </Menu.Item>
-              {onUnsnooze ? (
-                <>
-                  <Menu.Separator className="snooze-separator" />
-                  <Menu.Item
-                    className="list-menu-item snooze-item"
-                    onClick={() => {
-                      chosen.current = onUnsnooze;
-                    }}
-                  >
-                    Unsnooze
-                  </Menu.Item>
-                </>
-              ) : null}
-            </Menu.Popup>
-          </Menu.Positioner>
-        </Menu.Portal>
+            </>
+          ) : null}
+        </Menu.Popup>
       </Menu.Root>
       {picking ? (
         <SnoozeDialog

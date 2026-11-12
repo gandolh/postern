@@ -2,7 +2,7 @@
 // popover): who is signed in, the link to Stalwart's account page, and Sign out.
 
 import { ExternalLink, LogOut } from "lucide-react";
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "../components/ui/Popover";
 import { useRef, useState } from "react";
 import { STALWART_ACCOUNT_URL, useAccount, useSignOut } from "../auth";
 
@@ -35,53 +35,46 @@ export function AccountMenu() {
             {initial}
           </span>
         </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Positioner
-            className="shell-account-positioner"
-            side="bottom"
-            align="end"
-            sideOffset={8}
-            collisionPadding={8}
-          >
-            <Popover.Popup
-              className="shell-account-panel"
-              onBlur={(event) => {
-                const next = event.relatedTarget as Node | null;
-                if (next && !event.currentTarget.contains(next) && !buttonRef.current?.contains(next)) setOpen(false);
-              }}
+        <Popover.Popup
+          positionerClassName="shell-account-positioner"
+          align="end"
+          sideOffset={8}
+          className="shell-account-panel"
+          onBlur={(event) => {
+            const next = event.relatedTarget as Node | null;
+            if (next && !event.currentTarget.contains(next) && !buttonRef.current?.contains(next)) setOpen(false);
+          }}
+        >
+          <span className="shell-avatar shell-avatar-large" aria-hidden="true">
+            {initial}
+          </span>
+          <Popover.Title render={<p className="shell-account-name" />}>{name}</Popover.Title>
+          {account.name ? <p className="shell-account-address">{account.username}</p> : null}
+          {STALWART_ACCOUNT_URL ? (
+            <a
+              className="btn shell-account-manage"
+              href={STALWART_ACCOUNT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <span className="shell-avatar shell-avatar-large" aria-hidden="true">
-                {initial}
-              </span>
-              <Popover.Title render={<p className="shell-account-name" />}>{name}</Popover.Title>
-              {account.name ? <p className="shell-account-address">{account.username}</p> : null}
-              {STALWART_ACCOUNT_URL ? (
-                <a
-                  className="btn shell-account-manage"
-                  href={STALWART_ACCOUNT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Manage your account
-                  <ExternalLink aria-hidden="true" />
-                  <span className="visually-hidden">(opens in a new tab)</span>
-                </a>
-              ) : null}
-              <button
-                type="button"
-                className="btn btn-quiet shell-account-signout"
-                disabled={busy}
-                onClick={() => {
-                  setBusy(true);
-                  void signOut();
-                }}
-              >
-                <LogOut aria-hidden="true" />
-                {busy ? "Signing out…" : "Sign out"}
-              </button>
-            </Popover.Popup>
-          </Popover.Positioner>
-        </Popover.Portal>
+              Manage your account
+              <ExternalLink aria-hidden="true" />
+              <span className="visually-hidden">(opens in a new tab)</span>
+            </a>
+          ) : null}
+          <button
+            type="button"
+            className="btn btn-quiet shell-account-signout"
+            disabled={busy}
+            onClick={() => {
+              setBusy(true);
+              void signOut();
+            }}
+          >
+            <LogOut aria-hidden="true" />
+            {busy ? "Signing out…" : "Sign out"}
+          </button>
+        </Popover.Popup>
       </Popover.Root>
     </div>
   );

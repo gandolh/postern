@@ -17,7 +17,7 @@
 // conversations shows as indeterminate; clicking it puts it on all of them.
 
 import type { Id } from "@postern/jmap";
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "../components/ui/Popover";
 import { ArrowRightToLine, Plus, Search, Tag } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { filterLabels, labelChecks, validateLabelName, type LabelCheck } from "../actions/labels";
@@ -74,32 +74,23 @@ export function LabelMenu({ conversationIds, emailIds, current, mode = "label", 
             />
           }
         />
-        <Popover.Portal>
-          <Popover.Positioner
-            className="labels-positioner"
-            side="bottom"
-            align="start"
-            sideOffset={4}
-            collisionPadding={8}
-          >
-            <Popover.Popup
-              className="labels-popup"
-              aria-label={mode === "move" ? "Move to" : "Labels"}
-              // The panel puts focus in its search box.
-              initialFocus={false}
-              finalFocus={() => refocus.current}
-            >
-              <LabelMenuPanel
-                conversationIds={conversationIds}
-                emailIds={emailIds}
-                current={current}
-                mode={mode}
-                onDone={onDone}
-                onClose={close}
-              />
-            </Popover.Popup>
-          </Popover.Positioner>
-        </Popover.Portal>
+        <Popover.Popup
+          positionerClassName="labels-positioner"
+          className="labels-popup"
+          aria-label={mode === "move" ? "Move to" : "Labels"}
+          // The panel puts focus in its search box.
+          initialFocus={false}
+          finalFocus={() => refocus.current}
+        >
+          <LabelMenuPanel
+            conversationIds={conversationIds}
+            emailIds={emailIds}
+            current={current}
+            mode={mode}
+            onDone={onDone}
+            onClose={close}
+          />
+        </Popover.Popup>
       </Popover.Root>
     </div>
   );
@@ -129,25 +120,18 @@ export function LabelMenuPopover({ open, onClose, ...props }: LabelMenuPopoverPr
         if (!next) onClose();
       }}
     >
-      <Popover.Portal>
-        <Popover.Positioner
-          className="labels-positioner labels-positioner-floating"
-          anchor={anchor}
-          side="bottom"
-          align={row ? "start" : "center"}
-          sideOffset={row ? 4 : 0}
-          collisionPadding={8}
-        >
-          <Popover.Popup
-            className="labels-popup"
-            aria-label={props.mode === "move" ? "Move to" : "Labels"}
-            initialFocus={false}
-            finalFocus={false}
-          >
-            <LabelMenuPanel {...props} onClose={() => onClose()} />
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
+      <Popover.Popup
+        positionerClassName="labels-positioner labels-positioner-floating"
+        anchor={anchor}
+        align={row ? "start" : "center"}
+        sideOffset={row ? 4 : 0}
+        className="labels-popup"
+        aria-label={props.mode === "move" ? "Move to" : "Labels"}
+        initialFocus={false}
+        finalFocus={false}
+      >
+        <LabelMenuPanel {...props} onClose={() => onClose()} />
+      </Popover.Popup>
     </Popover.Root>
   );
 }

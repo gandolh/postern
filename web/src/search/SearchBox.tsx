@@ -6,7 +6,7 @@
 //   Escape           close the list; then clear the box; then leave it
 //   focusSearch()    from ./focus: the keyboard shortcuts' `/`
 
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "../components/ui/Popover";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import { navigate } from "../shell/router";
@@ -236,19 +236,17 @@ export function SearchBox({ query }: SearchBoxProps) {
             ))}
         </ul>
         {/* Portalled into the search root, so focus in the form still counts as in the search. */}
-        <Popover.Portal container={rootRef}>
-          <Popover.Positioner
-            className="search-advanced-positioner"
-            anchor={rootRef}
-            side="bottom"
-            align="start"
-            sideOffset={4}
-          >
-            <Popover.Popup className="search-advanced" aria-label="Advanced search" finalFocus={inputRef}>
-              <AdvancedSearch onSearch={search} onClose={() => setAdvanced(false)} />
-            </Popover.Popup>
-          </Popover.Positioner>
-        </Popover.Portal>
+        <Popover.Popup
+          container={rootRef}
+          positionerClassName="search-advanced-positioner"
+          anchor={rootRef}
+          collisionPadding={5}
+          className="search-advanced"
+          aria-label="Advanced search"
+          finalFocus={inputRef}
+        >
+          <AdvancedSearch onSearch={search} onClose={() => setAdvanced(false)} />
+        </Popover.Popup>
       </Popover.Root>
     </div>
   );
