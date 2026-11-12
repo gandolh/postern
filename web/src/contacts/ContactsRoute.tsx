@@ -85,7 +85,7 @@ export function ContactsRoute() {
   }
 
   return (
-    <section className="contacts-page flex min-h-full flex-col" aria-labelledby="contacts-title">
+    <section className="flex min-h-full flex-col" aria-labelledby="contacts-title">
       <header className="sticky top-0 z-header flex min-h-[calc(var(--toolbar-height)+0.5rem)] flex-wrap items-center gap-x-3 gap-y-1 border-b border-border bg-surface px-6 py-2 max-sm:px-4">
         <h1 id="contacts-title" className="text-xl font-semibold">
           Contacts
@@ -102,8 +102,8 @@ export function ContactsRoute() {
           <Plus aria-hidden="true" /> Add contact
         </Button>
       </header>
-      <div className="max-w-[70ch] p-6 text-text-muted grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:has-[form]:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)]">
-        <div className="contacts-list-pane">
+      <div className="grid max-w-[70ch] grid-cols-[minmax(0,1fr)] items-start gap-6 p-6 text-text-muted lg:has-[form]:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)]">
+        <div>
           <Input
             type="search"
             className="mb-3 w-full"
@@ -134,7 +134,7 @@ export function ContactsRoute() {
               {shown.map((card) => (
                 <li
                   key={card.id}
-                  className="[&+&]:border-t [&+&]:border-border data-[selected=true]:bg-row-selected"
+                  className="data-[selected=true]:bg-row-selected [&+&]:border-t [&+&]:border-border"
                   data-selected={editing?.kind === "edit" && editing.card.id === card.id ? "true" : undefined}
                 >
                   <button

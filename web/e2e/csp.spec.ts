@@ -125,7 +125,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
       "#contacts",
     ]) {
       await goTo(page, hash);
-      await expect(page.locator(".shell-main")).not.toBeEmpty();
+      await expect(page.getByRole("main")).not.toBeEmpty();
       await page.waitForTimeout(400);
     }
     await noViolations(page, consoleLines, "the list routes");
@@ -149,7 +149,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
       '<p style="color:#1c6a57"><b>Alice</b> <img src="https://track.evil.test/sig.png" alt="logo"></p>',
     );
     await field.blur();
-    const preview = page.locator("iframe.settings-preview").first();
+    const preview = page.getByTestId("signature-preview").first();
     await expect(preview).toHaveAttribute("sandbox", "");
     await page.waitForTimeout(500);
     await field.fill("");
@@ -161,16 +161,16 @@ test("every screen works under the CSP", async ({ page, context }) => {
   await test.step("a conversation with inline cid: images, and an image preview", async () => {
     const offsite = await threadBySubject("Photos from the offsite");
     await goTo(page, `#inbox/${offsite.threadId}`);
-    await expect(page.locator(".conv-page h1#conv-subject")).toHaveText("Photos from the offsite");
+    await expect(page.locator("h1#conv-subject")).toHaveText("Photos from the offsite");
     await expect
       .poll(async () =>
-        ((await page.locator(".conv-page iframe").first().getAttribute("srcdoc")) ?? "").includes(
+        ((await page.getByTestId("message-frame").first().getAttribute("srcdoc")) ?? "").includes(
           'src="data:image/png;base64,',
         ),
       )
       .toBe(true);
     await page.getByRole("button", { name: "Preview group-photo.png" }).first().click();
-    const viewer = page.locator("[role=dialog] iframe.att-viewer-frame");
+    const viewer = page.getByRole("dialog").getByTestId("image-viewer-frame");
     await expect(viewer).toHaveAttribute("sandbox", "");
     await page.waitForTimeout(500);
     await page.keyboard.press("Escape");
@@ -180,7 +180,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
   await test.step("the PDF preview opens in its own tab", async () => {
     const contract = await threadBySubject("Contract draft v3 for Northwind");
     await goTo(page, `#inbox/${contract.threadId}`);
-    await expect(page.locator(".conv-page h1#conv-subject")).toHaveText("Contract draft v3 for Northwind");
+    await expect(page.locator("h1#conv-subject")).toHaveText("Contract draft v3 for Northwind");
     const opening = context.waitForEvent("page");
     await page.getByRole("button", { name: "Preview northwind-agreement-v3.pdf" }).first().click();
     const tab = await opening;
@@ -201,8 +201,8 @@ test("every screen works under the CSP", async ({ page, context }) => {
 
   await test.step("the composer: paste with formatting and an inline image", async () => {
     await goTo(page, "#inbox");
-    await page.locator(".shell-nav-frame").getByText("Compose", { exact: true }).click();
-    const editor = page.locator(".compose-editor-body").last();
+    await page.getByRole("navigation", { name: "Mail" }).getByText("Compose", { exact: true }).click();
+    const editor = page.getByRole("textbox", { name: "Message body" }).last();
     await expect(editor).toBeVisible();
     await editor.click();
     await editor.evaluate((el) => {
@@ -221,7 +221,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
     await noViolations(page, consoleLines, "the composer paste");
     await page.getByRole("button", { name: "Discard draft" }).last().click();
     await page.getByRole("button", { name: "Discard", exact: true }).click();
-    await expect(page.locator(".compose-editor-body")).toHaveCount(0);
+    await expect(page.getByRole("textbox", { name: "Message body" })).toHaveCount(0);
   });
 
   await test.step("the phone layout", async () => {
@@ -231,7 +231,7 @@ test("every screen works under the CSP", async ({ page, context }) => {
       await goTo(page, hash);
       await page.waitForTimeout(500);
     }
-    await expect(page.locator(".shell-main")).toBeVisible();
+    await expect(page.getByRole("main")).toBeVisible();
     await noViolations(page, consoleLines, "the phone layout");
   });
 

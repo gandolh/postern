@@ -38,7 +38,7 @@ export function SettingsRoutes({ section }: SettingsRoutesProps) {
         </h1>
       </header>
       <nav
-        className="flex gap-1 overflow-x-auto border-b border-border px-6 [&_a]:border-b-[3px] [&_a]:border-transparent [&_a]:px-3 [&_a]:py-3 [&_a]:whitespace-nowrap [&_a]:text-text-muted [&_a]:no-underline [&_a]:hover:text-text [&_a]:focus-visible:outline-offset-(--focus-offset) [&_a]:focus-visible:[outline:var(--focus-ring)] [&_a[aria-current=page]]:border-accent [&_a[aria-current=page]]:font-semibold [&_a[aria-current=page]]:text-text"
+        className="flex gap-1 overflow-x-auto border-b border-border px-6 [&_a]:border-b-[3px] [&_a]:border-transparent [&_a]:px-3 [&_a]:py-3 [&_a]:whitespace-nowrap [&_a]:text-text-muted [&_a]:no-underline [&_a]:hover:text-text [&_a]:focus-visible:[outline:var(--focus-ring)] [&_a]:focus-visible:outline-offset-(--focus-offset) [&_a[aria-current=page]]:border-accent [&_a[aria-current=page]]:font-semibold [&_a[aria-current=page]]:text-text"
         aria-label="Settings sections"
       >
         {SECTIONS.map((s) => (

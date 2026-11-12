@@ -193,7 +193,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       aria-selected={selected}
       aria-current={open ? "true" : undefined}
       tabIndex={tabbable ? 0 : -1}
-      className="group/row grid h-(--row-height) cursor-pointer grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border bg-row-read py-0 pr-3 pl-1 text-md leading-tight text-text select-none hover:bg-row-hover hover:shadow-[inset_0_-1px_0_var(--color-border-strong)] focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-unread:bg-row hover:data-unread:bg-row-hover aria-selected:bg-row-selected! [&[draggable=true]]:cursor-default min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] max-sm:relative max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:touch-pan-y max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:hover:shadow-none data-swiping:relative data-swiping:z-above data-swiping:shadow-sm"
+      className="group/row grid h-(--row-height) cursor-pointer grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border bg-row-read py-0 pr-3 pl-1 text-md leading-tight text-text select-none hover:bg-row-hover hover:shadow-[inset_0_-1px_0_var(--color-border-strong)] focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover max-sm:relative max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:hover:shadow-none min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] [&[draggable=true]]:cursor-default"
       draggable
       onDragStart={(event) => startDrag(event, row, selected)}
       data-row-id={row.id}
@@ -207,8 +207,8 @@ export const ConversationRowView = memo(function ConversationRowView({
         if (event.target === event.currentTarget) handlers.onFocus(row.id);
       }}
     >
-      <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:[grid-area:controls] max-sm:self-start">
-        <label className="inline-grid size-8 flex-none in-data-[density=compact]:size-7 cursor-pointer place-items-center max-sm:size-11 [&_input]:m-0 [&_input]:size-4 [&_input]:cursor-pointer [&_input]:accent-accent">
+      <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:self-start max-sm:[grid-area:controls]">
+        <label className="inline-grid size-8 flex-none cursor-pointer place-items-center in-data-[density=compact]:size-7 max-sm:size-11 [&_input]:m-0 [&_input]:size-4 [&_input]:cursor-pointer [&_input]:accent-accent">
           <input
             type="checkbox"
             tabIndex={-1}
@@ -222,7 +222,7 @@ export const ConversationRowView = memo(function ConversationRowView({
           />
         </label>
         <IconButton
-          className="size-8 in-data-[density=compact]:size-7 [&_.lucide]:[--icon-size:1.125rem] aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:hover:bg-hover aria-pressed:[&_.lucide]:fill-current max-sm:absolute max-sm:right-0 max-sm:bottom-0 max-sm:size-11"
+          className="size-8 in-data-[density=compact]:size-7 aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:hover:bg-hover max-sm:absolute max-sm:right-0 max-sm:bottom-0 max-sm:size-11 [&_.lucide]:[--icon-size:1.125rem] aria-pressed:[&_.lucide]:fill-current"
           label={view.starred ? "Starred" : "Not starred"}
           icon={Star}
           aria-pressed={view.starred}
@@ -231,7 +231,7 @@ export const ConversationRowView = memo(function ConversationRowView({
           onClick={stop(() => handlers.onStar(row))}
         />
         <IconButton
-          className="size-8 in-data-[density=compact]:size-7 max-sm:size-8 [&_.lucide]:[--icon-size:1.125rem] text-text-subtle aria-pressed:bg-transparent aria-pressed:text-accent aria-pressed:hover:bg-hover aria-pressed:[&_.lucide]:fill-current @max-[46rem]/list:hidden max-sm:hidden"
+          className="size-8 text-text-subtle in-data-[density=compact]:size-7 aria-pressed:bg-transparent aria-pressed:text-accent aria-pressed:hover:bg-hover max-sm:hidden max-sm:size-8 @max-[46rem]/list:hidden [&_.lucide]:[--icon-size:1.125rem] aria-pressed:[&_.lucide]:fill-current"
           label={view.important ? "Important" : "Not important"}
           icon={Bookmark}
           aria-pressed={view.important}
@@ -242,7 +242,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       </div>
       <div
         role="gridcell"
-        className="min-w-0 items-center block overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:[grid-area:senders] max-sm:self-center"
+        className="block min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:self-center max-sm:[grid-area:senders]"
         title={view.senders.text}
       >
         {view.unread ? <span className="sr-only">Unread, </span> : null}
@@ -250,7 +250,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       </div>
       <div
         role="gridcell"
-        className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:[grid-area:main] max-sm:items-start max-sm:pr-10"
+        className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:items-start max-sm:pr-10 max-sm:[grid-area:main]"
       >
         {view.chips.length || view.snoozed ? (
           <span className="flex max-w-[45%] flex-none gap-1 overflow-hidden @max-[46rem]/list:hidden">
@@ -276,7 +276,7 @@ export const ConversationRowView = memo(function ConversationRowView({
                 <Highlighted html={row.snippet?.subject} fallback={subject} />
               </span>
               {row.preview || row.snippet?.preview ? (
-                <span className="text-text-muted min-sm:@max-[30rem]/list:hidden max-sm:inline">
+                <span className="text-text-muted max-sm:inline min-sm:@max-[30rem]/list:hidden">
                   {/* Its own span so the phone row (mobile.css), which puts the snippet on a line of its own, can drop it. */}
                   <span className="max-sm:hidden">{" – "}</span>
                   <Highlighted html={row.snippet?.preview} fallback={row.preview} />
@@ -288,7 +288,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       </div>
       <div
         role="gridcell"
-        className="flex items-center min-w-22 justify-end gap-2 min-sm:@max-[30rem]/list:min-w-0 max-sm:[grid-area:end] max-sm:min-w-0 max-sm:self-center"
+        className="flex min-w-22 items-center justify-end gap-2 max-sm:min-w-0 max-sm:self-center max-sm:[grid-area:end] min-sm:@max-[30rem]/list:min-w-0"
       >
         {row.hasAttachment ? (
           <span
@@ -300,7 +300,7 @@ export const ConversationRowView = memo(function ConversationRowView({
           </span>
         ) : null}
         <time
-          className="text-sm whitespace-nowrap text-text-muted tabular-nums group-data-unread/row:font-bold group-data-unread/row:text-text group-focus-within/row:hidden group-hover/row:hidden max-sm:group-focus-within/row:inline-flex max-sm:group-hover/row:inline-flex"
+          className="text-sm whitespace-nowrap text-text-muted tabular-nums group-focus-within/row:hidden group-hover/row:hidden group-data-unread/row:font-bold group-data-unread/row:text-text max-sm:group-focus-within/row:inline-flex max-sm:group-hover/row:inline-flex"
           dateTime={row.receivedAt}
           title={date.full}
         >
@@ -346,31 +346,31 @@ export function PlaceholderRow({ index }: { index: number }) {
       role="row"
       aria-rowindex={index + 1}
       aria-busy="true"
-      className="group/row grid h-(--row-height) grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border py-0 pr-3 pl-1 text-md leading-tight text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-unread:bg-row hover:data-unread:bg-row-hover aria-selected:bg-row-selected! [&[draggable=true]]:cursor-default min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] max-sm:relative max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:touch-pan-y max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:hover:shadow-none data-swiping:relative data-swiping:z-above data-swiping:shadow-sm cursor-default bg-row hover:bg-row hover:shadow-none"
+      className="group/row grid h-(--row-height) cursor-default grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border bg-row py-0 pr-3 pl-1 text-md leading-tight text-text select-none hover:bg-row hover:shadow-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover max-sm:relative max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:hover:shadow-none min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] [&[draggable=true]]:cursor-default"
     >
-      <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:[grid-area:controls] max-sm:self-start">
-        <span className="ml-2 size-4 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+      <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:self-start max-sm:[grid-area:controls]">
+        <span className="ml-2 block size-4 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
       </div>
       <div
         role="gridcell"
-        className="min-w-0 items-center block overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:[grid-area:senders] max-sm:self-center"
+        className="block min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:self-center max-sm:[grid-area:senders]"
       >
-        <span className="h-3 w-[70%] block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+        <span className="block h-3 w-[70%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
       </div>
       <div
         role="gridcell"
-        className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:[grid-area:main] max-sm:items-start max-sm:pr-10"
+        className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:items-start max-sm:pr-10 max-sm:[grid-area:main]"
       >
         <span
-          className="h-3 w-[70%] block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none"
+          className="block h-3 w-[70%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton"
           style={{ width: `${40 + ((index * 37) % 45)}%` }}
         />
       </div>
       <div
         role="gridcell"
-        className="flex items-center min-w-22 justify-end gap-2 min-sm:@max-[30rem]/list:min-w-0 max-sm:[grid-area:end] max-sm:min-w-0 max-sm:self-center"
+        className="flex min-w-22 items-center justify-end gap-2 max-sm:min-w-0 max-sm:self-center max-sm:[grid-area:end] min-sm:@max-[30rem]/list:min-w-0"
       >
-        <span className="h-3 w-12 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+        <span className="block h-3 w-12 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
       </div>
     </div>
   );

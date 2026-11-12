@@ -152,12 +152,12 @@ export function SearchBox({ query }: SearchBoxProps) {
         }}
       >
         <div
-          className="flex h-12 items-center gap-1 rounded-lg border border-transparent bg-hover pr-3 pl-1 transition-[background-color,box-shadow] duration-(--duration-fast) ease-out focus-within:border-border focus-within:bg-surface focus-within:shadow-md has-[input:focus-visible]:outline-offset-0 has-[input:focus-visible]:[outline:var(--focus-ring)] max-sm:pr-1 max-sm:[&_[data-slot=icon-button]]:flex-none"
+          className="flex h-12 items-center gap-1 rounded-lg border border-transparent bg-hover pr-3 pl-1 transition-[background-color,box-shadow] duration-(--duration-fast) ease-out focus-within:border-border focus-within:bg-surface focus-within:shadow-md has-[input:focus-visible]:[outline:var(--focus-ring)] has-[input:focus-visible]:outline-offset-0 max-sm:pr-1"
           role="search"
         >
           <button
             type="button"
-            className={iconButtonClass(undefined, false)}
+            className={iconButtonClass("max-sm:flex-none", false)}
             aria-label="Search"
             onClick={() => search(value)}
           >
@@ -189,7 +189,7 @@ export function SearchBox({ query }: SearchBoxProps) {
           {value !== "" && (
             <button
               type="button"
-              className={iconButtonClass(undefined, false)}
+              className={iconButtonClass("max-sm:flex-none", false)}
               aria-label="Clear search"
               onClick={() => {
                 setValue("");
@@ -200,7 +200,7 @@ export function SearchBox({ query }: SearchBoxProps) {
             </button>
           )}
           <Popover.Trigger
-            className={iconButtonClass(undefined, false)}
+            className={iconButtonClass("max-sm:flex-none", false)}
             aria-label="Search options"
             onClick={() => setDismissed(true)}
           >

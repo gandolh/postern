@@ -116,7 +116,7 @@ function frameReports(page: Page): Promise<FrameReport[]> {
     const FORBIDDEN =
       "script,iframe,frame,object,embed,applet,form,input,button,select,textarea,base,link,svg,math,template,portal,audio,video,noscript";
     const IMAGE_ATTRS = ["src", "srcset", "background", "poster", "data", "action", "formaction", "xlink:href"];
-    return Array.from(document.querySelectorAll<HTMLIFrameElement>(".conv-page iframe"), (frame) => {
+    return Array.from(document.querySelectorAll<HTMLIFrameElement>("[data-testid=message-frame]"), (frame) => {
       const doc = new DOMParser().parseFromString(frame.getAttribute("srcdoc") ?? "", "text/html");
       const all = Array.from(doc.querySelectorAll("*"));
       const css = [
@@ -160,7 +160,7 @@ function frameReports(page: Page): Promise<FrameReport[]> {
  * which the sandbox blocks and logs exactly as it would the message's.
  */
 async function poke(page: Page, focusable: number): Promise<void> {
-  const element = page.locator(".conv-page iframe").first();
+  const element = page.getByTestId("message-frame").first();
   await element.scrollIntoViewIfNeeded();
   const box = await element.boundingBox();
   if (!box) return;
@@ -191,7 +191,7 @@ function scriptConsole(rec: Recording): string[] {
 
 async function messageFrame(page: Page): Promise<Frame | null> {
   const handle = await page
-    .locator(".conv-page iframe")
+    .getByTestId("message-frame")
     .first()
     .elementHandle({ timeout: 2_000 })
     .catch(() => null);
@@ -231,10 +231,10 @@ for (const [slug, expectation] of Object.entries(EXPECTED)) {
     const openedUrl = page.url();
     const navigationsAtOpen = rec.topNavigations.length;
 
-    const frames = page.locator(".conv-page iframe");
+    const frames = page.getByTestId("message-frame");
     await expect(frames).toHaveCount(expectation.frames);
     if (expectation.frames === 0)
-      await expect(page.locator(".conv-page article")).toContainText(
+      await expect(page.getByRole("article")).toContainText(
         slug === "double-extension" ? "double-extension" : "forged-sender-address-name",
       );
 
@@ -297,7 +297,7 @@ for (const [slug, expectation] of Object.entries(EXPECTED)) {
         ...(expectation.markers ?? []),
       ];
       expect(markers.filter((m) => html.includes(m))).toEqual([]);
-      await expect(page.locator(".conv-page iframe:not([srcdoc])")).toHaveCount(0);
+      await expect(page.locator("[data-testid=message-frame]:not([srcdoc])")).toHaveCount(0);
     });
 
     await test.step("the app never navigates; links open a new tab with no opener", async () => {
@@ -324,7 +324,7 @@ for (const [slug, expectation] of Object.entries(EXPECTED)) {
       );
     });
 
-    const bar = page.locator(".conv-page .conv-banner", { hasText: "Images are not displayed." });
+    const bar = page.getByRole("note").filter({ hasText: "Images are not displayed." });
     if (!expectation.remoteHosts) {
       await expect(bar).toHaveCount(0);
     } else {
@@ -358,7 +358,7 @@ for (const [slug, expectation] of Object.entries(EXPECTED)) {
       });
     }
 
-    const linkBanner = page.locator(".conv-page .conv-banner-warning", { hasText: "Check links before you click" });
+    const linkBanner = page.getByRole("note").filter({ hasText: "Check links before you click" });
     await expect(linkBanner).toHaveCount(expectation.linkWarning ? 1 : 0);
     rec.stop();
   });
@@ -368,36 +368,42 @@ test("a forged display name shows the real address and the warning", async ({ pa
   await stubOutsideWorld(context);
   await signIn(page);
   await openConversation(page, labelId, fixtures.get("forged-sender-address-name")!.threadId);
-  const card = page.locator(".conv-page article").first();
-  await expect(card.locator(".conv-sender-address")).toContainText("attacker@evil.test");
-  await expect(card.locator(".conv-forged")).toHaveText(
+  const card = page.getByRole("article").first();
+  await expect(card.getByText("<attacker@evil.test>")).toContainText("attacker@evil.test");
+  await expect(card.getByRole("note").first()).toHaveText(
     "The name says security@bank.example.com, but this message came from attacker@evil.test.",
   );
 
   await openConversation(page, labelId, fixtures.get("forged-sender")!.threadId);
-  const forged = page.locator(".conv-page article").first();
-  await expect(forged.locator(".conv-sender-name")).toHaveText("Account Support");
-  await expect(forged.locator(".conv-sender-address")).toContainText("attacker@evil.test");
+  const forged = page.getByRole("article").first();
+  await expect(forged.getByText("Account Support", { exact: true })).toHaveText("Account Support");
+  await expect(forged.getByText("attacker@evil.test").first()).toContainText("attacker@evil.test");
 });
 
 test("mismatched and look-alike links are named outside the frame", async ({ page, context }) => {
   await stubOutsideWorld(context);
   await signIn(page);
   await openConversation(page, labelId, fixtures.get("link-text-mismatch")!.threadId);
-  const banner = page.locator(".conv-page .conv-banner-warning");
-  await expect(banner.locator(".conv-banner-title")).toHaveText("Check links before you click");
-  await expect(banner.locator("li").first()).toHaveText("“https://accounts.example.com/login” goes to evil.test");
-  await expect(banner.locator("li").last()).toHaveText("and 1 more");
+  const banner = page.getByRole("note").filter({ hasText: "Check links before you click" });
+  await expect(banner.getByText("Check links before you click", { exact: true })).toHaveText(
+    "Check links before you click",
+  );
+  await expect(banner.getByRole("listitem").first()).toHaveText(
+    "“https://accounts.example.com/login” goes to evil.test",
+  );
+  await expect(banner.getByRole("listitem").last()).toHaveText("and 1 more");
 
   await openConversation(page, labelId, fixtures.get("punycode-domain")!.threadId);
-  const items = page.locator(".conv-page .conv-banner-warning li");
+  const items = page.getByRole("note").filter({ hasText: "Check links before you click" }).getByRole("listitem");
   await expect(items).toHaveText([
     "“apple.test look-alike (punycode xn--80ak6aa92e)” goes to xn--80ak6aa92e.test",
     "A link goes to xn--pple-43d.test, a name written to look like another",
     "A link goes to xn--ypal-43d9g.test, a name written to look like another",
   ]);
   // почта.test is an ordinary Cyrillic name: not flagged.
-  await expect(page.locator(".conv-page .conv-banner-warning")).not.toContainText("xn--80a1acny");
+  await expect(page.getByRole("note").filter({ hasText: "Check links before you click" })).not.toContainText(
+    "xn--80a1acny",
+  );
 });
 
 test("an attachment named to deceive downloads under its real name and never opens", async ({ page, context }) => {
@@ -405,12 +411,10 @@ test("an attachment named to deceive downloads under its real name and never ope
   const rec = record(page);
   await signIn(page);
   await openConversation(page, labelId, fixtures.get("double-extension")!.threadId);
-  const chip = page.locator(".att-chip", { hasText: "invoice.pdf.html" });
-  await expect(chip.locator(".att-warning")).toHaveText(
-    "Named like a .pdf file, but it is a .html file. Download only.",
-  );
+  const chip = page.getByRole("article").getByRole("listitem").filter({ hasText: "invoice.pdf.html" });
+  await expect(chip.getByRole("note")).toHaveText("Named like a .pdf file, but it is a .html file. Download only.");
   const downloading = page.waitForEvent("download");
-  await chip.locator(".att-main").click();
+  await chip.getByRole("button", { name: "Download invoice.pdf.html" }).first().click();
   const download = await downloading;
   expect(download.suggestedFilename()).toBe("invoice.pdf.html");
   await download.cancel();
@@ -419,11 +423,11 @@ test("an attachment named to deceive downloads under its real name and never ope
   expect(await canary(page)).toBeUndefined();
 
   await openConversation(page, labelId, fixtures.get("svg-attachment")!.threadId);
-  const svgChips = page.locator(".att-chip", { hasText: ".svg" });
+  const svgChips = page.getByRole("article").getByRole("listitem").filter({ hasText: ".svg" });
   await expect(svgChips).toHaveCount(2);
   for (const chipEl of await svgChips.all())
     await expect(chipEl.getByRole("button", { name: /^Preview/ })).toHaveCount(0);
-  const srcdoc = (await page.locator(".conv-page iframe").getAttribute("srcdoc")) ?? "";
+  const srcdoc = (await page.getByTestId("message-frame").getAttribute("srcdoc")) ?? "";
   expect(srcdoc.includes("data:image/svg")).toBe(false);
   expect(rec.foreignRequests()).toEqual([]);
   rec.stop();
@@ -436,7 +440,10 @@ test("a hostile calendar invite's card shows its fields as inert text, and its j
   await stubOutsideWorld(context);
   await signIn(page);
   await openConversation(page, labelId, fixtures.get("ics-invite")!.threadId);
-  const card = page.locator(".invite-card");
+  const card = page
+    .getByRole("region")
+    .filter({ hasNot: page.getByRole("region") })
+    .filter({ has: page.getByRole("group", { name: "Going?" }) });
   await expect(card).toContainText('window["__POSTERN_"+"PWNED"]="ics-location"');
   await expect(card).toContainText("<script>");
   await expect(card.locator("a, script, img, b")).toHaveCount(0);

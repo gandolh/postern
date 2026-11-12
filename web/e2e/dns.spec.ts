@@ -37,7 +37,7 @@ test("no host named in a message is looked up before Display images", async () =
     const hostile = await hostileSet();
     for (const fixture of hostile.bySlug.values()) {
       await openConversation(page, hostile.labelId, fixture.threadId);
-      const frame = page.locator(".conv-page iframe").first();
+      const frame = page.getByTestId("message-frame").first();
       if ((await frame.count()) > 0) {
         await frame.scrollIntoViewIfNeeded();
         const box = await frame.boundingBox();

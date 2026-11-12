@@ -123,7 +123,7 @@ function HoverCardBody({ id, address, close }: { id: string; address: EmailAddre
       <p className="m-0 font-semibold wrap-anywhere">
         <bdi>{name}</bdi>
       </p>
-      <p className="m-0 text-sm text-text-muted wrap-anywhere">
+      <p className="m-0 text-sm wrap-anywhere text-text-muted">
         <bdi>{address.email}</bdi>
       </p>
       <div className="mt-1 flex flex-wrap gap-2">

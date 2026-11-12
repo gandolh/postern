@@ -101,7 +101,7 @@ export function MenuButton({ label, icon, items, align = "start", className }: M
           {items.map((item) => (
             <Menu.Item
               key={item.label}
-              className="block min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover"
+              className="block min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover"
               disabled={item.disabled}
               onClick={() => {
                 chosen.current = item;

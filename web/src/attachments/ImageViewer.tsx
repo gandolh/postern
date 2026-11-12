@@ -62,6 +62,7 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
       <div className="grid min-h-0 flex-[1_1_auto] place-items-center bg-surface-sunken">
         {state.srcdoc ? (
           <iframe
+            data-testid="image-viewer-frame"
             className="size-full"
             sandbox={VIEWER_FRAME_SANDBOX}
             srcDoc={state.srcdoc}

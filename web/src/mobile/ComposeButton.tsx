@@ -16,7 +16,7 @@ export function PhoneComposeButton({ route }: { route: Route }) {
     <button
       type="button"
       data-compose-fab
-      className="fixed right-[calc(1rem+env(safe-area-inset-right,0px))] bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-scrim inline-flex min-h-14 cursor-pointer items-center gap-3 rounded-xl bg-accent-soft pr-5 pl-4 text-md font-semibold text-on-accent-soft shadow-md hover:bg-accent-soft-hover focus-visible:outline-offset-(--focus-offset) focus-visible:[outline:var(--focus-ring)]"
+      className="fixed right-[calc(1rem+env(safe-area-inset-right,0px))] bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-scrim inline-flex min-h-14 cursor-pointer items-center gap-3 rounded-xl bg-accent-soft pr-5 pl-4 text-md font-semibold text-on-accent-soft shadow-md hover:bg-accent-soft-hover focus-visible:[outline:var(--focus-ring)] focus-visible:outline-offset-(--focus-offset)"
       onClick={() => compose.open()}
     >
       <Pencil aria-hidden="true" />

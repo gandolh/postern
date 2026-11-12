@@ -593,7 +593,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         aria-label={`${capitalised(things)} ${allLabel}`}
         aria-rowcount={count}
         aria-multiselectable="true"
-        className="list-grid"
+
         onKeyDown={onKeyDown}
       >
         <div role="presentation" className="relative max-sm:mb-20" style={{ height: virtual.totalHeight }}>

@@ -88,6 +88,7 @@ function HtmlPreview({ html, title }: { html: string; title: string }) {
   if (srcdoc === null) return null;
   return (
     <iframe
+      data-testid="signature-preview"
       className="h-32 w-full rounded-sm border border-border bg-surface"
       sandbox=""
       srcDoc={srcdoc}

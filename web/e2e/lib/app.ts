@@ -128,7 +128,7 @@ export async function signIn(page: Page, who: AccountName = "alice"): Promise<vo
   await field.fill(password(who));
   try {
     await page.locator("button[type=submit]").click();
-    await expect(page.locator(".shell")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("button", { name: "Main menu" })).toBeVisible({ timeout: 20_000 });
   } catch (err) {
     await field.fill("", { timeout: 2_000 }).catch(() => undefined);
     throw err;
@@ -174,7 +174,7 @@ export async function goTo(page: Page, hash: string): Promise<void> {
 /** Open a conversation from a user label and wait for its subject. */
 export async function openConversation(page: Page, labelId: string, threadId: string): Promise<void> {
   await goTo(page, `#label/${encodeURIComponent(labelId)}/${encodeURIComponent(threadId)}`);
-  await expect(page.locator(".conv-page h1#conv-subject")).toBeVisible();
+  await expect(page.locator("h1#conv-subject")).toBeVisible();
 }
 
 /** The value of the canary in the top document. */

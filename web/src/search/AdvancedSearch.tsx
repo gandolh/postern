@@ -83,7 +83,7 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
   const field = (name: string) => `${id}-${name}`;
 
   return (
-    <form className="search-advanced-form" onSubmit={submit}>
+    <form onSubmit={submit}>
       <div className="grid grid-cols-[minmax(6.5rem,max-content)_1fr] items-center gap-x-3 gap-y-2 text-md [&_:is(input:not([type=checkbox]),select)]:min-h-9 [&_:is(input:not([type=checkbox]),select)]:min-w-0 [&_:is(input:not([type=checkbox]),select)]:text-md">
         <label htmlFor={field("from")}>From</label>
         <Input id={field("from")} value={from} onChange={(e) => setFrom(e.target.value)} autoFocus />

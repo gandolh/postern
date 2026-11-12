@@ -75,7 +75,7 @@ test("the drawer keeps the label tree folded and its scroll between openings", a
   await expect(drawer).toBeVisible();
   await drawer.getByRole("button", { name: "Work sublabels" }).click();
   await expect(drawer.getByRole("link", { name: /^Clients/ })).toBeHidden();
-  const scroller = page.locator(".nav-drawer-content");
+  const scroller = page.locator("[data-drawer-content]");
   await scroller.evaluate((element) => {
     element.scrollTop = 40;
   });

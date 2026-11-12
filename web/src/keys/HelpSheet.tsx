@@ -84,7 +84,7 @@ export function HelpSheet() {
             <ul>
               {items.map((shortcut) => (
                 <li key={shortcut.id}>
-                  <span className="keys-desc">{shortcut.description}</span>
+                  <span>{shortcut.description}</span>
                   <span className="inline-flex shrink-0 flex-wrap items-baseline justify-end gap-1">
                     {displayKeys(shortcut).map((alt, i) => (
                       <Fragment key={i}>

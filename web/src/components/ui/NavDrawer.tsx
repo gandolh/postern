@@ -33,14 +33,14 @@ export function NavDrawer({ open, onClose, returnFocus, contentRef, children }: 
       }}
     >
       <Drawer.Portal>
-        <Drawer.Backdrop className="fixed inset-x-0 top-(--topbar-height) bottom-0 z-scrim bg-scrim opacity-[calc(1-var(--drawer-swipe-progress,0))] motion-safe:transition-opacity motion-safe:duration-(--duration-normal) motion-safe:ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
+        <Drawer.Backdrop className="fixed inset-x-0 top-(--topbar-height) bottom-0 z-scrim bg-scrim opacity-[calc(1-var(--drawer-swipe-progress,0))] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0 motion-safe:transition-opacity motion-safe:duration-(--duration-normal) motion-safe:ease-out" />
         <Drawer.Viewport className="fixed inset-x-0 top-(--topbar-height) bottom-0 z-drawer">
           <Drawer.Popup
             ref={popupRef}
-            className="flex h-full w-(--nav-width) transform-[translateX(var(--drawer-swipe-movement-x,0))] flex-col rounded-tr-xl bg-canvas shadow-lg outline-none motion-safe:transition-[transform,opacity] motion-safe:duration-(--duration-normal) motion-safe:ease-out data-ending-style:transform-[translateX(-1.5rem)] data-ending-style:opacity-0 data-starting-style:transform-[translateX(-1.5rem)] data-starting-style:opacity-0 data-swiping:select-none data-swiping:duration-0"
+            className="flex h-full w-(--nav-width) transform-[translateX(var(--drawer-swipe-movement-x,0))] flex-col rounded-tr-xl bg-canvas shadow-lg outline-none data-ending-style:transform-[translateX(-1.5rem)] data-ending-style:opacity-0 data-starting-style:transform-[translateX(-1.5rem)] data-starting-style:opacity-0 data-swiping:duration-0 data-swiping:select-none motion-safe:transition-[transform,opacity] motion-safe:duration-(--duration-normal) motion-safe:ease-out"
             // The first control of the navigation, not the hidden close control before it.
             initialFocus={() =>
-              popupRef.current?.querySelector<HTMLElement>(".nav-drawer-content :is(button, a)") ?? true
+              popupRef.current?.querySelector<HTMLElement>("[data-drawer-content] :is(button, a)") ?? true
             }
             finalFocus={() => returnFocus() ?? true}
           >
@@ -51,7 +51,8 @@ export function NavDrawer({ open, onClose, returnFocus, contentRef, children }: 
             </Drawer.Close>
             <Drawer.Content
               ref={contentRef}
-              className="flex-1 touch-pan-y [grid-area:nav] min-h-0 overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]"
+              data-drawer-content
+              className="min-h-0 flex-1 touch-pan-y [scrollbar-gutter:stable] overflow-x-hidden overflow-y-auto [grid-area:nav]"
             >
               {children}
             </Drawer.Content>

@@ -17,7 +17,7 @@ function Host(props: Partial<ModalProps> & { field?: boolean }) {
       <button type="button">Behind</button>
       {open ? (
         <Modal
-          className="x"
+          className="p-1"
           alert={props.alert}
           disablePointerDismissal={props.disablePointerDismissal}
           dismissible={props.dismissible}

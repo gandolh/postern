@@ -45,7 +45,7 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
         <Menu.Trigger ref={button} render={<IconButton label="Snooze" icon={Clock} />} />
         <Menu.Popup
           positionerClassName="z-popup"
-          className="snooze-menu flex min-w-48 flex-col rounded-lg border border-border bg-surface-raised py-2 shadow-md"
+          className="flex min-w-48 flex-col rounded-lg border border-border bg-surface-raised py-2 shadow-md"
           aria-label="Snooze until"
           aria-describedby={helpId}
           finalFocus={() => {
@@ -63,7 +63,7 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
           {presets.map((p) => (
             <Menu.Item
               key={p.id}
-              className="min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover flex items-center justify-between gap-4"
+              className="flex min-h-9 w-full cursor-pointer items-center justify-between gap-4 px-4 text-start text-md text-text select-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover"
               onClick={() => {
                 chosen.current = () => onSnooze(p.at);
               }}
@@ -73,7 +73,7 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
             </Menu.Item>
           ))}
           <Menu.Item
-            className="min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover flex items-center justify-between gap-4"
+            className="flex min-h-9 w-full cursor-pointer items-center justify-between gap-4 px-4 text-start text-md text-text select-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover"
             onClick={() => {
               chosen.current = () => setPicking(true);
             }}
@@ -84,7 +84,7 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
             <>
               <Menu.Separator className="my-1 h-px bg-border" />
               <Menu.Item
-                className="min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover flex items-center justify-between gap-4"
+                className="flex min-h-9 w-full cursor-pointer items-center justify-between gap-4 px-4 text-start text-md text-text select-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover"
                 onClick={() => {
                   chosen.current = onUnsnooze;
                 }}

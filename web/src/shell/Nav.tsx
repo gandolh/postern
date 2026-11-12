@@ -148,7 +148,7 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
             {view === "drafts" && canSchedule ? (
               <li>
                 <a
-                  className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
+                  className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft data-[unread=true]:font-bold [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft"
                   href={formatRoute({ kind: "scheduled" })}
                   aria-current={route.kind === "scheduled" ? "page" : undefined}
                   title={rail ? "Scheduled" : undefined}
@@ -186,10 +186,10 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
         )}
       </div>
 
-      <ul className="m-0 list-none p-0 in-data-[nav=rail]:w-full mt-auto pt-4">
+      <ul className="m-0 mt-auto list-none p-0 pt-4 in-data-[nav=rail]:w-full">
         <li>
           <a
-            className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
+            className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft data-[unread=true]:font-bold [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft"
             href={formatRoute({ kind: "contacts" })}
             aria-current={route.kind === "contacts" ? "page" : undefined}
             title={rail ? "Contacts" : undefined}
@@ -212,7 +212,7 @@ function SystemItem({ entry, current, rail }: { entry: SystemEntry; current: boo
   return (
     <li>
       <a
-        className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
+        className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft data-[unread=true]:font-bold [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft"
         href={formatRoute({ kind: "system", view: entry.view })}
         aria-current={current ? "page" : undefined}
         aria-label={countLabel(entry.title, entry.badge, noun)}
@@ -281,7 +281,7 @@ function LabelTree({ tree: allTree, hidden: allHidden, route, rail }: LabelTreeP
         <>
           <button
             type="button"
-            className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 text-text-muted"
+            className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text-muted no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft data-[unread=true]:font-bold [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft"
             aria-expanded={showHidden}
             onClick={() => setShowHidden((s) => !s)}
           >
@@ -331,7 +331,7 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
         {hasChildren && !rail ? (
           <button
             type="button"
-            className="absolute top-0 left-[calc(var(--depth,0)*1rem)] z-above grid h-(--nav-item-height) w-6 cursor-pointer place-items-center rounded-sm bg-transparent p-0 text-text-muted hover:bg-active hover:text-text [&_.lucide]:[--icon-size:1rem] [&_.lucide]:transition-transform [&_.lucide]:duration-(--duration-fast) [&_.lucide]:ease-out aria-expanded:[&_.lucide]:rotate-90"
+            className="absolute top-0 left-[calc(var(--depth,0)*1rem)] z-above grid h-(--nav-item-height) w-6 cursor-pointer place-items-center rounded-sm bg-transparent p-0 text-text-muted hover:bg-active hover:text-text [&_.lucide]:transition-transform [&_.lucide]:duration-(--duration-fast) [&_.lucide]:ease-out [&_.lucide]:[--icon-size:1rem] aria-expanded:[&_.lucide]:rotate-90"
             aria-expanded={open}
             aria-label={`${label.title} sublabels`}
             onClick={() => onToggle(label.id)}
@@ -345,7 +345,7 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
           />
         )}
         <a
-          className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
+          className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft data-[unread=true]:font-bold [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft"
           href={formatRoute({ kind: "label", labelId: label.id })}
           aria-current={isCurrentLabel(route, label.id) ? "page" : undefined}
           aria-label={countLabel(label.title, label.unreadThreads, "unread")}

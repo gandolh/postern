@@ -92,7 +92,7 @@ export function LabelManager() {
   }
 
   return (
-    <div className="flex max-w-208 flex-col gap-4 p-4 max-sm:[&_td>label]:inline-grid max-sm:[&_td>label]:size-11 max-sm:[&_td>label]:place-items-center max-sm:[&_td_input[type=checkbox]]:m-0 max-sm:[&_td_input[type=checkbox]]:size-6">
+    <div className="flex max-w-208 flex-col gap-4 p-4 max-sm:[&_td_input[type=checkbox]]:m-0 max-sm:[&_td_input[type=checkbox]]:size-6 max-sm:[&_td>label]:inline-grid max-sm:[&_td>label]:size-11 max-sm:[&_td>label]:place-items-center">
       <p className="text-md text-text-muted">
         Labels are folders: the ones you make here show up as folders in your phone's mail app, and the other way round.
         Colours and "show if unread" are kept in this browser only.

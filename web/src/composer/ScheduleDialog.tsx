@@ -61,7 +61,7 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
 
   return (
     <Modal
-      className="max-w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-raised p-6 text-text shadow-lg w-[min(24rem,calc(100vw-2rem))]"
+      className="w-[min(24rem,calc(100vw-2rem))] max-w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-raised p-6 text-text shadow-lg"
       disablePointerDismissal
       onClose={onCancel}
       onKeyDown={(event) => {
@@ -76,7 +76,7 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
       <Modal.Title className="text-xl">Schedule send</Modal.Title>
       {!picking ? (
         <>
-          <ul className="mt-4 -mx-2 grid list-none gap-1 p-0">
+          <ul className="-mx-2 mt-4 grid list-none gap-1 p-0">
             {presets.map((p, i) => (
               <li key={p.id}>
                 <button
@@ -109,7 +109,6 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
         </>
       ) : (
         <form
-          className="compose-schedule-pick"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();

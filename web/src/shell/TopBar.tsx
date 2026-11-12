@@ -19,7 +19,7 @@ export interface TopBarProps {
 export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
   const help = useHelpSheet();
   return (
-    <header className="[grid-area:top] flex min-w-0 items-center gap-2 pr-3 pl-2 max-sm:gap-1 max-sm:px-1">
+    <header className="flex min-w-0 items-center gap-2 pr-3 pl-2 [grid-area:top] max-sm:gap-1 max-sm:px-1">
       <div className="flex w-[calc(var(--nav-width)-0.5rem)] flex-none items-center gap-1 in-data-[nav=hidden]:w-auto in-data-[nav=rail]:w-auto">
         <IconButton
           label="Main menu"
@@ -30,7 +30,7 @@ export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
           onClick={onToggleNav}
         />
         <a
-          className="inline-flex min-h-10 items-center gap-2 rounded-md px-2 max-sm:hidden text-text no-underline hover:text-text [&_svg]:flex-none"
+          className="inline-flex min-h-10 items-center gap-2 rounded-md px-2 text-text no-underline hover:text-text max-sm:hidden [&_svg]:flex-none"
           href={formatRoute(INBOX)}
           aria-label="Postern, go to Inbox"
         >

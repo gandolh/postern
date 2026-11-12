@@ -300,7 +300,7 @@ export function useListGestures<Row extends { id: Id }>(options: ListGestureOpti
             className="hidden in-data-[action=archive]:data-[for=archive]:inline-block in-data-[action=delete]:data-[for=delete]:inline-block in-data-[action=read]:data-[for=read]:inline-block"
             data-for="read"
           />
-          <span className="mobile-swipe-label" data-swipe-label />
+          <span data-swipe-label />
         </span>
       </div>
       <div

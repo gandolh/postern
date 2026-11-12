@@ -165,9 +165,9 @@ export function ConversationLoading({
       <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
       <div className="min-h-0 flex-[1_1_auto] overflow-auto">
         <div className="grid gap-4 p-6" role="status" aria-label={`Loading the ${noun}`}>
-          <span className="h-6 w-[min(30rem,70%)] block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
-          <span className="h-24 block rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
-          <span className="h-24 block rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+          <span className="block h-6 w-[min(30rem,70%)] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+          <span className="block h-24 rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+          <span className="block h-24 rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
         </div>
       </div>
     </section>
@@ -610,7 +610,7 @@ function ConversationBody({
         <header className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-5 pr-6 pb-3 pl-19 @max-[40rem]/conv:px-4">
           <h1
             id="conv-subject"
-            className="text-xl leading-tight font-normal wrap-anywhere focus:outline-none focus-visible:rounded-sm focus-visible:outline-offset-(--focus-offset) focus-visible:[outline:var(--focus-ring)]"
+            className="text-xl leading-tight font-normal wrap-anywhere focus:outline-none focus-visible:rounded-sm focus-visible:[outline:var(--focus-ring)] focus-visible:outline-offset-(--focus-offset)"
             ref={headingRef}
             tabIndex={-1}
           >
@@ -621,7 +621,7 @@ function ConversationBody({
               {chips.map((c) => (
                 <li
                   key={c.id}
-                  className="[&_.lucide]:[--icon-size:0.875rem] inline-flex min-h-6 items-center gap-1 rounded-sm bg-surface-sunken px-2 text-sm leading-none text-text-muted"
+                  className="inline-flex min-h-6 items-center gap-1 rounded-sm bg-surface-sunken px-2 text-sm leading-none text-text-muted [&_.lucide]:[--icon-size:0.875rem]"
                 >
                   {c.system === "inbox" ? <Inbox aria-hidden="true" /> : null}
                   {c.title}
@@ -632,7 +632,7 @@ function ConversationBody({
         </header>
 
         {hiddenCount > 0 && scope.kind === "normal" && !single ? (
-          <p className="my-2 text-sm text-text-muted pr-6 pl-19 py-0 @max-[40rem]/conv:px-4">
+          <p className="my-2 py-0 pr-6 pl-19 text-sm text-text-muted @max-[40rem]/conv:px-4">
             {hiddenCount === 1
               ? "One message in this conversation is in Trash or Spam."
               : `${hiddenCount} messages in this conversation are in Trash or Spam.`}
@@ -644,7 +644,7 @@ function ConversationBody({
             item.kind === "fold" ? (
               <li
                 key={item.key}
-                className="relative px-6 py-2 before:absolute before:inset-x-0 before:top-1/2 before:border-t before:border-border before:content-[''] [li+&]:border-t [li+&]:border-border @max-[40rem]/conv:px-4"
+                className="relative px-6 py-2 before:absolute before:inset-x-0 before:top-1/2 before:border-t before:border-border before:content-[''] @max-[40rem]/conv:px-4 [li+&]:border-t [li+&]:border-border"
               >
                 <button
                   type="button"

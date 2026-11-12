@@ -119,7 +119,7 @@ export function FiltersSettings() {
 
   const off = loaded.scriptId !== null && !loaded.active;
   return (
-    <div className="filters-page flex max-w-176 flex-col gap-6 p-6">
+    <div className="flex max-w-176 flex-col gap-6 p-6">
       <section className="flex flex-col gap-3" aria-labelledby={`${id}-filters`}>
         <h2 id={`${id}-filters`} className="m-0 text-lg font-semibold">
           Filters
@@ -189,7 +189,7 @@ export function FiltersSettings() {
           <p className="m-0 text-text-muted">No filters yet.</p>
         ) : (
           <ol
-            className="m-0 flex list-none flex-col p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3 gap-0 border-t border-border"
+            className="m-0 flex list-none flex-col gap-0 border-t border-border p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3"
             aria-label="Your filters"
           >
             {set.filters.map((f, i) => (
@@ -290,7 +290,7 @@ export function FiltersSettings() {
           <p className="m-0 text-text-muted">You haven&rsquo;t blocked anyone.</p>
         ) : (
           <ul
-            className="filters-blocked m-0 flex list-none flex-col gap-1 p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3"
+            className="m-0 flex list-none flex-col gap-1 p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3"
             aria-label="Blocked addresses"
           >
             {set.blocked.map((address) => (

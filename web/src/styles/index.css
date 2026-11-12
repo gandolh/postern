@@ -190,8 +190,10 @@
 }
 
 @layer base {
+  /* Light on a first visit; the switch sets data-theme on <html>, and color-scheme follows it here, in the
+     same stylesheet, which is what lets the build turn light-dark() into variables. */
   :root {
-    color-scheme: light dark;
+    color-scheme: light;
 
     /* ---- Type and space, by the names the stylesheets in `legacy` still use ---- */
     --leading-tight: 1.25;
@@ -231,12 +233,12 @@
     --toolbar-height: 3rem;
   }
 
-  :root[data-theme="light"] {
-    color-scheme: light;
-  }
-
   :root[data-theme="dark"] {
     color-scheme: dark;
+  }
+
+  :root[data-theme="system"] {
+    color-scheme: light dark;
   }
 
   :root[data-density="comfortable"] {

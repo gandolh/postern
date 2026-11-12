@@ -69,6 +69,7 @@ export function MessageFrame({ clean, foldQuote, theme, allowRemote, title }: Me
     <>
       <div ref={wrapRef} className="min-h-12 resize-y overflow-hidden rounded-md" style={{ height }}>
         <iframe
+          data-testid="message-frame"
           className="block size-full bg-transparent [color-scheme:normal]"
           sandbox={MESSAGE_FRAME_SANDBOX}
           srcDoc={srcdoc}

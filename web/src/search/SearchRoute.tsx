@@ -63,9 +63,7 @@ export function SearchRoute({ route }: SearchRouteProps) {
           aria-label="Notes about this search"
         >
           {parsed.warnings.map((w, i) => (
-            <li key={`${w.kind}-${i}`} className="search-hint">
-              {w.message}
-            </li>
+            <li key={`${w.kind}-${i}`}>{w.message}</li>
           ))}
         </ul>
       )}

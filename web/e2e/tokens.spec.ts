@@ -254,7 +254,7 @@ test("the idle timeout signs out after 8 hours without input, and the session is
   // A refresh comes due within the hour: the session lives on through it.
   await page.clock.fastForward("01:00:00");
   await page.waitForTimeout(1_000);
-  await expect(page.locator(".shell")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Main menu" })).toBeVisible();
 
   const authorized: string[] = [];
   page.on("request", async (r) => {
@@ -262,7 +262,7 @@ test("the idle timeout signs out after 8 hours without input, and the session is
       authorized.push(r.url());
   });
   await page.clock.fastForward("07:00:01");
-  await expect(page.locator(".auth-notice")).toHaveText(
+  await expect(page.getByRole("status")).toHaveText(
     "You were signed out after a long time without activity. Sign in again to continue.",
   );
   expect((await page.locator("input[name=password]").inputValue()) === "", "the password field is empty").toBe(true);
@@ -274,7 +274,7 @@ test("the idle timeout signs out after 8 hours without input, and the session is
   await goTo(page, "#inbox");
   await page.clock.fastForward("00:05:00");
   await page.waitForTimeout(1_000);
-  await expect(page.locator(".shell")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Main menu" })).toHaveCount(0);
   expect(authorized.slice(after), "authorized requests after the idle sign-out").toEqual([]);
 });
 
@@ -311,7 +311,7 @@ test("sign-out forgets the session; Stalwart 0.16 cannot revoke the token", asyn
   await goTo(page, "#inbox");
   await page.goBack();
   await page.waitForTimeout(1_500);
-  await expect(page.locator(".shell")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Main menu" })).toHaveCount(0);
   expect(authorized, "authorized requests after sign-out").toEqual([]);
 
   // Known gap (security.md): a token copied before sign-out still works until it expires.

@@ -27,6 +27,8 @@ export default [
         "web/e2e/tsconfig.json",
       ],
     },
+    // The Tailwind entry: the unknown-class, conflicting-class and class-order rules read its theme.
+    tailwind: { css: "web/src/styles/index.css", order: true },
     // Read through `default` by their runner.
     defaultExports: ["web/e2e/global-setup.ts"],
     ignores: ["dev-dist/**", "dev/data/**", "web/e2e/screenshots/**", "test-results/**", "playwright-report/**"],

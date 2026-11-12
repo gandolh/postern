@@ -155,7 +155,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
         onChange={(e) => set(key, e.target.value)}
       />
       {hint ? (
-        <p id={`${id}-${key}-hint`} className="m-0 text-text-muted text-sm">
+        <p id={`${id}-${key}-hint`} className="m-0 text-sm text-text-muted">
           {hint}
         </p>
       ) : null}
@@ -303,7 +303,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             Also apply to matching conversations
           </label>
           {search ? (
-            <p className="m-0 text-text-muted text-sm">
+            <p className="m-0 text-sm text-text-muted">
               The ones a search for <a href={formatRoute({ kind: "search", query: search })}>{search}</a> finds (not
               Spam or Trash). Forwarding and &ldquo;never send it to Spam&rdquo; only apply to new mail.
             </p>

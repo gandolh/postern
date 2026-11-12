@@ -19,7 +19,7 @@ function Harness(props: Omit<ListGestureOptions<Row>, "bodyRef">) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const layer = useListGestures({ ...props, bodyRef });
   return (
-    <div ref={bodyRef} className="list-body" data-testid="body">
+    <div ref={bodyRef} data-testid="body">
       {layer}
       {ROWS.map((r) => (
         <div key={r.id} role="row" data-row-id={r.id} onClick={() => props.act(r, "read")}>

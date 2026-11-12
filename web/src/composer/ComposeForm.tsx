@@ -205,7 +205,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   if (state.status === "loading") {
     return (
       <div
-        className="group/form flex min-h-0 flex-[1_1_auto] flex-col outline-none data-[variant=inline]:min-h-60 items-center gap-3 p-6 text-text-muted"
+        className="group/form flex min-h-0 flex-[1_1_auto] flex-col items-center gap-3 p-6 text-text-muted outline-none data-[variant=inline]:min-h-60"
         role="status"
       >
         Loading…
@@ -215,7 +215,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   if (state.status === "failed") {
     return (
       <div
-        className="group/form flex min-h-0 flex-[1_1_auto] flex-col outline-none data-[variant=inline]:min-h-60 items-center gap-3 p-6 text-text-muted"
+        className="group/form flex min-h-0 flex-[1_1_auto] flex-col items-center gap-3 p-6 text-text-muted outline-none data-[variant=inline]:min-h-60"
         role="alert"
       >
         {state.loadError}
@@ -235,7 +235,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       data-variant={variant}
     >
       {identities.length > 1 ? (
-        <div className="relative flex min-h-10 flex-none items-center gap-2 border-b border-border mx-4 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] first:group-data-[variant=inline]/form:mt-1 max-sm:min-h-11">
+        <div className="relative mx-4 flex min-h-10 flex-none items-center gap-2 border-b border-border first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:min-h-11">
           <label className="flex-none text-md text-text-muted" htmlFor={fromId}>
             From
           </label>
@@ -269,13 +269,13 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         <RecipientInput session={session} source={store.recipients} field="bcc" label="Bcc" recipients={state.bcc} />
       ) : null}
       {variant === "window" ? (
-        <div className="relative flex min-h-10 flex-none items-center gap-2 border-b border-border mx-4 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] first:group-data-[variant=inline]/form:mt-1 max-sm:min-h-11">
+        <div className="relative mx-4 flex min-h-10 flex-none items-center gap-2 border-b border-border first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:min-h-11">
           <label className="sr-only" htmlFor={subjectId}>
             Subject
           </label>
           <input
             id={subjectId}
-            className="compose-subject min-w-24 flex-[1_1_auto] bg-transparent py-2 text-md text-text outline-none placeholder:text-text-subtle max-sm:min-h-11"
+            className="min-w-24 flex-[1_1_auto] bg-transparent py-2 text-md text-text outline-none placeholder:text-text-subtle max-sm:min-h-11"
             placeholder="Subject"
             value={state.subject}
             onChange={(e) => session.setSubject(e.target.value)}
@@ -340,7 +340,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
           <Button
             variant="primary"
             type="button"
-            className="mr-0 min-h-10 rounded-pill px-6 font-semibold max-sm:min-h-11 in-data-split:pr-4 in-data-split:rounded-r-none"
+            className="mr-0 min-h-10 rounded-pill px-6 font-semibold in-data-split:rounded-r-none in-data-split:pr-4 max-sm:min-h-11"
             onClick={() => send()}
             aria-describedby={state.sendError ? errorId : undefined}
             title="Send (Ctrl+Enter)"
@@ -383,7 +383,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
                 }}
               >
                 <Menu.Item
-                  className="flex cursor-pointer items-center gap-2 py-2 pr-3 text-left text-md text-text data-highlighted:bg-hover data-highlighted:outline-none aria-checked:pl-3 aria-checked:before:w-3 aria-checked:before:content-['✓'] pl-3"
+                  className="flex cursor-pointer items-center gap-2 py-2 pr-3 pl-3 text-left text-md text-text aria-checked:pl-3 aria-checked:before:w-3 aria-checked:before:content-['✓'] data-highlighted:bg-hover data-highlighted:outline-none"
                   onClick={() => {
                     sendMenuChoice.current = () => setPicking(true);
                   }}
@@ -433,7 +433,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
               }}
             >
               <Menu.CheckboxItem
-                className="flex cursor-pointer items-center gap-2 py-2 pr-3 pl-8 text-left text-md text-text data-highlighted:bg-hover data-highlighted:outline-none aria-checked:pl-3 aria-checked:before:w-3 aria-checked:before:content-['✓']"
+                className="flex cursor-pointer items-center gap-2 py-2 pr-3 pl-8 text-left text-md text-text aria-checked:pl-3 aria-checked:before:w-3 aria-checked:before:content-['✓'] data-highlighted:bg-hover data-highlighted:outline-none"
                 checked={state.plain}
                 closeOnClick
                 onClick={() => {

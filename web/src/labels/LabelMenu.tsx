@@ -268,7 +268,7 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
       <p id={titleId} className="px-4 pt-1 pb-2 text-sm font-semibold text-text-muted">
         {heading}
       </p>
-      <label className="mx-3 mb-2 flex items-center gap-2 rounded-md border border-border-strong px-2 text-text-muted focus-within:outline-offset-1 focus-within:[outline:var(--focus-ring)]">
+      <label className="mx-3 mb-2 flex items-center gap-2 rounded-md border border-border-strong px-2 text-text-muted focus-within:[outline:var(--focus-ring)] focus-within:outline-offset-1">
         <Search aria-hidden="true" />
         <input
           ref={searchRef}
@@ -317,7 +317,7 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
       </div>
       <button
         type="button"
-        className="mt-1 flex min-h-10 cursor-pointer items-center gap-3 border-t border-border bg-transparent px-4 text-md text-text hover:bg-hover focus-visible:bg-hover focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)]"
+        className="mt-1 flex min-h-10 cursor-pointer items-center gap-3 border-t border-border bg-transparent px-4 text-md text-text hover:bg-hover focus-visible:bg-hover focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2"
         onClick={() => setCreating(true)}
       >
         <Plus aria-hidden="true" />
@@ -370,7 +370,7 @@ function MoveOption({ label, onChoose }: { label: Pick<Label, "id" | "path">; on
       type="button"
       role="menuitem"
       data-label-option=""
-      className="flex min-h-9 cursor-pointer items-center gap-3 px-4 text-md text-text hover:bg-hover has-focus-visible:bg-hover w-full bg-transparent text-start focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)]"
+      className="flex min-h-9 w-full cursor-pointer items-center gap-3 bg-transparent px-4 text-start text-md text-text hover:bg-hover focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 has-focus-visible:bg-hover"
       onClick={onChoose}
     >
       <Swatch id={label.id} />

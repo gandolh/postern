@@ -124,7 +124,7 @@ export function Toolbar(props: ToolbarProps) {
           label="Select"
           icon={ChevronDown}
           items={selectItems}
-          className="[&_[data-slot=icon-button]]:w-6 [&_[data-slot=icon-button]]:rounded-sm [&_.lucide]:[--icon-size:1rem] max-sm:[&_[data-slot=icon-button]]:w-11"
+          className="[&_.lucide]:[--icon-size:1rem] [&_[data-slot=icon-button]]:w-6 [&_[data-slot=icon-button]]:rounded-sm max-sm:[&_[data-slot=icon-button]]:w-11"
         />
       </div>
 

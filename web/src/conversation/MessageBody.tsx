@@ -29,10 +29,10 @@ export interface MessageBodyProps {
 export function MessageBody({ state, ...rest }: MessageBodyProps) {
   if (!state || state.status === "loading") {
     return (
-      <div className="ml-13 @max-[40rem]/conv:ml-0 grid gap-2 pt-2 pb-4" role="status" aria-label="Loading the message">
-        <span className="h-3.5 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
-        <span className="h-3.5 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
-        <span className="h-3.5 w-[60%] block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+      <div className="ml-13 grid gap-2 pt-2 pb-4 @max-[40rem]/conv:ml-0" role="status" aria-label="Loading the message">
+        <span className="block h-3.5 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+        <span className="block h-3.5 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+        <span className="block h-3.5 w-[60%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
       </div>
     );
   }
@@ -95,7 +95,7 @@ function LinkWarnings({ links }: { links: readonly SuspiciousLink[] }) {
   const shown = links.slice(0, 3);
   return (
     <div
-      className="mb-3 flex items-start gap-2 rounded-md px-3 py-2 text-sm [&>.lucide]:mt-[0.1rem] [&>.lucide]:[--icon-size:1.125rem] bg-warning-soft text-on-warning-soft [&>.lucide]:text-inherit"
+      className="mb-3 flex items-start gap-2 rounded-md bg-warning-soft px-3 py-2 text-sm text-on-warning-soft [&>.lucide]:mt-[0.1rem] [&>.lucide]:text-inherit [&>.lucide]:[--icon-size:1.125rem]"
       role="note"
     >
       <ShieldAlert aria-hidden="true" />
@@ -151,11 +151,11 @@ function HtmlBody({
     <>
       {blocked > 0 ? (
         <div
-          className="mb-3 flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-2 text-sm text-text [&>.lucide]:mt-[0.1rem] [&>.lucide]:[--icon-size:1.125rem] [&>.lucide]:text-text-muted"
+          className="mb-3 flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-2 text-sm text-text [&>.lucide]:mt-[0.1rem] [&>.lucide]:text-text-muted [&>.lucide]:[--icon-size:1.125rem]"
           role="note"
         >
           <ImageOff aria-hidden="true" />
-          <p className="conv-banner-text">
+          <p>
             Images are not displayed.{" "}
             <button
               type="button"
@@ -181,11 +181,11 @@ function HtmlBody({
       ) : null}
       {body.deferredCids.size > 0 ? (
         <div
-          className="mb-3 flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-2 text-sm text-text [&>.lucide]:mt-[0.1rem] [&>.lucide]:[--icon-size:1.125rem] [&>.lucide]:text-text-muted"
+          className="mb-3 flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-2 text-sm text-text [&>.lucide]:mt-[0.1rem] [&>.lucide]:text-text-muted [&>.lucide]:[--icon-size:1.125rem]"
           role="note"
         >
           <ImageOff aria-hidden="true" />
-          <p className="conv-banner-text">
+          <p>
             {body.deferredCids.size === 1
               ? "One large image in this message isn't loaded"
               : `${body.deferredCids.size} images in this message aren't loaded`}{" "}
@@ -242,7 +242,7 @@ function TextBody({ text }: { text: string }) {
         <>
           <QuoteToggle open={quoteOpen} onToggle={() => setQuoteOpen((o) => !o)} />
           {quoteOpen ? (
-            <div className="text-lg leading-normal wrap-anywhere whitespace-pre-wrap mt-2 border-l-2 border-border-strong pl-3 text-text-muted">
+            <div className="mt-2 border-l-2 border-border-strong pl-3 text-lg leading-normal wrap-anywhere whitespace-pre-wrap text-text-muted">
               <TextRuns text={split.quote} />
             </div>
           ) : null}

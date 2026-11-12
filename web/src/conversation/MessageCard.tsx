@@ -129,14 +129,14 @@ export function MessageCard({
     return (
       <article
         id={messageCardId(message.id)}
-        className="group/msg px-6 focus:outline-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] [li+li>&]:border-t [li+li>&]:border-border @max-[40rem]/conv:px-4"
+        className="group/msg px-6 focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 @max-[40rem]/conv:px-4 [li+li>&]:border-t [li+li>&]:border-border"
         data-expanded="false"
         data-unread={unread || undefined}
         tabIndex={-1}
         aria-labelledby={headingId}
         onFocus={onFocusCard}
       >
-        <h2 className="m-0 [font-size:inherit] [font-weight:inherit] [line-height:inherit]" id={headingId}>
+        <h2 className="m-0 [font-size:inherit] [line-height:inherit] [font-weight:inherit]" id={headingId}>
           <button
             type="button"
             className="group/line grid min-h-14 w-full cursor-pointer grid-cols-[2.5rem_minmax(8rem,14rem)_minmax(0,1fr)_auto] items-center gap-3 bg-transparent py-2 text-start text-text @max-[40rem]/conv:grid-cols-[2rem_minmax(0,1fr)_auto]"
@@ -185,7 +185,7 @@ export function MessageCard({
   return (
     <article
       id={messageCardId(message.id)}
-      className="group/msg px-6 focus:outline-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] [li+li>&]:border-t [li+li>&]:border-border @max-[40rem]/conv:px-4"
+      className="group/msg px-6 focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 @max-[40rem]/conv:px-4 [li+li>&]:border-t [li+li>&]:border-border"
       data-expanded="true"
       tabIndex={-1}
       aria-labelledby={headingId}
@@ -195,7 +195,7 @@ export function MessageCard({
         <Avatar name={name} />
         <div className="min-w-0">
           <SenderHoverCard address={from}>
-            <h2 className="m-0 [font-size:inherit] [font-weight:inherit] [line-height:inherit]" id={headingId}>
+            <h2 className="m-0 [font-size:inherit] [line-height:inherit] [font-weight:inherit]" id={headingId}>
               <button
                 type="button"
                 className="inline-flex max-w-full cursor-pointer flex-wrap items-baseline gap-x-2 gap-y-0 bg-transparent p-0 text-start text-text max-sm:min-h-11 max-sm:items-center"
@@ -205,7 +205,7 @@ export function MessageCard({
               >
                 <bdi className="text-md font-bold wrap-anywhere">{name}</bdi>
                 {from && displayName(from) ? (
-                  <span className="text-sm text-text-muted wrap-anywhere">
+                  <span className="text-sm wrap-anywhere text-text-muted">
                     &lt;<bdi>{from.email}</bdi>&gt;
                   </span>
                 ) : null}
@@ -291,7 +291,7 @@ export function MessageCard({
         />
       ) : null}
       {last ? (
-        <div className="ml-13 flex flex-wrap gap-2 pt-3 pb-5 [&_.lucide]:[--icon-size:1.125rem] @max-[40rem]/conv:ml-0">
+        <div className="ml-13 flex flex-wrap gap-2 pt-3 pb-5 @max-[40rem]/conv:ml-0 [&_.lucide]:[--icon-size:1.125rem]">
           <Button type="button" className="rounded-pill" onClick={actions.reply}>
             <CornerUpLeft aria-hidden="true" /> Reply
           </Button>

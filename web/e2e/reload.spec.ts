@@ -94,7 +94,7 @@ test("a reload after the idle deadline passed signs out, says why, and keeps not
   }, KEY);
   const posts = recordAuthPosts(page);
   await page.reload();
-  await expect(page.locator(".auth-notice")).toHaveText(
+  await expect(page.getByRole("status")).toHaveText(
     "You were signed out after a long time without activity. Sign in again to continue.",
   );
   expect(posts.refreshGrants()).toHaveLength(0);
@@ -131,15 +131,15 @@ test("two tabs with the same refresh token (a duplicated tab): each one's refres
   );
   const twinPosts = recordAuthPosts(twin);
   await twin.goto(APP_URL);
-  await expect(twin.locator(".shell")).toBeVisible({ timeout: 20_000 });
+  await expect(twin.getByRole("button", { name: "Main menu" })).toBeVisible({ timeout: 20_000 });
 
   const posts = recordAuthPosts(page);
   await page.reload();
-  await expect(page.locator(".shell")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("button", { name: "Main menu" })).toBeVisible({ timeout: 20_000 });
   await twin.reload();
-  await expect(twin.locator(".shell")).toBeVisible({ timeout: 20_000 });
+  await expect(twin.getByRole("button", { name: "Main menu" })).toBeVisible({ timeout: 20_000 });
   await page.reload();
-  await expect(page.locator(".shell")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("button", { name: "Main menu" })).toBeVisible({ timeout: 20_000 });
   expect(posts.refreshGrants()).toHaveLength(2);
   expect(twinPosts.refreshGrants()).toHaveLength(2);
   expect(posts.passwordPosts().length + twinPosts.passwordPosts().length).toBe(0);

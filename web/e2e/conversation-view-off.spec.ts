@@ -93,12 +93,12 @@ async function start(page: Page): Promise<void> {
 
 /** After a reload: the session resumes, the route with it, and the form never shows. */
 async function expectResumed(page: Page): Promise<void> {
-  await expect(page.locator(".shell")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("button", { name: "Main menu" })).toBeVisible({ timeout: 20_000 });
   expect(await sawPasswordField(page), "the password field appeared during the reload").toBe(false);
 }
 
 const row = (page: Page, id: string) => page.locator(`[role=row][data-row-id="${id}"]`);
-const cards = (page: Page) => page.locator(".conv-page [id^='conv-message-']");
+const cards = (page: Page) => page.getByRole("article");
 
 test("a message row opens alone, marks only itself read, and survives a reload; Back returns to the list", async ({
   page,
@@ -111,7 +111,7 @@ test("a message row opens alone, marks only itself read, and survives a reload; 
 
   await row(page, n.id).click();
   await expect(page).toHaveURL(new RegExp(`#inbox/${threadId}/${n.id}$`));
-  await expect(page.locator(".conv-page h1#conv-subject")).toHaveText(SUBJECT);
+  await expect(page.locator("h1#conv-subject")).toHaveText(SUBJECT);
   await expect(cards(page)).toHaveCount(1);
   await expect(page.locator(`#conv-message-${n.id}`)).toHaveAttribute("data-expanded", "true");
   await expect.poll(async () => (await jmapState([n.id])).get(n.id)?.seen).toBe(true);
@@ -149,7 +149,7 @@ test("Reply quotes the open message, j / k open the next and previous rows, Arch
   // The seed's reply draft in this conversation opens inline first: the new composer is the other one.
   const keys = () =>
     page.locator("[data-compose-key]").evaluateAll((els) => els.map((e) => e.getAttribute("data-compose-key") ?? ""));
-  if (hasDraft) await expect(page.locator(".conv-inline-reply [data-compose-key]")).toBeVisible();
+  if (hasDraft) await expect(page.locator("[data-compose-key]")).toBeVisible();
   const before = await keys();
   await page.locator(`#conv-message-${n.id}`).getByRole("button", { name: "Reply", exact: true }).first().click();
   await expect.poll(async () => (await keys()).length).toBe(before.length + 1);
@@ -165,11 +165,11 @@ test("Reply quotes the open message, j / k open the next and previous rows, Arch
   await expect(composer).toHaveCount(0);
 
   // j opens the row below, k the one above.
-  await page.locator(".conv-page h1#conv-subject").focus();
+  await page.locator("h1#conv-subject").focus();
   await page.keyboard.press("j");
   await expect(page).toHaveURL(new RegExp(`/${below}$`));
   await expect(cards(page)).toHaveCount(1);
-  await page.locator(".conv-page h1#conv-subject").focus();
+  await page.locator("h1#conv-subject").focus();
   await page.keyboard.press("k");
   await expect(page).toHaveURL(new RegExp(`#inbox/${threadId}/${n.id}$`));
 

@@ -129,7 +129,7 @@ export function ScheduledRoute() {
               >
                 <span className="overflow-hidden text-ellipsis whitespace-nowrap">To: {names(m)}</span>
                 <span className="overflow-hidden text-ellipsis whitespace-nowrap max-sm:col-span-full max-sm:row-2">
-                  <span className="scheduled-subject">{subject}</span>
+                  <span>{subject}</span>
                   {m.preview ? <span className="text-text-muted"> – {m.preview}</span> : null}
                 </span>
                 <time className="text-sm font-semibold whitespace-nowrap text-accent" dateTime={m.sendAt}>
@@ -155,7 +155,7 @@ export function ScheduledRoute() {
     );
 
   return (
-    <section className="scheduled-page @container/list flex h-full min-h-0 flex-col" aria-labelledby={headingId}>
+    <section className="@container/list flex h-full min-h-0 flex-col" aria-labelledby={headingId}>
       <h1 id={headingId} className="sr-only">
         Scheduled
       </h1>

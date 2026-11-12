@@ -50,7 +50,7 @@ export function AccountMenu() {
           }}
         >
           <span
-            className="grid place-items-center rounded-pill bg-accent leading-none font-semibold text-on-accent mb-1 size-16 text-[1.75rem]"
+            className="mb-1 grid size-16 place-items-center rounded-pill bg-accent text-[1.75rem] leading-none font-semibold text-on-accent"
             aria-hidden="true"
           >
             {initial}
@@ -58,7 +58,7 @@ export function AccountMenu() {
           <Popover.Title render={<p className="max-w-full text-lg font-semibold wrap-anywhere" />}>
             {name}
           </Popover.Title>
-          {account.name ? <p className="max-w-full text-text-muted wrap-anywhere">{account.username}</p> : null}
+          {account.name ? <p className="max-w-full wrap-anywhere text-text-muted">{account.username}</p> : null}
           {STALWART_ACCOUNT_URL ? (
             <a
               className={buttonClass("default", "mt-3 rounded-pill [&_.lucide]:[--icon-size:1rem]")}

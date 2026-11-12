@@ -166,7 +166,7 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
 
   return (
     <div
-      className="compose-recipients relative flex min-h-10 flex-none items-center gap-2 border-b border-border mx-4 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] first:group-data-[variant=inline]/form:mt-1 max-sm:min-h-11"
+      className="relative mx-4 flex min-h-10 flex-none items-center gap-2 border-b border-border first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:min-h-11"
       onClick={(e) => {
         if (e.target === e.currentTarget) inputRef.current?.focus();
       }}
@@ -186,7 +186,7 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
           >
             <button
               type="button"
-              className="max-w-72 cursor-pointer overflow-hidden py-0.5 pr-1 pl-3 text-[inherit] text-ellipsis whitespace-nowrap focus-visible:rounded-pill focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] in-data-invalid:underline in-data-invalid:decoration-wavy in-data-invalid:underline-offset-[3px]"
+              className="max-w-72 cursor-pointer overflow-hidden py-0.5 pr-1 pl-3 text-ellipsis whitespace-nowrap text-[inherit] focus-visible:rounded-pill focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 in-data-invalid:underline in-data-invalid:decoration-wavy in-data-invalid:underline-offset-[3px]"
               title={r.valid ? formatAddress(r) : `“${r.raw}” isn't a valid email address`}
               onClick={() => edit(r)}
             >
@@ -195,7 +195,7 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
             </button>
             <button
               type="button"
-              className="mr-0.5 grid size-6 cursor-pointer place-items-center rounded-pill bg-transparent p-0 text-inherit [--icon-size:0.875rem] hover:bg-hover focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)]"
+              className="mr-0.5 grid size-6 cursor-pointer place-items-center rounded-pill bg-transparent p-0 text-inherit [--icon-size:0.875rem] hover:bg-hover focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2"
               aria-label={`Remove ${chipText(r)}`}
               onClick={() => remove(r)}
             >
@@ -250,7 +250,7 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(p)}
               >
-                <span className="compose-suggestion-name">{p.name || p.email}</span>
+                <span>{p.name || p.email}</span>
                 {p.name ? <span className="text-sm text-text-muted">{p.email}</span> : null}
               </li>
             ))

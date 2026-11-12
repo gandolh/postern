@@ -6,7 +6,7 @@ export function inputClass(className?: string): string {
   return cn(
     "min-h-10 rounded-md border border-border-strong bg-surface px-3 text-lg text-text",
     "placeholder:text-text-subtle",
-    "focus-visible:border-focus focus-visible:-outline-offset-1 focus-visible:[outline:var(--focus-ring)]",
+    "focus-visible:border-focus focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-1",
     "aria-invalid:border-danger max-sm:min-h-11",
     className,
   );

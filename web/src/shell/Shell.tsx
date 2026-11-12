@@ -124,7 +124,7 @@ function ShellLayout() {
       <TopBar route={route} navExpanded={mode === "expanded" || inDrawer} onToggleNav={toggleNav} />
       <NavMemoryProvider memory={navMemory}>
         {mode === "hidden" || inDrawer ? null : (
-          <div className="[grid-area:nav] min-h-0 overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]">
+          <div className="min-h-0 [scrollbar-gutter:stable] overflow-x-hidden overflow-y-auto [grid-area:nav]">
             <Nav route={route} mode={mode} />
           </div>
         )}
@@ -137,7 +137,7 @@ function ShellLayout() {
           <Nav route={route} mode="drawer" onNavigate={closeDrawer} />
         </NavDrawer>
       </NavMemoryProvider>
-      <div className="[grid-area:main] flex min-h-0 min-w-0 flex-col gap-2 pr-4 pb-4 max-lg:pr-2 max-lg:pb-2 max-sm:p-0">
+      <div className="flex min-h-0 min-w-0 flex-col gap-2 pr-4 pb-4 [grid-area:main] max-lg:pr-2 max-lg:pb-2 max-sm:p-0">
         <ConnectionBanner
           offline={!online}
           unreachable={labels.status === "ready" && labels.offline}
@@ -146,7 +146,7 @@ function ShellLayout() {
         <main
           ref={mainRef}
           id="main"
-          className="min-h-0 flex-[1_1_auto] overflow-auto rounded-xl bg-surface focus:outline-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] max-sm:rounded-t-lg max-sm:rounded-b-none"
+          className="min-h-0 flex-[1_1_auto] overflow-auto rounded-xl bg-surface focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 max-sm:rounded-t-lg max-sm:rounded-b-none"
           tabIndex={-1}
         >
           <MainArea route={route} />
