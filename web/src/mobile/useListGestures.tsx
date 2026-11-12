@@ -113,7 +113,7 @@ export function useListGestures<Row extends { id: Id }>(options: ListGestureOpti
       b.dataset["direction"] = direction;
       b.dataset["action"] = action ?? "none";
       b.dataset["armed"] = armed ? "true" : "false";
-      const label = b.querySelector<HTMLElement>(".mobile-swipe-label");
+      const label = b.querySelector<HTMLElement>("[data-swipe-label]");
       if (label) label.textContent = action ? swipeLabel(action, isUnread(current), context) : "";
     };
 
@@ -286,7 +286,7 @@ export function useListGestures<Row extends { id: Id }>(options: ListGestureOpti
           <Archive className="mobile-swipe-icon" data-for="archive" />
           <Trash2 className="mobile-swipe-icon" data-for="delete" />
           <MailOpen className="mobile-swipe-icon" data-for="read" />
-          <span className="mobile-swipe-label" />
+          <span className="mobile-swipe-label" data-swipe-label />
         </span>
       </div>
       <div ref={pullRef} className="mobile-pull" aria-hidden="true" hidden>

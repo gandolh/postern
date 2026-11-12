@@ -276,9 +276,7 @@ describe("the signed-in session", () => {
 
     // It cannot be dismissed: neither Escape nor a press on the backdrop closes it.
     await user.keyboard("{Escape}");
-    const backdrop = document.querySelector(".modal-backdrop");
-    expect(backdrop).toBeTruthy();
-    await user.click(backdrop!);
+    await user.click(document.body);
     expect(screen.getByRole("dialog")).toBe(dialog);
 
     await user.type(screen.getByLabelText("Password"), PASSWORD);

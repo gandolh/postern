@@ -98,7 +98,7 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
     (messageId !== undefined && snapshot.status === "ready" && !snapshot.messages.some((m) => m.id === messageId))
   ) {
     return (
-      <section className="conv-page" aria-labelledby="conv-subject">
+      <section className="conv-page" data-conversation-page aria-labelledby="conv-subject">
         <PlaceholderHeading noun={noun} />
         <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
         <EmptyState title={`This ${noun} doesn't exist`}>
@@ -112,7 +112,7 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   }
   if (snapshot.status === "error") {
     return (
-      <section className="conv-page" aria-labelledby="conv-subject">
+      <section className="conv-page" data-conversation-page aria-labelledby="conv-subject">
         <PlaceholderHeading noun={noun} />
         <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
         <ConnectionLost title={`This ${noun} didn't load`} onRetry={() => void store.refresh()}>
@@ -147,7 +147,7 @@ export function ConversationLoading({
   noun?: RowNoun;
 }) {
   return (
-    <section className="conv-page" aria-busy="true" aria-labelledby="conv-subject">
+    <section className="conv-page" data-conversation-page aria-busy="true" aria-labelledby="conv-subject">
       <PlaceholderHeading noun={noun} />
       <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
       <div className="conv-scroll">
@@ -561,7 +561,7 @@ function ConversationBody({
   const labelTargets = single ? [single.id] : [conversationId];
 
   return (
-    <section className="conv-page" aria-labelledby="conv-subject" data-pane={readingPane}>
+    <section className="conv-page" data-conversation-page aria-labelledby="conv-subject" data-pane={readingPane}>
       <ConversationToolbarShell
         backHref={formatRoute(backRoute)}
         backLabel={label ? `Back to ${label.title}` : "Back to search results"}

@@ -54,7 +54,7 @@ export function ShortcutsHost() {
       const conversation = getActiveConversation();
       if (!conversation) return false;
       if (!getActiveList()) return true;
-      return target instanceof Element && target.closest(".conv-page") !== null;
+      return target instanceof Element && target.closest("[data-conversation-page]") !== null;
     }
 
     let lastTarget: EventTarget | null = null;
