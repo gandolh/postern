@@ -16,7 +16,7 @@ import { createContext, createElement, useContext, useEffect, useMemo, useState,
 import { onBeforeSignOut, useAccount, useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
 import { getDefaultIdentityId } from "../prefs";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import { recipientSource } from "./recipients";
 import { setActiveComposer } from "./registry";
 import { ComposerStore } from "./store";

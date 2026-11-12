@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { FakeMail, MAILBOXES } from "../actions/fakeMail";
 import { clearUndo, peekUndo, undoLast } from "../actions/undo";
 import { SessionContext } from "../auth/context";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { useBlockSender } from "./BlockSender";
 import { FakeScripts } from "./fakeScripts";
 import { FiltersStore, provideFiltersStore } from "./store";

@@ -33,7 +33,7 @@ describe("ConfirmDialog", () => {
     await user.click(screen.getByRole("button", { name: "Empty" }));
     expect(onConfirm).toHaveBeenCalledOnce();
     expect(dialog.isConnected).toBe(true);
-    expect((screen.getByRole("button", { name: "Empty" }) as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Empty" }).disabled).toBe(false);
   });
 
   it("cannot be closed by Escape, Cancel or a press outside while its promise runs", async () => {
@@ -48,9 +48,9 @@ describe("ConfirmDialog", () => {
     const { onCancel } = setup(onConfirm);
     await user.click(screen.getByRole("button", { name: "Empty" }));
 
-    const confirm = screen.getByRole("button", { name: "Emptying…" }) as HTMLButtonElement;
+    const confirm = screen.getByRole<HTMLButtonElement>("button", { name: "Emptying…" });
     expect(confirm.disabled).toBe(true);
-    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Cancel" }).disabled).toBe(true);
     await user.click(confirm);
     expect(onConfirm).toHaveBeenCalledOnce();
 

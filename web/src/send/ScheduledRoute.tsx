@@ -13,7 +13,7 @@ import { useJmap } from "../auth";
 import { useOptionalComposerStore } from "../composer/compose";
 import { IconButton } from "../shell/IconButton";
 import { ConnectionLost, EmptyState, ListSkeleton } from "../shell/states";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import { cancelScheduled, formatSendTime, listScheduled, RECONCILE_MARGIN_MS, type ScheduledMessage } from "./schedule";
 import "./scheduled.css";
 

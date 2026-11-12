@@ -5,7 +5,7 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { SessionContext } from "../auth/context";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { ContactsRoute, filterCards } from "./ContactsRoute";
 import { card, FakeContacts } from "./fakeContacts";
 

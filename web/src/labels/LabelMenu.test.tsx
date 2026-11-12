@@ -9,7 +9,7 @@ import { fakeEmail, FakeMail, MAILBOXES, type FakeEmail } from "../actions/fakeM
 import { clearUndo } from "../actions/undo";
 import { SessionContext } from "../auth/context";
 import type { LabelRoute } from "../shell/router";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { LabelMenu } from "./LabelMenu";
 import { LabelsStore } from "./labelsStore";
 import { LabelsStoreProvider } from "./useLabels";

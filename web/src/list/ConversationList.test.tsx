@@ -13,7 +13,7 @@ import { resolveConversations } from "../labels/conversations";
 import { LabelsStoreProvider, useLabels } from "../labels/useLabels";
 import { resetPrefs, setPrefs } from "../prefs/prefs";
 import type { LabelRoute } from "../shell/router";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { ListRoute } from "./ListRoute";
 import { heldMessageRows } from "./openMessage";
 import { getActiveList } from "./registry";

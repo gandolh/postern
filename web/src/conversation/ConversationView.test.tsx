@@ -19,7 +19,7 @@ import { forgetMessageRows, holdMessageRows } from "../list/openMessage";
 import { MESSAGE_FRAME_SANDBOX } from "../render/srcdoc";
 import { SearchConversation } from "../search/SearchConversation";
 import type { LabelRoute, SearchResultsRoute } from "../shell/router";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { ConversationView } from "./ConversationView";
 import { getActiveConversation } from "./registry";
 

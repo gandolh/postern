@@ -14,7 +14,7 @@ import { useCompose } from "../composer/compose";
 import { nameOrAddress } from "../conversation/people";
 import { quoteArg } from "../search/suggestions";
 import { navigate } from "../shell/router";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import "./contacts.css";
 import { contactsDirectory, useContactsSnapshot } from "./directory";
 

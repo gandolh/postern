@@ -14,7 +14,7 @@ import { ConversationView } from "../conversation/ConversationView";
 import { LabelsStore, resolveLabelRoute } from "../labels/labelsStore";
 import { LabelsStoreProvider, useLabels } from "../labels/useLabels";
 import type { LabelRoute } from "../shell/router";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { ComposerHost, ComposerProvider } from ".";
 
 beforeAll(() => {

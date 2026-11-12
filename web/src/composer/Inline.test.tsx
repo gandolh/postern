@@ -11,7 +11,7 @@ import { inlineReplySlotId } from "../conversation/inlineReply";
 import { LabelsStore } from "../labels/labelsStore";
 import { LabelsStoreProvider } from "../labels/useLabels";
 import { ComposeTestServer, MAILBOXES } from "../send/testServer";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { ComposerHost, ComposerProvider, useCompose } from ".";
 import { InlineReplySlot } from "./InlineReply";
 

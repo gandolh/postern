@@ -9,7 +9,7 @@ import { SessionContext } from "../auth/context";
 import { ComposerProvider } from "../composer/compose";
 import { LabelsStore } from "../labels/labelsStore";
 import { LabelsStoreProvider } from "../labels/useLabels";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { formatSendTime, scheduleDraft } from "./schedule";
 import { ScheduledRoute } from "./ScheduledRoute";
 import { ComposeTestServer, MAILBOXES } from "./testServer";

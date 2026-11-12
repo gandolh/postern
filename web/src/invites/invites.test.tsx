@@ -12,7 +12,7 @@ import { SessionContext } from "../auth/context";
 import { LabelsStore } from "../labels/labelsStore";
 import { LabelsStoreProvider } from "../labels/useLabels";
 import { ComposeTestServer, MAILBOXES } from "../send/testServer";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { buildReply, parseInvite, zonedToUtc } from "./ics";
 import { InviteCard } from "./InviteCard";
 
@@ -258,11 +258,11 @@ describe("the card", () => {
   it("gives a plain calendar file (PUBLISH, or no METHOD) no card", async () => {
     await renderCard(LISBON.replace("METHOD:REQUEST", "METHOD:PUBLISH"), { type: "application/ics" });
     await new Promise((r) => setTimeout(r, 50));
-    expect(screen.queryByRole("region")).toBeNull();
+    expect(screen.queryByRole("region", { name: /Planning/ })).toBeNull();
     cleanup();
     await renderCard(LISBON.replace("METHOD:REQUEST\r\n", ""));
     await new Promise((r) => setTimeout(r, 50));
-    expect(screen.queryByRole("region")).toBeNull();
+    expect(screen.queryByRole("region", { name: /Planning/ })).toBeNull();
   });
 
   it("shows a hostile invite as inert text: no markup, and a javascript: place is not a link", async () => {

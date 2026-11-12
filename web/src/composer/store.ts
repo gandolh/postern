@@ -16,7 +16,7 @@ import { clearUndo, runUndo, setUndo, type UndoEntry } from "../actions/undo";
 import { inlineReplySlotId } from "../conversation/inlineReply";
 import type { LabelsStore } from "../labels/labelsStore";
 import { navigate, type Route } from "../shell/router";
-import type { ToastApi } from "../shell/toast";
+import type { ToastApi } from "../components/ui/Toast";
 import { destroyDrafts } from "../send/drafts";
 import { explainSaveError, explainSendError } from "../send/errors";
 import { Outbox } from "../send/outbox";

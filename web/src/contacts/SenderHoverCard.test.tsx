@@ -5,7 +5,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SessionContext } from "../auth/context";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { card, FakeContacts } from "./fakeContacts";
 import { OPEN_DELAY_MS, SenderHoverCard } from "./SenderHoverCard";
 

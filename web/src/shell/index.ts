@@ -15,7 +15,7 @@ export {
   type ToastApi,
   type ToastHandle,
   type ToastOptions,
-} from "./toast";
+} from "../components/ui/Toast";
 export { TopBarStatus } from "./status";
 export {
   ConnectionLost,

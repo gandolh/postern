@@ -17,7 +17,7 @@ import { useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import "./filters.css";
 
 export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {

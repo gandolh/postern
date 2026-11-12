@@ -11,7 +11,7 @@ import { AlertTriangle, Download, Eye, File, FileCode, FileImage, FileText } fro
 import { useState } from "react";
 import { isQuietError } from "../actions/runner";
 import { IconButton } from "../shell/IconButton";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import { fileName, MAX_PREVIEW_BYTES, openPdf, saveAttachment, type AttachmentRef } from "./files";
 import { ImageViewer } from "./ImageViewer";
 import {

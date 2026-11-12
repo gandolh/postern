@@ -10,7 +10,6 @@ import { SessionContext, type SignedInSession } from "../auth/context";
 import { ThemeProvider, setDensity, setTheme } from "../theme";
 import { resetDisplaySettings } from "../theme/displaySettings";
 import { Shell } from "./Shell";
-import { ToastProvider, useToast } from "./toast";
 
 const RIGHTS = {
   mayReadItems: true,
@@ -232,65 +231,6 @@ describe("the top bar", () => {
     renderShell(session(loaded));
     await user.click(screen.getByRole("button", { name: "Help" }));
     expect(screen.getByRole("heading", { name: "Keyboard shortcuts" })).toBeTruthy();
-  });
-});
-
-describe("the toast", () => {
-  function Trigger({ onUndo }: { onUndo: () => void }) {
-    const toast = useToast();
-    return (
-      <button
-        type="button"
-        onClick={() => toast.show({ message: "Conversation archived.", action: { label: "Undo", onClick: onUndo } })}
-      >
-        Archive
-      </button>
-    );
-  }
-
-  it("announces in a live region, runs its action and closes", async () => {
-    const user = userEvent.setup();
-    const undo = vi.fn();
-    render(
-      <ToastProvider>
-        <Trigger onUndo={undo} />
-      </ToastProvider>,
-    );
-    const region = screen.getByRole("status");
-    expect(region.getAttribute("aria-live")).toBe("polite");
-    expect(region.textContent).toBe("");
-    await user.click(screen.getByRole("button", { name: "Archive" }));
-    expect(within(region).getByText("Conversation archived.")).toBeTruthy();
-    await user.click(within(region).getByRole("button", { name: "Undo" }));
-    expect(undo).toHaveBeenCalledOnce();
-    expect(region.textContent).toBe("");
-  });
-
-  it("goes by itself after its duration", async () => {
-    vi.useFakeTimers();
-    try {
-      function Auto() {
-        const toast = useToast();
-        return (
-          <button type="button" onClick={() => toast.show({ message: "Saved", duration: 1000 })}>
-            Go
-          </button>
-        );
-      }
-      render(
-        <ToastProvider>
-          <Auto />
-        </ToastProvider>,
-      );
-      act(() => screen.getByRole("button", { name: "Go" }).click());
-      expect(screen.getByText("Saved")).toBeTruthy();
-      act(() => {
-        vi.advanceTimersByTime(1001);
-      });
-      expect(screen.queryByText("Saved")).toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
   });
 });
 

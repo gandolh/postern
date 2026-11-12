@@ -13,7 +13,7 @@ import { isQuietError } from "../actions/runner";
 import { runUndo, setUndo, type UndoEntry } from "../actions/undo";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import "../list/list.css";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import type { SaveOutcome } from "./filterScript";
 import { useFilters } from "./store";
 

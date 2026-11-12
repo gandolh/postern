@@ -11,7 +11,7 @@ import { LabelsStore } from "../labels/labelsStore";
 import { LabelsStoreProvider } from "../labels/useLabels";
 import { ComposeTestServer } from "../send/testServer";
 import { setUndoSendDelay, DEFAULT_UNDO_SEND_DELAY_MS } from "../send/undoDelay";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { ComposerHost, ComposerProvider, useCompose } from ".";
 
 beforeAll(() => {

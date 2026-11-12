@@ -24,7 +24,7 @@ import { isCanonicalHash, navigate, parseRoute, subscribeRoute, useRoute } from 
 import "./shell.css";
 import { ConnectionBanner, useOnline } from "./states";
 import { StatusSlotProvider } from "./status";
-import { ToastProvider } from "./toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { TopBar } from "./TopBar";
 import { useMediaQuery } from "./useMediaQuery";
 

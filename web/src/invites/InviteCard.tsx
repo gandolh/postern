@@ -15,7 +15,7 @@ import { useEffect, useId, useState } from "react";
 import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import { parseInvite, type EventTime, type Invite } from "./ics";
 import { answerOf, myAttendance, sendInviteReply, type Answer } from "./reply";
 import "./invites.css";

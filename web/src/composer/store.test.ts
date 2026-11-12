@@ -5,7 +5,7 @@
 // forwards carry the right recipients, subject, threading, quote and files.
 
 import { JmapClient, SessionExpiredError } from "@postern/jmap";
-import type { ToastOptions } from "../shell/toast";
+import type { ToastOptions } from "../components/ui/Toast";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearUndo, peekUndo, setUndo, undoLast } from "../actions/undo";
 import { ComposeTestServer, MAILBOXES } from "../send/testServer";

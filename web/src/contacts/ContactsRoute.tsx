@@ -19,7 +19,7 @@ import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { EmptyState } from "../shell/states";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import "./contacts.css";
 import { contactsDirectory, useContactsSnapshot } from "./directory";
 

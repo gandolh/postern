@@ -9,7 +9,7 @@ import { actionCopy, isQuietError } from "../actions/runner";
 import { rolesFrom, useMailActions } from "../actions/useMailActions";
 import { useJmap } from "../auth";
 import { useLabels } from "../labels/useLabels";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import { criteriaToSearch, findMatchingConversations, planFilterActions } from "./retroactive";
 
 export const APPLY_COPY = actionCopy(

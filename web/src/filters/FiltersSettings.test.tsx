@@ -12,7 +12,7 @@ import { clearUndo } from "../actions/undo";
 import { SessionContext } from "../auth/context";
 import { LabelsStore } from "../labels/labelsStore";
 import { LabelsStoreProvider } from "../labels/useLabels";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { FakeScripts } from "./fakeScripts";
 import { FiltersSettings } from "./FiltersSettings";
 import { filterMessagesLike } from "./likeThese";

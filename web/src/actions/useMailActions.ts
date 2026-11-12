@@ -10,7 +10,7 @@ import { useJmap } from "../auth";
 import type { LabelsStore } from "../labels/labelsStore";
 import { useLabelsStore } from "../labels/useLabels";
 import { getPrefs } from "../prefs/prefs";
-import { useToast } from "../shell/toast";
+import { useToast } from "../components/ui/Toast";
 import { ensureSnoozedLabel } from "../snooze/label";
 import { ensureAllMail } from "./allMail";
 import { ROLE_NAMES, type MailboxRoles } from "./conversation";

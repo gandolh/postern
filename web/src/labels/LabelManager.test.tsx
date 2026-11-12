@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { fakeEmail, FakeMail, MAILBOXES } from "../actions/fakeMail";
 import { SessionContext } from "../auth/context";
-import { ToastProvider } from "../shell/toast";
+import { ToastProvider } from "../components/ui/Toast";
 import { LabelManager } from "./LabelManager";
 import { getLabelPref, resetLabelPrefsCache } from "./labelPrefs";
 import { LabelsStore } from "./labelsStore";
