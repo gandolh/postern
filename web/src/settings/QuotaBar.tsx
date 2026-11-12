@@ -49,11 +49,11 @@ export function QuotaBar() {
   const percent = quota && limit ? Math.min(100, Math.round((quota.used / limit) * 100)) : 0;
 
   let body;
-  if (!supported) body = <p className="settings-hint">No storage limit.</p>;
-  else if (state === null) body = <p className="settings-hint">Loading&hellip;</p>;
-  else if (state === "error") body = <p className="settings-hint">Storage use is not available right now.</p>;
-  else if (!quota) body = <p className="settings-hint">No storage limit.</p>;
-  else if (!limit) body = <p className="settings-hint">{formatBytes(quota.used)} used. No storage limit.</p>;
+  if (!supported) body = <p className="m-0 text-text-muted">No storage limit.</p>;
+  else if (state === null) body = <p className="m-0 text-text-muted">Loading&hellip;</p>;
+  else if (state === "error") body = <p className="m-0 text-text-muted">Storage use is not available right now.</p>;
+  else if (!quota) body = <p className="m-0 text-text-muted">No storage limit.</p>;
+  else if (!limit) body = <p className="m-0 text-text-muted">{formatBytes(quota.used)} used. No storage limit.</p>;
   else
     body = (
       <>
@@ -61,7 +61,7 @@ export function QuotaBar() {
           {formatBytes(quota.used)} of {formatBytes(limit)} used ({percent}%)
         </p>
         <div
-          className="settings-meter"
+          className="h-2 overflow-hidden rounded-pill bg-surface-sunken"
           role="meter"
           aria-labelledby={headingId}
           aria-valuemin={0}
@@ -70,14 +70,14 @@ export function QuotaBar() {
           aria-valuetext={`${formatBytes(quota.used)} of ${formatBytes(limit)} used`}
           data-high={percent >= 90 ? "true" : undefined}
         >
-          <div className="settings-meter-fill" style={{ width: `${percent}%` }} />
+          <div className="h-full bg-accent in-data-[high=true]:bg-danger" style={{ width: `${percent}%` }} />
         </div>
       </>
     );
 
   return (
-    <section className="settings-section" aria-labelledby={headingId}>
-      <h2 id={headingId} className="settings-heading">
+    <section className="flex flex-col gap-3 border-t border-border pt-4" aria-labelledby={headingId}>
+      <h2 id={headingId} className="m-0 text-lg font-semibold">
         Storage
       </h2>
       {body}

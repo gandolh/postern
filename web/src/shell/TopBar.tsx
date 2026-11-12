@@ -19,8 +19,8 @@ export interface TopBarProps {
 export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
   const help = useHelpSheet();
   return (
-    <header className="shell-topbar">
-      <div className="shell-topbar-start">
+    <header className="[grid-area:top] flex min-w-0 items-center gap-2 pr-3 pl-2 max-sm:gap-1 max-sm:px-1">
+      <div className="flex w-[calc(var(--nav-width)-0.5rem)] flex-none items-center gap-1 in-data-[nav=hidden]:w-auto in-data-[nav=rail]:w-auto">
         <IconButton
           label="Main menu"
           icon={Menu}
@@ -29,20 +29,24 @@ export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
           aria-controls="shell-nav"
           onClick={onToggleNav}
         />
-        <a className="shell-brand" href={formatRoute(INBOX)} aria-label="Postern, go to Inbox">
+        <a
+          className="inline-flex min-h-10 items-center gap-2 rounded-md px-2 max-sm:hidden text-text no-underline hover:text-text [&_svg]:flex-none"
+          href={formatRoute(INBOX)}
+          aria-label="Postern, go to Inbox"
+        >
           <PosternMark />
-          <span className="shell-wordmark" aria-hidden="true">
+          <span className="text-xl font-semibold tracking-[-0.01em] max-sm:hidden" aria-hidden="true">
             Postern
           </span>
         </a>
       </div>
-      <div className="shell-topbar-search">
+      <div className="max-w-[45rem] min-w-0 flex-[1_1_auto]">
         <SearchBox query={route.kind === "search" ? route.query : undefined} />
       </div>
-      <div className="shell-topbar-end">
+      <div className="ml-auto flex flex-none items-center gap-1">
         <StatusSlot />
         {/* shell-help: hidden on phones (mobile.css), where the shortcuts it lists don't apply. */}
-        <IconButton className="shell-help" label="Help" icon={CircleHelp} onClick={help.open} />
+        <IconButton className="max-sm:hidden" label="Help" icon={CircleHelp} onClick={help.open} />
         <IconButton
           label="Settings"
           icon={Settings}

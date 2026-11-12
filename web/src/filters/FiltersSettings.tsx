@@ -10,7 +10,6 @@ import { ensureAllMail } from "../actions/allMail";
 import { useJmap } from "../auth";
 import { useLabels } from "../labels/useLabels";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import "../list/list.css";
 import { useSaved } from "../settings/useSaved";
 import { FILTERS_OFF_NOTE } from "./BlockSender";
 import { describeActions, describeCriteria } from "./describe";
@@ -19,7 +18,7 @@ import { FOREIGN_NAME_MESSAGE, UNREADABLE_MESSAGE } from "./filterScript";
 import { subscribePendingCriteria, takePendingCriteria } from "./likeThese";
 import { useFilters } from "./store";
 import { useApplyToExisting } from "./useApplyToExisting";
-import "./filters.css";
+import { Button } from "../components/ui/Button";
 
 type Editing = { index: number | null; initial: { criteria: FilterCriteria; actions?: MailFilter["actions"] } } | null;
 
@@ -96,23 +95,23 @@ export function FiltersSettings() {
 
   if (status === "idle" || status === "loading") {
     return (
-      <div className="settings-form" aria-busy="true">
-        <h2 className="settings-heading">Filters</h2>
-        <p className="settings-hint">Loading&hellip;</p>
+      <div className="flex max-w-176 flex-col gap-6 p-6" aria-busy="true">
+        <h2 className="m-0 text-lg font-semibold">Filters</h2>
+        <p className="m-0 text-text-muted">Loading&hellip;</p>
       </div>
     );
   }
   if (status === "error" || !loaded) {
     return (
-      <div className="settings-form">
-        <h2 className="settings-heading">Filters</h2>
-        <p className="settings-error" role="alert">
+      <div className="flex max-w-176 flex-col gap-6 p-6">
+        <h2 className="m-0 text-lg font-semibold">Filters</h2>
+        <p className="text-danger" role="alert">
           Could not load your filters: {error ?? "unknown error"}
         </p>
         <div>
-          <button type="button" className="btn" onClick={() => void store.load(true)}>
+          <Button type="button" onClick={() => void store.load(true)}>
             Try again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -120,51 +119,66 @@ export function FiltersSettings() {
 
   const off = loaded.scriptId !== null && !loaded.active;
   return (
-    <div className="settings-form filters-page">
-      <section className="filters-section" aria-labelledby={`${id}-filters`}>
-        <h2 id={`${id}-filters`} className="settings-heading">
+    <div className="filters-page flex max-w-176 flex-col gap-6 p-6">
+      <section className="flex flex-col gap-3" aria-labelledby={`${id}-filters`}>
+        <h2 id={`${id}-filters`} className="m-0 text-lg font-semibold">
           Filters
         </h2>
-        <p className="settings-hint">
+        <p className="m-0 text-text-muted">
           Filters sort new mail as it arrives. Postern keeps them on your mail server, so they work on every device,
           even with Postern closed.
         </p>
 
         {loaded.problem?.kind === "foreign-name" ? (
-          <p className="filters-banner" role="alert">
+          <p
+            className="m-0 flex flex-col items-start gap-2 rounded-lg bg-warning-soft px-4 py-3 text-on-warning-soft [&_p]:m-0"
+            role="alert"
+          >
             {FOREIGN_NAME_MESSAGE}
           </p>
         ) : null}
         {loaded.problem?.kind === "unreadable" ? (
-          <div className="filters-banner" role="alert">
+          <div
+            className="m-0 flex flex-col items-start gap-2 rounded-lg bg-warning-soft px-4 py-3 text-on-warning-soft [&_p]:m-0"
+            role="alert"
+          >
             <p>
               {UNREADABLE_MESSAGE} ({loaded.problem.message})
             </p>
-            <button type="button" className="btn" onClick={() => setConfirmReplace(true)}>
+            <Button type="button" onClick={() => setConfirmReplace(true)}>
               Start over with no filters
-            </button>
+            </Button>
           </div>
         ) : null}
         {off && loaded.otherActive?.vacation ? (
-          <div className="filters-banner" role="status">
+          <div
+            className="m-0 flex flex-col items-start gap-2 rounded-lg bg-warning-soft px-4 py-3 text-on-warning-soft [&_p]:m-0"
+            role="status"
+          >
             <p>
               {FILTERS_OFF_NOTE} Your mail server runs one filter script at a time, and the vacation responder is using
               it.
             </p>
-            <button type="button" className="btn" disabled={saving} onClick={() => void save(() => store.turnOn())}>
+            <Button type="button" disabled={saving} onClick={() => void save(() => store.turnOn())}>
               Turn filters on and the vacation responder off
-            </button>
+            </Button>
           </div>
         ) : off && !loaded.otherActive ? (
-          <div className="filters-banner" role="status">
+          <div
+            className="m-0 flex flex-col items-start gap-2 rounded-lg bg-warning-soft px-4 py-3 text-on-warning-soft [&_p]:m-0"
+            role="status"
+          >
             <p>Filters are off.</p>
-            <button type="button" className="btn" disabled={saving} onClick={() => void save(() => store.turnOn())}>
+            <Button type="button" disabled={saving} onClick={() => void save(() => store.turnOn())}>
               Turn filters on
-            </button>
+            </Button>
           </div>
         ) : null}
         {loaded.otherActive && !loaded.otherActive.vacation ? (
-          <p className="filters-banner" role="status">
+          <p
+            className="m-0 flex flex-col items-start gap-2 rounded-lg bg-warning-soft px-4 py-3 text-on-warning-soft [&_p]:m-0"
+            role="status"
+          >
             Your own filter script &ldquo;{loaded.otherActive.name}&rdquo; is the one running now. When you save here,
             Postern&rsquo;s filters take over and run &ldquo;{loaded.otherActive.name}&rdquo; after them, so nothing it
             does is lost.
@@ -172,40 +186,43 @@ export function FiltersSettings() {
         ) : null}
 
         {set.filters.length === 0 ? (
-          <p className="settings-hint">No filters yet.</p>
+          <p className="m-0 text-text-muted">No filters yet.</p>
         ) : (
-          <ol className="settings-list filters-list" aria-label="Your filters">
+          <ol
+            className="m-0 flex list-none flex-col p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3 gap-0 border-t border-border"
+            aria-label="Your filters"
+          >
             {set.filters.map((f, i) => (
-              <li key={i} className="filters-item">
-                <div className="filters-item-text">
-                  <p className="filters-item-line">
-                    <span className="filters-item-key">Matches:</span>{" "}
-                    <span className="filters-item-value">{describeCriteria(f.criteria)}</span>
+              <li key={i} className="flex items-start justify-between gap-3 border-b border-border py-3">
+                <div className="min-w-0">
+                  <p className="m-0 wrap-anywhere">
+                    <span className="text-text-muted">Matches:</span>{" "}
+                    <span className="font-mono text-sm">{describeCriteria(f.criteria)}</span>
                   </p>
-                  <p className="filters-item-line">
-                    <span className="filters-item-key">Do this:</span>{" "}
+                  <p className="m-0 wrap-anywhere">
+                    <span className="text-text-muted">Do this:</span>{" "}
                     {describeActions(f.actions, labelTitle).join(", ")}
                   </p>
                 </div>
-                <div className="filters-item-actions">
-                  <button
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="quiet"
                     type="button"
-                    className="btn btn-quiet"
                     disabled={saving || blockedWrite}
                     aria-label={`Edit filter ${i + 1}`}
                     onClick={() => setEditing({ index: i, initial: f })}
                   >
                     Edit
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="quiet"
                     type="button"
-                    className="btn btn-quiet"
                     disabled={saving || blockedWrite}
                     aria-label={`Delete filter ${i + 1}`}
                     onClick={() => setConfirmDelete(i)}
                   >
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </li>
             ))}
@@ -224,79 +241,81 @@ export function FiltersSettings() {
           />
         ) : (
           <div>
-            <button
+            <Button
               type="button"
-              className="btn"
               disabled={saving || blockedWrite}
               onClick={() => setEditing({ index: null, initial: { criteria: emptyCriteria() } })}
             >
               Create a new filter
-            </button>
+            </Button>
           </div>
         )}
 
         {set.includes.length > 0 ? (
-          <div className="filters-includes">
-            <p className="settings-hint">
+          <div className="flex flex-col items-start gap-1">
+            <p className="m-0 text-text-muted">
               After these filters your mail server also runs{" "}
               {set.includes.length === 1 ? "your own script" : "your own scripts"}{" "}
               {set.includes.map((n) => `“${n}”`).join(", ")}.
             </p>
             {set.includes.map((name) => (
-              <button
+              <Button
+                variant="quiet"
                 key={name}
                 type="button"
-                className="btn btn-quiet"
                 disabled={saving}
                 onClick={() => void runSave((s) => ({ ...s, includes: s.includes.filter((x) => x !== name) }))}
               >
                 Stop running &ldquo;{name}&rdquo;
-              </button>
+              </Button>
             ))}
           </div>
         ) : null}
         {notice ? (
-          <p className="settings-hint" role="status">
+          <p className="m-0 text-text-muted" role="status">
             {notice}
           </p>
         ) : null}
         {note}
       </section>
 
-      <section className="settings-section" aria-labelledby={`${id}-blocked`}>
-        <h2 id={`${id}-blocked`} className="settings-heading">
+      <section className="flex flex-col gap-3 border-t border-border pt-4" aria-labelledby={`${id}-blocked`}>
+        <h2 id={`${id}-blocked`} className="m-0 text-lg font-semibold">
           Blocked addresses
         </h2>
-        <p className="settings-hint">
+        <p className="m-0 text-text-muted">
           New messages from these addresses go to Spam. Block someone from the menu on one of their messages.
         </p>
         {set.blocked.length === 0 ? (
-          <p className="settings-hint">You haven&rsquo;t blocked anyone.</p>
+          <p className="m-0 text-text-muted">You haven&rsquo;t blocked anyone.</p>
         ) : (
-          <ul className="settings-list filters-blocked" aria-label="Blocked addresses">
+          <ul
+            className="filters-blocked m-0 flex list-none flex-col gap-1 p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3"
+            aria-label="Blocked addresses"
+          >
             {set.blocked.map((address) => (
-              <li key={address} className="filters-blocked-item">
-                <span className="filters-address">{address}</span>
-                <button
+              <li key={address} className="flex min-h-10 items-center justify-between gap-3 border-b border-border">
+                <span className="wrap-anywhere">{address}</span>
+                <Button
+                  variant="quiet"
                   type="button"
-                  className="btn btn-quiet"
                   disabled={saving || blockedWrite}
                   aria-label={`Unblock ${address}`}
                   onClick={() => void runSave((s) => ({ ...s, blocked: s.blocked.filter((b) => b !== address) }))}
                 >
                   Unblock
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="settings-section" aria-labelledby={`${id}-spam`}>
-        <h2 id={`${id}-spam`} className="settings-heading">
+      <section className="flex flex-col gap-3 border-t border-border pt-4" aria-labelledby={`${id}-spam`}>
+        <h2 id={`${id}-spam`} className="m-0 text-lg font-semibold">
           Spam
         </h2>
-        <p className="settings-hint">
+        <p className="m-0 text-text-muted">
           When you report a message as spam, or mark one as not spam, your mail server&rsquo;s spam filter learns from
           it. It retrains a few times a day, once it has seen enough of both kinds.
         </p>

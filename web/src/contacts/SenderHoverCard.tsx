@@ -15,8 +15,8 @@ import { nameOrAddress } from "../conversation/people";
 import { quoteArg } from "../search/suggestions";
 import { navigate } from "../shell/router";
 import { useToast } from "../components/ui/Toast";
-import "./contacts.css";
 import { contactsDirectory, useContactsSnapshot } from "./directory";
+import { Button } from "../components/ui/Button";
 
 /** How long the pointer must rest before the card opens, and how long it may be away before it closes. */
 export const OPEN_DELAY_MS = 250;
@@ -45,7 +45,7 @@ export function SenderHoverCard({ address, children }: SenderHoverCardProps) {
   return (
     <div
       ref={root}
-      className="contacts-hover"
+      className="relative inline-block max-w-full"
       onMouseEnter={() => schedule(true, OPEN_DELAY_MS)}
       onMouseLeave={() => schedule(false, CLOSE_DELAY_MS)}
       onFocus={() => schedule(true, 0)}
@@ -114,48 +114,48 @@ function HoverCardBody({ id, address, close }: { id: string; address: EmailAddre
   }
 
   return (
-    <div id={id} className="contacts-hovercard" role="group" aria-label={`About ${name}`}>
-      <p className="contacts-hovercard-name">
+    <div
+      id={id}
+      className="absolute start-0 top-full z-card flex max-w-[min(24rem,90vw)] min-w-64 flex-col gap-2 rounded-lg border border-border bg-surface-raised p-3 shadow-md"
+      role="group"
+      aria-label={`About ${name}`}
+    >
+      <p className="m-0 font-semibold wrap-anywhere">
         <bdi>{name}</bdi>
       </p>
-      <p className="contacts-hovercard-address">
+      <p className="m-0 text-sm text-text-muted wrap-anywhere">
         <bdi>{address.email}</bdi>
       </p>
-      <div className="contacts-hovercard-actions">
+      <div className="mt-1 flex flex-wrap gap-2">
         {known ? (
-          <button
+          <Button
+            variant="quiet"
             type="button"
-            className="btn btn-quiet"
             onClick={() => {
               close();
               navigate({ kind: "contacts" });
             }}
           >
             In your contacts
-          </button>
+          </Button>
         ) : (
-          <button
-            type="button"
-            className="btn btn-quiet"
-            disabled={adding || status !== "ready"}
-            onClick={() => void add()}
-          >
+          <Button variant="quiet" type="button" disabled={adding || status !== "ready"} onClick={() => void add()}>
             <UserPlus aria-hidden="true" /> Add to contacts
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          variant="quiet"
           type="button"
-          className="btn btn-quiet"
           onClick={() => {
             close();
             compose.open({ mode: "new", to: [address] });
           }}
         >
           <Mail aria-hidden="true" /> Email
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="quiet"
           type="button"
-          className="btn btn-quiet"
           onClick={() => {
             close();
             navigate({
@@ -165,7 +165,7 @@ function HoverCardBody({ id, address, close }: { id: string; address: EmailAddre
           }}
         >
           <Search aria-hidden="true" /> Search mail from
-        </button>
+        </Button>
       </div>
     </div>
   );

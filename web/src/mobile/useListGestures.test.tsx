@@ -2,7 +2,7 @@
 // The list gestures end to end in the DOM: synthetic touch events on a fake
 // list body, the row moves, release acts through the list's handlers.
 
-import { act, cleanup, render } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { useRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetPrefs, setPrefs, setPrefsAccount } from "../prefs/prefs";
@@ -101,7 +101,7 @@ describe("swipe a row", () => {
     expect(move.defaultPrevented).toBe(true);
     touch(row, "touchmove", 150, 42, 200);
     expect(row.style.transform).toBe("translate3d(-150px, 0, 0)");
-    const backdrop = document.querySelector<HTMLElement>(".mobile-swipe-backdrop")!;
+    const backdrop = screen.getByTestId("swipe-backdrop");
     expect(backdrop.hidden).toBe(false);
     expect(backdrop.dataset["action"]).toBe("archive");
     expect(backdrop.dataset["armed"]).toBe("true");
@@ -144,7 +144,7 @@ describe("swipe a row", () => {
 
   it("leaves a vertical move to the browser's scroll", () => {
     const { actFn } = setup();
-    const body = document.querySelector<HTMLElement>(".list-body")!;
+    const body = screen.getByTestId("body");
     body.scrollTop = 200;
     const row = rowEl("T1");
     touch(row, "touchstart", 100, 300, 0);
@@ -179,7 +179,7 @@ describe("pull to refresh", () => {
     const move = touch(row, "touchmove", 100, 70, 16);
     expect(move.defaultPrevented).toBe(true);
     touch(row, "touchmove", 100, 250, 300);
-    const indicator = document.querySelector<HTMLElement>(".mobile-pull")!;
+    const indicator = screen.getByTestId("pull-indicator");
     expect(indicator.hidden).toBe(false);
     expect(indicator.dataset["armed"]).toBe("true");
     await act(async () => {

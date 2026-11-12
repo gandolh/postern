@@ -153,7 +153,10 @@ export function LiveHost() {
   if (!message) return null;
   return (
     <TopBarStatus>
-      <span className="shell-status" role="status">
+      <span
+        className="inline-flex min-h-7 items-center gap-1 rounded-pill bg-warning-soft px-3 text-sm font-medium text-on-warning-soft [&_.lucide]:[--icon-size:1rem]"
+        role="status"
+      >
         {message}
       </span>
     </TopBarStatus>

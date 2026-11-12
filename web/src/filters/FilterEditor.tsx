@@ -18,6 +18,8 @@ import {
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { formatRoute } from "../shell/router";
 import { criteriaToSearch, hasRetroactiveActions } from "./retroactive";
+import { Button } from "../components/ui/Button";
+import { Input, inputClass } from "../components/ui/Input";
 
 export interface LabelChoice {
   id: string;
@@ -140,13 +142,12 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
   };
 
   const field = (key: "from" | "to" | "subject" | "words" | "notWords", label: string, hint?: string) => (
-    <div className="settings-field filters-field">
-      <label className="settings-label" htmlFor={`${id}-${key}`}>
+    <div className="flex flex-col gap-1 [&_label]:font-medium">
+      <label className="m-0 text-md font-semibold" htmlFor={`${id}-${key}`}>
         {label}
       </label>
-      <input
+      <Input
         id={`${id}-${key}`}
-        className="input"
         value={form[key]}
         autoComplete="off"
         spellCheck={false}
@@ -154,7 +155,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
         onChange={(e) => set(key, e.target.value)}
       />
       {hint ? (
-        <p id={`${id}-${key}-hint`} className="settings-hint filters-hint">
+        <p id={`${id}-${key}-hint`} className="m-0 text-text-muted text-sm">
           {hint}
         </p>
       ) : null}
@@ -162,25 +163,30 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
   );
 
   return (
-    <form className="filters-editor" aria-labelledby={`${id}-title`} onSubmit={submit} noValidate>
-      <h3 id={`${id}-title`} className="filters-editor-title">
+    <form
+      className="flex flex-col gap-4 rounded-lg border border-border bg-surface-raised p-4"
+      aria-labelledby={`${id}-title`}
+      onSubmit={submit}
+      noValidate
+    >
+      <h3 id={`${id}-title`} className="m-0 text-md font-semibold">
         {isNew ? "Create a filter" : "Edit filter"}
       </h3>
 
-      <fieldset className="filters-group">
-        <legend className="settings-label">Messages that match</legend>
+      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0 [&_legend]:mb-2 [&_legend]:p-0">
+        <legend className="m-0 text-md font-semibold">Messages that match</legend>
         {field("from", "From", "Separate several senders with commas.")}
         {field("to", "To", "Matches To and Cc.")}
         {field("subject", "Subject")}
         {field("words", "Has the words", 'In the subject or the text. Put a phrase in "quotes".')}
         {field("notWords", "Doesn't have")}
-        <div className="filters-size">
-          <label className="settings-check">
+        <div className="flex flex-wrap items-center gap-2 [&_select]:w-auto [&_select]:min-w-40">
+          <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
             <input type="checkbox" checked={form.sizeOn} onChange={(e) => set("sizeOn", e.target.checked)} />
             Size
           </label>
           <select
-            className="input"
+            className={inputClass()}
             aria-label="Size comparison"
             value={form.sizeComparison}
             disabled={!form.sizeOn}
@@ -189,8 +195,8 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             <option value="larger">greater than</option>
             <option value="smaller">less than</option>
           </select>
-          <input
-            className="input filters-size-amount"
+          <Input
+            className="w-24"
             aria-label="Size"
             inputMode="numeric"
             value={form.sizeAmount}
@@ -198,7 +204,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             onChange={(e) => set("sizeAmount", e.target.value)}
           />
           <select
-            className="input"
+            className={inputClass()}
             aria-label="Size unit"
             value={form.sizeUnit}
             disabled={!form.sizeOn}
@@ -209,7 +215,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             <option value="B">bytes</option>
           </select>
         </div>
-        <label className="settings-check">
+        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
           <input
             type="checkbox"
             checked={form.hasAttachment}
@@ -219,22 +225,22 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
         </label>
       </fieldset>
 
-      <fieldset className="filters-group">
-        <legend className="settings-label">Do this</legend>
-        <label className="settings-check">
+      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0 [&_legend]:mb-2 [&_legend]:p-0">
+        <legend className="m-0 text-md font-semibold">Do this</legend>
+        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
           <input type="checkbox" checked={form.archive} onChange={(e) => set("archive", e.target.checked)} />
           Skip the Inbox (archive it)
         </label>
-        <label className="settings-check">
+        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
           <input type="checkbox" checked={form.markRead} onChange={(e) => set("markRead", e.target.checked)} />
           Mark as read
         </label>
-        <label className="settings-check">
+        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
           <input type="checkbox" checked={form.star} onChange={(e) => set("star", e.target.checked)} />
           Star it
         </label>
-        <div className="filters-inline">
-          <label className="settings-check">
+        <div className="flex flex-wrap items-center gap-2 [&_:is(select,input)]:w-auto [&_:is(select,input)]:min-w-40">
+          <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
             <input
               type="checkbox"
               checked={form.labelOn}
@@ -244,7 +250,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             Apply the label
           </label>
           <select
-            className="input settings-select"
+            className={inputClass("max-w-96")}
             aria-label="Label to apply"
             value={form.labelId}
             disabled={!form.labelOn}
@@ -258,13 +264,13 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             ))}
           </select>
         </div>
-        <div className="filters-inline">
-          <label className="settings-check">
+        <div className="flex flex-wrap items-center gap-2 [&_:is(select,input)]:w-auto [&_:is(select,input)]:min-w-40">
+          <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
             <input type="checkbox" checked={form.forwardOn} onChange={(e) => set("forwardOn", e.target.checked)} />
             Forward it to
           </label>
-          <input
-            className="input settings-select"
+          <Input
+            className="max-w-96"
             type="email"
             aria-label="Forwarding address"
             autoComplete="off"
@@ -276,19 +282,19 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             onChange={(e) => set("forwardTo", e.target.value)}
           />
         </div>
-        <label className="settings-check">
+        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
           <input type="checkbox" checked={form.delete} onChange={(e) => set("delete", e.target.checked)} />
           Delete it
         </label>
-        <label className="settings-check">
+        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
           <input type="checkbox" checked={form.neverSpam} onChange={(e) => set("neverSpam", e.target.checked)} />
           Never send it to Spam
         </label>
       </fieldset>
 
       {retroactive ? (
-        <div className="filters-apply">
-          <label className="settings-check">
+        <div className="flex flex-col gap-1">
+          <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
             <input
               type="checkbox"
               checked={form.applyExisting}
@@ -297,7 +303,7 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
             Also apply to matching conversations
           </label>
           {search ? (
-            <p className="settings-hint filters-hint">
+            <p className="m-0 text-text-muted text-sm">
               The ones a search for <a href={formatRoute({ kind: "search", query: search })}>{search}</a> finds (not
               Spam or Trash). Forwarding and &ldquo;never send it to Spam&rdquo; only apply to new mail.
             </p>
@@ -306,20 +312,20 @@ export function FilterEditor({ initial, isNew, labels, busy, onSave, onCancel }:
       ) : null}
 
       {problems.length > 0 ? (
-        <ul className="filters-problems" role="alert">
+        <ul className="m-0 pl-5 text-danger" role="alert">
           {problems.map((p) => (
             <li key={p}>{p}</li>
           ))}
         </ul>
       ) : null}
 
-      <div className="filters-buttons">
-        <button type="submit" className="btn btn-primary" disabled={busy}>
+      <div className="flex gap-2">
+        <Button variant="primary" type="submit" disabled={busy}>
           {isNew ? "Create filter" : "Save filter"}
-        </button>
-        <button type="button" className="btn btn-quiet" onClick={onCancel}>
+        </Button>
+        <Button variant="quiet" type="button" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

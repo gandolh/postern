@@ -26,7 +26,10 @@ export function MessageDetails({ message, id }: { message: ConvMessage; id: stri
   const replyTo =
     message.replyTo?.filter((r) => !message.from?.some((f) => f.email.toLowerCase() === r.email.toLowerCase())) ?? [];
   return (
-    <dl id={id} className="conv-details">
+    <dl
+      id={id}
+      className="m-0 mt-2 grid max-w-160 grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 rounded-md border border-border bg-surface-raised px-4 py-3 text-sm shadow-sm [&>dd]:m-0 [&>dd]:wrap-anywhere [&>dt]:text-end [&>dt]:text-text-muted"
+    >
       <dt>from:</dt>
       <dd>
         <Addresses list={message.from} />
@@ -68,9 +71,9 @@ export function MessageDetails({ message, id }: { message: ConvMessage; id: stri
       <dt>subject:</dt>
       <dd>{message.subject || "(no subject)"}</dd>
       <dt>mailed-by:</dt>
-      <dd>{auth?.mailedBy ?? <span className="conv-details-none">not verified</span>}</dd>
+      <dd>{auth?.mailedBy ?? <span className="text-text-subtle">not verified</span>}</dd>
       <dt>signed-by:</dt>
-      <dd>{auth?.signedBy ?? <span className="conv-details-none">not signed</span>}</dd>
+      <dd>{auth?.signedBy ?? <span className="text-text-subtle">not signed</span>}</dd>
     </dl>
   );
 }

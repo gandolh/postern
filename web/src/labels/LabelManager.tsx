@@ -16,11 +16,12 @@ import { descendantIds, nestTargets, validateLabelName } from "../actions/labels
 import { LabelEditError } from "./labelEdits";
 import { forgetLabelPrefs, LABEL_COLORS, type LabelColor } from "./labelPrefs";
 import type { LabelNode } from "./labelsStore";
-import "./labels.css";
 import { useAccount } from "../auth";
 import { useLabelPrefs } from "./useLabelPrefs";
 import { useLabelOps } from "./useLabelOps";
 import { useLabels } from "./useLabels";
+import { Button } from "../components/ui/Button";
+import { Input, inputClass } from "../components/ui/Input";
 
 interface Flat {
   node: LabelNode;
@@ -78,21 +79,21 @@ export function LabelManager() {
     }
   }
 
-  if (labels.status === "loading") return <p className="labels-manager-status">Loading labels…</p>;
+  if (labels.status === "loading") return <p className="text-md text-text-muted">Loading labels…</p>;
   if (labels.status === "error") {
     return (
-      <p className="labels-manager-status" role="alert">
+      <p className="text-md text-text-muted" role="alert">
         Labels didn't load.{" "}
-        <button type="button" className="btn btn-quiet" onClick={() => void labels.store.sync()}>
+        <Button variant="quiet" type="button" onClick={() => void labels.store.sync()}>
           Retry
-        </button>
+        </Button>
       </p>
     );
   }
 
   return (
-    <div className="labels-manager">
-      <p className="labels-manager-intro">
+    <div className="flex max-w-208 flex-col gap-4 p-4 max-sm:[&_td>label]:inline-grid max-sm:[&_td>label]:size-11 max-sm:[&_td>label]:place-items-center max-sm:[&_td_input[type=checkbox]]:m-0 max-sm:[&_td_input[type=checkbox]]:size-6">
+      <p className="text-md text-text-muted">
         Labels are folders: the ones you make here show up as folders in your phone's mail app, and the other way round.
         Colours and "show if unread" are kept in this browser only.
       </p>
@@ -108,14 +109,14 @@ export function LabelManager() {
         }
       />
 
-      <p className="labels-manager-status" role="status">
+      <p className="text-md text-text-muted" role="status">
         {status ? <span data-kind={status.kind}>{status.text}</span> : null}
       </p>
 
       {rows.length === 0 ? (
-        <p className="labels-manager-intro">No labels yet.</p>
+        <p className="text-md text-text-muted">No labels yet.</p>
       ) : (
-        <table className="labels-table">
+        <table className="w-full border-collapse text-md [&_caption]:pb-2 [&_caption]:text-start [&_caption]:text-lg [&_caption]:font-semibold [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-start [&_td]:align-middle [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:text-start [&_th]:align-middle [&_th]:text-sm [&_th]:font-semibold [&_th]:text-text-muted">
           <caption>Your labels</caption>
           <thead>
             <tr>
@@ -150,8 +151,15 @@ export function LabelManager() {
                         }}
                       />
                     ) : (
-                      <span className="labels-name" style={{ "--depth": node.depth } as React.CSSProperties}>
-                        <Tag className="labels-swatch" aria-hidden="true" data-label-color={pref.color} />
+                      <span
+                        className="flex items-center gap-2 ps-[calc(var(--depth,0)*1rem)]"
+                        style={{ "--depth": node.depth } as React.CSSProperties}
+                      >
+                        <Tag
+                          className="size-4 flex-none fill-[var(--label-fill,transparent)] text-[var(--label-color,var(--color-text-subtle))]"
+                          aria-hidden="true"
+                          data-label-color={pref.color}
+                        />
                         <span>{label.name}</span>
                       </span>
                     )}
@@ -178,7 +186,7 @@ export function LabelManager() {
                   </td>
                   <td>
                     <select
-                      className="input"
+                      className={inputClass()}
                       aria-label={`Colour of ${label.name}`}
                       value={pref.color ?? ""}
                       onChange={(e) => setPref(label.id, { color: (e.target.value || null) as LabelColor | null })}
@@ -193,7 +201,11 @@ export function LabelManager() {
                   </td>
                   <td>
                     {confirming === label.id ? (
-                      <div className="labels-confirm" role="alertdialog" aria-label={`Delete ${label.name}`}>
+                      <div
+                        className="flex flex-col gap-2 rounded-md border border-border-strong bg-surface-sunken p-3"
+                        role="alertdialog"
+                        aria-label={`Delete ${label.name}`}
+                      >
                         <p>
                           Delete "{label.path}"?{" "}
                           {node.children.length > 0
@@ -201,13 +213,13 @@ export function LabelManager() {
                             : ""}
                           Its conversations are kept: those with no other label go to All Mail.
                         </p>
-                        <div className="labels-actions">
-                          <button type="button" className="btn btn-quiet" onClick={() => setConfirming(null)}>
+                        <div className="flex flex-wrap gap-1">
+                          <Button variant="quiet" type="button" onClick={() => setConfirming(null)}>
                             Cancel
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
-                            className="btn btn-danger"
+                            className="border-transparent bg-danger text-surface"
                             disabled={busy}
                             onClick={() =>
                               void run(async () => {
@@ -221,29 +233,29 @@ export function LabelManager() {
                             }
                           >
                             Delete
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ) : (
-                      <div className="labels-actions">
-                        <button
+                      <div className="flex flex-wrap gap-1">
+                        <Button
+                          variant="quiet"
                           type="button"
-                          className="btn btn-quiet"
                           disabled={busy}
                           onClick={() => setRenaming(label.id)}
                           aria-label={`Edit ${label.name}`}
                         >
                           <Pencil aria-hidden="true" /> Edit
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="quiet"
                           type="button"
-                          className="btn btn-quiet"
                           disabled={busy}
                           onClick={() => setConfirming(label.id)}
                           aria-label={`Delete ${label.name}`}
                         >
                           <Trash2 aria-hidden="true" /> Delete
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </td>
@@ -254,7 +266,7 @@ export function LabelManager() {
         </table>
       )}
 
-      <p className="labels-manager-intro">
+      <p className="text-md text-text-muted">
         System labels ({systemLabels.map((l) => l.title).join(", ")}) can't be renamed, hidden or deleted.
       </p>
     </div>
@@ -285,12 +297,14 @@ function NewLabelForm({
   }
 
   return (
-    <form className="labels-manager-new" onSubmit={(e) => void submit(e)}>
+    <form
+      className="flex flex-wrap items-end gap-3 [&_label]:flex [&_label]:flex-col [&_label]:gap-1 [&_label]:text-sm [&_label]:text-text-muted"
+      onSubmit={(e) => void submit(e)}
+    >
       <label htmlFor={nameId}>
         New label
-        <input
+        <Input
           id={nameId}
-          className="input"
           value={name}
           autoComplete="off"
           onChange={(e) => (setName(e.target.value), setError(null))}
@@ -298,7 +312,12 @@ function NewLabelForm({
       </label>
       <label htmlFor={parentFieldId}>
         Nest under
-        <select id={parentFieldId} className="input" value={parentId} onChange={(e) => setParentId(e.target.value)}>
+        <select
+          id={parentFieldId}
+          className={inputClass()}
+          value={parentId}
+          onChange={(e) => setParentId(e.target.value)}
+        >
           <option value="">(none)</option>
           {labels
             .filter((l) => l.system === null)
@@ -309,11 +328,11 @@ function NewLabelForm({
             ))}
         </select>
       </label>
-      <button type="submit" className="btn btn-primary" disabled={busy}>
+      <Button variant="primary" type="submit" disabled={busy}>
         Create
-      </button>
+      </Button>
       {error ? (
-        <p className="labels-error" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {error}
         </p>
       ) : null}
@@ -349,16 +368,24 @@ function RenameForm({
   }
 
   return (
-    <form className="labels-rename" onSubmit={submit} onKeyDown={(e) => e.key === "Escape" && onCancel()}>
-      <input
-        className="input"
+    <form
+      className="flex gap-2 [&_:is(input,select)]:min-h-9 [&_:is(input,select)]:text-md"
+      onSubmit={submit}
+      onKeyDown={(e) => e.key === "Escape" && onCancel()}
+    >
+      <Input
         autoFocus
         value={name}
         aria-label={`Name of ${label.name}`}
         autoComplete="off"
         onChange={(e) => (setName(e.target.value), setError(null))}
       />
-      <select className="input" value={parentId} aria-label="Nest under" onChange={(e) => setParentId(e.target.value)}>
+      <select
+        className={inputClass()}
+        value={parentId}
+        aria-label="Nest under"
+        onChange={(e) => setParentId(e.target.value)}
+      >
         <option value="">(top level)</option>
         {targets.map((l) => (
           <option key={l.id} value={l.id}>
@@ -366,14 +393,14 @@ function RenameForm({
           </option>
         ))}
       </select>
-      <button type="submit" className="btn btn-primary" disabled={busy}>
+      <Button variant="primary" type="submit" disabled={busy}>
         Save
-      </button>
-      <button type="button" className="btn btn-quiet" onClick={onCancel}>
+      </Button>
+      <Button variant="quiet" type="button" onClick={onCancel}>
         Cancel
-      </button>
+      </Button>
       {error ? (
-        <span className="labels-error" role="alert">
+        <span className="text-sm text-danger" role="alert">
           {error}
         </span>
       ) : null}

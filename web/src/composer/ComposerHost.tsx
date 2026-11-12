@@ -11,7 +11,6 @@ import { useEffect, useSyncExternalStore } from "react";
 import { setInlineReplyRenderer } from "../conversation/inlineReply";
 import { useLabelsStore } from "../labels/useLabels";
 import { getRoute, isMailRoute, navigate, subscribeRoute, withoutConversation } from "../shell/router";
-import "./composer.css";
 import { useOptionalComposerStore } from "./compose";
 import { ComposerWindow } from "./ComposerWindow";
 import { InlineReplySlot } from "./InlineReply";

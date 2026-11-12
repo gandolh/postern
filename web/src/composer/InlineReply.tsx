@@ -16,6 +16,7 @@ import type { InlineReplyContext } from "../conversation/inlineReply";
 import { useComposerStore } from "./compose";
 import { ComposeForm } from "./ComposeForm";
 import { COMPOSER_ATTR } from "./shortcuts";
+import { Button } from "../components/ui/Button";
 
 /** The inline reply's frame: when it goes (sent, discarded), focus returns to where it was when the reply opened. */
 function InlineFrame({ label, composeKey, children }: { label: string; composeKey: string; children: ReactNode }) {
@@ -34,7 +35,12 @@ function InlineFrame({ label, composeKey, children }: { label: string; composeKe
     };
   }, []);
   return (
-    <section ref={ref} className="compose-inline" aria-label={label} {...{ [COMPOSER_ATTR]: composeKey }}>
+    <section
+      ref={ref}
+      className="mt-4 rounded-lg border border-border bg-surface shadow-md"
+      aria-label={label}
+      {...{ [COMPOSER_ATTR]: composeKey }}
+    >
       {children}
     </section>
   );
@@ -101,13 +107,13 @@ export function InlineReplySlot({ context }: { context: InlineReplyContext }) {
   }
   if (offered && offered.threadId === context.threadId && !busy && !cardIds.has(offered.draftId)) {
     return (
-      <button
+      <Button
         type="button"
-        className="btn compose-draft-offer"
+        className="mt-4 [--icon-size:1.125rem]"
         onClick={() => store.open({ draftId: offered.draftId, threadId: context.threadId, display: "inline" })}
       >
         <FilePen aria-hidden="true" /> Continue the draft
-      </button>
+      </Button>
     );
   }
   return null;

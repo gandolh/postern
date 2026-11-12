@@ -7,6 +7,8 @@
 import { useId, useMemo, useState } from "react";
 import { Modal } from "../components/ui/Modal";
 import { checkSendTime, formatSendTime, schedulePresets } from "../send/schedule";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 export interface ScheduleDialogProps {
   /** How far ahead the server lets a message wait, in ms. */
@@ -59,7 +61,7 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
 
   return (
     <Modal
-      className="compose-question compose-schedule"
+      className="max-w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-raised p-6 text-text shadow-lg w-[min(24rem,calc(100vw-2rem))]"
       disablePointerDismissal
       onClose={onCancel}
       onKeyDown={(event) => {
@@ -71,34 +73,38 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
         }
       }}
     >
-      <Modal.Title className="compose-question-title">Schedule send</Modal.Title>
+      <Modal.Title className="text-xl">Schedule send</Modal.Title>
       {!picking ? (
         <>
-          <ul className="compose-schedule-list">
+          <ul className="mt-4 -mx-2 grid list-none gap-1 p-0">
             {presets.map((p, i) => (
               <li key={p.id}>
                 <button
                   type="button"
-                  className="compose-schedule-choice"
+                  className="flex w-full cursor-pointer items-baseline justify-between gap-3 rounded-md bg-transparent p-2 text-left text-text hover:bg-hover focus-visible:bg-hover"
                   data-autofocus={i === 0 ? true : undefined}
                   autoFocus={i === 0 && returned}
                   onClick={() => onSchedule(p.at)}
                 >
                   <span>{p.label}</span>
-                  <span className="compose-schedule-time">{formatSendTime(p.at)}</span>
+                  <span className="text-sm whitespace-nowrap text-text-muted">{formatSendTime(p.at)}</span>
                 </button>
               </li>
             ))}
             <li>
-              <button type="button" className="compose-schedule-choice" onClick={() => setPicking(true)}>
+              <button
+                type="button"
+                className="flex w-full cursor-pointer items-baseline justify-between gap-3 rounded-md bg-transparent p-2 text-left text-text hover:bg-hover focus-visible:bg-hover"
+                onClick={() => setPicking(true)}
+              >
                 <span>Pick date and time</span>
               </button>
             </li>
           </ul>
-          <div className="compose-question-actions">
-            <button type="button" className="btn" onClick={onCancel}>
+          <div className="mt-6 flex justify-end gap-2">
+            <Button type="button" onClick={onCancel}>
               Cancel
-            </button>
+            </Button>
           </div>
         </>
       ) : (
@@ -110,12 +116,11 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
             submitPicked();
           }}
         >
-          <div className="compose-schedule-fields">
-            <label className="compose-schedule-field">
+          <div className="mt-4 flex flex-wrap gap-3">
+            <label className="grid flex-[1_1_9rem] gap-1 text-sm text-text-muted">
               <span>Date</span>
-              <input
+              <Input
                 type="date"
-                className="input"
                 autoFocus
                 value={date}
                 min={dateValue(opened)}
@@ -126,11 +131,10 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
                 }}
               />
             </label>
-            <label className="compose-schedule-field">
+            <label className="grid flex-[1_1_9rem] gap-1 text-sm text-text-muted">
               <span>Time</span>
-              <input
+              <Input
                 type="time"
-                className="input"
                 value={time}
                 aria-describedby={error ? `${id}-error` : undefined}
                 onChange={(e) => {
@@ -141,24 +145,23 @@ export function ScheduleDialog({ maxMs, onSchedule, onCancel, now = () => new Da
             </label>
           </div>
           {error ? (
-            <p id={`${id}-error`} className="compose-schedule-error" role="alert">
+            <p id={`${id}-error`} className="mt-3 text-sm text-danger" role="alert">
               {error}
             </p>
           ) : null}
-          <div className="compose-question-actions">
-            <button
+          <div className="mt-6 flex justify-end gap-2">
+            <Button
               type="button"
-              className="btn"
               onClick={() => {
                 setPicking(false);
                 setReturned(true);
               }}
             >
               Back
-            </button>
-            <button type="submit" className="btn btn-primary">
+            </Button>
+            <Button variant="primary" type="submit">
               Schedule send
-            </button>
+            </Button>
           </div>
         </form>
       )}

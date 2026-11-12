@@ -16,9 +16,8 @@ import { rolesFrom } from "../actions/useMailActions";
 import { useJmap } from "../auth";
 import { useLabelsStore } from "../labels/useLabels";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import "../list/list.css";
 import { useToast } from "../components/ui/Toast";
-import "./filters.css";
+import { Button } from "../components/ui/Button";
 
 export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
   const client = useJmap();
@@ -74,14 +73,15 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
   const text = plan ? emptyConfirmText(plan) : null;
   return (
     <>
-      <button
+      <Button
+        variant="quiet"
         type="button"
-        className="btn btn-quiet list-text-btn filters-empty-btn"
+        className="min-h-8 px-3 text-md whitespace-nowrap"
         disabled={busy}
         onClick={() => void ask()}
       >
         {label === "junk" ? "Delete all spam messages now" : "Empty Trash now"}
-      </button>
+      </Button>
       {plan && text ? (
         <ConfirmDialog
           title={text.title}

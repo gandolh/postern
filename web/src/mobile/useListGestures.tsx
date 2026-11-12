@@ -29,7 +29,6 @@ import {
   type Gesture,
   type SwipeContext,
 } from "./gestures";
-import "./mobile.css";
 
 export interface ListGestureOptions<Row extends { id: Id }> {
   /** The list's scrolling body (.list-body). */
@@ -281,18 +280,39 @@ export function useListGestures<Row extends { id: Id }>(options: ListGestureOpti
   if (!enabled) return null;
   return (
     <>
-      <div ref={backdropRef} className="mobile-swipe-backdrop" aria-hidden="true" hidden>
-        <span className="mobile-swipe-cue">
-          <Archive className="mobile-swipe-icon" data-for="archive" />
-          <Trash2 className="mobile-swipe-icon" data-for="delete" />
-          <MailOpen className="mobile-swipe-icon" data-for="read" />
+      <div
+        ref={backdropRef}
+        data-testid="swipe-backdrop"
+        className="pointer-events-none absolute inset-x-0 flex items-center bg-accent-soft px-6 text-on-accent-soft data-[action=delete]:bg-danger-soft data-[action=delete]:text-danger data-[action=none]:bg-surface-sunken data-[action=none]:text-text-muted data-[armed=true]:data-[action=archive]:bg-accent data-[armed=true]:data-[action=archive]:text-on-accent data-[armed=true]:data-[action=read]:bg-accent data-[armed=true]:data-[action=read]:text-on-accent data-[direction=left]:justify-end"
+        aria-hidden="true"
+        hidden
+      >
+        <span className="inline-flex items-center gap-2 text-md font-semibold">
+          <Archive
+            className="hidden in-data-[action=archive]:data-[for=archive]:inline-block in-data-[action=delete]:data-[for=delete]:inline-block in-data-[action=read]:data-[for=read]:inline-block"
+            data-for="archive"
+          />
+          <Trash2
+            className="hidden in-data-[action=archive]:data-[for=archive]:inline-block in-data-[action=delete]:data-[for=delete]:inline-block in-data-[action=read]:data-[for=read]:inline-block"
+            data-for="delete"
+          />
+          <MailOpen
+            className="hidden in-data-[action=archive]:data-[for=archive]:inline-block in-data-[action=delete]:data-[for=delete]:inline-block in-data-[action=read]:data-[for=read]:inline-block"
+            data-for="read"
+          />
           <span className="mobile-swipe-label" data-swipe-label />
         </span>
       </div>
-      <div ref={pullRef} className="mobile-pull" aria-hidden="true" hidden>
+      <div
+        ref={pullRef}
+        data-testid="pull-indicator"
+        className="pointer-events-none absolute top-0 left-1/2 z-header grid size-10 place-items-center rounded-pill border border-border bg-surface-raised text-text-muted shadow-md data-[armed=true]:text-accent"
+        aria-hidden="true"
+        hidden
+      >
         <RefreshCw />
       </div>
-      <div className="visually-hidden" role="status">
+      <div className="sr-only" role="status">
         {refreshing ? "Refreshing conversations" : ""}
       </div>
     </>

@@ -46,9 +46,12 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
   }, [client, part]);
 
   return (
-    <Modal className="att-viewer" onClose={onClose}>
-      <header className="att-viewer-bar">
-        <Modal.Title className="att-viewer-title">{name}</Modal.Title>
+    <Modal
+      className="flex h-[min(48rem,calc(100dvh-3rem))] w-[min(72rem,calc(100vw-2rem))] flex-col rounded-xl border border-border bg-surface-raised p-0 text-text shadow-lg"
+      onClose={onClose}
+    >
+      <header className="flex items-center gap-1 border-b border-border py-2 pr-2 pl-5">
+        <Modal.Title className="flex-1 overflow-hidden text-lg text-ellipsis whitespace-nowrap">{name}</Modal.Title>
         <IconButton
           label={`Download ${name}`}
           icon={Download}
@@ -56,19 +59,19 @@ export function ImageViewer({ part, onClose }: { part: AttachmentRef; onClose: (
         />
         <IconButton label="Close preview" icon={X} onClick={onClose} tooltip="end" data-autofocus />
       </header>
-      <div className="att-viewer-stage">
+      <div className="grid min-h-0 flex-[1_1_auto] place-items-center bg-surface-sunken">
         {state.srcdoc ? (
           <iframe
-            className="att-viewer-frame"
+            className="size-full"
             sandbox={VIEWER_FRAME_SANDBOX}
             srcDoc={state.srcdoc}
             title={`Preview of ${name}`}
             referrerPolicy="no-referrer"
           />
         ) : state.error ? (
-          <p className="att-viewer-note">{state.error}</p>
+          <p className="text-text-muted">{state.error}</p>
         ) : (
-          <p className="att-viewer-note" role="status">
+          <p className="text-text-muted" role="status">
             Loading…
           </p>
         )}

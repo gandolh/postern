@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { estimateFrameHeight } from "../render/measure";
 import type { SanitizedHtml } from "../render/sanitize";
 import { buildSrcdoc, MESSAGE_FRAME_SANDBOX } from "../render/srcdoc";
+import { Button } from "../components/ui/Button";
 
 export interface MessageFrameProps {
   clean: SanitizedHtml;
@@ -66,9 +67,9 @@ export function MessageFrame({ clean, foldQuote, theme, allowRemote, title }: Me
 
   return (
     <>
-      <div ref={wrapRef} className="conv-frame-wrap" style={{ height }}>
+      <div ref={wrapRef} className="min-h-12 resize-y overflow-hidden rounded-md" style={{ height }}>
         <iframe
-          className="conv-frame"
+          className="block size-full bg-transparent [color-scheme:normal]"
           sandbox={MESSAGE_FRAME_SANDBOX}
           srcDoc={srcdoc}
           title={title}
@@ -76,9 +77,9 @@ export function MessageFrame({ clean, foldQuote, theme, allowRemote, title }: Me
         />
       </div>
       {capped ? (
-        <button type="button" className="btn btn-quiet conv-frame-more" onClick={() => setFull(true)}>
+        <Button variant="quiet" type="button" className="mt-2" onClick={() => setFull(true)}>
           Show full message
-        </button>
+        </Button>
       ) : null}
     </>
   );

@@ -11,6 +11,7 @@ import type { LucideIcon } from "lucide-react";
 import type { RowNoun } from "../actions/copy";
 import { Inbox, RefreshCw, WifiOff } from "lucide-react";
 import { useSyncExternalStore, type ReactNode } from "react";
+import { Button } from "../components/ui/Button";
 
 /** Gmail's wording for a label with nothing in it; it counts messages with conversation view off. */
 export function emptyLabelMessage(title: string, noun: RowNoun = "conversation"): string {
@@ -27,10 +28,12 @@ export interface EmptyStateProps {
 /** A quiet centred message for a label, search or page with nothing to show. */
 export function EmptyState({ title, children, icon: Icon = Inbox }: EmptyStateProps) {
   return (
-    <div className="shell-empty">
-      <Icon className="shell-empty-icon" aria-hidden="true" />
-      <p className="shell-empty-title">{title}</p>
-      {children ? <div className="shell-empty-body">{children}</div> : null}
+    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
+      <Icon className="mb-2 text-text-subtle [--icon-size:2.5rem] [--icon-stroke:1.25]" aria-hidden="true" />
+      <p className="text-lg font-semibold">{title}</p>
+      {children ? (
+        <div className="flex max-w-[40ch] flex-col items-center gap-4 text-text-muted">{children}</div>
+      ) : null}
     </div>
   );
 }
@@ -50,17 +53,24 @@ export interface ListSkeletonProps {
 export function ListSkeleton({ rows = 12, animated = true, label = "Loading conversations" }: ListSkeletonProps) {
   return (
     <div
-      className="shell-list-skeleton"
+      className="group/skel"
       data-animated={animated ? undefined : "false"}
       role={animated ? "status" : undefined}
       aria-label={animated ? label : undefined}
     >
       {Array.from({ length: rows }, (_, i) => (
-        <div className="shell-list-skeleton-row" key={i} aria-hidden="true">
-          <span className="skeleton shell-skeleton-check" />
-          <span className="skeleton shell-skeleton-sender" />
-          <span className="skeleton shell-skeleton-subject" style={{ width: `${WIDTHS[i % WIDTHS.length]}%` }} />
-          <span className="skeleton shell-skeleton-date" />
+        <div
+          className="grid h-(--row-height) grid-cols-[1.25rem_minmax(6rem,12rem)_minmax(0,1fr)_3.5rem] items-center gap-4 border-b border-border px-(--row-padding-inline) max-sm:grid-cols-[1.25rem_minmax(0,1fr)_3rem]"
+          key={i}
+          aria-hidden="true"
+        >
+          <span className="size-4 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+          <span className="h-3 w-[70%] max-sm:hidden block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+          <span
+            className="h-3 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none"
+            style={{ width: `${WIDTHS[i % WIDTHS.length]}%` }}
+          />
+          <span className="h-3 w-full justify-self-end block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
         </div>
       ))}
     </div>
@@ -70,11 +80,14 @@ export function ListSkeleton({ rows = 12, animated = true, label = "Loading conv
 /** Placeholder label rows for the navigation while the labels load. */
 export function NavSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="shell-nav-skeleton" aria-hidden="true">
+    <div className="in-data-[nav=rail]:hidden" aria-hidden="true">
       {Array.from({ length: rows }, (_, i) => (
-        <div className="shell-nav-skeleton-row" key={i}>
-          <span className="skeleton shell-skeleton-icon" />
-          <span className="skeleton shell-skeleton-text" style={{ width: `${WIDTHS[(i + 3) % WIDTHS.length]}%` }} />
+        <div className="flex h-(--nav-item-height) items-center gap-3 pr-3 pl-(--nav-inset)" key={i}>
+          <span className="size-4.5 flex-none block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+          <span
+            className="h-2.5 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none"
+            style={{ width: `${WIDTHS[(i + 3) % WIDTHS.length]}%` }}
+          />
         </div>
       ))}
     </div>
@@ -91,16 +104,16 @@ export interface ConnectionLostProps {
 /** The main area when the mail server cannot be reached. */
 export function ConnectionLost({ onRetry, title = "Can't reach the mail server", children }: ConnectionLostProps) {
   return (
-    <div className="shell-empty" role="alert">
-      <WifiOff className="shell-empty-icon" aria-hidden="true" />
-      <p className="shell-empty-title">{title}</p>
-      <div className="shell-empty-body">
+    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center" role="alert">
+      <WifiOff className="mb-2 text-text-subtle [--icon-size:2.5rem] [--icon-stroke:1.25]" aria-hidden="true" />
+      <p className="text-lg font-semibold">{title}</p>
+      <div className="flex max-w-[40ch] flex-col items-center gap-4 text-text-muted">
         {children ?? <p>Check your connection. Postern tries again when the connection comes back.</p>}
         {onRetry ? (
-          <button type="button" className="btn" onClick={onRetry}>
+          <Button type="button" onClick={onRetry}>
             <RefreshCw aria-hidden="true" />
             Try again
-          </button>
+          </Button>
         ) : null}
       </div>
     </div>
@@ -139,7 +152,10 @@ export function ConnectionBanner({
 }) {
   if (!offline && !unreachable) return null;
   return (
-    <div className="shell-banner" role="status">
+    <div
+      className="flex min-h-11 flex-none items-center gap-3 rounded-lg bg-warning-soft py-2 pr-2 pl-4 text-on-warning-soft [&_p]:flex-[1_1_auto]"
+      role="status"
+    >
       <WifiOff aria-hidden="true" />
       <p>
         {offline
@@ -147,9 +163,14 @@ export function ConnectionBanner({
           : "Can't reach the mail server. Some counts may be out of date."}
       </p>
       {!offline && onRetry ? (
-        <button type="button" className="btn btn-quiet shell-banner-action" onClick={onRetry}>
+        <Button
+          variant="quiet"
+          type="button"
+          className="font-semibold text-on-warning-soft underline hover:bg-transparent hover:text-on-warning-soft"
+          onClick={onRetry}
+        >
           Try again
-        </button>
+        </Button>
       ) : null}
     </div>
   );

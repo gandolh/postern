@@ -10,7 +10,8 @@ import { Menu } from "../components/ui/Menu";
 import { Modal } from "../components/ui/Modal";
 import { IconButton } from "../shell/IconButton";
 import { checkSnoozeTime, formatSnoozeTime, snoozePresets } from "./times";
-import "./snooze.css";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 export const SNOOZE_HELP = "Snoozed mail comes back when Postern is open.";
 
@@ -32,7 +33,7 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
   const helpId = useId();
 
   return (
-    <div className="list-menu">
+    <div className="relative">
       <Menu.Root
         modal={false}
         open={open}
@@ -43,8 +44,8 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
       >
         <Menu.Trigger ref={button} render={<IconButton label="Snooze" icon={Clock} />} />
         <Menu.Popup
-          positionerClassName="list-menu-positioner"
-          className="list-menu-popup snooze-menu"
+          positionerClassName="z-popup"
+          className="snooze-menu flex min-w-48 flex-col rounded-lg border border-border bg-surface-raised py-2 shadow-md"
           aria-label="Snooze until"
           aria-describedby={helpId}
           finalFocus={() => {
@@ -56,23 +57,23 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
             return false;
           }}
         >
-          <p id={helpId} className="snooze-help">
+          <p id={helpId} className="max-w-72 px-4 pt-1 pb-2 text-sm text-text-muted">
             Snooze until… {SNOOZE_HELP}
           </p>
           {presets.map((p) => (
             <Menu.Item
               key={p.id}
-              className="list-menu-item snooze-item"
+              className="min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover flex items-center justify-between gap-4"
               onClick={() => {
                 chosen.current = () => onSnooze(p.at);
               }}
             >
               <span>{p.label}</span>
-              <span className="snooze-item-time">{formatSnoozeTime(p.at, openedAt)}</span>
+              <span className="text-sm whitespace-nowrap text-text-muted">{formatSnoozeTime(p.at, openedAt)}</span>
             </Menu.Item>
           ))}
           <Menu.Item
-            className="list-menu-item snooze-item"
+            className="min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover flex items-center justify-between gap-4"
             onClick={() => {
               chosen.current = () => setPicking(true);
             }}
@@ -81,9 +82,9 @@ export function SnoozeMenu({ onSnooze, onUnsnooze, now = () => new Date() }: Sno
           </Menu.Item>
           {onUnsnooze ? (
             <>
-              <Menu.Separator className="snooze-separator" />
+              <Menu.Separator className="my-1 h-px bg-border" />
               <Menu.Item
-                className="list-menu-item snooze-item"
+                className="min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover flex items-center justify-between gap-4"
                 onClick={() => {
                   chosen.current = onUnsnooze;
                 }}
@@ -141,9 +142,14 @@ export function SnoozeDialog({
   };
 
   return (
-    <Modal className="snooze-dialog" describedBy={`${id}-help`} disablePointerDismissal onClose={onCancel}>
-      <Modal.Title className="snooze-dialog-title">Snooze until</Modal.Title>
-      <p id={`${id}-help`} className="snooze-dialog-help">
+    <Modal
+      className="w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-raised p-6 text-text"
+      describedBy={`${id}-help`}
+      disablePointerDismissal
+      onClose={onCancel}
+    >
+      <Modal.Title className="text-xl">Snooze until</Modal.Title>
+      <p id={`${id}-help`} className="mt-2 text-sm text-text-muted">
         {SNOOZE_HELP}
       </p>
       <form
@@ -153,12 +159,11 @@ export function SnoozeDialog({
           submit();
         }}
       >
-        <div className="snooze-fields">
-          <label className="snooze-field">
+        <div className="mt-4 flex flex-wrap gap-3">
+          <label className="grid flex-[1_1_9rem] gap-1 text-sm text-text-muted">
             <span>Date</span>
-            <input
+            <Input
               type="date"
-              className="input"
               data-autofocus
               value={date}
               aria-describedby={error ? `${id}-error` : undefined}
@@ -168,11 +173,10 @@ export function SnoozeDialog({
               }}
             />
           </label>
-          <label className="snooze-field">
+          <label className="grid flex-[1_1_9rem] gap-1 text-sm text-text-muted">
             <span>Time</span>
-            <input
+            <Input
               type="time"
-              className="input"
               value={time}
               aria-describedby={error ? `${id}-error` : undefined}
               onChange={(e) => {
@@ -183,17 +187,17 @@ export function SnoozeDialog({
           </label>
         </div>
         {error ? (
-          <p id={`${id}-error`} className="snooze-error" role="alert">
+          <p id={`${id}-error`} className="mt-3 text-sm text-danger" role="alert">
             {error}
           </p>
         ) : null}
-        <div className="snooze-actions">
-          <button type="button" className="btn" onClick={onCancel}>
+        <div className="mt-6 flex justify-end gap-2">
+          <Button type="button" onClick={onCancel}>
             Cancel
-          </button>
-          <button type="submit" className="btn btn-primary">
+          </Button>
+          <Button variant="primary" type="submit">
             Snooze
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

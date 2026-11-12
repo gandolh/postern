@@ -6,7 +6,6 @@
 
 import { Switch as BaseSwitch } from "@base-ui/react/switch";
 import type { ComponentProps, ReactNode } from "react";
-import "./switch.css";
 
 export interface SwitchProps extends Omit<ComponentProps<typeof BaseSwitch.Root>, "className" | "children"> {
   /** The label: its text names the switch. */
@@ -15,9 +14,12 @@ export interface SwitchProps extends Omit<ComponentProps<typeof BaseSwitch.Root>
 
 export function Switch({ children, ...props }: SwitchProps) {
   return (
-    <label className="settings-check">
-      <BaseSwitch.Root {...props} className="ui-switch">
-        <BaseSwitch.Thumb className="ui-switch-thumb" />
+    <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 max-sm:min-h-11 [&_input]:m-0 [&_input]:size-4.5">
+      <BaseSwitch.Root
+        {...props}
+        className="inline-flex h-5 w-9 flex-none cursor-pointer items-center rounded-pill bg-border-strong p-0.5 transition-[background-color] duration-(--duration-normal) ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-checked:bg-accent data-disabled:cursor-not-allowed data-disabled:opacity-50"
+      >
+        <BaseSwitch.Thumb className="size-4 rounded-full bg-surface transition-transform duration-(--duration-normal) ease-out data-checked:translate-x-4" />
       </BaseSwitch.Root>
       {children}
     </label>

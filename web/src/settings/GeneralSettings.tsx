@@ -20,6 +20,8 @@ import {
 import { RadioGroup } from "../components/ui/RadioGroup";
 import { Switch } from "../components/ui/Switch";
 import { VacationForm } from "./VacationForm";
+import { Button } from "../components/ui/Button";
+import { inputClass } from "../components/ui/Input";
 
 const THEME_TITLES: Record<ThemePreference, string> = { system: "Same as the device", light: "Light", dark: "Dark" };
 const DENSITY_TITLES: Record<Density, string> = { default: "Default", comfortable: "Comfortable", compact: "Compact" };
@@ -33,8 +35,10 @@ export function GeneralSettings() {
   const { theme, density, readingPane, setTheme, setDensity, setReadingPane } = useTheme();
   const { prefs, setPrefs } = usePrefs();
   return (
-    <div className="settings-form">
-      <p className="settings-hint">Display settings are kept in this browser. A new device starts from the defaults.</p>
+    <div className="flex max-w-176 flex-col gap-6 p-6">
+      <p className="m-0 text-text-muted">
+        Display settings are kept in this browser. A new device starts from the defaults.
+      </p>
       <Choice legend="Theme" name="theme" options={THEMES} titles={THEME_TITLES} value={theme} onChange={setTheme} />
       <Choice
         legend="Density"
@@ -79,13 +83,13 @@ export function GeneralSettings() {
 function UndoSendChoice({ value, onChange }: { value: UndoSendSeconds; onChange: (seconds: UndoSendSeconds) => void }) {
   const id = useId();
   return (
-    <div className="settings-field">
-      <label htmlFor={id} className="settings-label">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="m-0 text-md font-semibold">
         Undo send: cancellation period
       </label>
       <select
         id={id}
-        className="input settings-select"
+        className={inputClass("max-w-96")}
         value={value}
         onChange={(e) => onChange(Number(e.target.value) as UndoSendSeconds)}
       >
@@ -104,7 +108,7 @@ function NotificationsToggle() {
   if (permission === "unsupported") return null;
   const denied = permission === "denied";
   return (
-    <div className="settings-field">
+    <div className="flex flex-col gap-1">
       <Switch
         checked={enabled}
         disabled={denied}
@@ -114,7 +118,7 @@ function NotificationsToggle() {
         Desktop notifications for new mail
       </Switch>
       {denied ? (
-        <p id="settings-notify-denied" className="settings-hint">
+        <p id="settings-notify-denied" className="m-0 text-text-muted">
           Blocked in your browser&rsquo;s site settings.
         </p>
       ) : null}
@@ -128,27 +132,27 @@ function ImageSenders() {
   const senders = imageAllowanceList(username);
   const headingId = useId();
   return (
-    <section className="settings-field" aria-labelledby={headingId}>
-      <h2 id={headingId} className="settings-label">
+    <section className="flex flex-col gap-1" aria-labelledby={headingId}>
+      <h2 id={headingId} className="m-0 text-md font-semibold">
         Senders whose images are always displayed
       </h2>
       {senders.length === 0 ? (
-        <p className="settings-hint">
+        <p className="m-0 text-text-muted">
           None. Use &ldquo;Always display images from&rdquo; on a message to add a sender.
         </p>
       ) : (
-        <ul className="settings-list">
+        <ul className="m-0 flex list-none flex-col gap-1 p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3">
           {senders.map((sender) => (
             <li key={sender}>
               <span>{sender}</span>
-              <button
+              <Button
+                variant="quiet"
                 type="button"
-                className="btn btn-quiet"
                 aria-label={`Remove ${sender}`}
                 onClick={() => forgetImagesFrom(username, sender)}
               >
                 Remove
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -169,7 +173,7 @@ interface ChoiceProps<T extends string> {
 export function Choice<T extends string>({ legend, name, options, titles, value, onChange }: ChoiceProps<T>) {
   return (
     <RadioGroup
-      className="settings-choice"
+      className="m-0 flex flex-wrap gap-x-6 gap-y-2 border-0 p-0 [&_label]:inline-flex [&_label]:min-h-8 [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2 [&_legend]:mb-2 [&_legend]:w-full [&_legend]:p-0 [&_legend]:font-semibold max-sm:[&_label]:min-h-11"
       legend={legend}
       name={name}
       options={options.map((option) => ({ value: option, label: titles[option] }))}

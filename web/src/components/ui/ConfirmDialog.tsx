@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { Modal } from "./Modal";
+import { Button } from "./Button";
 
 export interface ConfirmDialogProps {
   title: string;
@@ -40,18 +41,29 @@ export function ConfirmDialog({
   };
 
   return (
-    <Modal alert className="list-confirm" describedBy="list-confirm-body" dismissible={!pending} onClose={onCancel}>
-      <Modal.Title className="list-confirm-title">{title}</Modal.Title>
-      <p id="list-confirm-body" className="list-confirm-body">
+    <Modal
+      alert
+      className="max-w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-raised p-6 text-text shadow-lg"
+      describedBy="list-confirm-body"
+      dismissible={!pending}
+      onClose={onCancel}
+    >
+      <Modal.Title className="text-xl">{title}</Modal.Title>
+      <p id="list-confirm-body" className="mt-3 text-text-muted">
         {body}
       </p>
-      <div className="list-confirm-actions">
-        <button type="button" className="btn" data-autofocus disabled={pending} onClick={onCancel}>
+      <div className="mt-6 flex justify-end gap-2">
+        <Button type="button" data-autofocus disabled={pending} onClick={onCancel}>
           Cancel
-        </button>
-        <button type="button" className="btn list-confirm-danger" disabled={pending} onClick={confirm}>
+        </Button>
+        <Button
+          type="button"
+          className="border-transparent bg-danger text-surface hover:bg-danger hover:text-surface hover:brightness-92"
+          disabled={pending}
+          onClick={confirm}
+        >
           {pending ? pendingLabel : confirmLabel}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

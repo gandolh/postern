@@ -54,7 +54,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <Toast.Provider limit={1} timeout={DEFAULT_TOAST_DURATION}>
       <ToastApiProvider>{children}</ToastApiProvider>
       <Toast.Portal>
-        <Toast.Viewport className="shell-toast-region">
+        <Toast.Viewport className="fixed bottom-6 left-6 z-popup max-sm:right-2 max-sm:bottom-2 max-sm:left-2 max-sm:[body:has([data-compose-fab])_&]:bottom-[calc(5rem+env(safe-area-inset-bottom,0px))]">
           <ToastList />
         </Toast.Viewport>
       </Toast.Portal>
@@ -98,10 +98,17 @@ function ToastApiProvider({ children }: { children: ReactNode }) {
 function ToastList() {
   const { toasts } = Toast.useToastManager();
   return toasts.map((toast) => (
-    <Toast.Root key={toast.id} toast={toast} className="shell-toast">
-      <Toast.Title render={<p />} className="shell-toast-message" />
-      <Toast.Action className="shell-toast-action" />
-      <Toast.Close className="shell-toast-close" aria-label="Dismiss">
+    <Toast.Root
+      key={toast.id}
+      toast={toast}
+      className="flex min-h-12 max-w-[min(36rem,calc(100vw-3rem))] items-center gap-1 rounded-md bg-inverse py-1 pr-1 pl-4 text-on-inverse shadow-lg motion-safe:animate-toast-in [&_:focus-visible]:outline-inverse-accent"
+    >
+      <Toast.Title render={<p />} className="flex-[1_1_auto] pr-3" />
+      <Toast.Action className="min-h-9 flex-none cursor-pointer rounded-sm bg-transparent px-3 font-bold text-inverse-accent hover:bg-on-inverse/12" />
+      <Toast.Close
+        className="grid size-9 flex-none cursor-pointer place-items-center rounded-sm bg-transparent text-on-inverse hover:bg-on-inverse/12"
+        aria-label="Dismiss"
+      >
         <X aria-hidden="true" />
       </Toast.Close>
     </Toast.Root>

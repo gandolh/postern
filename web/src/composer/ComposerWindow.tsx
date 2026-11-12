@@ -80,7 +80,7 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
   return (
     <dialog
       ref={ref}
-      className="compose-window"
+      className="relative inset-auto m-0 flex h-[min(38rem,calc(100vh-var(--topbar-height)-1rem))] max-h-none w-136 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-t-lg border border-b-0 border-border bg-surface p-0 text-text shadow-lg backdrop:bg-scrim motion-safe:animate-compose-in not-open:hidden data-[placement=fullscreen]:fixed data-[placement=fullscreen]:inset-0 data-[placement=fullscreen]:m-auto data-[placement=fullscreen]:h-[min(56rem,calc(100vh-4rem))] data-[placement=fullscreen]:w-[min(72rem,calc(100vw-4rem))] data-[placement=fullscreen]:max-w-none data-[placement=fullscreen]:rounded-xl data-[placement=fullscreen]:border-b data-[placement=minimised]:h-auto data-[placement=minimised]:w-64 max-sm:data-[placement=docked]:fixed max-sm:data-[placement=docked]:inset-0 max-sm:data-[placement=docked]:z-overlay max-sm:data-[placement=docked]:h-auto max-sm:data-[placement=docked]:w-auto max-sm:data-[placement=docked]:max-w-none max-sm:data-[placement=docked]:rounded-none max-sm:data-[placement=docked]:border-0 max-sm:data-[placement=fullscreen]:fixed max-sm:data-[placement=fullscreen]:inset-0 max-sm:data-[placement=fullscreen]:z-overlay max-sm:data-[placement=fullscreen]:h-auto max-sm:data-[placement=fullscreen]:w-auto max-sm:data-[placement=fullscreen]:max-w-none max-sm:data-[placement=fullscreen]:rounded-none max-sm:data-[placement=fullscreen]:border-0"
       data-placement={placement}
       aria-labelledby={titleId}
       {...{ [COMPOSER_ATTR]: state.key }}
@@ -111,17 +111,24 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
         session.addFiles(Array.from(e.dataTransfer.files));
       }}
     >
-      <div className="compose-titlebar">
-        <h2 id={titleId} className="compose-title">
+      <div className="flex min-h-10 flex-none items-center bg-surface-sunken pr-1 pl-4">
+        <h2 id={titleId} className="min-w-0 flex-[1_1_auto] text-md font-semibold">
           {fullscreen ? (
-            <span className="compose-title-text">{titleOf(state)}</span>
+            <span className="block w-full overflow-hidden py-2 text-left text-ellipsis whitespace-nowrap text-text">
+              {titleOf(state)}
+            </span>
           ) : (
-            <button type="button" className="compose-title-btn" aria-expanded={!minimised} onClick={toggleMinimise}>
+            <button
+              type="button"
+              className="block w-full cursor-pointer overflow-hidden py-2 text-left text-ellipsis whitespace-nowrap text-text focus-visible:rounded-sm focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] max-sm:min-h-11"
+              aria-expanded={!minimised}
+              onClick={toggleMinimise}
+            >
               {titleOf(state)}
             </button>
           )}
         </h2>
-        <span className="compose-titlebar-actions">
+        <span className="flex flex-none [--icon-size:1.125rem] [&_[data-slot=icon-button]]:size-8 max-sm:[&_[data-slot=icon-button]]:size-11">
           {!fullscreen ? (
             <IconButton
               label={minimised ? "Restore" : "Minimise"}
@@ -139,10 +146,13 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
           <IconButton label="Save & close" icon={X} tooltip="end" onClick={close} />
         </span>
       </div>
-      <div className="compose-window-body" hidden={minimised}>
+      <div className="relative flex min-h-0 flex-[1_1_auto] flex-col" hidden={minimised}>
         <ComposeForm session={session} state={state} variant="window" />
         {dragging ? (
-          <div className="compose-drop" aria-hidden="true">
+          <div
+            className="absolute inset-2 z-inline grid place-items-center rounded-lg border-2 border-dashed border-accent bg-accent-soft font-semibold text-on-accent-soft"
+            aria-hidden="true"
+          >
             Drop files here to attach them
           </div>
         ) : null}

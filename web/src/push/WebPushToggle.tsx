@@ -32,8 +32,8 @@ export function WebPushToggle() {
   if (!push || !push.supported) {
     if (!needsHomeScreen()) return null;
     return (
-      <div className="settings-field">
-        <p className="settings-hint">
+      <div className="flex flex-col gap-1">
+        <p className="m-0 text-text-muted">
           To get notifications when Postern is closed on an iPhone or iPad, add Postern to the Home Screen (Share, then
           Add to Home Screen) and turn them on there.
         </p>
@@ -43,7 +43,7 @@ export function WebPushToggle() {
 
   const describedBy = [hintId, snapshot.problem ? problemId : null].filter(Boolean).join(" ");
   return (
-    <div className="settings-field">
+    <div className="flex flex-col gap-1">
       <Switch
         checked={snapshot.on}
         disabled={snapshot.busy}
@@ -52,7 +52,7 @@ export function WebPushToggle() {
       >
         Notifications for new mail when Postern is closed
       </Switch>
-      <p id={hintId} className="settings-hint">
+      <p id={hintId} className="m-0 text-text-muted">
         {snapshot.busy
           ? snapshot.on
             ? "Updating this device…"
@@ -60,7 +60,7 @@ export function WebPushToggle() {
           : "On this device only. Shows the sender and subject of new Inbox mail. Signing out turns it off until you sign in here again."}
       </p>
       {snapshot.problem ? (
-        <p id={problemId} className="settings-hint" role="alert">
+        <p id={problemId} className="m-0 text-text-muted" role="alert">
           {PROBLEMS[snapshot.problem]}
         </p>
       ) : null}

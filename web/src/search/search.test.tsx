@@ -168,7 +168,7 @@ describe("the search results", () => {
           .filter((r) => r.getAttribute("aria-busy") !== "true").length,
       ).toBe(2),
     );
-    expect(grid.querySelectorAll("mark.list-mark").length).toBeGreaterThan(0);
+    expect(grid.querySelectorAll("mark").length).toBeGreaterThan(0);
     expect(within(grid).queryByText(/in the trash/)).toBeNull();
   });
 

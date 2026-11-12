@@ -15,6 +15,7 @@ import {
   Underline,
   type LucideIcon,
 } from "lucide-react";
+import { iconButtonClass } from "../../shell/IconButton";
 import {
   useCallback,
   useEffect,
@@ -51,6 +52,8 @@ import {
 import { EditorHistory } from "./history";
 import { CID_ATTR, dataUrlToFile, sanitizeForEditor } from "./sanitize";
 import { serializeEditor } from "./serialize";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
 
 export interface EditorProps {
   session: ComposeSession;
@@ -443,10 +446,11 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
   ];
 
   return (
-    <div className="compose-editor">
+    <div className="flex flex-[1_0_auto] flex-col focus-within:shadow-[inset_0_2px_0_var(--color-focus)]">
       <div
         ref={rootRef}
-        className="compose-editor-body"
+        data-editor-body
+        className="min-h-32 flex-[1_0_auto] px-4 py-3 text-lg leading-normal wrap-anywhere whitespace-pre-wrap text-text outline-none"
         contentEditable
         suppressContentEditableWarning
         role="textbox"
@@ -462,7 +466,7 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
       {children}
       {link ? (
         <div
-          className="compose-link"
+          className="mx-3 mt-1 grid gap-2 rounded-md border border-border bg-surface-raised p-3 shadow-md"
           role="group"
           aria-labelledby={`${linkId}-title`}
           onKeyDown={(e) => {
@@ -471,22 +475,16 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
             setLink(null);
           }}
         >
-          <p id={`${linkId}-title`} className="compose-link-title">
+          <p id={`${linkId}-title`} className="font-semibold">
             {link.anchor ? "Edit link" : "Add link"}
           </p>
-          <label className="compose-link-field">
+          <label className="grid gap-1 text-sm text-text-muted">
             <span>Text to display</span>
-            <input
-              ref={linkTextRef}
-              className="input"
-              value={link.text}
-              onChange={(e) => setLink({ ...link, text: e.target.value })}
-            />
+            <Input ref={linkTextRef} value={link.text} onChange={(e) => setLink({ ...link, text: e.target.value })} />
           </label>
-          <label className="compose-link-field">
+          <label className="grid gap-1 text-sm text-text-muted">
             <span>Web address or email address</span>
-            <input
-              className="input"
+            <Input
               value={link.href}
               aria-invalid={link.error ? true : undefined}
               aria-describedby={link.error ? `${linkId}-error` : undefined}
@@ -499,32 +497,39 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
             />
           </label>
           {link.error ? (
-            <p id={`${linkId}-error`} className="compose-link-error" role="alert">
+            <p id={`${linkId}-error`} className="text-sm text-danger" role="alert">
               {link.error}
             </p>
           ) : null}
-          <div className="compose-link-actions">
+          <div className="flex justify-end gap-2">
             {link.anchor ? (
-              <button type="button" className="btn btn-quiet" onClick={unlink}>
+              <Button variant="quiet" type="button" onClick={unlink}>
                 Remove link
-              </button>
+              </Button>
             ) : null}
-            <button type="button" className="btn btn-quiet" onClick={() => setLink(null)}>
+            <Button variant="quiet" type="button" onClick={() => setLink(null)}>
               Cancel
-            </button>
-            <button type="button" className="btn btn-primary" onClick={saveLink}>
+            </Button>
+            <Button variant="primary" type="button" onClick={saveLink}>
               OK
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
       {showToolbar ? (
-        <div id={toolbarId} className="compose-format" role="toolbar" aria-label="Formatting options">
+        <div
+          id={toolbarId}
+          className="sticky bottom-0 z-header mx-3 mt-1 flex flex-none flex-wrap gap-0.5 rounded-md border border-border bg-surface p-1 [--icon-size:1.125rem]"
+          role="toolbar"
+          aria-label="Formatting options"
+        >
           {tools.map((t) => (
             <button
               key={t.label}
               type="button"
-              className="icon-btn compose-format-btn"
+              className={iconButtonClass(
+                "size-8 rounded-sm after:top-auto after:bottom-[calc(100%+0.25rem)] max-sm:size-11",
+              )}
               aria-label={t.label}
               aria-pressed={t.pressed === undefined ? undefined : t.pressed}
               data-tooltip={`${t.label} (${t.keys})`}

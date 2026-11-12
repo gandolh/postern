@@ -11,7 +11,6 @@ import { PrefsHost, startDisplayPersistence, startPrefs } from "../prefs";
 import { formatRoute } from "../shell/router";
 import { AccountsSettings } from "./AccountsSettings";
 import { GeneralSettings } from "./GeneralSettings";
-import "./settings.css";
 
 startDisplayPersistence();
 startPrefs();
@@ -31,14 +30,17 @@ const SECTIONS: readonly [{ id: string; title: string }, ...{ id: string; title:
 export function SettingsRoutes({ section }: SettingsRoutesProps) {
   const current = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0];
   return (
-    <section className="shell-page" aria-labelledby="settings-title">
+    <section className="flex min-h-full flex-col" aria-labelledby="settings-title">
       <PrefsHost />
-      <header className="shell-page-header">
-        <h1 id="settings-title" className="shell-page-title">
+      <header className="sticky top-0 z-header flex min-h-[calc(var(--toolbar-height)+0.5rem)] flex-wrap items-center gap-x-3 gap-y-1 border-b border-border bg-surface px-6 py-2 max-sm:px-4">
+        <h1 id="settings-title" className="text-xl font-semibold">
           Settings
         </h1>
       </header>
-      <nav className="settings-tabs" aria-label="Settings sections">
+      <nav
+        className="flex gap-1 overflow-x-auto border-b border-border px-6 [&_a]:border-b-[3px] [&_a]:border-transparent [&_a]:px-3 [&_a]:py-3 [&_a]:whitespace-nowrap [&_a]:text-text-muted [&_a]:no-underline [&_a]:hover:text-text [&_a]:focus-visible:outline-offset-(--focus-offset) [&_a]:focus-visible:[outline:var(--focus-ring)] [&_a[aria-current=page]]:border-accent [&_a[aria-current=page]]:font-semibold [&_a[aria-current=page]]:text-text"
+        aria-label="Settings sections"
+      >
         {SECTIONS.map((s) => (
           <a
             key={s.id}

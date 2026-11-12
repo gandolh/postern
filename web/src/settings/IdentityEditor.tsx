@@ -35,10 +35,10 @@ export function IdentityEditor({ identity }: { identity: Identity }) {
   };
 
   return (
-    <fieldset className="settings-identity">
+    <fieldset className="m-0 flex flex-col gap-3 rounded-md border border-border p-4 [&_legend]:px-2 [&_legend]:font-semibold">
       <legend>{current.email}</legend>
       <TextField id={`${id}-name`} label="Name" value={current.name} onCommit={(name) => void commit({ name })} />
-      <div className="settings-field">
+      <div className="flex flex-col gap-1">
         <TextField
           id={`${id}-reply`}
           label="Reply-to address"
@@ -54,7 +54,7 @@ export function IdentityEditor({ identity }: { identity: Identity }) {
           }}
         />
         {replyToError ? (
-          <p role="alert" className="settings-error">
+          <p role="alert" className="text-danger">
             Enter one email address, or leave it empty.
           </p>
         ) : null}
@@ -86,5 +86,13 @@ function HtmlPreview({ html, title }: { html: string; title: string }) {
     return buildSrcdoc(sanitizeMessageHtml(html), { foldQuote: false, theme: resolvedTheme, allowRemote: false });
   }, [html, resolvedTheme]);
   if (srcdoc === null) return null;
-  return <iframe className="settings-preview" sandbox="" srcDoc={srcdoc} title={title} referrerPolicy="no-referrer" />;
+  return (
+    <iframe
+      className="h-32 w-full rounded-sm border border-border bg-surface"
+      sandbox=""
+      srcDoc={srcdoc}
+      title={title}
+      referrerPolicy="no-referrer"
+    />
+  );
 }

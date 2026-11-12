@@ -40,7 +40,7 @@ import { Toolbar } from "./Toolbar";
 import type { ConversationRow, ListPresentation, ListQuery } from "./types";
 import { useListStore } from "./useListStore";
 import { useVirtualRows } from "./useVirtualRows";
-import "./list.css";
+import { Button } from "../components/ui/Button";
 
 export interface ConversationListProps {
   query: ListQuery;
@@ -596,10 +596,10 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         className="list-grid"
         onKeyDown={onKeyDown}
       >
-        <div role="presentation" className="list-canvas" style={{ height: virtual.totalHeight }}>
+        <div role="presentation" className="relative max-sm:mb-20" style={{ height: virtual.totalHeight }}>
           <div
             role="rowgroup"
-            className="list-rows"
+            className="absolute inset-x-0 top-0"
             style={{ transform: `translateY(${virtual.start * virtual.rowHeight}px)` }}
           >
             {items}
@@ -610,8 +610,8 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   }
 
   return (
-    <section className="list-page" aria-labelledby="list-heading">
-      <h1 id="list-heading" className="visually-hidden">
+    <section className="@container/list flex h-full min-h-0 flex-col" aria-labelledby="list-heading">
+      <h1 id="list-heading" className="sr-only">
         {props.heading ?? title}
       </h1>
       <Toolbar
@@ -644,30 +644,48 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         onMoveDone={() => api.select("none")}
       />
       {selection.all ? (
-        <div className="list-banner">
+        <div className="flex flex-none flex-wrap items-center justify-center gap-x-2 border-b border-border bg-surface-sunken px-4 py-1 text-md text-text">
           <span>
             All {total} {things} {allLabel} are selected.
           </span>
-          <button type="button" className="btn btn-quiet list-banner-action" onClick={() => api.select("none")}>
+          <Button
+            variant="quiet"
+            type="button"
+            className="min-h-8 px-2 font-semibold"
+            onClick={() => api.select("none")}
+          >
             Clear selection
-          </button>
+          </Button>
         </div>
       ) : allLoadedSelected && snapshot.total > rows.length ? (
-        <div className="list-banner">
+        <div className="flex flex-none flex-wrap items-center justify-center gap-x-2 border-b border-border bg-surface-sunken px-4 py-1 text-md text-text">
           <span>
             All {rows.length.toLocaleString()} {things} shown are selected.
           </span>
-          <button type="button" className="btn btn-quiet list-banner-action" onClick={() => api.selectAllMatching()}>
+          <Button
+            variant="quiet"
+            type="button"
+            className="min-h-8 px-2 font-semibold"
+            onClick={() => api.selectAllMatching()}
+          >
             Select all {total} {things} {allLabel}
-          </button>
+          </Button>
         </div>
       ) : null}
-      <div ref={bodyRef} className="list-body">
-        <div ref={probeRef} className="list-probe" aria-hidden="true" />
+      <div
+        ref={bodyRef}
+        data-testid="list-body"
+        className="relative min-h-0 flex-[1_1_auto] overflow-x-hidden overflow-y-auto overscroll-contain"
+      >
+        <div
+          ref={probeRef}
+          className="pointer-events-none invisible absolute top-0 left-0 h-(--row-height) w-px"
+          aria-hidden="true"
+        />
         {gestureLayer}
         {body}
       </div>
-      <div className="visually-hidden" role="status" aria-live="polite">
+      <div className="sr-only" role="status" aria-live="polite">
         {announcement}
       </div>
       {confirming ? (

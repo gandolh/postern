@@ -1,0 +1,437 @@
+/* Postern's one stylesheet. The layer order comes first: it fixes the order for the whole page.
+   Tailwind's reset sits in `base`, its utilities in `utilities`; every stylesheet still waiting to be
+   moved is imported into `legacy`, between them, so a leftover rule can never beat a utility. */
+@layer theme, base, vendor, components, utilities;
+
+@import "tailwindcss";
+@import "@fontsource-variable/atkinson-hyperlegible-next/wght.css" layer(vendor);
+@import "@fontsource/atkinson-hyperlegible-mono/400.css" layer(vendor);
+
+/* dark: follows the theme switch, never the system alone. No class needs it today: the tokens
+   below are light-dark() pairs that color-scheme resolves. It is the hook for a later difference
+   a token can't carry. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme="system"], [data-theme="system"] *) {
+      @slot;
+    }
+  }
+}
+
+/* Postern's own names, in Tailwind's namespaces. Tailwind's default colours, sizes, radii, shadows
+   and animations are cleared, so only these exist. Every value is light-dark(light, dark),
+   resolved by the color-scheme of <html>. `static` keeps every variable in the output, because the
+   stylesheets in `legacy` read them with var(). Contrast ratios for each pair: corpus/wiki/design.md. */
+@theme static {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --animate-*: initial;
+  --breakpoint-sm: 37.5rem;
+
+  /* ---- Colour: surfaces ------------------------------------------------ */
+  /* The page behind the navigation and top bar: limestone. */
+  --color-canvas: light-dark(#f2f4f1, #111513);
+  /* The main panel, where the list and conversations sit. */
+  --color-surface: light-dark(#ffffff, #191f1c);
+  /* Menus, popovers, dialogs. */
+  --color-surface-raised: light-dark(#ffffff, #212825);
+  /* Wells and inputs on the canvas. */
+  --color-surface-sunken: light-dark(#ebeeea, #151a17);
+  /* Hover on any row, nav item or quiet button. */
+  --color-hover: light-dark(#e7ebe7, #28302c);
+  /* Pressed. */
+  --color-active: light-dark(#dce2dd, #303a35);
+
+  /* ---- Colour: text ---------------------------------------------------- */
+  --color-text: light-dark(#18201c, #e3e9e5);
+  --color-text-muted: light-dark(#4e5853, #aab5af);
+  /* Placeholders and tertiary text; still 4.5:1. */
+  --color-text-subtle: light-dark(#5d6862, #9aa59f);
+
+  /* ---- Colour: lines --------------------------------------------------- */
+  --color-border: light-dark(#d3d9d4, #323b36);
+  /* Input outlines and anything that must be seen (3:1). */
+  --color-border-strong: light-dark(#7d8882, #76827b);
+
+  /* ---- Colour: the accent (patina) ------------------------------------- */
+  --color-accent: light-dark(#1c6a57, #72cbae);
+  --color-accent-hover: light-dark(#155444, #8ed8bf);
+  --color-on-accent: light-dark(#ffffff, #062a20);
+  /* The selected label in the navigation, chips, soft buttons. */
+  --color-accent-soft: light-dark(#d5ebe2, #1d3b32);
+  --color-accent-soft-hover: light-dark(#c6e3d7, #24473c);
+  --color-on-accent-soft: light-dark(#0e4537, #b4ead7);
+  --color-focus: light-dark(#1c6a57, #72cbae);
+  --color-selection: light-dark(#c6e3d7, #2b5547);
+
+  /* ---- Colour: meaning ------------------------------------------------- */
+  /* Star: brass. */
+  --color-star: light-dark(#a86a00, #e9b949);
+  --color-danger: light-dark(#a8352b, #f2998d);
+  --color-danger-soft: light-dark(#f9e3e0, #3b1f1b);
+  --color-warning-soft: light-dark(#fbeed3, #3a2e14);
+  --color-on-warning-soft: light-dark(#5a3b00, #f6dda6);
+
+  /* ---- Colour: list rows ------------------------------------ */
+  --color-row: var(--color-surface);
+  --color-row-read: light-dark(#f6f8f5, #161b19);
+  --color-row-hover: light-dark(#eef1ed, #222a26);
+  --color-row-selected: light-dark(#e3f0ea, #1f3029);
+
+  /* ---- Colour: toasts and tooltips (inverse) --------------------------- */
+  --color-inverse: light-dark(#1f2924, #e3e9e5);
+  --color-on-inverse: light-dark(#eef3f0, #18201c);
+  --color-inverse-accent: light-dark(#8cd9bf, #1c6a57);
+
+  /* ---- Colour: loading ------------------------------------------------- */
+  --color-skeleton: light-dark(#e3e8e4, #26302b);
+  --color-skeleton-shine: light-dark(#eef2ef, #2e3833);
+  --color-scrim: light-dark(rgb(17 21 19 / 0.32), rgb(0 0 0 / 0.55));
+
+  --font-sans: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Fixed rem scale, ratio ~1.14. */
+  --text-xs: 0.75rem; /* 12px: counts, captions */
+  --text-sm: 0.8125rem; /* 13px: secondary lines, chips */
+  --text-md: 0.875rem; /* 14px: the UI and list rows */
+  --text-lg: 1rem; /* 16px: message bodies, inputs */
+  --text-xl: 1.25rem; /* 20px: the wordmark, panel titles */
+  --text-2xl: 1.5rem; /* 24px: page titles, sign-in */
+  --leading-tight: 1.25;
+  --leading-normal: 1.45;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- Shape ----------------------------------------------------------- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-pill: 999px;
+
+  /* ---- Depth ----------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.5));
+  --shadow-md:
+    0 2px 6px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.45)),
+    0 1px 2px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
+  --shadow-lg:
+    0 8px 24px light-dark(rgb(24 32 28 / 0.16), rgb(0 0 0 / 0.55)),
+    0 2px 6px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-skeleton: skeleton-shine 1.6s linear infinite;
+
+  @keyframes skeleton-shine {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+
+  --animate-compose-in: compose-in var(--duration-normal) var(--ease-out);
+
+  @keyframes compose-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+
+  /* ---- Stacking: one scale, in the order the layers stack ------------------ */
+  --z-index-above: 1;
+  --z-index-header: 2;
+  --z-index-sticky: 3;
+  --z-index-inline: 8;
+  --z-index-card: 20;
+  --z-index-scrim: 40;
+  --z-index-drawer: 45;
+  --z-index-tooltip: 50;
+  --z-index-compose: 55;
+  --z-index-popup: 60;
+  --z-index-overlay: 70;
+  --z-index-menu: 80;
+  --z-index-skip: 100;
+  --z-index-modal: 200;
+
+  /* ---- Keyframes: motion-safe:animate-* ------------------------------------ */
+  --animate-pop: pop var(--duration-normal) var(--ease-out);
+  --animate-toast-in: toast-in var(--duration-normal) var(--ease-out);
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+
+    /* ---- Type and space, by the names the stylesheets in `legacy` still use ---- */
+    --leading-tight: 1.25;
+    --leading-normal: 1.45;
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    --space-0: 0.125rem;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    /* ---- Motion ---- */
+    --duration-fast: 120ms;
+    --duration-normal: 200ms;
+
+    /* ---- Layout ---- */
+    --topbar-height: 4rem;
+    --nav-width: 16rem;
+    --nav-rail-width: 4.5rem;
+    --icon-size: 1.25rem;
+    --icon-stroke: 1.75;
+    --focus-ring: 2px solid var(--color-focus);
+    --focus-offset: 2px;
+
+    /* ---- Density: default (changes at run time with data-density on <html>) ---- */
+    --row-height: 3rem;
+    --row-padding-inline: var(--space-4);
+    --nav-item-height: 2rem;
+    --toolbar-height: 3rem;
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  :root[data-density="comfortable"] {
+    --row-height: 2.5rem;
+    --row-padding-inline: var(--space-4);
+    --nav-item-height: 2rem;
+    --toolbar-height: 3rem;
+  }
+
+  :root[data-density="compact"] {
+    --row-height: 2rem;
+    --row-padding-inline: var(--space-3);
+    --nav-item-height: 1.75rem;
+    --toolbar-height: 2.5rem;
+  }
+
+  /* ---- The document's defaults, past Tailwind's reset ---------------------------- */
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    font-optical-sizing: auto;
+    color: var(--color-text);
+    background: var(--color-canvas);
+    accent-color: var(--color-accent);
+    caret-color: var(--color-accent);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+
+  /* The reset drops a link's colour and underline: links read as links. */
+  a {
+    color: var(--color-accent);
+    text-decoration-line: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  ::selection {
+    background: var(--color-selection);
+    color: var(--color-text);
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* The reset zeroes a checkbox's and a radio's browser margin; the layouts were drawn with it. */
+  input:where([type="checkbox"], [type="radio"]) {
+    margin: 3px 3px 3px 4px;
+  }
+
+  /* Scrollbars that belong to the palette, thin and quiet. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+
+  /* Icons: lucide-react, sized here so a bare <Inbox /> fits anywhere. */
+  .lucide {
+    flex: none;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    stroke-width: var(--icon-stroke);
+  }
+
+  /* ---- Label colours: a coloured thing carries data-label-color="<key>" -------- */
+  :root {
+    --label-red: light-dark(oklch(58% 0.19 27), oklch(72% 0.16 27));
+    --label-orange: light-dark(oklch(64% 0.17 55), oklch(75% 0.15 55));
+    --label-yellow: light-dark(oklch(62% 0.13 95), oklch(82% 0.14 95));
+    --label-green: light-dark(oklch(58% 0.15 150), oklch(74% 0.15 150));
+    --label-teal: light-dark(oklch(58% 0.11 195), oklch(76% 0.11 195));
+    --label-blue: light-dark(oklch(55% 0.17 255), oklch(73% 0.13 255));
+    --label-purple: light-dark(oklch(54% 0.18 300), oklch(74% 0.14 300));
+    --label-pink: light-dark(oklch(62% 0.19 350), oklch(77% 0.14 350));
+    --label-gray: light-dark(oklch(55% 0.02 260), oklch(72% 0.02 260));
+  }
+
+  [data-label-color="red"] {
+    --label-color: var(--label-red);
+  }
+  [data-label-color="orange"] {
+    --label-color: var(--label-orange);
+  }
+  [data-label-color="yellow"] {
+    --label-color: var(--label-yellow);
+  }
+  [data-label-color="green"] {
+    --label-color: var(--label-green);
+  }
+  [data-label-color="teal"] {
+    --label-color: var(--label-teal);
+  }
+  [data-label-color="blue"] {
+    --label-color: var(--label-blue);
+  }
+  [data-label-color="purple"] {
+    --label-color: var(--label-purple);
+  }
+  [data-label-color="pink"] {
+    --label-color: var(--label-pink);
+  }
+  [data-label-color="gray"] {
+    --label-color: var(--label-gray);
+  }
+
+  [data-label-color] {
+    --label-fill: color-mix(in oklab, var(--label-color) 35%, transparent);
+    --label-chip-bg: color-mix(in oklab, var(--label-color) 20%, var(--color-surface));
+  }
+
+  /* The mark in front of the sign-in wordmark: a wall with a small gate in it, drawn in the accent. */
+  :root {
+    --mask-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill-rule='evenodd' d='M8 0h16a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8zM15 32V20a4 4 0 0 1 8 0v12z'/%3E%3C/svg%3E");
+  }
+
+  /* The browser's pull-to-refresh reloads the page, and a reload signs you out (tokens live in memory only).
+     The list has its own (useListGestures). */
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  /* Phones: every target at least 44 px (Apple's and WCAG 2.5.5's size), at any density. */
+  @media (width < 37.5rem) {
+    :root,
+    :root[data-density] {
+      --row-height: 5rem;
+      --nav-item-height: 2.75rem;
+      --toolbar-height: 3rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration-fast: 0ms;
+      --duration-normal: 0ms;
+    }
+  }
+}
+
+@layer components {
+  /* The composer's editor body holds the user's own content (paragraphs, lists, links, tables), which no
+     class of ours reaches, so its element rules stay as selectors. Tailwind's reset is undone for them. */
+  [data-editor-body] {
+    & ul,
+    & ol {
+      padding-left: 1.5em;
+    }
+
+    & ul {
+      list-style: disc;
+    }
+
+    & ol {
+      list-style: decimal;
+    }
+
+    & blockquote {
+      margin: 0 0 0 0.8ex;
+      padding-left: 1ex;
+      border-left: 2px solid var(--color-border-strong);
+    }
+
+    & img {
+      display: inline;
+    }
+
+    & table {
+      border-collapse: collapse;
+    }
+
+    & td,
+    & th {
+      padding: var(--spacing) calc(var(--spacing) * 2);
+      border: 1px solid var(--color-border);
+    }
+
+    & .postern_signature,
+    & .postern_quote {
+      color: var(--color-text-muted);
+    }
+  }
+}

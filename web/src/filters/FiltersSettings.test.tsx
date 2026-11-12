@@ -150,7 +150,12 @@ describe("Settings → Filters", () => {
     expect(
       within(list)
         .getAllByRole("listitem")
-        .map((li) => li.querySelector(".filters-address")!.textContent),
+        .map((li) =>
+          within(li)
+            .getByRole("button", { name: /^Unblock / })
+            .getAttribute("aria-label")
+            ?.slice("Unblock ".length),
+        ),
     ).toEqual(["spam@x.test", "junk@y.test"]);
     await user.click(within(list).getByRole("button", { name: "Unblock spam@x.test" }));
     await waitFor(() => expect(parseFilterScript(io.source("postern")).blocked).toEqual(["junk@y.test"]));

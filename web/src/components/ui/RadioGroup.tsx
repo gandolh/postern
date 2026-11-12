@@ -7,7 +7,6 @@
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
 import { useId, type ReactNode } from "react";
-import "./radio.css";
 
 export interface RadioOption<Value extends string> {
   value: Value;
@@ -46,8 +45,11 @@ export function RadioGroup<Value extends string>({
       <legend id={legendId}>{legend}</legend>
       {options.map((option) => (
         <label key={option.value}>
-          <Radio.Root value={option.value} className="ui-radio">
-            <Radio.Indicator className="ui-radio-dot" />
+          <Radio.Root
+            value={option.value}
+            className="m-0 inline-flex size-4.5 flex-none cursor-pointer items-center justify-center rounded-full border border-border-strong bg-surface p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-checked:border-accent"
+          >
+            <Radio.Indicator className="size-2.5 rounded-full bg-accent data-unchecked:hidden" />
           </Radio.Root>
           {option.label}
         </label>

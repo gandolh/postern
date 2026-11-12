@@ -20,8 +20,13 @@ export interface SessionExpiredDialogProps {
 
 export function SessionExpiredDialog({ username, onSignIn, onSignOut }: SessionExpiredDialogProps) {
   return (
-    <Modal className="auth-dialog" dismissible={false} onClose={() => {}} initialFocus="input[name=password]">
-      <Modal.Title className="visually-hidden">Session expired</Modal.Title>
+    <Modal
+      className="w-full max-w-md rounded-xl border border-border bg-surface px-8 pt-10 pb-8 text-text shadow-lg"
+      dismissible={false}
+      onClose={() => {}}
+      initialFocus="input[name=password]"
+    >
+      <Modal.Title className="sr-only">Session expired</Modal.Title>
       <SignInForm
         onSignIn={onSignIn}
         username={username}
@@ -29,7 +34,11 @@ export function SessionExpiredDialog({ username, onSignIn, onSignOut }: SessionE
         title="Your session expired"
         subtitle="Enter your password to keep going. Nothing you were doing is lost."
         secondary={
-          <button type="button" className="auth-link" onClick={onSignOut}>
+          <button
+            type="button"
+            className="cursor-pointer bg-transparent py-2 font-medium text-accent hover:text-accent-hover hover:underline"
+            onClick={onSignOut}
+          >
             Sign out
           </button>
         }

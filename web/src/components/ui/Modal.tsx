@@ -11,7 +11,7 @@
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog } from "@base-ui/react/dialog";
 import { createContext, useCallback, useContext, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import "./modal.css";
+import { cn } from "../../lib/cn";
 
 /** Whether `element` is a native <dialog> in the top layer. jsdom's selector engine doesn't know :modal. */
 function isModal(element: Element): boolean {
@@ -71,6 +71,14 @@ export interface ModalProps {
   children: ReactNode;
 }
 
+/**
+ * What the browser gave a modal <dialog> before Base UI: fixed in the middle of the window at its own size, over the
+ * whole app (the docked composer, the toasts and the menus included). `className` goes after it, so a dialog's own
+ * look wins.
+ */
+const POPUP =
+  "fixed inset-0 z-modal m-auto h-fit max-h-[calc(100%-6px-2em)] w-fit max-w-[calc(100%-6px-2em)] overflow-auto outline-none";
+
 export function Modal({
   alert = false,
   open = true,
@@ -93,7 +101,7 @@ export function Modal({
   };
   const popup = {
     ref: popupRef,
-    className: `modal ${className}`,
+    className: cn(POPUP, className),
     // Left out when unset, so it can't override what Base UI sets.
     ...(describedBy ? { "aria-describedby": describedBy } : {}),
     initialFocus: () => popupRef.current?.querySelector<HTMLElement>(initialFocus) ?? true,
@@ -104,7 +112,7 @@ export function Modal({
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <span hidden ref={anchor} />
       <AlertDialog.Portal container={container}>
-        <AlertDialog.Backdrop className="modal-backdrop" />
+        <AlertDialog.Backdrop className="fixed inset-0 z-modal bg-scrim" />
         <AlertDialog.Popup {...popup}>
           <AlertContext.Provider value={true}>{children}</AlertContext.Provider>
         </AlertDialog.Popup>
@@ -118,7 +126,7 @@ export function Modal({
     >
       <span hidden ref={anchor} />
       <Dialog.Portal container={container}>
-        <Dialog.Backdrop className="modal-backdrop" />
+        <Dialog.Backdrop className="fixed inset-0 z-modal bg-scrim" />
         <Dialog.Popup {...popup}>
           <AlertContext.Provider value={false}>{children}</AlertContext.Provider>
         </Dialog.Popup>
@@ -129,7 +137,7 @@ export function Modal({
 
 const AlertContext = createContext(false);
 
-/** The dialog's title: it names the popup (`aria-labelledby`), as a heading. A hidden one goes in `className="visually-hidden"`. */
+/** The dialog's title: it names the popup (`aria-labelledby`), as a heading. A hidden one goes in `className="sr-only"`. */
 function ModalTitle({ className, children }: { className?: string; children: ReactNode }) {
   const Title = useContext(AlertContext) ? AlertDialog.Title : Dialog.Title;
   return <Title className={className}>{children}</Title>;

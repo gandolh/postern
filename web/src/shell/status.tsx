@@ -27,7 +27,7 @@ export function StatusSlotProvider({ children }: { children: ReactNode }) {
 /** Where the status goes: the shell puts this in the top bar. */
 export function StatusSlot() {
   const setElement = useContext(SetSlotContext);
-  return <div ref={setElement} className="shell-status-slot" />;
+  return <div ref={setElement} className="flex items-center gap-2 empty:hidden" />;
 }
 
 /** Shows its children in the top bar's status slot. */

@@ -11,6 +11,7 @@
 
 import type { EmailBodyPart, Id, Identity, JmapClient } from "@postern/jmap";
 import { CalendarDays } from "lucide-react";
+import { buttonClass } from "../components/ui/Button";
 import { useEffect, useId, useState } from "react";
 import { isQuietError } from "../actions/runner";
 import { useJmap } from "../auth";
@@ -19,7 +20,6 @@ import { ToggleGroup } from "../components/ui/ToggleGroup";
 import { useToast } from "../components/ui/Toast";
 import { parseInvite, type EventTime, type Invite } from "./ics";
 import { answerOf, myAttendance, sendInviteReply, type Answer } from "./reply";
-import "./invites.css";
 
 /** The parts that can carry an invite: a text/calendar alternative first, then an .ics file. */
 export function calendarParts(parts: readonly EmailBodyPart[]): EmailBodyPart[] {
@@ -185,18 +185,25 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
   };
 
   return (
-    <section className="invite-card" aria-labelledby={headingId} data-method={invite.method.toLowerCase()}>
-      <CalendarDays className="invite-icon" aria-hidden="true" />
-      <div className="invite-main">
-        <h3 id={headingId} className="invite-title">
+    <section
+      className="mt-2 mb-3 flex gap-3 rounded-lg border border-border bg-surface-raised px-4 py-3"
+      aria-labelledby={headingId}
+      data-method={invite.method.toLowerCase()}
+    >
+      <CalendarDays className="size-6 flex-none text-accent" aria-hidden="true" />
+      <div className="grid min-w-0 gap-2">
+        <h3
+          id={headingId}
+          className="text-lg font-semibold wrap-anywhere in-data-[method=cancel]:text-text-muted in-data-[method=cancel]:line-through"
+        >
           {invite.summary || "(no title)"}
         </h3>
         {cancelled ? (
-          <p className="invite-cancelled" role="note">
+          <p className="font-semibold text-danger" role="note">
             This event was cancelled
           </p>
         ) : null}
-        <dl className="invite-facts">
+        <dl className="m-0 grid gap-1 [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:text-text-muted [&>div]:grid [&>div]:grid-cols-[6rem_minmax(0,1fr)] [&>div]:gap-2">
           <div>
             <dt>When</dt>
             <dd>{formatWhen(invite.start, invite.end)}</dd>
@@ -234,9 +241,12 @@ export function InviteCard({ messageId, messageIdHeader, keywords, attachments }
           <ToggleGroup
             label="Going?"
             heading="Going?"
-            headingClassName="invite-answer-label"
-            className="invite-answer"
-            itemClassName="btn invite-answer-btn"
+            headingClassName="mr-1 text-text-muted"
+            className="flex flex-wrap items-center gap-2"
+            itemClassName={buttonClass(
+              "default",
+              "aria-pressed:border-transparent aria-pressed:bg-accent aria-pressed:text-on-accent",
+            )}
             options={ANSWERS.map(({ answer: value, label }) => ({ value, label }))}
             value={current}
             disabled={busy}

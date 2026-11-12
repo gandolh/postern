@@ -43,9 +43,12 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
   const cut = state.text !== null && state.text.length > ORIGINAL_SHOWN_CHARS;
 
   return (
-    <Modal className="conv-original" onClose={onClose}>
-      <header className="conv-original-bar">
-        <Modal.Title className="conv-original-title">Original message</Modal.Title>
+    <Modal
+      className="flex max-h-[calc(100dvh-3rem)] w-[min(64rem,calc(100vw-2rem))] flex-col rounded-xl border border-border bg-surface-raised p-0 text-text shadow-lg"
+      onClose={onClose}
+    >
+      <header className="flex items-center gap-1 border-b border-border py-2 pr-2 pl-5">
+        <Modal.Title className="flex-1 text-lg">Original message</Modal.Title>
         <IconButton
           label="Download original"
           icon={Download}
@@ -59,7 +62,7 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
         />
         <IconButton label="Close" icon={X} onClick={onClose} tooltip="end" data-autofocus />
       </header>
-      <dl className="conv-original-facts">
+      <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 border-b border-border px-5 py-3 text-sm [&>dd]:m-0 [&>dd]:wrap-anywhere [&>dt]:text-text-muted">
         <dt>Subject</dt>
         <dd>{subject}</dd>
         {auth ? (
@@ -91,17 +94,25 @@ export function ShowOriginal({ message, onClose }: { message: ConvMessage; onClo
         )}
       </dl>
       {state.text !== null ? (
-        <pre className="conv-original-source" tabIndex={0} aria-label="Message source">
+        <pre
+          className="m-0 min-h-48 flex-[1_1_auto] overflow-auto px-5 py-4 text-sm leading-normal wrap-anywhere whitespace-pre-wrap"
+          tabIndex={0}
+          aria-label="Message source"
+        >
           {cut ? state.text.slice(0, ORIGINAL_SHOWN_CHARS) : state.text}
         </pre>
       ) : state.error ? (
-        <p className="conv-note">The original didn't load.</p>
+        <p className="my-2 px-5 text-sm text-text-muted">The original didn't load.</p>
       ) : (
-        <p className="conv-note" role="status">
+        <p className="my-2 px-5 text-sm text-text-muted" role="status">
           Loading…
         </p>
       )}
-      {cut ? <p className="conv-note">Only the start is shown. Download the original for all of it.</p> : null}
+      {cut ? (
+        <p className="my-2 px-5 text-sm text-text-muted">
+          Only the start is shown. Download the original for all of it.
+        </p>
+      ) : null}
     </Modal>
   );
 }

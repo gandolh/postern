@@ -149,16 +149,18 @@ describe("the conversation view", () => {
 
   it("collapses read messages to a line, opens the unread and the newest, and flags a forged name", async () => {
     await renderConversation(T1);
-    const lines = screen
-      .getAllByRole("button", { expanded: false })
-      .filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.parentElement?.tagName === "H2");
     expect(lines).toHaveLength(2);
     expect(lines[0]!.textContent).toContain("Bob Baker");
     expect(lines[0]!.textContent).toContain("bob@postern.test");
     expect(screen.getByText(/The name says/).textContent).toContain("attacker@evil.test");
     // The real address is always next to the name, each isolated.
     const open = document.getElementById("conv-message-e3")!;
-    expect(open.querySelector(".conv-sender-address")?.textContent).toBe("<attacker@evil.test>");
+    expect(
+      within(open)
+        .getAllByText("attacker@evil.test")
+        .map((el) => el.parentElement?.textContent),
+    ).toContain("<attacker@evil.test>");
   });
 
   it("marks the conversation read on open, without registering an undo", async () => {
@@ -169,9 +171,7 @@ describe("the conversation view", () => {
 
   it("blocks remote images until asked, then restores them for that message", async () => {
     const { user } = await renderConversation(T1);
-    const lines = screen
-      .getAllByRole("button", { expanded: false })
-      .filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.parentElement?.tagName === "H2");
     await user.click(lines[0]!);
     await waitFor(() => expect(frames()).toHaveLength(2));
     const first = () => frames().find((f) => f.getAttribute("srcdoc")?.includes("OLDEST_HTML_TEXT"))!;
@@ -184,9 +184,7 @@ describe("the conversation view", () => {
 
   it("shows plain text as text, with safe links and a folded quote", async () => {
     const { user } = await renderConversation(T1);
-    const lines = screen
-      .getAllByRole("button", { expanded: false })
-      .filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.parentElement?.tagName === "H2");
     await user.click(lines[1]!);
     const link = await screen.findByRole("link", { name: "https://example.test/x" });
     expect(link.getAttribute("rel")).toBe("noopener noreferrer");
@@ -211,9 +209,9 @@ describe("the conversation view", () => {
     );
     const { user } = await renderConversation(many, "T2");
     const fold = screen.getByRole("button", { name: "3 older messages" });
-    expect(document.querySelectorAll(".conv-msg")).toHaveLength(4);
+    expect(screen.getAllByRole("article")).toHaveLength(4);
     await user.click(fold);
-    expect(document.querySelectorAll(".conv-msg")).toHaveLength(7);
+    expect(screen.getAllByRole("article")).toHaveLength(7);
   });
 
   it("offers the keyboard shortcuts a controller for the open conversation", async () => {
@@ -237,9 +235,7 @@ describe("the conversation view", () => {
 
   it("remembers 'Always display images from' per account on this device", async () => {
     const { user } = await renderConversation(T1);
-    const lines = screen
-      .getAllByRole("button", { expanded: false })
-      .filter((b) => b.classList.contains("conv-msg-line"));
+    const lines = screen.getAllByRole("button", { expanded: false }).filter((b) => b.parentElement?.tagName === "H2");
     await user.click(lines[0]!);
     await user.click(await screen.findByRole("button", { name: "Always display images from bob@postern.test" }));
     await waitFor(() =>
@@ -272,8 +268,10 @@ describe("the conversation view", () => {
     ];
     await renderConversation(rlo, "T3");
     const card = document.getElementById("conv-message-r1")!;
-    const name = card.querySelector(".conv-sender-name")!;
-    const address = card.querySelector(".conv-sender-address bdi")!;
+    const name = within(card).getByText("Support \u202Emoc.knab");
+    const address = within(card)
+      .getAllByText("attacker@evil.test")
+      .find((el) => el.parentElement?.textContent === "<attacker@evil.test>")!;
     expect(name.tagName).toBe("BDI");
     expect(name.textContent).toBe("Support \u202Emoc.knab");
     expect(address.textContent).toBe("attacker@evil.test");

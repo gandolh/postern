@@ -29,17 +29,17 @@ export interface MessageBodyProps {
 export function MessageBody({ state, ...rest }: MessageBodyProps) {
   if (!state || state.status === "loading") {
     return (
-      <div className="conv-body conv-body-loading" role="status" aria-label="Loading the message">
-        <span className="skeleton conv-skeleton-line" />
-        <span className="skeleton conv-skeleton-line" />
-        <span className="skeleton conv-skeleton-line conv-skeleton-short" />
+      <div className="ml-13 @max-[40rem]/conv:ml-0 grid gap-2 pt-2 pb-4" role="status" aria-label="Loading the message">
+        <span className="h-3.5 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+        <span className="h-3.5 block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+        <span className="h-3.5 w-[60%] block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
       </div>
     );
   }
   if (state.status === "error") {
     return (
-      <div className="conv-body">
-        <p className="conv-note">This message didn't load.</p>
+      <div className="ml-13 pb-3 @max-[40rem]/conv:ml-0">
+        <p className="my-2 text-sm text-text-muted">This message didn't load.</p>
       </div>
     );
   }
@@ -48,24 +48,28 @@ export function MessageBody({ state, ...rest }: MessageBodyProps) {
 
 function LoadedBody({ body, ...rest }: Omit<MessageBodyProps, "state"> & { body: Body }) {
   return (
-    <div className="conv-body">
+    <div className="ml-13 pb-3 @max-[40rem]/conv:ml-0">
       {body.kind === "html" ? (
         <HtmlBody body={body} {...rest} />
       ) : body.kind === "text" ? (
         <TextBody text={body.text} />
       ) : (
-        <p className="conv-note">This message has no text.</p>
+        <p className="my-2 text-sm text-text-muted">This message has no text.</p>
       )}
       {body.kind !== "empty" && body.truncated ? (
-        <p className="conv-note">
+        <p className="my-2 text-sm text-text-muted">
           This message is too long to show in full.{" "}
-          <button type="button" className="conv-link-btn" onClick={rest.onShowOriginal}>
+          <button
+            type="button"
+            className="inline cursor-pointer bg-transparent p-0 font-semibold text-accent underline underline-offset-[0.15em] hover:text-accent-hover"
+            onClick={rest.onShowOriginal}
+          >
             Show original
           </button>
         </p>
       ) : null}
       {body.kind !== "empty" && body.encodingProblem ? (
-        <p className="conv-note">Some characters in this message couldn't be read.</p>
+        <p className="my-2 text-sm text-text-muted">Some characters in this message couldn't be read.</p>
       ) : null}
     </div>
   );
@@ -75,7 +79,7 @@ function QuoteToggle({ open, onToggle }: { open: boolean; onToggle: () => void }
   return (
     <button
       type="button"
-      className="conv-quote-toggle"
+      className="mt-2 inline-grid h-5 min-w-8 cursor-pointer place-items-center rounded-sm border border-border-strong bg-surface-sunken px-2 text-xs leading-none tracking-[0.1em] text-text-muted hover:bg-hover hover:text-text"
       aria-expanded={open}
       aria-label={open ? "Hide quoted text" : "Show quoted text"}
       data-tooltip={open ? "Hide quoted text" : "Show quoted text"}
@@ -90,11 +94,14 @@ function LinkWarnings({ links }: { links: readonly SuspiciousLink[] }) {
   if (links.length === 0) return null;
   const shown = links.slice(0, 3);
   return (
-    <div className="conv-banner conv-banner-warning" role="note">
+    <div
+      className="mb-3 flex items-start gap-2 rounded-md px-3 py-2 text-sm [&>.lucide]:mt-[0.1rem] [&>.lucide]:[--icon-size:1.125rem] bg-warning-soft text-on-warning-soft [&>.lucide]:text-inherit"
+      role="note"
+    >
       <ShieldAlert aria-hidden="true" />
       <div>
-        <p className="conv-banner-title">Check links before you click</p>
-        <ul className="conv-banner-list">
+        <p className="font-semibold">Check links before you click</p>
+        <ul className="mt-1 pl-4 wrap-anywhere">
           {shown.map((l, i) => (
             <li key={i}>
               {l.reason === "mismatch" ? (
@@ -143,17 +150,28 @@ function HtmlBody({
   return (
     <>
       {blocked > 0 ? (
-        <div className="conv-banner" role="note">
+        <div
+          className="mb-3 flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-2 text-sm text-text [&>.lucide]:mt-[0.1rem] [&>.lucide]:[--icon-size:1.125rem] [&>.lucide]:text-text-muted"
+          role="note"
+        >
           <ImageOff aria-hidden="true" />
           <p className="conv-banner-text">
             Images are not displayed.{" "}
-            <button type="button" className="conv-link-btn" onClick={onDisplayImages}>
+            <button
+              type="button"
+              className="inline cursor-pointer bg-transparent p-0 font-semibold text-accent underline underline-offset-[0.15em] hover:text-accent-hover"
+              onClick={onDisplayImages}
+            >
               Display images below
             </button>
             {onAlwaysDisplayImages && senderAddress ? (
               <>
                 {" · "}
-                <button type="button" className="conv-link-btn" onClick={onAlwaysDisplayImages}>
+                <button
+                  type="button"
+                  className="inline cursor-pointer bg-transparent p-0 font-semibold text-accent underline underline-offset-[0.15em] hover:text-accent-hover"
+                  onClick={onAlwaysDisplayImages}
+                >
                   Always display images from {senderAddress}
                 </button>
               </>
@@ -162,14 +180,21 @@ function HtmlBody({
         </div>
       ) : null}
       {body.deferredCids.size > 0 ? (
-        <div className="conv-banner" role="note">
+        <div
+          className="mb-3 flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-2 text-sm text-text [&>.lucide]:mt-[0.1rem] [&>.lucide]:[--icon-size:1.125rem] [&>.lucide]:text-text-muted"
+          role="note"
+        >
           <ImageOff aria-hidden="true" />
           <p className="conv-banner-text">
             {body.deferredCids.size === 1
               ? "One large image in this message isn't loaded"
               : `${body.deferredCids.size} images in this message aren't loaded`}{" "}
             ({formatSize(body.deferredBytes)}).{" "}
-            <button type="button" className="conv-link-btn" onClick={onLoadInlineImages}>
+            <button
+              type="button"
+              className="inline cursor-pointer bg-transparent p-0 font-semibold text-accent underline underline-offset-[0.15em] hover:text-accent-hover"
+              onClick={onLoadInlineImages}
+            >
               Load images
             </button>
           </p>
@@ -210,14 +235,14 @@ function TextBody({ text }: { text: string }) {
   const split = useMemo(() => splitPlainQuote(text), [text]);
   return (
     <>
-      <div className="conv-plain">
+      <div className="text-lg leading-normal wrap-anywhere whitespace-pre-wrap">
         <TextRuns text={split.main} />
       </div>
       {split.quote !== null ? (
         <>
           <QuoteToggle open={quoteOpen} onToggle={() => setQuoteOpen((o) => !o)} />
           {quoteOpen ? (
-            <div className="conv-plain conv-plain-quote">
+            <div className="text-lg leading-normal wrap-anywhere whitespace-pre-wrap mt-2 border-l-2 border-border-strong pl-3 text-text-muted">
               <TextRuns text={split.quote} />
             </div>
           ) : null}

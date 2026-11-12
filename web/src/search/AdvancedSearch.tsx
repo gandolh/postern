@@ -5,6 +5,8 @@
 import { formatSearch, type AdvancedSearchFields } from "@postern/jmap";
 import { useId, useState, type FormEvent } from "react";
 import { useLabels } from "../labels/useLabels";
+import { Button } from "../components/ui/Button";
+import { Input, inputClass } from "../components/ui/Input";
 
 export interface AdvancedSearchProps {
   /** Called with the operator string when the person presses Search. */
@@ -82,31 +84,31 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
 
   return (
     <form className="search-advanced-form" onSubmit={submit}>
-      <div className="search-advanced-grid">
+      <div className="grid grid-cols-[minmax(6.5rem,max-content)_1fr] items-center gap-x-3 gap-y-2 text-md [&_:is(input:not([type=checkbox]),select)]:min-h-9 [&_:is(input:not([type=checkbox]),select)]:min-w-0 [&_:is(input:not([type=checkbox]),select)]:text-md">
         <label htmlFor={field("from")}>From</label>
-        <input id={field("from")} className="input" value={from} onChange={(e) => setFrom(e.target.value)} autoFocus />
+        <Input id={field("from")} value={from} onChange={(e) => setFrom(e.target.value)} autoFocus />
         <label htmlFor={field("to")}>To</label>
-        <input id={field("to")} className="input" value={to} onChange={(e) => setTo(e.target.value)} />
+        <Input id={field("to")} value={to} onChange={(e) => setTo(e.target.value)} />
         <label htmlFor={field("subject")}>Subject</label>
-        <input id={field("subject")} className="input" value={subject} onChange={(e) => setSubject(e.target.value)} />
+        <Input id={field("subject")} value={subject} onChange={(e) => setSubject(e.target.value)} />
         <label htmlFor={field("words")}>Has the words</label>
-        <input id={field("words")} className="input" value={words} onChange={(e) => setWords(e.target.value)} />
+        <Input id={field("words")} value={words} onChange={(e) => setWords(e.target.value)} />
         <label htmlFor={field("not")}>Doesn’t have</label>
-        <input id={field("not")} className="input" value={notWords} onChange={(e) => setNotWords(e.target.value)} />
+        <Input id={field("not")} value={notWords} onChange={(e) => setNotWords(e.target.value)} />
         <label htmlFor={field("size")}>Size</label>
-        <div className="search-advanced-row">
+        <div className="flex min-w-0 gap-2 [&>:is(input,select)]:flex-[1_1_auto]">
           <select
             aria-label="Larger or smaller"
-            className="input"
+            className={inputClass()}
             value={comparison}
             onChange={(e) => setComparison(e.target.value as "larger" | "smaller")}
           >
             <option value="larger">greater than</option>
             <option value="smaller">less than</option>
           </select>
-          <input
+          <Input
             id={field("size")}
-            className="input search-advanced-amount"
+            className="flex-[0_1_6rem]!"
             type="number"
             min="0"
             inputMode="decimal"
@@ -115,7 +117,7 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
           />
           <select
             aria-label="Size unit"
-            className="input"
+            className={inputClass()}
             value={unit}
             onChange={(e) => setUnit(e.target.value as "B" | "K" | "M")}
           >
@@ -125,17 +127,21 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
           </select>
         </div>
         <label htmlFor={field("days")}>Date within</label>
-        <div className="search-advanced-row">
-          <select id={field("days")} className="input" value={days} onChange={(e) => setDays(Number(e.target.value))}>
+        <div className="flex min-w-0 gap-2 [&>:is(input,select)]:flex-[1_1_auto]">
+          <select
+            id={field("days")}
+            className={inputClass()}
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+          >
             {DAY_OPTIONS.map((o) => (
               <option key={o.days} value={o.days}>
                 {o.label}
               </option>
             ))}
           </select>
-          <input
+          <Input
             aria-label="Of this date"
-            className="input"
             type="date"
             value={date}
             placeholder={today()}
@@ -143,7 +149,7 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
           />
         </div>
         <label htmlFor={field("place")}>Search</label>
-        <select id={field("place")} className="input" value={place} onChange={(e) => setPlace(e.target.value)}>
+        <select id={field("place")} className={inputClass()} value={place} onChange={(e) => setPlace(e.target.value)}>
           {PLACES.map((p) => (
             <option key={p.value} value={p.value}>
               {p.label}
@@ -160,18 +166,18 @@ export function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
           )}
         </select>
         <span aria-hidden="true" />
-        <label className="search-advanced-check">
+        <label className="flex items-center gap-2">
           <input type="checkbox" checked={hasAttachment} onChange={(e) => setHasAttachment(e.target.checked)} />
           Has attachment
         </label>
       </div>
-      <div className="search-advanced-actions">
-        <button type="button" className="btn btn-quiet" onClick={onClose}>
+      <div className="mt-4 flex justify-end gap-2">
+        <Button variant="quiet" type="button" onClick={onClose}>
           Cancel
-        </button>
-        <button type="submit" className="btn btn-primary">
+        </Button>
+        <Button variant="primary" type="submit">
           Search
-        </button>
+        </Button>
       </div>
     </form>
   );

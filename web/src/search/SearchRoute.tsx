@@ -16,7 +16,6 @@ import { usePrefs } from "../prefs/usePrefs";
 import type { SearchResultsRoute } from "../shell/router";
 import { ListSkeleton } from "../shell/states";
 import { useParsedSearch } from "./useParsedSearch";
-import "./search.css";
 
 export interface SearchRouteProps {
   /** The query, and `conversationId` when a result is open beside the list. */
@@ -39,8 +38,8 @@ export function SearchRoute({ route }: SearchRouteProps) {
 
   if (!parsed || !query) {
     return (
-      <section className="shell-page" aria-labelledby="search-title">
-        <h1 id="search-title" className="visually-hidden">
+      <section className="flex min-h-full flex-col" aria-labelledby="search-title">
+        <h1 id="search-title" className="sr-only">
           Search results
         </h1>
         <ListSkeleton label="Loading search results" />
@@ -57,9 +56,12 @@ export function SearchRoute({ route }: SearchRouteProps) {
   };
 
   return (
-    <div className="search-page">
+    <div className="flex h-full min-h-0 flex-col">
       {parsed.warnings.length > 0 && (
-        <ul className="search-hints" aria-label="Notes about this search">
+        <ul
+          className="m-0 flex-none list-none border-b border-border bg-surface-sunken px-4 py-2 text-sm text-text-muted"
+          aria-label="Notes about this search"
+        >
           {parsed.warnings.map((w, i) => (
             <li key={`${w.kind}-${i}`} className="search-hint">
               {w.message}
@@ -67,7 +69,7 @@ export function SearchRoute({ route }: SearchRouteProps) {
           ))}
         </ul>
       )}
-      <div className="search-results">
+      <div className="min-h-0 flex-[1_1_auto]">
         <ConversationList
           query={query}
           presentation={presentation}

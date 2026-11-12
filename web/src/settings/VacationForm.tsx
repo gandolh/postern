@@ -15,9 +15,9 @@ import { useJmap } from "../auth";
 import { useFilters } from "../filters/store";
 import { Switch } from "../components/ui/Switch";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import "../list/list.css";
 import { serverHas } from "./capability";
 import { useSaved } from "./useSaved";
+import { Input, inputClass } from "../components/ui/Input";
 
 export const FILTERS_STOP_WARNING =
   "Your filters stop while the vacation responder is on: Stalwart runs one script at a time.";
@@ -61,8 +61,8 @@ export function VacationForm() {
   if (!supported) return null;
   if (loadError) {
     return (
-      <section className="settings-section" aria-labelledby={`${id}-h`}>
-        <h2 id={`${id}-h`} className="settings-heading">
+      <section className="flex flex-col gap-3 border-t border-border pt-4" aria-labelledby={`${id}-h`}>
+        <h2 id={`${id}-h`} className="m-0 text-lg font-semibold">
           Vacation responder
         </h2>
         <p role="alert">Could not load the vacation responder: {loadError}</p>
@@ -71,11 +71,11 @@ export function VacationForm() {
   }
   if (!value) {
     return (
-      <section className="settings-section" aria-labelledby={`${id}-h`} aria-busy="true">
-        <h2 id={`${id}-h`} className="settings-heading">
+      <section className="flex flex-col gap-3 border-t border-border pt-4" aria-labelledby={`${id}-h`} aria-busy="true">
+        <h2 id={`${id}-h`} className="m-0 text-lg font-semibold">
           Vacation responder
         </h2>
-        <p className="settings-hint">Loading&hellip;</p>
+        <p className="m-0 text-text-muted">Loading&hellip;</p>
       </section>
     );
   }
@@ -124,20 +124,20 @@ export function VacationForm() {
   };
 
   return (
-    <section className="settings-section" aria-labelledby={`${id}-h`}>
-      <h2 id={`${id}-h`} className="settings-heading">
+    <section className="flex flex-col gap-3 border-t border-border pt-4" aria-labelledby={`${id}-h`}>
+      <h2 id={`${id}-h`} className="m-0 text-lg font-semibold">
         Vacation responder
       </h2>
       <Switch checked={value.isEnabled} onCheckedChange={toggle}>
         Vacation responder on
       </Switch>
       {hasFilters ? (
-        <p className="settings-hint">
+        <p className="m-0 text-text-muted">
           {value.isEnabled ? "Your filters are off while the vacation responder is on." : FILTERS_STOP_WARNING}
         </p>
       ) : null}
       {filtersNote ? (
-        <p className="settings-hint" role="status">
+        <p className="m-0 text-text-muted" role="status">
           {filtersNote}
         </p>
       ) : null}
@@ -150,27 +150,25 @@ export function VacationForm() {
           onCancel={() => setConfirmOn(false)}
         />
       ) : null}
-      <div className="settings-row">
-        <div className="settings-field">
-          <label htmlFor={`${id}-from`} className="settings-label">
+      <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col gap-1">
+          <label htmlFor={`${id}-from`} className="m-0 text-md font-semibold">
             First day
           </label>
-          <input
+          <Input
             id={`${id}-from`}
             type="date"
-            className="input"
             value={dateOnly(value.fromDate)}
             onChange={(e) => void commit({ fromDate: toUtc(e.target.value, "start") })}
           />
         </div>
-        <div className="settings-field">
-          <label htmlFor={`${id}-to`} className="settings-label">
+        <div className="flex flex-col gap-1">
+          <label htmlFor={`${id}-to`} className="m-0 text-md font-semibold">
             Last day
           </label>
-          <input
+          <Input
             id={`${id}-to`}
             type="date"
-            className="input"
             value={dateOnly(value.toDate)}
             min={dateOnly(value.fromDate)}
             onChange={(e) => void commit({ toDate: toUtc(e.target.value, "end") })}
@@ -216,28 +214,21 @@ export function TextField({ id, label, value, multiline, onCommit }: TextFieldPr
     if (draft !== value) onCommit(draft);
   };
   return (
-    <div className="settings-field">
-      <label htmlFor={id} className="settings-label">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="m-0 text-md font-semibold">
         {label}
       </label>
       {multiline ? (
         <textarea
           id={id}
-          className="input settings-textarea"
+          className={inputClass("resize-y")}
           rows={5}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
         />
       ) : (
-        <input
-          id={id}
-          type="text"
-          className="input"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-        />
+        <Input id={id} type="text" value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} />
       )}
     </div>
   );

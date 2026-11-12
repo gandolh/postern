@@ -5,6 +5,7 @@
 
 import { useId } from "react";
 import { Modal } from "../components/ui/Modal";
+import { Button } from "../components/ui/Button";
 
 export interface QuestionProps {
   title: string;
@@ -22,7 +23,7 @@ export function Question({ title, body, confirmLabel, tone = "primary", onConfir
   return (
     <Modal
       alert
-      className="compose-question"
+      className="max-w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-raised p-6 text-text shadow-lg"
       describedBy={`${id}-body`}
       onClose={onCancel}
       onKeyDown={(event) => {
@@ -34,21 +35,17 @@ export function Question({ title, body, confirmLabel, tone = "primary", onConfir
         }
       }}
     >
-      <Modal.Title className="compose-question-title">{title}</Modal.Title>
-      <p id={`${id}-body`} className="compose-question-body">
+      <Modal.Title className="text-xl">{title}</Modal.Title>
+      <p id={`${id}-body`} className="mt-3 text-text-muted">
         {body}
       </p>
-      <div className="compose-question-actions">
-        <button type="button" className="btn" data-autofocus onClick={onCancel}>
+      <div className="mt-6 flex justify-end gap-2">
+        <Button type="button" data-autofocus onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className={tone === "danger" ? "btn compose-question-danger" : "btn btn-primary"}
-          onClick={onConfirm}
-        >
+        </Button>
+        <Button type="button" variant={tone === "danger" ? "danger" : "primary"} onClick={onConfirm}>
           {confirmLabel}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

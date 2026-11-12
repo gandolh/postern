@@ -25,7 +25,6 @@ import {
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { clearPendingPatches } from "../actions/bus";
 import { clearUndo } from "../actions/undo";
-import "./auth.css";
 import { BEFORE_SIGN_OUT_MS, runBeforeSignOut } from "./beforeSignOut";
 import { API_BASE, redirectUri } from "./config";
 import { SessionContext, type SignedInSession } from "./context";

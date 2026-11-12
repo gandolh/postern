@@ -8,13 +8,13 @@
 
 import { Popover } from "../components/ui/Popover";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { iconButtonClass } from "../shell/IconButton";
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import { navigate } from "../shell/router";
 import { AdvancedSearch } from "./AdvancedSearch";
 import { registerSearchInput } from "./focus";
 import { suggestionQuery, type Suggestion, type SuggestionSource } from "./suggestions";
 import { useSuggestionSources } from "./suggestionSources";
-import "./search.css";
 
 export interface SearchBoxProps {
   /** The query on screen when the route is search results; undefined elsewhere. */
@@ -135,7 +135,7 @@ export function SearchBox({ query }: SearchBoxProps) {
   let optionIndex = -1;
 
   return (
-    <div className="search-root" ref={rootRef} onFocus={() => setFocused(true)} onBlur={onBlur}>
+    <div className="relative" ref={rootRef} onFocus={() => setFocused(true)} onBlur={onBlur}>
       <Popover.Root
         open={advanced}
         onOpenChange={(next, details) => {
@@ -151,10 +151,13 @@ export function SearchBox({ query }: SearchBoxProps) {
           setAdvanced(next);
         }}
       >
-        <div className="search-box" role="search">
+        <div
+          className="flex h-12 items-center gap-1 rounded-lg border border-transparent bg-hover pr-3 pl-1 transition-[background-color,box-shadow] duration-(--duration-fast) ease-out focus-within:border-border focus-within:bg-surface focus-within:shadow-md has-[input:focus-visible]:outline-offset-0 has-[input:focus-visible]:[outline:var(--focus-ring)] max-sm:pr-1 max-sm:[&_[data-slot=icon-button]]:flex-none"
+          role="search"
+        >
           <button
             type="button"
-            className="icon-btn search-box-submit"
+            className={iconButtonClass(undefined, false)}
             aria-label="Search"
             onClick={() => search(value)}
           >
@@ -162,7 +165,7 @@ export function SearchBox({ query }: SearchBoxProps) {
           </button>
           <input
             ref={setInput}
-            className="search-box-input"
+            className="h-full min-w-0 flex-[1_1_auto] bg-transparent p-0 text-lg text-text placeholder:text-text-muted focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
             type="text"
             name="q"
             role="combobox"
@@ -186,7 +189,7 @@ export function SearchBox({ query }: SearchBoxProps) {
           {value !== "" && (
             <button
               type="button"
-              className="icon-btn search-box-clear"
+              className={iconButtonClass(undefined, false)}
               aria-label="Clear search"
               onClick={() => {
                 setValue("");
@@ -197,21 +200,30 @@ export function SearchBox({ query }: SearchBoxProps) {
             </button>
           )}
           <Popover.Trigger
-            className="icon-btn search-box-options"
+            className={iconButtonClass(undefined, false)}
             aria-label="Search options"
             onClick={() => setDismissed(true)}
           >
             <SlidersHorizontal aria-hidden="true" />
           </Popover.Trigger>
         </div>
-        <ul id={listId} role="listbox" aria-label="Search suggestions" className="search-suggestions" hidden={!open}>
+        <ul
+          id={listId}
+          role="listbox"
+          aria-label="Search suggestions"
+          className="absolute top-[calc(100%+0.25rem)] right-0 left-0 z-overlay m-0 max-h-[min(28rem,70vh)] list-none overflow-y-auto rounded-lg border border-border bg-surface-raised py-2 shadow-lg"
+          hidden={!open}
+        >
           {open &&
             groups.map((g) => (
-              <li key={g.source.id} role="presentation" className="search-group">
-                <div className="search-group-heading" role="presentation">
+              <li key={g.source.id} role="presentation" className="list-none">
+                <div
+                  className="px-4 pt-2 pb-1 text-xs font-semibold tracking-[0.04em] text-text-muted uppercase"
+                  role="presentation"
+                >
                   {g.source.heading}
                 </div>
-                <ul role="group" aria-label={g.source.heading} className="search-group-items">
+                <ul role="group" aria-label={g.source.heading} className="m-0 list-none p-0">
                   {g.items.map((item) => {
                     optionIndex++;
                     const index = optionIndex;
@@ -221,13 +233,19 @@ export function SearchBox({ query }: SearchBoxProps) {
                         id={`${listId}-opt-${index}`}
                         role="option"
                         aria-selected={index === active}
-                        className="search-option"
+                        className="flex min-h-9 cursor-pointer items-baseline gap-3 px-4 py-1 text-md text-text aria-selected:bg-hover aria-selected:shadow-[inset_2px_0_0_var(--color-accent)]"
                         onMouseDown={(e) => e.preventDefault()}
                         onMouseMove={() => setActive(index)}
                         onClick={() => choose(item)}
                       >
-                        <span className="search-option-label">{item.label}</span>
-                        {item.detail && <span className="search-option-detail">{item.detail}</span>}
+                        <span className="min-w-0 flex-[0_1_auto] overflow-hidden text-ellipsis whitespace-nowrap">
+                          {item.label}
+                        </span>
+                        {item.detail && (
+                          <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-sm text-ellipsis whitespace-nowrap text-text-muted">
+                            {item.detail}
+                          </span>
+                        )}
                       </li>
                     );
                   })}
@@ -238,10 +256,10 @@ export function SearchBox({ query }: SearchBoxProps) {
         {/* Portalled into the search root, so focus in the form still counts as in the search. */}
         <Popover.Popup
           container={rootRef}
-          positionerClassName="search-advanced-positioner"
+          positionerClassName="z-overlay w-(--anchor-width)"
           anchor={rootRef}
           collisionPadding={5}
-          className="search-advanced"
+          className="rounded-lg border border-border bg-surface-raised p-4 shadow-lg"
           aria-label="Advanced search"
           finalFocus={inputRef}
         >

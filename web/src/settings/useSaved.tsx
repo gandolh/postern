@@ -40,7 +40,11 @@ export function useSaved(): SavedState {
   }, []);
 
   const note = (
-    <p className="settings-saved" role="status" data-failed={failed ? "true" : undefined}>
+    <p
+      className="m-0 min-h-[1.5em] text-text-muted data-[failed=true]:text-danger"
+      role="status"
+      data-failed={failed ? "true" : undefined}
+    >
       {text}
     </p>
   );

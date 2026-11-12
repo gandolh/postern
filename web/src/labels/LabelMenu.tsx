@@ -28,10 +28,11 @@ import type { LabelRoute } from "../shell/router";
 import { isAllSelected, resolveConversations, scopeFor } from "./conversations";
 import { LabelEditError } from "./labelEdits";
 import type { Label } from "./labelsStore";
-import "./labels.css";
 import { useLabelColor } from "./useLabelPrefs";
 import { useLabels } from "./useLabels";
 import { useLabelOps } from "./useLabelOps";
+import { Button } from "../components/ui/Button";
+import { Input, inputClass } from "../components/ui/Input";
 
 export interface LabelMenuProps {
   /** The selected conversations (JMAP Thread ids). */
@@ -57,7 +58,7 @@ export function LabelMenu({ conversationIds, emailIds, current, mode = "label", 
   };
 
   return (
-    <div className="list-menu">
+    <div className="relative">
       <Popover.Root
         open={open}
         onOpenChange={(next) => {
@@ -75,8 +76,8 @@ export function LabelMenu({ conversationIds, emailIds, current, mode = "label", 
           }
         />
         <Popover.Popup
-          positionerClassName="labels-positioner"
-          className="labels-popup"
+          positionerClassName="z-popup"
+          className="w-72 max-w-[calc(100vw-1rem)] rounded-lg border border-border bg-surface-raised shadow-md"
           aria-label={mode === "move" ? "Move to" : "Labels"}
           // The panel puts focus in its search box.
           initialFocus={false}
@@ -121,11 +122,11 @@ export function LabelMenuPopover({ open, onClose, ...props }: LabelMenuPopoverPr
       }}
     >
       <Popover.Popup
-        positionerClassName="labels-positioner labels-positioner-floating"
+        positionerClassName="z-menu"
         anchor={anchor}
         align={row ? "start" : "center"}
         sideOffset={row ? 4 : 0}
-        className="labels-popup"
+        className="w-72 max-w-[calc(100vw-1rem)] rounded-lg border border-border bg-surface-raised shadow-md"
         aria-label={props.mode === "move" ? "Move to" : "Labels"}
         initialFocus={false}
         finalFocus={false}
@@ -234,7 +235,10 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
 
   if (creating) {
     return (
-      <div className="labels-panel" onKeyDown={(e) => e.key === "Escape" && (e.stopPropagation(), setCreating(false))}>
+      <div
+        className="flex flex-col py-2"
+        onKeyDown={(e) => e.key === "Escape" && (e.stopPropagation(), setCreating(false))}
+      >
         <CreateForm
           initialName={query.trim()}
           mode={mode}
@@ -260,16 +264,16 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
 
   const heading = mode === "move" ? "Move to" : "Label as";
   return (
-    <div className="labels-panel" onKeyDown={onKeyDown} role="group" aria-labelledby={titleId}>
-      <p id={titleId} className="labels-heading">
+    <div className="flex flex-col py-2" onKeyDown={onKeyDown} role="group" aria-labelledby={titleId}>
+      <p id={titleId} className="px-4 pt-1 pb-2 text-sm font-semibold text-text-muted">
         {heading}
       </p>
-      <label className="labels-search">
+      <label className="mx-3 mb-2 flex items-center gap-2 rounded-md border border-border-strong px-2 text-text-muted focus-within:outline-offset-1 focus-within:[outline:var(--focus-ring)]">
         <Search aria-hidden="true" />
         <input
           ref={searchRef}
           type="text"
-          className="labels-search-input"
+          className="min-h-9 min-w-0 flex-1 bg-transparent text-md text-text focus:outline-none"
           placeholder={mode === "move" ? "Move to" : "Search labels"}
           aria-label={mode === "move" ? "Search for a label to move to" : "Search labels"}
           autoComplete="off"
@@ -286,14 +290,16 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
       </label>
       <div
         ref={listRef}
-        className="labels-options"
+        className="flex max-h-64 flex-col overflow-y-auto"
         role={mode === "move" ? "menu" : "group"}
         aria-label={mode === "move" ? "Destinations" : "Labels"}
       >
         {!ready ? (
-          <p className="labels-note">Loading…</p>
+          <p className="px-4 py-2 text-md text-text-muted">Loading…</p>
         ) : shown.length === 0 ? (
-          <p className="labels-note">{options.length === 0 ? "No labels yet" : "No labels match"}</p>
+          <p className="px-4 py-2 text-md text-text-muted">
+            {options.length === 0 ? "No labels yet" : "No labels match"}
+          </p>
         ) : (
           shown.map((label) =>
             mode === "label" ? (
@@ -309,7 +315,11 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
           )
         )}
       </div>
-      <button type="button" className="labels-create" onClick={() => setCreating(true)}>
+      <button
+        type="button"
+        className="mt-1 flex min-h-10 cursor-pointer items-center gap-3 border-t border-border bg-transparent px-4 text-md text-text hover:bg-hover focus-visible:bg-hover focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)]"
+        onClick={() => setCreating(true)}
+      >
         <Plus aria-hidden="true" />
         Create new
       </button>
@@ -319,7 +329,13 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
 
 function Swatch({ id }: { id: Id }) {
   const color = useLabelColor(id);
-  return <Tag className="labels-swatch" aria-hidden="true" data-label-color={color} />;
+  return (
+    <Tag
+      className="size-4 flex-none fill-[var(--label-fill,transparent)] text-[var(--label-color,var(--color-text-subtle))]"
+      aria-hidden="true"
+      data-label-color={color}
+    />
+  );
 }
 
 function CheckOption({
@@ -332,7 +348,7 @@ function CheckOption({
   onToggle: () => void;
 }) {
   return (
-    <label className="labels-option">
+    <label className="flex min-h-9 cursor-pointer items-center gap-3 px-4 text-md text-text hover:bg-hover has-focus-visible:bg-hover">
       <input
         type="checkbox"
         data-label-option=""
@@ -343,7 +359,7 @@ function CheckOption({
         onChange={onToggle}
       />
       <Swatch id={label.id} />
-      <span className="labels-option-name">{label.path}</span>
+      <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{label.path}</span>
     </label>
   );
 }
@@ -354,11 +370,11 @@ function MoveOption({ label, onChoose }: { label: Pick<Label, "id" | "path">; on
       type="button"
       role="menuitem"
       data-label-option=""
-      className="labels-option labels-option-button"
+      className="flex min-h-9 cursor-pointer items-center gap-3 px-4 text-md text-text hover:bg-hover has-focus-visible:bg-hover w-full bg-transparent text-start focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)]"
       onClick={onChoose}
     >
       <Swatch id={label.id} />
-      <span className="labels-option-name">{label.path}</span>
+      <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{label.path}</span>
     </button>
   );
 }
@@ -395,19 +411,26 @@ function CreateForm({ initialName, mode, onCancel, onCreate }: CreateFormProps) 
   }
 
   return (
-    <form className="labels-create-form" onSubmit={(e) => void submit(e)}>
-      <p className="labels-heading">New label</p>
+    <form
+      className="flex flex-col gap-2 px-4 pt-2 pb-3 text-md [&_:is(input,select)]:min-h-9 [&_:is(input,select)]:text-md"
+      onSubmit={(e) => void submit(e)}
+    >
+      <p className="px-0 pt-1 pb-2 text-sm font-semibold text-text-muted">New label</p>
       <label htmlFor={nameId}>Label name</label>
-      <input
+      <Input
         id={nameId}
-        className="input"
         autoFocus
         value={name}
         onChange={(e) => (setName(e.target.value), setError(null))}
         autoComplete="off"
       />
       <label htmlFor={parentFieldId}>Nest label under</label>
-      <select id={parentFieldId} className="input" value={parentId} onChange={(e) => setParentId(e.target.value)}>
+      <select
+        id={parentFieldId}
+        className={inputClass()}
+        value={parentId}
+        onChange={(e) => setParentId(e.target.value)}
+      >
         <option value="">(none)</option>
         {parents.map((l) => (
           <option key={l.id} value={l.id}>
@@ -416,17 +439,17 @@ function CreateForm({ initialName, mode, onCancel, onCreate }: CreateFormProps) 
         ))}
       </select>
       {error ? (
-        <p className="labels-error" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {error}
         </p>
       ) : null}
-      <div className="labels-create-actions">
-        <button type="button" className="btn btn-quiet" onClick={onCancel}>
+      <div className="mt-2 flex justify-end gap-2">
+        <Button variant="quiet" type="button" onClick={onCancel}>
           Cancel
-        </button>
-        <button type="submit" className="btn btn-primary" disabled={busy}>
+        </Button>
+        <Button variant="primary" type="submit" disabled={busy}>
           {mode === "move" ? "Create and move" : "Create and apply"}
-        </button>
+        </Button>
       </div>
     </form>
   );

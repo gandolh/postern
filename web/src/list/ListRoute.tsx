@@ -14,7 +14,6 @@ import type { LabelRoute } from "../shell/router";
 import { EmptyState, emptyLabelMessage } from "../shell/states";
 import { ConversationList } from "./ConversationList";
 import { labelListView } from "./view";
-import "./list.css";
 
 export interface ListRouteProps {
   /** The route, with `conversationId` when a conversation is open beside the list. */
@@ -45,8 +44,8 @@ export function ListRoute({ route, label }: ListRouteProps) {
   const countable = label.view !== "all" && label.view !== "starred";
   if (!view || (countable && label.label?.totalThreads === 0)) {
     return (
-      <section className="list-page" aria-labelledby="list-heading">
-        <h1 id="list-heading" className="visually-hidden">
+      <section className="@container/list flex h-full min-h-0 flex-col" aria-labelledby="list-heading">
+        <h1 id="list-heading" className="sr-only">
           {label.title}
         </h1>
         <EmptyState title={emptyMessage} />

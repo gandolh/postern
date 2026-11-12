@@ -25,7 +25,7 @@
     "house-style:sync": "node vendor/house-style/bin/sync.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check:conventions": "knip && depcruise web/src jmap/src && node vendor/house-style/bin/check-base-ui.mjs --warn-only && node vendor/house-style/bin/check-structure.mjs",
+    "check:conventions": "knip && depcruise web/src jmap/src && node vendor/house-style/bin/check-base-ui.mjs && node vendor/house-style/bin/check-structure.mjs",
     "check:fast": "tsc -b && tsc -p web --noEmit && node scripts/check-fast.mjs"
   },
   "devDependencies": {

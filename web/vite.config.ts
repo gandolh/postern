@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type ProxyOptions } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -70,6 +71,7 @@ export default defineConfig({
   base: BASE,
   plugins: [
     react(),
+    tailwindcss(),
     /*
      * The installable app. Our own worker, src/sw/sw.ts, in
      * vite-plugin-pwa's injectManifest mode (as Satchel does): workbox only
@@ -102,7 +104,7 @@ export default defineConfig({
         scope: BASE,
         start_url: BASE,
         // Raw hex only here: the manifest can't read CSS tokens. Keep in step
-        // with --color-canvas (light) in src/theme/tokens.css and the
+        // with --color-canvas (light) in src/styles/index.css and the
         // theme-color meta in index.html.
         theme_color: "#f2f4f1",
         background_color: "#f2f4f1",

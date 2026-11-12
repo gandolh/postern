@@ -20,8 +20,9 @@ import { useJmap } from "../auth";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { EmptyState } from "../shell/states";
 import { useToast } from "../components/ui/Toast";
-import "./contacts.css";
 import { contactsDirectory, useContactsSnapshot } from "./directory";
+import { Button } from "../components/ui/Button";
+import { Input, inputClass } from "../components/ui/Input";
 
 const EMPTY: ContactDraft = { name: "", emails: [], phones: [], note: "" };
 
@@ -84,37 +85,42 @@ export function ContactsRoute() {
   }
 
   return (
-    <section className="shell-page contacts-page" aria-labelledby="contacts-title">
-      <header className="shell-page-header">
-        <h1 id="contacts-title" className="shell-page-title">
+    <section className="contacts-page flex min-h-full flex-col" aria-labelledby="contacts-title">
+      <header className="sticky top-0 z-header flex min-h-[calc(var(--toolbar-height)+0.5rem)] flex-wrap items-center gap-x-3 gap-y-1 border-b border-border bg-surface px-6 py-2 max-sm:px-4">
+        <h1 id="contacts-title" className="text-xl font-semibold">
           Contacts
         </h1>
-        <span className="shell-page-meta">
+        <span className="text-sm text-text-muted tabular-nums">
           {status === "ready" ? `${cards.length} ${cards.length === 1 ? "entry" : "entries"}` : null}
         </span>
-        <button type="button" className="btn btn-primary contacts-add" onClick={() => setEditing({ kind: "new" })}>
+        <Button
+          variant="primary"
+          type="button"
+          className="ms-auto inline-flex items-center gap-2"
+          onClick={() => setEditing({ kind: "new" })}
+        >
           <Plus aria-hidden="true" /> Add contact
-        </button>
+        </Button>
       </header>
-      <div className="shell-page-body contacts-body">
+      <div className="max-w-[70ch] p-6 text-text-muted grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:has-[form]:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)]">
         <div className="contacts-list-pane">
-          <input
+          <Input
             type="search"
-            className="input contacts-search"
+            className="mb-3 w-full"
             aria-label="Search contacts"
             placeholder="Search contacts"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           {status === "error" ? (
-            <p role="alert" className="contacts-error">
+            <p role="alert" className="text-danger">
               Contacts could not be loaded{error ? `: ${error}` : ""}.{" "}
-              <button type="button" className="btn btn-quiet" onClick={() => void directory.load()}>
+              <Button variant="quiet" type="button" onClick={() => void directory.load()}>
                 Try again
-              </button>
+              </Button>
             </p>
           ) : status !== "ready" ? (
-            <p className="contacts-status" role="status">
+            <p className="text-text-muted" role="status">
               Loading contacts…
             </p>
           ) : cards.length === 0 ? (
@@ -122,18 +128,24 @@ export function ContactsRoute() {
               <p>Add one here, or from a sender's card in a conversation.</p>
             </EmptyState>
           ) : shown.length === 0 ? (
-            <p className="contacts-status">No contacts match “{query.trim()}”.</p>
+            <p className="text-text-muted">No contacts match “{query.trim()}”.</p>
           ) : (
-            <ul className="contacts-list" aria-label="Contacts">
+            <ul className="m-0 list-none rounded-md border border-border bg-surface p-0" aria-label="Contacts">
               {shown.map((card) => (
                 <li
                   key={card.id}
-                  className="contacts-item"
+                  className="[&+&]:border-t [&+&]:border-border data-[selected=true]:bg-row-selected"
                   data-selected={editing?.kind === "edit" && editing.card.id === card.id ? "true" : undefined}
                 >
-                  <button type="button" className="contacts-row" onClick={() => setEditing({ kind: "edit", card })}>
-                    <span className="contacts-name">{contactName(card) || "(no name)"}</span>
-                    <span className="contacts-sub">
+                  <button
+                    type="button"
+                    className="flex min-h-(--row-height) w-full cursor-pointer items-baseline gap-4 bg-transparent px-(--row-padding-inline) py-2 text-start text-text hover:bg-row-hover"
+                    onClick={() => setEditing({ kind: "edit", card })}
+                  >
+                    <span className="min-w-0 flex-[0_1_14rem] overflow-hidden font-medium text-ellipsis whitespace-nowrap">
+                      {contactName(card) || "(no name)"}
+                    </span>
+                    <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap text-text-muted">
                       {isGroup(card)
                         ? `Group, ${groupMembers(card, cards).length} members`
                         : (contactEmails(card)[0] ?? contactPhones(card)[0] ?? "")}
@@ -220,30 +232,33 @@ function ContactForm({ editing, onSave, onCancel, onDelete }: FormProps) {
   const valid = name.trim() !== "" || lines(emails).length > 0;
 
   return (
-    <form className="contacts-form" onSubmit={(e) => void submit(e)} aria-labelledby="contacts-form-title">
-      <h2 id="contacts-form-title" className="contacts-form-title">
+    <form
+      className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4"
+      onSubmit={(e) => void submit(e)}
+      aria-labelledby="contacts-form-title"
+    >
+      <h2 id="contacts-form-title" className="m-0 text-lg">
         {heading}
       </h2>
       {group ? (
-        <p className="contacts-note">
+        <p className="text-text-muted">
           This is a group. Its members are managed on your phone or other address book app; here it can only be deleted.
         </p>
       ) : null}
-      <label className="contacts-field">
+      <label className="flex flex-col gap-1 text-sm text-text-muted [&_:is(input,select,textarea)]:text-md [&_:is(input,select,textarea)]:text-text">
         <span>Name</span>
-        <input
+        <Input
           ref={nameRef}
-          className="input"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={group}
           autoComplete="off"
         />
       </label>
-      <label className="contacts-field">
+      <label className="flex flex-col gap-1 text-sm text-text-muted [&_:is(input,select,textarea)]:text-md [&_:is(input,select,textarea)]:text-text">
         <span>Email addresses</span>
         <textarea
-          className="input"
+          className={inputClass()}
           rows={2}
           value={emails}
           onChange={(e) => setEmails(e.target.value)}
@@ -251,10 +266,10 @@ function ContactForm({ editing, onSave, onCancel, onDelete }: FormProps) {
           placeholder="One per line"
         />
       </label>
-      <label className="contacts-field">
+      <label className="flex flex-col gap-1 text-sm text-text-muted [&_:is(input,select,textarea)]:text-md [&_:is(input,select,textarea)]:text-text">
         <span>Phone numbers</span>
         <textarea
-          className="input"
+          className={inputClass()}
           rows={2}
           value={phones}
           onChange={(e) => setPhones(e.target.value)}
@@ -262,23 +277,29 @@ function ContactForm({ editing, onSave, onCancel, onDelete }: FormProps) {
           placeholder="One per line"
         />
       </label>
-      <label className="contacts-field">
+      <label className="flex flex-col gap-1 text-sm text-text-muted [&_:is(input,select,textarea)]:text-md [&_:is(input,select,textarea)]:text-text">
         <span>Note</span>
-        <textarea className="input" rows={3} value={note} onChange={(e) => setNote(e.target.value)} disabled={group} />
+        <textarea
+          className={inputClass()}
+          rows={3}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          disabled={group}
+        />
       </label>
-      <div className="contacts-actions">
+      <div className="flex gap-2">
         {!group ? (
-          <button type="submit" className="btn btn-primary" disabled={saving || !valid}>
+          <Button variant="primary" type="submit" disabled={saving || !valid}>
             Save
-          </button>
+          </Button>
         ) : null}
-        <button type="button" className="btn" onClick={onCancel}>
+        <Button type="button" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
         {onDelete ? (
-          <button type="button" className="btn btn-quiet contacts-delete" onClick={onDelete}>
+          <Button variant="quiet" type="button" className="ms-auto text-danger" onClick={onDelete}>
             Delete
-          </button>
+          </Button>
         ) : null}
       </div>
     </form>

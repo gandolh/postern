@@ -41,7 +41,6 @@ import type { LabelNode, SystemEntry } from "../labels/labelsStore";
 import { useLabelColor, useLabelPrefs } from "../labels/useLabelPrefs";
 import { useLabelDropTarget } from "../labels/useLabelDropTarget";
 import { visibleNodes } from "../labels/visibility";
-import "../labels/labels.css";
 import { useLabels } from "../labels/useLabels";
 import { formatRoute, SYSTEM_VIEWS, type Route, type SystemView } from "./router";
 import { NavSkeleton } from "./states";
@@ -63,7 +62,10 @@ const countFormat = new Intl.NumberFormat();
 function Count({ value }: { value: number | null }) {
   if (value === null || value <= 0) return null;
   return (
-    <span className="shell-nav-count" aria-hidden="true">
+    <span
+      className="ml-auto flex-none text-xs tracking-[0.01em] tabular-nums in-data-[nav=rail]:absolute in-data-[nav=rail]:top-0 in-data-[nav=rail]:right-1 in-data-[nav=rail]:min-w-4.5 in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:bg-accent in-data-[nav=rail]:px-[0.3rem] in-data-[nav=rail]:py-0.5 in-data-[nav=rail]:text-center in-data-[nav=rail]:text-[0.6875rem] in-data-[nav=rail]:leading-none in-data-[nav=rail]:font-bold in-data-[nav=rail]:text-on-accent"
+      aria-hidden="true"
+    >
       {countFormat.format(value)}
     </span>
   );
@@ -120,31 +122,41 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
   }
 
   return (
-    <nav id="shell-nav" className="shell-nav" aria-label="Mail" data-mode={mode} onClick={onClick}>
+    <nav
+      id="shell-nav"
+      className="flex min-h-full flex-col pt-2 pr-2 pb-4 pl-2 [--nav-inset:1.75rem] in-data-[nav=rail]:items-center in-data-[nav=rail]:px-2"
+      aria-label="Mail"
+      data-mode={mode}
+      onClick={onClick}
+    >
       <button
         type="button"
-        className="shell-compose"
+        className="mb-4 inline-flex h-13 cursor-pointer items-center gap-3 self-start rounded-lg bg-accent pr-6 pl-5 text-md font-semibold text-on-accent shadow-sm transition-[background-color,box-shadow] duration-(--duration-fast) ease-out hover:bg-accent-hover hover:shadow-md in-data-[nav=rail]:w-13 in-data-[nav=rail]:justify-center in-data-[nav=rail]:self-center in-data-[nav=rail]:p-0"
         onClick={() => compose.open()}
         title={rail ? "Compose" : undefined}
       >
         <Pencil aria-hidden="true" />
-        <span className="shell-nav-text">Compose</span>
+        <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap in-data-[nav=rail]:absolute in-data-[nav=rail]:size-px in-data-[nav=rail]:[clip-path:inset(50%)]">
+          Compose
+        </span>
       </button>
 
-      <ul className="shell-nav-list">
+      <ul className="m-0 list-none p-0 in-data-[nav=rail]:w-full">
         {SYSTEM_VIEWS.map((view) => (
           <Fragment key={view}>
             <SystemItem entry={labels.system[view]} current={isCurrentSystem(route, view)} rail={rail} />
             {view === "drafts" && canSchedule ? (
               <li>
                 <a
-                  className="shell-nav-item"
+                  className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
                   href={formatRoute({ kind: "scheduled" })}
                   aria-current={route.kind === "scheduled" ? "page" : undefined}
                   title={rail ? "Scheduled" : undefined}
                 >
                   <CalendarClock aria-hidden="true" />
-                  <span className="shell-nav-text">Scheduled</span>
+                  <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap in-data-[nav=rail]:absolute in-data-[nav=rail]:size-px in-data-[nav=rail]:[clip-path:inset(50%)]">
+                    Scheduled
+                  </span>
                 </a>
               </li>
             ) : null}
@@ -152,14 +164,20 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
         ))}
       </ul>
 
-      <div className="shell-nav-section">
-        <h2 className="shell-nav-heading">Labels</h2>
+      <div className="mt-4 in-data-[nav=rail]:mt-2 in-data-[nav=rail]:w-full in-data-[nav=rail]:border-t in-data-[nav=rail]:border-border in-data-[nav=rail]:pt-2">
+        <h2 className="flex min-h-9 items-center pr-3 pl-(--nav-inset) text-md font-semibold text-text in-data-[nav=rail]:hidden">
+          Labels
+        </h2>
         {labels.status === "loading" ? (
           <NavSkeleton />
         ) : labels.status === "error" ? (
-          <p className="shell-nav-note" role="alert">
+          <p className="py-1 pr-3 pl-(--nav-inset) text-sm text-text-muted in-data-[nav=rail]:hidden" role="alert">
             Labels didn't load.{" "}
-            <button type="button" className="shell-nav-retry" onClick={() => void labels.store.sync()}>
+            <button
+              type="button"
+              className="cursor-pointer bg-transparent p-0 text-accent underline [font:inherit]"
+              onClick={() => void labels.store.sync()}
+            >
               Retry
             </button>
           </p>
@@ -168,16 +186,18 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
         )}
       </div>
 
-      <ul className="shell-nav-list shell-nav-foot">
+      <ul className="m-0 list-none p-0 in-data-[nav=rail]:w-full mt-auto pt-4">
         <li>
           <a
-            className="shell-nav-item"
+            className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
             href={formatRoute({ kind: "contacts" })}
             aria-current={route.kind === "contacts" ? "page" : undefined}
             title={rail ? "Contacts" : undefined}
           >
             <Users aria-hidden="true" />
-            <span className="shell-nav-text">Contacts</span>
+            <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap in-data-[nav=rail]:absolute in-data-[nav=rail]:size-px in-data-[nav=rail]:[clip-path:inset(50%)]">
+              Contacts
+            </span>
           </a>
         </li>
       </ul>
@@ -192,7 +212,7 @@ function SystemItem({ entry, current, rail }: { entry: SystemEntry; current: boo
   return (
     <li>
       <a
-        className="shell-nav-item"
+        className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
         href={formatRoute({ kind: "system", view: entry.view })}
         aria-current={current ? "page" : undefined}
         aria-label={countLabel(entry.title, entry.badge, noun)}
@@ -200,7 +220,10 @@ function SystemItem({ entry, current, rail }: { entry: SystemEntry; current: boo
         title={rail ? entry.title : undefined}
       >
         <Icon aria-hidden="true" />
-        <span className="shell-nav-text">{entry.title}</span> <Count value={entry.badge} />
+        <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap in-data-[nav=rail]:absolute in-data-[nav=rail]:size-px in-data-[nav=rail]:[clip-path:inset(50%)]">
+          {entry.title}
+        </span>{" "}
+        <Count value={entry.badge} />
       </a>
     </li>
   );
@@ -235,12 +258,14 @@ function LabelTree({ tree: allTree, hidden: allHidden, route, rail }: LabelTreeP
     });
 
   if (allTree.length === 0 && allHidden.length === 0) {
-    return <p className="shell-nav-note">No labels yet</p>;
+    return (
+      <p className="py-1 pr-3 pl-(--nav-inset) text-sm text-text-muted in-data-[nav=rail]:hidden">No labels yet</p>
+    );
   }
 
   return (
     <>
-      <ul className="shell-nav-list">
+      <ul className="m-0 list-none p-0 in-data-[nav=rail]:w-full">
         {tree.map((node) => (
           <LabelItem
             key={node.label.id}
@@ -256,15 +281,17 @@ function LabelTree({ tree: allTree, hidden: allHidden, route, rail }: LabelTreeP
         <>
           <button
             type="button"
-            className="shell-nav-item shell-nav-more"
+            className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0 text-text-muted"
             aria-expanded={showHidden}
             onClick={() => setShowHidden((s) => !s)}
           >
             {showHidden ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
-            <span className="shell-nav-text">{showHidden ? "Less" : "More"}</span>
+            <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap in-data-[nav=rail]:absolute in-data-[nav=rail]:size-px in-data-[nav=rail]:[clip-path:inset(50%)]">
+              {showHidden ? "Less" : "More"}
+            </span>
           </button>
           {showHidden ? (
-            <ul className="shell-nav-list">
+            <ul className="m-0 list-none p-0 in-data-[nav=rail]:w-full">
               {hidden.map((node) => (
                 <LabelItem
                   key={node.label.id}
@@ -300,11 +327,11 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
   const drop = useLabelDropTarget(label.id, route);
   return (
     <li>
-      <div className="shell-nav-row" style={{ "--depth": depth } as CSSProperties}>
+      <div className="relative" style={{ "--depth": depth } as CSSProperties}>
         {hasChildren && !rail ? (
           <button
             type="button"
-            className="shell-nav-twisty"
+            className="absolute top-0 left-[calc(var(--depth,0)*1rem)] z-above grid h-(--nav-item-height) w-6 cursor-pointer place-items-center rounded-sm bg-transparent p-0 text-text-muted hover:bg-active hover:text-text [&_.lucide]:[--icon-size:1rem] [&_.lucide]:transition-transform [&_.lucide]:duration-(--duration-fast) [&_.lucide]:ease-out aria-expanded:[&_.lucide]:rotate-90"
             aria-expanded={open}
             aria-label={`${label.title} sublabels`}
             onClick={() => onToggle(label.id)}
@@ -312,10 +339,13 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
             <ChevronRight aria-hidden="true" />
           </button>
         ) : (
-          <span className="shell-nav-twisty-space" aria-hidden="true" />
+          <span
+            className="absolute top-0 left-[calc(var(--depth,0)*1rem)] z-above h-(--nav-item-height) w-6 in-data-[nav=rail]:hidden"
+            aria-hidden="true"
+          />
         )}
         <a
-          className="shell-nav-item"
+          className="relative flex h-(--nav-item-height) w-full cursor-pointer items-center gap-3 rounded-md bg-transparent pr-3 pl-[calc(var(--nav-inset)+var(--depth,0)*1rem)] text-start text-md leading-none text-text no-underline transition-[background-color] duration-(--duration-fast) ease-out hover:bg-hover hover:text-text data-[unread=true]:font-bold aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-on-accent-soft [&_.lucide]:text-text-muted aria-[current=page]:[&_.lucide]:text-on-accent-soft in-data-[nav=rail]:mx-auto in-data-[nav=rail]:mb-1 in-data-[nav=rail]:h-9 in-data-[nav=rail]:w-14 in-data-[nav=rail]:justify-center in-data-[nav=rail]:rounded-pill in-data-[nav=rail]:p-0"
           href={formatRoute({ kind: "label", labelId: label.id })}
           aria-current={isCurrentLabel(route, label.id) ? "page" : undefined}
           aria-label={countLabel(label.title, label.unreadThreads, "unread")}
@@ -323,12 +353,19 @@ function LabelItem({ node, route, rail, collapsed, onToggle }: LabelItemProps) {
           title={rail || depth > 0 ? label.path : undefined}
           {...drop}
         >
-          <Tag aria-hidden="true" data-label-color={color} />
-          <span className="shell-nav-text">{label.title}</span> <Count value={label.unreadThreads} />
+          <Tag
+            aria-hidden="true"
+            data-label-color={color}
+            className="data-label-color:fill-(--label-fill) data-label-color:text-(color:--label-color)"
+          />
+          <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap in-data-[nav=rail]:absolute in-data-[nav=rail]:size-px in-data-[nav=rail]:[clip-path:inset(50%)]">
+            {label.title}
+          </span>{" "}
+          <Count value={label.unreadThreads} />
         </a>
       </div>
       {hasChildren && open && !rail ? (
-        <ul className="shell-nav-list">
+        <ul className="m-0 list-none p-0 in-data-[nav=rail]:w-full">
           {children.map((child) => (
             <LabelItem
               key={child.label.id}

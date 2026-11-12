@@ -4,6 +4,7 @@
 
 import { useId } from "react";
 import { SWIPE_ACTIONS, usePrefs, type SwipeAction } from "../prefs";
+import { inputClass } from "../components/ui/Input";
 
 const TITLES: Record<SwipeAction, string> = {
   archive: "Archive",
@@ -23,13 +24,13 @@ function SwipeSelect({
 }) {
   const id = useId();
   return (
-    <div className="settings-field">
-      <label htmlFor={id} className="settings-label">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="m-0 text-md font-semibold">
         {label}
       </label>
       <select
         id={id}
-        className="input settings-select"
+        className={inputClass("max-w-96")}
         value={value}
         onChange={(e) => onChange(e.target.value as SwipeAction)}
       >
@@ -47,11 +48,11 @@ export function SwipeSettings() {
   const { prefs, setPrefs } = usePrefs();
   const headingId = useId();
   return (
-    <section className="settings-field" aria-labelledby={headingId}>
-      <h2 id={headingId} className="settings-label">
+    <section className="flex flex-col gap-1" aria-labelledby={headingId}>
+      <h2 id={headingId} className="m-0 text-md font-semibold">
         Swipe actions
       </h2>
-      <p className="settings-hint">On a touch screen, swipe a conversation in the list. Kept on this device.</p>
+      <p className="m-0 text-text-muted">On a touch screen, swipe a conversation in the list. Kept on this device.</p>
       <SwipeSelect label="Swipe right" value={prefs.swipeRight} onChange={(swipeRight) => setPrefs({ swipeRight })} />
       <SwipeSelect label="Swipe left" value={prefs.swipeLeft} onChange={(swipeLeft) => setPrefs({ swipeLeft })} />
     </section>

@@ -166,29 +166,36 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
 
   return (
     <div
-      className="compose-row compose-recipients"
+      className="compose-recipients relative flex min-h-10 flex-none items-center gap-2 border-b border-border mx-4 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] first:group-data-[variant=inline]/form:mt-1 max-sm:min-h-11"
       onClick={(e) => {
         if (e.target === e.currentTarget) inputRef.current?.focus();
       }}
     >
-      <label className="compose-row-label" htmlFor={`${id}-input`}>
+      <label className="flex-none text-md text-text-muted" htmlFor={`${id}-input`}>
         {label}
       </label>
-      <ul className="compose-chips" aria-label={`${label} recipients`}>
+      <ul
+        className="m-0 flex min-w-0 flex-[1_1_auto] list-none flex-wrap items-center gap-1 py-1"
+        aria-label={`${label} recipients`}
+      >
         {recipients.map((r) => (
-          <li key={r.key} className="compose-chip" data-invalid={r.valid ? undefined : "true"}>
+          <li
+            key={r.key}
+            className="inline-flex max-w-full items-center rounded-pill border border-border bg-surface-sunken text-sm data-invalid:border-danger data-invalid:bg-danger-soft data-invalid:text-danger"
+            data-invalid={r.valid ? undefined : "true"}
+          >
             <button
               type="button"
-              className="compose-chip-text"
+              className="max-w-72 cursor-pointer overflow-hidden py-0.5 pr-1 pl-3 text-[inherit] text-ellipsis whitespace-nowrap focus-visible:rounded-pill focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] in-data-invalid:underline in-data-invalid:decoration-wavy in-data-invalid:underline-offset-[3px]"
               title={r.valid ? formatAddress(r) : `“${r.raw}” isn't a valid email address`}
               onClick={() => edit(r)}
             >
               {chipText(r)}
-              {r.valid ? null : <span className="visually-hidden"> (not a valid email address)</span>}
+              {r.valid ? null : <span className="sr-only"> (not a valid email address)</span>}
             </button>
             <button
               type="button"
-              className="compose-chip-remove"
+              className="mr-0.5 grid size-6 cursor-pointer place-items-center rounded-pill bg-transparent p-0 text-inherit [--icon-size:0.875rem] hover:bg-hover focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)]"
               aria-label={`Remove ${chipText(r)}`}
               onClick={() => remove(r)}
             >
@@ -196,11 +203,11 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
             </button>
           </li>
         ))}
-        <li className="compose-chip-input">
+        <li className="flex min-w-32 flex-[1_1_8rem]">
           <input
             ref={inputRef}
             id={`${id}-input`}
-            className="compose-input"
+            className="min-w-24 flex-[1_1_auto] bg-transparent py-2 text-md text-text outline-none placeholder:text-text-subtle max-sm:min-h-11"
             type="text"
             autoComplete="off"
             spellCheck={false}
@@ -220,7 +227,7 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
         </li>
       </ul>
       {invalid > 0 ? (
-        <span id={`${id}-invalid`} className="visually-hidden">
+        <span id={`${id}-invalid`} className="sr-only">
           {invalid === 1 ? "One address isn't valid." : `${invalid} addresses aren't valid.`}
         </span>
       ) : null}
@@ -229,7 +236,7 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
         id={listId}
         role="listbox"
         aria-label={`Suggestions for ${label}`}
-        className="compose-suggestions"
+        className="absolute top-[calc(100%+0.125rem)] left-8 z-inline m-0 max-h-64 max-w-[calc(100%-2rem)] min-w-72 list-none overflow-auto rounded-md border border-border bg-surface-raised py-1 shadow-md"
         hidden={!open}
       >
         {open
@@ -239,12 +246,12 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
                 id={`${listId}-${i}`}
                 role="option"
                 aria-selected={i === active}
-                className="compose-suggestion"
+                className="flex cursor-pointer flex-col px-3 py-2 hover:bg-hover aria-selected:bg-hover"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(p)}
               >
                 <span className="compose-suggestion-name">{p.name || p.email}</span>
-                {p.name ? <span className="compose-suggestion-email">{p.email}</span> : null}
+                {p.name ? <span className="text-sm text-text-muted">{p.email}</span> : null}
               </li>
             ))
           : null}

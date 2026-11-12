@@ -114,17 +114,23 @@ export function SignInForm({
   }
 
   const errorLine = error ? (
-    <p id={errorId} className="auth-error" role="alert">
+    <p id={errorId} className="m-0 font-medium text-danger" role="alert">
       {error}
     </p>
   ) : null;
 
   if (step === "code") {
     return (
-      <form className="auth-form" method="post" onSubmit={submitCode} noValidate aria-busy={busy}>
+      <form
+        className="flex flex-col gap-2 [&_h1]:m-0 [&_h1]:text-2xl [&_h1]:leading-tight [&_h1]:font-semibold [&_h2]:m-0 [&_h2]:text-2xl [&_h2]:leading-tight [&_h2]:font-semibold [&_label]:text-sm [&_label]:font-medium [&_:is(input[type=email],input[type=password],input[type=text])]:min-h-11 [&_:is(input[type=email],input[type=password],input[type=text])]:rounded-md [&_:is(input[type=email],input[type=password],input[type=text])]:border [&_:is(input[type=email],input[type=password],input[type=text])]:border-border-strong [&_:is(input[type=email],input[type=password],input[type=text])]:bg-surface [&_:is(input[type=email],input[type=password],input[type=text])]:px-3 [&_:is(input[type=email],input[type=password],input[type=text])]:text-lg [&_:is(input[type=email],input[type=password],input[type=text])]:text-text [&_:is(input[type=email],input[type=password],input[type=text])]:focus-visible:border-focus [&_:is(input[type=email],input[type=password],input[type=text])]:focus-visible:-outline-offset-1 [&_:is(input[type=email],input[type=password],input[type=text])]:focus-visible:[outline:var(--focus-ring)] [&_input[aria-invalid=true]]:border-danger"
+        method="post"
+        onSubmit={submitCode}
+        noValidate
+        aria-busy={busy}
+      >
         <Heading>2-step verification</Heading>
-        <p className="auth-subtitle">This extra step shows it's really you signing in.</p>
-        <p className="auth-chip">{username}</p>
+        <p className="m-0 mb-3 text-text-muted">This extra step shows it's really you signing in.</p>
+        <p className="m-0 mb-2 self-start rounded-pill border border-border-strong px-3 py-1 text-sm">{username}</p>
         <label htmlFor={`${id}-code`}>Enter the code</label>
         <input
           ref={codeRef}
@@ -140,12 +146,17 @@ export function SignInForm({
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : `${id}-code-help`}
         />
-        <p id={`${id}-code-help`} className="auth-help">
+        <p id={`${id}-code-help`} className="m-0 mb-3 text-text-muted">
           Get a verification code from your authenticator app.
         </p>
         {errorLine}
-        <div className="auth-actions">
-          <button type="button" className="auth-link" onClick={startOver} disabled={busy}>
+        <div className="mt-4 flex items-center justify-end gap-4 [&_button:disabled]:cursor-default [&_button:disabled]:opacity-60 [&_button[type=submit]]:min-h-10 [&_button[type=submit]]:cursor-pointer [&_button[type=submit]]:rounded-md [&_button[type=submit]]:bg-accent [&_button[type=submit]]:px-6 [&_button[type=submit]]:font-semibold [&_button[type=submit]]:text-on-accent [&_button[type=submit]]:transition-[background-color] [&_button[type=submit]]:duration-(--duration-fast) [&_button[type=submit]]:ease-out [&_button[type=submit]]:hover:bg-accent-hover">
+          <button
+            type="button"
+            className="cursor-pointer bg-transparent py-2 font-medium text-accent hover:text-accent-hover hover:underline"
+            onClick={startOver}
+            disabled={busy}
+          >
             {fixedUsername ? "Back" : "Use another account"}
           </button>
           <button type="submit" disabled={busy}>
@@ -157,14 +168,20 @@ export function SignInForm({
   }
 
   return (
-    <form className="auth-form" method="post" onSubmit={submitPassword} noValidate aria-busy={busy}>
+    <form
+      className="flex flex-col gap-2 [&_h1]:m-0 [&_h1]:text-2xl [&_h1]:leading-tight [&_h1]:font-semibold [&_h2]:m-0 [&_h2]:text-2xl [&_h2]:leading-tight [&_h2]:font-semibold [&_label]:text-sm [&_label]:font-medium [&_:is(input[type=email],input[type=password],input[type=text])]:min-h-11 [&_:is(input[type=email],input[type=password],input[type=text])]:rounded-md [&_:is(input[type=email],input[type=password],input[type=text])]:border [&_:is(input[type=email],input[type=password],input[type=text])]:border-border-strong [&_:is(input[type=email],input[type=password],input[type=text])]:bg-surface [&_:is(input[type=email],input[type=password],input[type=text])]:px-3 [&_:is(input[type=email],input[type=password],input[type=text])]:text-lg [&_:is(input[type=email],input[type=password],input[type=text])]:text-text [&_:is(input[type=email],input[type=password],input[type=text])]:focus-visible:border-focus [&_:is(input[type=email],input[type=password],input[type=text])]:focus-visible:-outline-offset-1 [&_:is(input[type=email],input[type=password],input[type=text])]:focus-visible:[outline:var(--focus-ring)] [&_input[aria-invalid=true]]:border-danger"
+      method="post"
+      onSubmit={submitPassword}
+      noValidate
+      aria-busy={busy}
+    >
       <Heading>{title}</Heading>
-      <p className="auth-subtitle">{subtitle}</p>
+      <p className="m-0 mb-3 text-text-muted">{subtitle}</p>
       {fixedUsername ? (
         <>
           {/* For password managers: the account this password belongs to. */}
           <input
-            className="auth-visually-hidden"
+            className="sr-only"
             type="email"
             name="username"
             autoComplete="username"
@@ -173,7 +190,9 @@ export function SignInForm({
             tabIndex={-1}
             aria-hidden="true"
           />
-          <p className="auth-chip">{fixedUsername}</p>
+          <p className="m-0 mb-2 self-start rounded-pill border border-border-strong px-3 py-1 text-sm">
+            {fixedUsername}
+          </p>
         </>
       ) : (
         <>
@@ -208,12 +227,12 @@ export function SignInForm({
         aria-invalid={error && username ? true : undefined}
         aria-describedby={error ? errorId : undefined}
       />
-      <label className="auth-check">
+      <label className="flex min-h-8 cursor-pointer items-center gap-2 [&_input]:m-0 [&_input]:size-4.5">
         <input type="checkbox" checked={showPassword} onChange={(e) => setShowPassword(e.target.checked)} />
         Show password
       </label>
       {errorLine}
-      <div className="auth-actions">
+      <div className="mt-4 flex items-center justify-end gap-4 [&_button:disabled]:cursor-default [&_button:disabled]:opacity-60 [&_button[type=submit]]:min-h-10 [&_button[type=submit]]:cursor-pointer [&_button[type=submit]]:rounded-md [&_button[type=submit]]:bg-accent [&_button[type=submit]]:px-6 [&_button[type=submit]]:font-semibold [&_button[type=submit]]:text-on-accent [&_button[type=submit]]:transition-[background-color] [&_button[type=submit]]:duration-(--duration-fast) [&_button[type=submit]]:ease-out [&_button[type=submit]]:hover:bg-accent-hover">
         {secondary}
         <button type="submit" disabled={busy}>
           {busy ? "Signing in…" : "Next"}

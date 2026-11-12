@@ -19,6 +19,7 @@ import { PHONE_QUERY } from "./breakpoints";
 import { formatRoute, INBOX, withoutConversation, type LabelRoute, type Route } from "./router";
 import { ConnectionLost, EmptyState, ListSkeleton } from "./states";
 import { useMediaQuery } from "./useMediaQuery";
+import { buttonClass } from "../components/ui/Button";
 
 export function MainArea({ route }: { route: Route }) {
   const { readingPane: chosen } = useDisplaySettings();
@@ -67,7 +68,7 @@ function LabelArea({ route, pane }: { route: LabelRoute; pane: ReadingPane }) {
     return (
       <EmptyState icon={SearchX} title="This label doesn't exist">
         <p>It may have been deleted or renamed.</p>
-        <a className="btn" href={formatRoute(INBOX)}>
+        <a className={buttonClass("default")} href={formatRoute(INBOX)}>
           Go to Inbox
         </a>
       </EmptyState>
@@ -93,9 +94,14 @@ function MailSplit({ pane, list, conversation }: { pane: ReadingPane; list: Reac
   const noun = rowNoun(usePrefs().prefs.conversationView);
   if (pane === "none") return conversation ?? list;
   return (
-    <div className="shell-split" data-pane={pane}>
-      <div className="shell-split-list">{list}</div>
-      <div className="shell-split-pane">{conversation ?? <EmptyState title={`No ${noun} selected`} />}</div>
+    <div
+      className="grid h-full data-[pane=below]:grid-rows-[minmax(0,1fr)_minmax(0,1fr)] data-[pane=right]:grid-cols-[minmax(18rem,2fr)_minmax(0,3fr)] max-sm:data-[pane=right]:grid-cols-[minmax(0,1fr)]"
+      data-pane={pane}
+    >
+      <div className="min-h-0 min-w-0 overflow-auto">{list}</div>
+      <div className="min-h-0 min-w-0 overflow-auto in-data-[pane=below]:border-t in-data-[pane=below]:border-border in-data-[pane=right]:border-l in-data-[pane=right]:border-border max-sm:in-data-[pane=right]:hidden">
+        {conversation ?? <EmptyState title={`No ${noun} selected`} />}
+      </div>
     </div>
   );
 }

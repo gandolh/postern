@@ -63,7 +63,7 @@ import { MessageCard, type MessageCardActions } from "./MessageCard";
 import { messageCardId, setActiveConversation, type ConversationController } from "./registry";
 import { ShowOriginal } from "./ShowOriginal";
 import { useConversationStore } from "./useConversationStore";
-import "./conversation.css";
+import { buttonClass } from "../components/ui/Button";
 
 export interface ConversationViewProps {
   /** Where it was opened from; `route.conversationId` equals `conversationId`. `route.messageId`, if any, is the one message shown. */
@@ -98,12 +98,16 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
     (messageId !== undefined && snapshot.status === "ready" && !snapshot.messages.some((m) => m.id === messageId))
   ) {
     return (
-      <section className="conv-page" data-conversation-page aria-labelledby="conv-subject">
+      <section
+        className="@container/conv flex h-full min-h-0 flex-col"
+        data-conversation-page
+        aria-labelledby="conv-subject"
+      >
         <PlaceholderHeading noun={noun} />
         <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
         <EmptyState title={`This ${noun} doesn't exist`}>
           <p>It may have been deleted forever.</p>
-          <a className="btn" href={backHref}>
+          <a className={buttonClass("default")} href={backHref}>
             {backLabel}
           </a>
         </EmptyState>
@@ -112,7 +116,11 @@ export function ConversationView({ route, conversationId, label, scope }: Conver
   }
   if (snapshot.status === "error") {
     return (
-      <section className="conv-page" data-conversation-page aria-labelledby="conv-subject">
+      <section
+        className="@container/conv flex h-full min-h-0 flex-col"
+        data-conversation-page
+        aria-labelledby="conv-subject"
+      >
         <PlaceholderHeading noun={noun} />
         <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
         <ConnectionLost title={`This ${noun} didn't load`} onRetry={() => void store.refresh()}>
@@ -147,14 +155,19 @@ export function ConversationLoading({
   noun?: RowNoun;
 }) {
   return (
-    <section className="conv-page" data-conversation-page aria-busy="true" aria-labelledby="conv-subject">
+    <section
+      className="@container/conv flex h-full min-h-0 flex-col"
+      data-conversation-page
+      aria-busy="true"
+      aria-labelledby="conv-subject"
+    >
       <PlaceholderHeading noun={noun} />
       <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
-      <div className="conv-scroll">
-        <div className="conv-loading" role="status" aria-label={`Loading the ${noun}`}>
-          <span className="skeleton conv-skeleton-title" />
-          <span className="skeleton conv-skeleton-card" />
-          <span className="skeleton conv-skeleton-card" />
+      <div className="min-h-0 flex-[1_1_auto] overflow-auto">
+        <div className="grid gap-4 p-6" role="status" aria-label={`Loading the ${noun}`}>
+          <span className="h-6 w-[min(30rem,70%)] block rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+          <span className="h-24 block rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
+          <span className="h-24 block rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] motion-safe:animate-skeleton group-data-[animated=false]/skel:animate-none" />
         </div>
       </div>
     </section>
@@ -164,7 +177,7 @@ export function ConversationLoading({
 /** Every state of the screen has its h1; until the subject is known, a hidden one. */
 function PlaceholderHeading({ noun }: { noun: RowNoun }) {
   return (
-    <h1 id="conv-subject" className="visually-hidden">
+    <h1 id="conv-subject" className="sr-only">
       {noun === "message" ? "Message" : "Conversation"}
     </h1>
   );
@@ -180,7 +193,11 @@ function ConversationToolbarShell({
   children?: ReactNode;
 }) {
   return (
-    <div className="conv-toolbar" role="toolbar" aria-label="Conversation actions">
+    <div
+      className="relative z-sticky flex min-h-(--toolbar-height) flex-none flex-wrap items-center gap-1 border-b border-border bg-surface px-2"
+      role="toolbar"
+      aria-label="Conversation actions"
+    >
       <IconButton label={backLabel} icon={ArrowLeft} href={backHref} tooltip="start" />
       {children}
     </div>
@@ -561,12 +578,17 @@ function ConversationBody({
   const labelTargets = single ? [single.id] : [conversationId];
 
   return (
-    <section className="conv-page" data-conversation-page aria-labelledby="conv-subject" data-pane={readingPane}>
+    <section
+      className="@container/conv flex h-full min-h-0 flex-col"
+      data-conversation-page
+      aria-labelledby="conv-subject"
+      data-pane={readingPane}
+    >
       <ConversationToolbarShell
         backHref={formatRoute(backRoute)}
         backLabel={label ? `Back to ${label.title}` : "Back to search results"}
       >
-        <span className="conv-toolbar-divider" aria-hidden="true" />
+        <span className="mx-1 h-5 w-px flex-none bg-border" aria-hidden="true" />
         {!inTrashOrSpam ? <IconButton label="Archive" icon={Archive} onClick={conversationActions.archive} /> : null}
         {kind === "spam" ? (
           <IconButton label="Not spam" icon={ShieldCheck} onClick={conversationActions.notSpam} />
@@ -578,21 +600,29 @@ function ConversationBody({
         ) : (
           <IconButton label="Delete" icon={Trash2} onClick={conversationActions.trash} />
         )}
-        <span className="conv-toolbar-divider" aria-hidden="true" />
+        <span className="mx-1 h-5 w-px flex-none bg-border" aria-hidden="true" />
         <IconButton label="Mark as unread" icon={MailOpen} onClick={conversationActions.markUnread} />
         <LabelMenu conversationIds={labelTargets} emailIds={emailIds} current={current} mode="move" />
         <LabelMenu conversationIds={labelTargets} emailIds={emailIds} current={current} mode="label" />
       </ConversationToolbarShell>
 
-      <div className="conv-scroll">
-        <header className="conv-header">
-          <h1 id="conv-subject" className="conv-subject" ref={headingRef} tabIndex={-1}>
+      <div className="min-h-0 flex-[1_1_auto] overflow-auto">
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-5 pr-6 pb-3 pl-19 @max-[40rem]/conv:px-4">
+          <h1
+            id="conv-subject"
+            className="text-xl leading-tight font-normal wrap-anywhere focus:outline-none focus-visible:rounded-sm focus-visible:outline-offset-(--focus-offset) focus-visible:[outline:var(--focus-ring)]"
+            ref={headingRef}
+            tabIndex={-1}
+          >
             {subject}
           </h1>
           {chips.length > 0 ? (
-            <ul className="conv-chips" aria-label="Labels">
+            <ul className="m-0 flex list-none flex-wrap gap-1 p-0" aria-label="Labels">
               {chips.map((c) => (
-                <li key={c.id} className="chip conv-chip">
+                <li
+                  key={c.id}
+                  className="[&_.lucide]:[--icon-size:0.875rem] inline-flex min-h-6 items-center gap-1 rounded-sm bg-surface-sunken px-2 text-sm leading-none text-text-muted"
+                >
                   {c.system === "inbox" ? <Inbox aria-hidden="true" /> : null}
                   {c.title}
                 </li>
@@ -602,19 +632,29 @@ function ConversationBody({
         </header>
 
         {hiddenCount > 0 && scope.kind === "normal" && !single ? (
-          <p className="conv-note conv-hidden-note">
+          <p className="my-2 text-sm text-text-muted pr-6 pl-19 py-0 @max-[40rem]/conv:px-4">
             {hiddenCount === 1
               ? "One message in this conversation is in Trash or Spam."
               : `${hiddenCount} messages in this conversation are in Trash or Spam.`}
           </p>
         ) : null}
 
-        <ol className="conv-messages" aria-label="Messages">
+        <ol className="m-0 list-none p-0 pb-4" aria-label="Messages">
           {items.map((item) =>
             item.kind === "fold" ? (
-              <li key={item.key} className="conv-fold">
-                <button type="button" className="conv-fold-button" onClick={() => setRevealed(true)}>
-                  <span className="conv-fold-count">{item.count}</span> older messages
+              <li
+                key={item.key}
+                className="relative px-6 py-2 before:absolute before:inset-x-0 before:top-1/2 before:border-t before:border-border before:content-[''] [li+&]:border-t [li+&]:border-border @max-[40rem]/conv:px-4"
+              >
+                <button
+                  type="button"
+                  className="group/fold relative inline-flex cursor-pointer items-center gap-2 bg-surface py-0 pr-3 pl-0 text-sm text-text-muted"
+                  onClick={() => setRevealed(true)}
+                >
+                  <span className="inline-grid size-10 place-items-center rounded-pill border border-border-strong bg-surface font-semibold text-text group-hover/fold:bg-hover">
+                    {item.count}
+                  </span>{" "}
+                  older messages
                 </button>
               </li>
             ) : (
@@ -642,7 +682,7 @@ function ConversationBody({
           )}
         </ol>
 
-        <div className="conv-inline-reply" id={inlineReplySlotId(conversationId)}>
+        <div className="pr-6 pb-6 pl-19 empty:hidden @max-[40rem]/conv:px-4" id={inlineReplySlotId(conversationId)}>
           {renderInlineReply && last
             ? renderInlineReply({ threadId: conversationId, lastMessageId: last.id, messageIds: emailIds, subject })
             : null}

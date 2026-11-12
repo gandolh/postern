@@ -15,7 +15,7 @@ import { IconButton } from "../shell/IconButton";
 import { ConnectionLost, EmptyState, ListSkeleton } from "../shell/states";
 import { useToast } from "../components/ui/Toast";
 import { cancelScheduled, formatSendTime, listScheduled, RECONCILE_MARGIN_MS, type ScheduledMessage } from "./schedule";
-import "./scheduled.css";
+import { Button } from "../components/ui/Button";
 
 type Status = "loading" | "ready" | "error";
 
@@ -109,44 +109,43 @@ export function ScheduledRoute() {
     );
   else
     body = (
-      <ul className="scheduled-list" aria-labelledby={headingId}>
+      <ul className="m-0 list-none p-0" aria-labelledby={headingId}>
         {items.map((m) => {
           const expanded = open === m.submissionId;
           const panelId = `${headingId}-${m.submissionId}`;
           const subject = m.subject.trim() || "(no subject)";
           return (
-            <li key={m.submissionId} className="scheduled-item" data-open={expanded || undefined}>
+            <li
+              key={m.submissionId}
+              className="border-b border-border bg-row-read data-open:bg-row"
+              data-open={expanded || undefined}
+            >
               <button
                 type="button"
-                className="scheduled-summary"
+                className="grid min-h-(--row-height) w-full cursor-pointer grid-cols-[minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 bg-transparent py-0 pr-3 pl-4 text-start text-md leading-tight text-text hover:bg-row-hover max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-y-1 max-sm:px-3 max-sm:py-2"
                 aria-expanded={expanded}
                 aria-controls={panelId}
                 onClick={() => setOpen(expanded ? null : m.submissionId)}
               >
-                <span className="scheduled-to">To: {names(m)}</span>
-                <span className="scheduled-text">
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap">To: {names(m)}</span>
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap max-sm:col-span-full max-sm:row-2">
                   <span className="scheduled-subject">{subject}</span>
-                  {m.preview ? <span className="scheduled-preview"> – {m.preview}</span> : null}
+                  {m.preview ? <span className="text-text-muted"> – {m.preview}</span> : null}
                 </span>
-                <time className="scheduled-when" dateTime={m.sendAt}>
+                <time className="text-sm font-semibold whitespace-nowrap text-accent" dateTime={m.sendAt}>
                   {formatSendTime(m.sendAt)}
                 </time>
               </button>
               {expanded ? (
-                <div id={panelId} className="scheduled-panel">
-                  <p className="scheduled-panel-line">
+                <div id={panelId} className="grid justify-items-start gap-3 px-4 pt-2 pb-4">
+                  <p className="text-sm text-text-muted">
                     Sends {formatSendTime(m.sendAt)} to{" "}
                     {m.to.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(", ")}.
                   </p>
-                  {m.preview ? <p className="scheduled-panel-preview">{m.preview}</p> : null}
-                  <button
-                    type="button"
-                    className="btn"
-                    disabled={cancelling === m.submissionId}
-                    onClick={() => void cancel(m)}
-                  >
+                  {m.preview ? <p className="max-w-[70ch] whitespace-pre-wrap">{m.preview}</p> : null}
+                  <Button type="button" disabled={cancelling === m.submissionId} onClick={() => void cancel(m)}>
                     Cancel send
-                  </button>
+                  </Button>
                 </div>
               ) : null}
             </li>
@@ -156,14 +155,18 @@ export function ScheduledRoute() {
     );
 
   return (
-    <section className="list-page scheduled-page" aria-labelledby={headingId}>
-      <h1 id={headingId} className="visually-hidden">
+    <section className="scheduled-page @container/list flex h-full min-h-0 flex-col" aria-labelledby={headingId}>
+      <h1 id={headingId} className="sr-only">
         Scheduled
       </h1>
-      <div className="list-toolbar" role="toolbar" aria-label="Scheduled actions">
+      <div
+        className="relative z-sticky flex min-h-(--toolbar-height) flex-none items-center gap-1 border-b border-border bg-surface px-2 max-sm:flex-wrap max-sm:gap-0 max-sm:px-1"
+        role="toolbar"
+        aria-label="Scheduled actions"
+      >
         <IconButton label="Refresh" icon={RefreshCw} tooltip="start" onClick={() => void load()} />
       </div>
-      <div className="scheduled-body">{body}</div>
+      <div className="min-h-0 flex-[1_1_auto] overflow-y-auto">{body}</div>
     </section>
   );
 }

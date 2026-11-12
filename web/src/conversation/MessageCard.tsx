@@ -13,9 +13,11 @@ import { MenuButton } from "../components/ui/Menu";
 import { IconButton } from "../shell/IconButton";
 import type { BodyState, ConvMessage } from "./conversationStore";
 import { MessageBody } from "./MessageBody";
+import { cn } from "../lib/cn";
 import { MessageDetails } from "./MessageDetails";
 import { displayName, forgedAddressInName, nameOrAddress, recipientNames } from "./people";
 import { messageCardId } from "./registry";
+import { Button } from "../components/ui/Button";
 
 export interface MessageCardActions {
   toggle: () => void;
@@ -84,10 +86,16 @@ function Recipients({ to, cc, me }: { to: ConvMessage["to"]; cc: ConvMessage["cc
   );
 }
 
-function Avatar({ name }: { name: string }) {
+function Avatar({ name, small }: { name: string; small?: boolean }) {
   const initial = (name.trim()[0] ?? "?").toUpperCase();
   return (
-    <span className="conv-avatar" aria-hidden="true">
+    <span
+      className={cn(
+        "inline-grid size-10 flex-none place-items-center rounded-pill bg-accent-soft text-md font-semibold text-on-accent-soft",
+        small && "size-8 justify-self-center text-sm",
+      )}
+      aria-hidden="true"
+    >
       {initial}
     </span>
   );
@@ -121,27 +129,38 @@ export function MessageCard({
     return (
       <article
         id={messageCardId(message.id)}
-        className="conv-msg"
+        className="group/msg px-6 focus:outline-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] [li+li>&]:border-t [li+li>&]:border-border @max-[40rem]/conv:px-4"
         data-expanded="false"
         data-unread={unread || undefined}
         tabIndex={-1}
         aria-labelledby={headingId}
         onFocus={onFocusCard}
       >
-        <h2 className="conv-msg-heading" id={headingId}>
-          <button type="button" className="conv-msg-line" aria-expanded={false} onClick={actions.toggle}>
-            <Avatar name={name} />
-            <span className="conv-line-from">
+        <h2 className="m-0 [font-size:inherit] [font-weight:inherit] [line-height:inherit]" id={headingId}>
+          <button
+            type="button"
+            className="group/line grid min-h-14 w-full cursor-pointer grid-cols-[2.5rem_minmax(8rem,14rem)_minmax(0,1fr)_auto] items-center gap-3 bg-transparent py-2 text-start text-text @max-[40rem]/conv:grid-cols-[2rem_minmax(0,1fr)_auto]"
+            aria-expanded={false}
+            onClick={actions.toggle}
+          >
+            <Avatar name={name} small />
+            <span className="overflow-hidden font-semibold text-ellipsis whitespace-nowrap group-hover/line:underline group-data-unread/msg:font-bold">
               <bdi>{name}</bdi>
               {from && displayName(from) ? (
                 <>
                   {" "}
-                  <bdi className="conv-line-address">{from.email}</bdi>
+                  <bdi className="text-sm font-normal text-text-muted">{from.email}</bdi>
                 </>
               ) : null}
             </span>
-            <span className="conv-line-preview">{message.preview}</span>
-            <time className="conv-line-date" dateTime={date} title={formatFullDate(date)}>
+            <span className="overflow-hidden text-md text-ellipsis whitespace-nowrap text-text-muted @max-[40rem]/conv:hidden">
+              {message.preview}
+            </span>
+            <time
+              className="text-sm whitespace-nowrap text-text-muted tabular-nums"
+              dateTime={date}
+              title={formatFullDate(date)}
+            >
               {cardDate(date)}
             </time>
           </button>
@@ -166,27 +185,27 @@ export function MessageCard({
   return (
     <article
       id={messageCardId(message.id)}
-      className="conv-msg"
+      className="group/msg px-6 focus:outline-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] [li+li>&]:border-t [li+li>&]:border-border @max-[40rem]/conv:px-4"
       data-expanded="true"
       tabIndex={-1}
       aria-labelledby={headingId}
       onFocus={onFocusCard}
     >
-      <header className="conv-msg-head">
+      <header className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-start gap-3 pt-4 pb-2 @max-[40rem]/conv:grid-cols-[2.5rem_minmax(0,1fr)]">
         <Avatar name={name} />
-        <div className="conv-msg-who">
+        <div className="min-w-0">
           <SenderHoverCard address={from}>
-            <h2 className="conv-msg-heading" id={headingId}>
+            <h2 className="m-0 [font-size:inherit] [font-weight:inherit] [line-height:inherit]" id={headingId}>
               <button
                 type="button"
-                className="conv-msg-sender"
+                className="inline-flex max-w-full cursor-pointer flex-wrap items-baseline gap-x-2 gap-y-0 bg-transparent p-0 text-start text-text max-sm:min-h-11 max-sm:items-center"
                 aria-expanded={true}
                 onClick={actions.toggle}
                 title="Collapse this message"
               >
-                <bdi className="conv-sender-name">{name}</bdi>
+                <bdi className="text-md font-bold wrap-anywhere">{name}</bdi>
                 {from && displayName(from) ? (
-                  <span className="conv-sender-address">
+                  <span className="text-sm text-text-muted wrap-anywhere">
                     &lt;<bdi>{from.email}</bdi>&gt;
                   </span>
                 ) : null}
@@ -194,7 +213,10 @@ export function MessageCard({
             </h2>
           </SenderHoverCard>
           {forged ? (
-            <p className="conv-forged" role="note">
+            <p
+              className="my-1 flex items-start gap-2 rounded-sm bg-danger-soft px-2 py-1 text-sm text-danger [&_.lucide]:mt-[0.1rem] [&_.lucide]:[--icon-size:1rem]"
+              role="note"
+            >
               <AlertTriangle aria-hidden="true" />
               <span>
                 The name says{" "}
@@ -209,11 +231,11 @@ export function MessageCard({
               </span>
             </p>
           ) : null}
-          <div className="conv-msg-to">
+          <div className="flex items-center gap-1 text-sm text-text-muted">
             <Recipients to={message.to} cc={message.cc} me={me} />
             <button
               type="button"
-              className="conv-details-toggle"
+              className="inline-grid size-6 cursor-pointer place-items-center rounded-sm bg-transparent p-0 text-text-muted hover:bg-hover max-sm:size-11 [&_.lucide]:transition-transform [&_.lucide]:duration-(--duration-fast) [&_.lucide]:ease-out [&_.lucide]:[--icon-size:1rem] aria-expanded:[&_.lucide]:rotate-180"
               aria-expanded={details}
               aria-controls={details ? detailsId : undefined}
               aria-label="Show details"
@@ -224,12 +246,16 @@ export function MessageCard({
           </div>
           {details ? <MessageDetails message={message} id={detailsId} /> : null}
         </div>
-        <div className="conv-msg-side">
-          <time className="conv-msg-date" dateTime={date} title={formatFullDate(date)}>
+        <div className="flex items-center gap-1 @max-[40rem]/conv:col-span-full @max-[40rem]/conv:justify-end">
+          <time
+            className="mr-1 text-sm whitespace-nowrap text-text-muted tabular-nums"
+            dateTime={date}
+            title={formatFullDate(date)}
+          >
             {cardDate(date)}
           </time>
           <IconButton
-            className="conv-star"
+            className="aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:[&_.lucide]:fill-current"
             label={starred ? "Remove star" : "Star this message"}
             icon={Star}
             aria-pressed={starred}
@@ -265,16 +291,16 @@ export function MessageCard({
         />
       ) : null}
       {last ? (
-        <div className="conv-reply-actions">
-          <button type="button" className="btn" onClick={actions.reply}>
+        <div className="ml-13 flex flex-wrap gap-2 pt-3 pb-5 [&_.lucide]:[--icon-size:1.125rem] @max-[40rem]/conv:ml-0">
+          <Button type="button" className="rounded-pill" onClick={actions.reply}>
             <CornerUpLeft aria-hidden="true" /> Reply
-          </button>
-          <button type="button" className="btn" onClick={actions.replyAll}>
+          </Button>
+          <Button type="button" className="rounded-pill" onClick={actions.replyAll}>
             <ReplyAll aria-hidden="true" /> Reply all
-          </button>
-          <button type="button" className="btn" onClick={actions.forward}>
+          </Button>
+          <Button type="button" className="rounded-pill" onClick={actions.forward}>
             <CornerUpRight aria-hidden="true" /> Forward
-          </button>
+          </Button>
         </div>
       ) : null}
     </article>

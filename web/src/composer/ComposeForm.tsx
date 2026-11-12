@@ -27,6 +27,7 @@ import { Question } from "./Question";
 import { RecipientInput, type RecipientInputHandle } from "./RecipientInput";
 import { ScheduleDialog } from "./ScheduleDialog";
 import type { ComposeSession, ComposeSnapshot } from "./session";
+import { Button, buttonClass } from "../components/ui/Button";
 
 type Ask = "attachment" | "empty" | "discard" | "plain";
 
@@ -162,14 +163,22 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
   const toolbarId = `${id}-toolbar`;
 
   const ccBcc: ReactNode = (
-    <span className="compose-row-actions">
+    <span className="flex min-h-10 flex-none items-center self-start max-sm:min-h-11">
       {!state.showCc ? (
-        <button type="button" className="compose-link-btn" onClick={() => session.showField("cc")}>
+        <button
+          type="button"
+          className="min-h-7 min-w-6 cursor-pointer rounded-sm bg-transparent px-2 py-1 text-md text-text-muted hover:text-text hover:underline max-sm:min-h-11 max-sm:min-w-11"
+          onClick={() => session.showField("cc")}
+        >
           Cc
         </button>
       ) : null}
       {!state.showBcc ? (
-        <button type="button" className="compose-link-btn" onClick={() => session.showField("bcc")}>
+        <button
+          type="button"
+          className="min-h-7 min-w-6 cursor-pointer rounded-sm bg-transparent px-2 py-1 text-md text-text-muted hover:text-text hover:underline max-sm:min-h-11 max-sm:min-w-11"
+          onClick={() => session.showField("bcc")}
+        >
           Bcc
         </button>
       ) : null}
@@ -181,7 +190,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       {state.quote ? (
         <button
           type="button"
-          className="compose-trimmed"
+          className="mx-4 mb-2 inline-grid h-5 w-8 flex-none cursor-pointer place-items-center self-start rounded-sm border border-border bg-surface-sunken p-0 text-text-muted [--icon-size:1rem] hover:bg-hover hover:text-text"
           aria-label="Show trimmed content"
           title="Show trimmed content"
           onClick={() => session.showQuote()}
@@ -195,32 +204,44 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
 
   if (state.status === "loading") {
     return (
-      <div className="compose-form compose-loading" role="status">
+      <div
+        className="group/form flex min-h-0 flex-[1_1_auto] flex-col outline-none data-[variant=inline]:min-h-60 items-center gap-3 p-6 text-text-muted"
+        role="status"
+      >
         Loading…
       </div>
     );
   }
   if (state.status === "failed") {
     return (
-      <div className="compose-form compose-loading" role="alert">
+      <div
+        className="group/form flex min-h-0 flex-[1_1_auto] flex-col outline-none data-[variant=inline]:min-h-60 items-center gap-3 p-6 text-text-muted"
+        role="alert"
+      >
         {state.loadError}
-        <button type="button" className="btn" onClick={() => void store.close(session.key)}>
+        <Button type="button" onClick={() => void store.close(session.key)}>
           Close
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div ref={formRef} className="compose-form" tabIndex={-1} onKeyDown={onKeyDown} data-variant={variant}>
+    <div
+      ref={formRef}
+      className="group/form flex min-h-0 flex-[1_1_auto] flex-col outline-none data-[variant=inline]:min-h-60"
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
+      data-variant={variant}
+    >
       {identities.length > 1 ? (
-        <div className="compose-row">
-          <label className="compose-row-label" htmlFor={fromId}>
+        <div className="relative flex min-h-10 flex-none items-center gap-2 border-b border-border mx-4 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] first:group-data-[variant=inline]/form:mt-1 max-sm:min-h-11">
+          <label className="flex-none text-md text-text-muted" htmlFor={fromId}>
             From
           </label>
           <select
             id={fromId}
-            className="compose-select"
+            className="min-w-24 flex-[1_1_auto] cursor-pointer bg-transparent py-2 text-md text-text outline-none max-sm:min-h-11"
             value={state.identityId ?? ""}
             onChange={(e) => session.setIdentity(e.target.value)}
           >
@@ -248,13 +269,13 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         <RecipientInput session={session} source={store.recipients} field="bcc" label="Bcc" recipients={state.bcc} />
       ) : null}
       {variant === "window" ? (
-        <div className="compose-row">
-          <label className="visually-hidden" htmlFor={subjectId}>
+        <div className="relative flex min-h-10 flex-none items-center gap-2 border-b border-border mx-4 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] first:group-data-[variant=inline]/form:mt-1 max-sm:min-h-11">
+          <label className="sr-only" htmlFor={subjectId}>
             Subject
           </label>
           <input
             id={subjectId}
-            className="compose-input compose-subject"
+            className="compose-subject min-w-24 flex-[1_1_auto] bg-transparent py-2 text-md text-text outline-none placeholder:text-text-subtle max-sm:min-h-11"
             placeholder="Subject"
             value={state.subject}
             onChange={(e) => session.setSubject(e.target.value)}
@@ -263,25 +284,36 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       ) : null}
 
       {state.closing ? (
-        <p className="compose-notice" role="status">
+        <p
+          className="mx-4 mt-2 flex flex-none flex-wrap items-center gap-2 rounded-md bg-warning-soft px-3 py-2 text-md text-on-warning-soft [&_button]:text-inherit [&_button]:underline"
+          role="status"
+        >
           Uploading… The draft will be saved and closed when the files finish.
-          <button type="button" className="compose-link-btn" onClick={() => session.setClosing(false)}>
+          <button
+            type="button"
+            className="min-h-7 min-w-6 cursor-pointer rounded-sm bg-transparent px-2 py-1 text-md text-text-muted hover:text-text hover:underline max-sm:min-h-11 max-sm:min-w-11"
+            onClick={() => session.setClosing(false)}
+          >
             Keep editing
           </button>
         </p>
       ) : null}
       {state.sendError ? (
-        <p id={errorId} className="compose-error" role="alert">
+        <p
+          id={errorId}
+          className="mx-4 mt-2 flex-none rounded-md bg-danger-soft px-3 py-2 text-md text-danger"
+          role="alert"
+        >
           {state.sendError}
         </p>
       ) : null}
 
-      <div className="compose-body">
+      <div className="flex min-h-0 flex-[1_1_auto] flex-col overflow-auto group-data-[variant=inline]/form:overflow-visible">
         {state.plain ? (
           <>
             <textarea
               ref={textRef}
-              className="compose-plain"
+              className="min-h-32 flex-[1_0_auto] resize-none bg-transparent px-4 py-3 text-lg leading-normal wrap-anywhere whitespace-pre-wrap text-text outline-none"
               aria-label="Message body"
               value={state.text}
               onChange={(e) => session.setText(e.target.value)}
@@ -303,22 +335,26 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         )}
       </div>
 
-      <div className="compose-footer">
-        <span className="compose-send-group" data-split={canSchedule || undefined} ref={sendMenuAnchor}>
-          <button
+      <div className="flex flex-none items-center gap-1 px-3 py-2 [&_[data-slot=icon-button]]:after:top-auto [&_[data-slot=icon-button]]:after:bottom-[calc(100%+0.25rem)]">
+        <span className="mr-2 inline-flex flex-none" data-split={canSchedule || undefined} ref={sendMenuAnchor}>
+          <Button
+            variant="primary"
             type="button"
-            className="btn btn-primary compose-send"
+            className="mr-0 min-h-10 rounded-pill px-6 font-semibold max-sm:min-h-11 in-data-split:pr-4 in-data-split:rounded-r-none"
             onClick={() => send()}
             aria-describedby={state.sendError ? errorId : undefined}
             title="Send (Ctrl+Enter)"
           >
             Send
-          </button>
+          </Button>
           {canSchedule ? (
             <Menu.Root modal={false} open={sendMenu} onOpenChange={setSendMenu}>
               <Menu.Trigger
                 ref={sendMenuButton}
-                className="btn btn-primary compose-send-more"
+                className={buttonClass(
+                  "primary",
+                  "min-h-10 rounded-l-none rounded-r-pill border-l border-l-on-accent/35 py-0 pr-2 pl-1 [&_svg]:size-4.5",
+                )}
                 aria-label="More send options"
                 title="More send options"
               >
@@ -326,9 +362,9 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
               </Menu.Trigger>
               <Menu.Popup
                 container={sendMenuContainer}
-                positionerClassName="compose-menu-positioner"
+                positionerClassName="z-menu"
                 side="top"
-                className="compose-menu"
+                className="flex min-w-48 flex-col rounded-md border border-border bg-surface-raised py-1 shadow-md"
                 onKeyDown={(e) => {
                   // Escape is the menu's: not the composer's, nor the browser's close request for its window.
                   if (e.key !== "Escape") return;
@@ -347,7 +383,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
                 }}
               >
                 <Menu.Item
-                  className="compose-menu-item compose-menu-plain"
+                  className="flex cursor-pointer items-center gap-2 py-2 pr-3 text-left text-md text-text data-highlighted:bg-hover data-highlighted:outline-none aria-checked:pl-3 aria-checked:before:w-3 aria-checked:before:content-['✓'] pl-3"
                   onClick={() => {
                     sendMenuChoice.current = () => setPicking(true);
                   }}
@@ -371,14 +407,14 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         {!state.plain ? (
           <IconButton label="Insert photo" icon={ImageIcon} onClick={() => imageRef.current?.click()} />
         ) : null}
-        <span className="compose-menu-wrap" ref={menuAnchor}>
+        <span className="relative inline-flex" ref={menuAnchor}>
           <Menu.Root modal={false} open={menu} onOpenChange={setMenu}>
             <Menu.Trigger ref={menuButton} render={<IconButton label="More options" icon={MoreVertical} />} />
             <Menu.Popup
               container={menuContainer}
-              positionerClassName="compose-menu-positioner"
+              positionerClassName="z-menu"
               side="top"
-              className="compose-menu"
+              className="flex min-w-48 flex-col rounded-md border border-border bg-surface-raised py-1 shadow-md"
               onKeyDown={(e) => {
                 // Escape is the menu's: not the composer's, nor the browser's close request for its window.
                 if (e.key !== "Escape") return;
@@ -397,7 +433,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
               }}
             >
               <Menu.CheckboxItem
-                className="compose-menu-item"
+                className="flex cursor-pointer items-center gap-2 py-2 pr-3 pl-8 text-left text-md text-text data-highlighted:bg-hover data-highlighted:outline-none aria-checked:pl-3 aria-checked:before:w-3 aria-checked:before:content-['✓']"
                 checked={state.plain}
                 closeOnClick
                 onClick={() => {
@@ -415,7 +451,11 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         {variant === "inline" && onPopOut ? (
           <IconButton label="Pop out reply" icon={ExternalLink} onClick={onPopOut} />
         ) : null}
-        <span className="compose-save" role="status" aria-live="polite">
+        <span
+          className="mr-0 ml-auto min-w-0 overflow-hidden text-sm text-ellipsis whitespace-nowrap text-text-subtle"
+          role="status"
+          aria-live="polite"
+        >
           {saveLabel(state)}
         </span>
         <IconButton label="Discard draft" icon={Trash2} tooltip="end" onClick={() => setQuestion("discard")} />

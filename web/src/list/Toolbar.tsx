@@ -18,6 +18,7 @@ import type { SelectKind } from "./controller";
 import { MenuButton, type MenuItem } from "../components/ui/Menu";
 import { getActiveList } from "./registry";
 import type { ListPresentation } from "./types";
+import { Button } from "../components/ui/Button";
 
 export interface ToolbarProps {
   presentation: ListPresentation;
@@ -104,9 +105,13 @@ export function Toolbar(props: ToolbarProps) {
       : null;
 
   return (
-    <div className="list-toolbar" role="toolbar" aria-label="Conversation actions">
-      <div className="list-select">
-        <label className="list-check list-select-check">
+    <div
+      className="relative z-sticky flex min-h-(--toolbar-height) flex-none items-center gap-1 border-b border-border bg-surface px-2 max-sm:flex-wrap max-sm:gap-0 max-sm:px-1"
+      role="toolbar"
+      aria-label="Conversation actions"
+    >
+      <div className="mr-1 flex items-center">
+        <label className="inline-grid size-8 flex-none cursor-pointer place-items-center max-sm:size-11 [&_input]:m-0 [&_input]:size-4 [&_input]:cursor-pointer [&_input]:accent-accent">
           <input
             ref={checkRef}
             type="checkbox"
@@ -115,30 +120,35 @@ export function Toolbar(props: ToolbarProps) {
             onChange={() => props.onToggleAll()}
           />
         </label>
-        <MenuButton label="Select" icon={ChevronDown} items={selectItems} className="list-select-menu" />
+        <MenuButton
+          label="Select"
+          icon={ChevronDown}
+          items={selectItems}
+          className="[&_[data-slot=icon-button]]:w-6 [&_[data-slot=icon-button]]:rounded-sm [&_.lucide]:[--icon-size:1rem] max-sm:[&_[data-slot=icon-button]]:w-11"
+        />
       </div>
 
       {some ? (
         <>
-          <div className="list-toolbar-group">
+          <div className="flex items-center gap-1 max-sm:gap-0">
             {presentation.canArchive ? <IconButton label="Archive" icon={Archive} onClick={props.onArchive} /> : null}
             {presentation.notSpam ? (
-              <button type="button" className="btn btn-quiet list-text-btn" onClick={props.onSpam}>
+              <Button variant="quiet" type="button" className="min-h-8 px-3 text-md" onClick={props.onSpam}>
                 Not spam
-              </button>
+              </Button>
             ) : (
               <IconButton label="Report spam" icon={OctagonAlert} onClick={props.onSpam} />
             )}
             {presentation.deleteForever ? (
-              <button type="button" className="btn btn-quiet list-text-btn" onClick={props.onDelete}>
+              <Button variant="quiet" type="button" className="min-h-8 px-3 text-md" onClick={props.onDelete}>
                 Delete forever
-              </button>
+              </Button>
             ) : (
               <IconButton label="Delete" icon={Trash2} onClick={props.onDelete} />
             )}
           </div>
-          <span className="list-toolbar-divider" aria-hidden="true" />
-          <div className="list-toolbar-group">
+          <span className="mx-1 h-5 w-px flex-none bg-border max-sm:hidden" aria-hidden="true" />
+          <div className="flex items-center gap-1 max-sm:gap-0">
             {someUnread ? (
               <IconButton label="Mark as read" icon={MailOpen} onClick={() => props.onRead(true)} />
             ) : (
@@ -146,8 +156,8 @@ export function Toolbar(props: ToolbarProps) {
             )}
             <SnoozeMenu onSnooze={props.onSnooze} {...(props.someSnoozed ? { onUnsnooze: props.onUnsnooze } : {})} />
           </div>
-          <span className="list-toolbar-divider" aria-hidden="true" />
-          <div className="list-toolbar-group">
+          <span className="mx-1 h-5 w-px flex-none bg-border max-sm:hidden" aria-hidden="true" />
+          <div className="flex items-center gap-1 max-sm:gap-0">
             <LabelMenu
               conversationIds={props.conversationIds}
               emailIds={props.emailIds}
@@ -166,13 +176,16 @@ export function Toolbar(props: ToolbarProps) {
           </div>
         </>
       ) : (
-        <div className="list-toolbar-group">
+        <div className="flex items-center gap-1 max-sm:gap-0">
           <IconButton label="Refresh" icon={RefreshCw} onClick={props.onRefresh} />
           {emptyable ? <EmptyLabelButton label={emptyable} /> : null}
         </div>
       )}
 
-      <p className="list-paging" aria-live="off">
+      <p
+        className="ml-auto px-2 text-sm whitespace-nowrap text-text-muted tabular-nums @max-[46rem]/list:hidden"
+        aria-live="off"
+      >
         {props.paging}
       </p>
     </div>

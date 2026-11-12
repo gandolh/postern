@@ -23,7 +23,6 @@ import {
   typeLabel,
   type AttachmentKind,
 } from "./kind";
-import "./attachments.css";
 
 export interface AttachmentListProps {
   /** The message's attachments (JMAP `attachments`). */
@@ -72,12 +71,12 @@ export function AttachmentList({ parts, inlineCids, label = "Attachments" }: Att
   if (listed.length === 0) return null;
   const total = listed.reduce((sum, p) => sum + (p.size ?? 0), 0);
   return (
-    <section className="att-section" aria-label={label}>
-      <h3 className="att-heading">
+    <section className="ml-13 border-t border-dashed border-border pt-2 pb-4 @max-[40rem]/conv:ml-0" aria-label={label}>
+      <h3 className="m-0 mb-2 text-sm font-semibold text-text-muted">
         {listed.length === 1 ? "One attachment" : `${listed.length} attachments`}
-        <span className="att-heading-size"> · {formatSize(total)}</span>
+        <span className="font-normal"> · {formatSize(total)}</span>
       </h3>
-      <ul className="att-list">
+      <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
         {listed.map((part, i) => (
           <AttachmentChip key={`${part.blobId}-${part.partId ?? i}`} part={part} onPreviewImage={setViewing} />
         ))}
@@ -126,27 +125,44 @@ function AttachmentChip({
       : () => void run(() => openPdf(client, ref), `Couldn't open ${name}.`);
 
   return (
-    <li className="att-chip" data-kind={kind} data-warning={warning ? "true" : undefined} aria-busy={busy || undefined}>
+    <li
+      className="grid w-68 max-w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center rounded-md border border-border bg-surface p-1 aria-busy:opacity-70 data-warning:border-danger"
+      data-kind={kind}
+      data-warning={warning ? "true" : undefined}
+      aria-busy={busy || undefined}
+    >
       <button
         type="button"
-        className="att-main"
+        className="flex min-w-0 cursor-pointer items-center gap-2 rounded-sm bg-transparent p-1 text-start text-text hover:bg-hover"
         onClick={preview ?? download}
         aria-label={`${preview ? "Preview" : "Download"} ${name}`}
       >
-        <Icon aria-hidden="true" className="att-icon" />
-        <span className="att-text">
-          <bdi className="att-name">{name}</bdi>
-          <span className="att-meta">
+        <Icon aria-hidden="true" className="text-accent in-data-warning:text-danger" />
+        <span className="grid min-w-0">
+          <bdi className="overflow-hidden text-md font-medium text-ellipsis whitespace-nowrap">{name}</bdi>
+          <span className="text-xs text-text-muted">
             {typeLabel(part.type, part.name)} · {formatSize(part.size)}
           </span>
         </span>
       </button>
       {preview ? (
-        <IconButton className="att-action" label={`Preview ${name}`} icon={Eye} onClick={preview} tooltip="end" />
+        <IconButton
+          className="size-8 [&_.lucide]:[--icon-size:1.125rem]"
+          label={`Preview ${name}`}
+          icon={Eye}
+          onClick={preview}
+          tooltip="end"
+        />
       ) : null}
-      <IconButton className="att-action" label={`Download ${name}`} icon={Download} onClick={download} tooltip="end" />
+      <IconButton
+        className="size-8 [&_.lucide]:[--icon-size:1.125rem]"
+        label={`Download ${name}`}
+        icon={Download}
+        onClick={download}
+        tooltip="end"
+      />
       {warning ? (
-        <p className="att-warning" role="note">
+        <p className="col-span-full mx-1 mt-1 rounded-sm bg-danger-soft px-2 py-1 text-xs text-danger" role="note">
           {warning}
         </p>
       ) : null}

@@ -6,6 +6,7 @@
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import type { LucideIcon } from "lucide-react";
 import { useRef, type ComponentProps, type Ref } from "react";
+import { cn } from "../../lib/cn";
 import { IconButton } from "../../shell/IconButton";
 
 type PopupProps = ComponentProps<typeof BaseMenu.Popup>;
@@ -80,13 +81,13 @@ export function MenuButton({ label, icon, items, align = "start", className }: M
   const chosen = useRef<MenuItem | null>(null);
 
   return (
-    <div className={className ? `list-menu ${className}` : "list-menu"}>
+    <div className={cn("relative", className)}>
       <Menu.Root modal={false}>
         <Menu.Trigger ref={buttonRef} render={<IconButton label={label} icon={icon} />} />
         <Menu.Popup
-          positionerClassName="list-menu-positioner"
+          positionerClassName="z-popup"
           align={align}
-          className="list-menu-popup"
+          className="flex min-w-48 flex-col rounded-lg border border-border bg-surface-raised py-2 shadow-md"
           aria-label={label}
           finalFocus={() => {
             const item = chosen.current;
@@ -100,7 +101,7 @@ export function MenuButton({ label, icon, items, align = "start", className }: M
           {items.map((item) => (
             <Menu.Item
               key={item.label}
-              className="list-menu-item"
+              className="block min-h-9 w-full cursor-pointer px-4 text-start text-md text-text select-none focus-visible:-outline-offset-2 focus-visible:[outline:var(--focus-ring)] data-disabled:cursor-not-allowed data-disabled:text-text-subtle data-highlighted:bg-hover"
               disabled={item.disabled}
               onClick={() => {
                 chosen.current = item;
