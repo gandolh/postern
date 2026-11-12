@@ -162,8 +162,8 @@ this stack, and so does the owner's muscle memory.
 ## Base UI under the overlays; the composer window stays native
 _2026-10-23_, the owner's call, to match their other apps (atrium,
 imbatranimOS, sports-app, trips and others). The modal dialogs are Base UI
-`Dialog`/`AlertDialog` through one wrapper, `web/src/shell/Modal.tsx`
-(the 2026-10-23 work), and the menus and popovers
+`Dialog`/`AlertDialog` through one wrapper, `web/src/components/ui/Modal.tsx`
+(moved from `shell/` on 2026-11-12), and the menus and popovers
 are Base UI `Menu`/`Popover` (the 2026-10-23 work). Base UI owns the focus trap, Escape, the inert page and
 focus return, and Postern keeps its CSS. Rejected: keeping native `<dialog>`
 with hand-built wiring, and shadcn, which brings Tailwind.
@@ -177,6 +177,18 @@ confirmation also stays: it is an inline box in a table cell, not an overlay.
 The two comboboxes (recipients, search) stay hand-built, and so does the sender
 card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
 card holds actions that keyboard users reach by Tab.
+
+_2026-11-12_, the owner's conventions of 2026-11-09 and 2026-11-10 (the
+base-ui skill): Base UI is imported only under `web/src/components/ui/`, one
+wrapper per primitive, and features import the wrapper. The navigation below
+the wide breakpoint is Base UI's `Drawer`, closed by a swipe as well; the toast
+is Base UI's `Toast`; the five settings that apply at once are `Switch`es, the
+settings choices a `RadioGroup` and the invite answer a guarded `ToggleGroup`;
+a dialog that holds a form ignores a press outside. Native text, date and time
+inputs, the `<select>`s and the checkboxes that are form fields stay native
+(Q16), so the decision's silence on selects and checkboxes is now a line.
+The tooltip stays CSS and the toolbars stay as they are, both open for the
+owner. [overlays.md](overlays.md) maps each part to its wrapper.
 
 ## The house style, formatted and checked
 _2026-11-11_. The estate's house-style harness, vendored at 1.1.0 into

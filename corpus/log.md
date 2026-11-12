@@ -588,3 +588,17 @@ Base UI checker `--warn-only` (27 errors, 2 warnings), a root `CLAUDE.md` and
 `.claude/rules/`. 32 tests in 6 files skip without the local Stalwart (decision
 10 keeps the skip). `check:fast` takes about 7 s warm, `check` about 85 s.
 
+
+## [2026-11-12] brief | 02 Base UI by the conventions
+
+Built on `main`, local. Base UI is imported only under `web/src/components/ui/`
+(`check-base-ui`: rule 3 from 8 findings to 0; rule 5 is 22, brief 03's, 4 more
+than before from the new `modal`, `navDrawer`, `switch` and `radio` stylesheets;
+rule 9 keeps 2 warnings, an icon inside a trigger, a false positive). Every
+dialog has a `Title`, the schedule and snooze dialogs ignore a press outside,
+`ConfirmDialog` has a pending state (Emptying Trash or Spam keeps its dialog up
+until the server answers), the navigation below the wide breakpoint is a Base UI
+`Drawer` that a touch swipe to the left closes (the label tree and scroll are
+kept in `ShellLayout`), the toast is Base UI's, five settings are switches, the
+settings choices a `RadioGroup`, the invite answer a guarded `ToggleGroup`. Two
+class hooks became `data-` attributes. See [overlays.md](wiki/overlays.md).

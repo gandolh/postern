@@ -1,6 +1,6 @@
 ---
 summary: Snapshot as of 2026-11-02, per area. Postern is built (foundations, reading, writing, live, settings, keyboard, PWA and security 2026-10-20; its own host 2026-10-22; Base UI 2026-10-23; conversation view off, schedule send, snooze, invite cards and a reload keeping the session 2026-10-27/28) deployed on its own host since 2026-11-02, the owner's smoke test passed 2026-11-05. The owner steps left (screen reader, Android install and reload, real push, production's token lifetimes).
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # Status (2026-11-02)
@@ -51,6 +51,13 @@ on 2026-11-02 (see [log.md](../log.md)).
   not deployed: house-style 1.1.0 vendored, Prettier at 120, the tsconfig
   flags, the house ESLint config, `npm run check` and `check:fast`, a root
   `CLAUDE.md` and `.claude/rules/`. See [decisions.md](decisions.md).
+
+- **Base UI by the conventions** (2026-11-12). Built, local on `main`, not
+  deployed: Base UI only behind `web/src/components/ui/` (Modal, ConfirmDialog,
+  Menu, Popover, NavDrawer, Toast, Switch, RadioGroup, ToggleGroup), a Title on
+  every dialog, forms ignore a press outside, a pending confirm, the navigation
+  drawer swipes closed, the settings switches, the guarded invite answer. See
+  [overlays.md](overlays.md). The Tailwind move (brief 03) is next.
 
 ## Owner steps
 
