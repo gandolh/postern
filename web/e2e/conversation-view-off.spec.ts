@@ -176,7 +176,7 @@ test("Reply quotes the open message, j / k open the next and previous rows, Arch
   // Archive moves this message only; Undo puts it back.
   await page.getByRole("toolbar", { name: "Conversation actions" }).getByRole("button", { name: "Archive" }).click();
   await expect(page).toHaveURL(/#inbox$/);
-  await expect(page.getByRole("status").getByText("Message archived.")).toBeVisible();
+  await expect(page.getByRole("region").getByText("Message archived.")).toBeVisible();
   await expect(row(page, n.id)).toHaveCount(0);
   await expect(row(page, o.id)).toBeVisible();
   await expect.poll(async () => (await jmapState([n.id])).get(n.id)?.inInbox).toBe(false);
@@ -192,7 +192,7 @@ test("archiving two rows says 2 messages; the selection and Select all count mes
   await row(page, n.id).getByRole("checkbox", { name: "Select" }).check();
   await expect(page.getByText("2 messages selected")).toBeAttached();
   await page.getByRole("toolbar", { name: "Conversation actions" }).getByRole("button", { name: "Archive" }).click();
-  await expect(page.getByRole("status").getByText("2 messages archived.")).toBeVisible();
+  await expect(page.getByRole("region").getByText("2 messages archived.")).toBeVisible();
   await expect
     .poll(async () => [...(await jmapState([o.id, n.id])).values()].map((s) => s.inInbox))
     .toEqual([false, false]);

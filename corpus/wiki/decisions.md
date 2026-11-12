@@ -178,17 +178,12 @@ The two comboboxes (recipients, search) stay hand-built, and so does the sender
 card: Base UI's PreviewCard is not keyboard or screen-reader navigable, and the
 card holds actions that keyboard users reach by Tab.
 
-_2026-11-12_, the owner's conventions of 2026-11-09 and 2026-11-10 (the
-base-ui skill): Base UI is imported only under `web/src/components/ui/`, one
-wrapper per primitive, and features import the wrapper. The navigation below
-the wide breakpoint is Base UI's `Drawer`, closed by a swipe as well; the toast
-is Base UI's `Toast`; the five settings that apply at once are `Switch`es, the
-settings choices a `RadioGroup` and the invite answer a guarded `ToggleGroup`;
-a dialog that holds a form ignores a press outside. Native text, date and time
-inputs, the `<select>`s and the checkboxes that are form fields stay native
-(Q16), so the decision's silence on selects and checkboxes is now a line.
-The tooltip stays CSS and the toolbars stay as they are, both open for the
-owner. [overlays.md](overlays.md) maps each part to its wrapper.
+_2026-11-12_, the owner's conventions (the base-ui skill): Base UI is imported
+only under `web/src/components/ui/`, and features import the wrapper. The
+navigation drawer, the toast, the settings switches and radios and the invite
+answer moved onto it ([overlays.md](overlays.md) maps each). Text, date and time
+inputs, the `<select>`s and the form checkboxes stay native (Q16). The tooltip
+and the toolbars stay as they are, open for the owner.
 
 ## The house style, formatted and checked
 _2026-11-11_. The estate's house-style harness, vendored at 1.1.0 into
