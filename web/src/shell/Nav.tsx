@@ -22,7 +22,19 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { Fragment, useMemo, useState, type CSSProperties, type MouseEvent } from "react";
+import {
+  createContext,
+  Fragment,
+  useContext,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type Dispatch,
+  type MouseEvent,
+  type MutableRefObject,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import { useCompose } from "../composer";
 import { useOptionalComposerStore } from "../composer/compose";
 import type { LabelNode, SystemEntry } from "../labels/labelsStore";
@@ -68,6 +80,25 @@ function isCurrentSystem(route: Route, view: SystemView): boolean {
 
 function isCurrentLabel(route: Route, id: string): boolean {
   return route.kind === "label" && route.labelId === id;
+}
+
+/**
+ * What the label tree remembers: which parents are folded, whether the hidden
+ * labels show, and where the panel was scrolled. The shell keeps it above the
+ * navigation, because the drawer mounts a fresh `Nav` each time it opens.
+ */
+export interface NavMemory {
+  collapsed: ReadonlySet<string>;
+  setCollapsed: Dispatch<SetStateAction<ReadonlySet<string>>>;
+  showHidden: boolean;
+  setShowHidden: Dispatch<SetStateAction<boolean>>;
+  scrollTop: MutableRefObject<number>;
+}
+
+const NavMemoryContext = createContext<NavMemory | null>(null);
+
+export function NavMemoryProvider({ memory, children }: { memory: NavMemory; children: ReactNode }) {
+  return <NavMemoryContext.Provider value={memory}>{children}</NavMemoryContext.Provider>;
 }
 
 export interface NavProps {
@@ -188,8 +219,13 @@ function LabelTree({ tree: allTree, hidden: allHidden, route, rail }: LabelTreeP
   // "Show if unread" labels leave the navigation while they have nothing unread.
   const tree = useMemo(() => visibleNodes(allTree, prefs, currentId), [allTree, prefs, currentId]);
   const hidden = useMemo(() => visibleNodes(allHidden, prefs, currentId), [allHidden, prefs, currentId]);
-  const [showHidden, setShowHidden] = useState(false);
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
+  const local = {
+    showHidden: useState(false),
+    collapsed: useState<ReadonlySet<string>>(() => new Set()),
+  };
+  const memory = useContext(NavMemoryContext);
+  const [showHidden, setShowHidden] = memory ? [memory.showHidden, memory.setShowHidden] : local.showHidden;
+  const [collapsed, setCollapsed] = memory ? [memory.collapsed, memory.setCollapsed] : local.collapsed;
   const toggle = (id: string) =>
     setCollapsed((set) => {
       const next = new Set(set);

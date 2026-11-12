@@ -20,8 +20,7 @@
   background: var(--color-canvas);
 }
 
-.shell[data-nav="rail"],
-.shell[data-nav="drawer"] {
+.shell[data-nav="rail"] {
   grid-template-columns: var(--nav-rail-width) minmax(0, 1fr);
 }
 
@@ -68,7 +67,6 @@
 }
 
 .shell[data-nav="rail"] .shell-topbar-start,
-.shell[data-nav="drawer"] .shell-topbar-start,
 .shell[data-nav="hidden"] .shell-topbar-start {
   width: auto;
 }
@@ -248,10 +246,6 @@
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
-}
-
-.shell[data-nav="hidden"] .shell-nav-frame {
-  display: none;
 }
 
 .shell-nav {
@@ -517,35 +511,6 @@
   text-align: center;
   color: var(--color-on-accent);
   background: var(--color-accent);
-}
-
-/* ---- Navigation: drawer (narrow screens, opened from the menu) --------------- */
-
-.shell[data-nav="drawer"] .shell-nav-frame {
-  position: fixed;
-  top: var(--topbar-height);
-  bottom: 0;
-  left: 0;
-  z-index: 45;
-  width: var(--nav-width);
-  border-radius: 0 var(--radius-xl) 0 0;
-  background: var(--color-canvas);
-  box-shadow: var(--shadow-lg);
-  animation: shell-drawer-in var(--duration-normal) var(--ease-out);
-}
-
-.shell-scrim {
-  position: fixed;
-  inset: var(--topbar-height) 0 0 0;
-  z-index: 40;
-  background: var(--color-scrim);
-}
-
-@keyframes shell-drawer-in {
-  from {
-    transform: translateX(-1.5rem);
-    opacity: 0;
-  }
 }
 
 /* ---- Main ---------------------------------------------------------------------- */

@@ -1,0 +1,81 @@
+/* components/ui/NavDrawer: the navigation panel, from the left, under the top
+   bar as the hand-built drawer was. The panel follows a swipe through
+   --drawer-swipe-movement-x; data-swiping turns the transition off meanwhile. */
+
+.nav-drawer-backdrop {
+  position: fixed;
+  inset: var(--topbar-height) 0 0 0;
+  z-index: 40;
+  background: var(--color-scrim);
+  opacity: calc(1 - var(--drawer-swipe-progress, 0));
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.nav-drawer-backdrop[data-starting-style],
+.nav-drawer-backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+.nav-drawer-backdrop[data-swiping] {
+  transition-duration: 0s;
+}
+
+.nav-drawer-viewport {
+  position: fixed;
+  inset: var(--topbar-height) 0 0 0;
+  z-index: 45;
+}
+
+.nav-drawer-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: var(--nav-width);
+  border-radius: 0 var(--radius-xl) 0 0;
+  background: var(--color-canvas);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+  transform: translateX(var(--drawer-swipe-movement-x, 0));
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    opacity var(--duration-normal) var(--ease-out);
+}
+
+.nav-drawer-popup[data-starting-style],
+.nav-drawer-popup[data-ending-style] {
+  transform: translateX(-1.5rem);
+  opacity: 0;
+}
+
+.nav-drawer-popup[data-swiping] {
+  transition-duration: 0s;
+  user-select: none;
+}
+
+.nav-drawer-content {
+  flex: 1;
+  touch-action: pan-y;
+}
+
+.nav-drawer-close {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  z-index: 1;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  clip-path: inset(50%);
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}
+
+.nav-drawer-close:focus-visible {
+  clip-path: none;
+  overflow: visible;
+  width: auto;
+  height: auto;
+}
