@@ -43,8 +43,8 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
     }
   };
 
+  // The dialog stays up, saying so, until the server has answered.
   const run = async (p: EmptyPlan) => {
-    setPlan(null);
     setBusy(true);
     // Hide them at once in every list; "settled" below brings back anything the server kept.
     const answered = publishPending(Object.fromEntries(p.destroy.map((id) => [id, { mailboxIds: {} }])));
@@ -58,6 +58,7 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
         toast.show({ message: `Couldn't empty ${where}: ${e instanceof Error ? e.message : "unknown error"}` });
     } finally {
       answered();
+      setPlan(null);
       setBusy(false);
       void labels.sync();
       publishMailChange({ kind: "settled" });
@@ -80,7 +81,8 @@ export function EmptyLabelButton({ label }: { label: EmptyableLabel }) {
           title={text.title}
           body={text.body}
           confirmLabel={text.confirm}
-          onConfirm={() => void run(plan)}
+          pendingLabel="Emptying…"
+          onConfirm={() => run(plan)}
           onCancel={() => setPlan(null)}
         />
       ) : null}
