@@ -630,3 +630,10 @@ first paint. The 60 class-based test and e2e selectors moved to roles (the messa
 frame's iframes carry `data-testid`). Brief 03 done; the owner deploys with
 `node cli.ts postern deploy`.
 
+
+## [2026-11-13] decision | The redesign direction is approved: "The reading desk"
+
+The owner approved the redesign direction "The reading desk" on the estate redesign board, with every
+question on the board standing as proposed. Brief 04's build starts: tokens first, then one screen per
+commit. Three decisions reopen with the approval (the reading pane's default, the phone's navigation, the
+row density); `wiki/decisions.md` records each when the build lands.
