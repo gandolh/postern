@@ -106,8 +106,8 @@ export default defineConfig({
         // Raw hex only here: the manifest can't read CSS tokens. Keep in step
         // with --color-canvas (light) in src/styles/index.css and the
         // theme-color meta in index.html.
-        theme_color: "#f2f4f1",
-        background_color: "#f2f4f1",
+        theme_color: "#e8ebe7",
+        background_color: "#e8ebe7",
         // Relative, so they resolve against the manifest under BASE. Made from
         // public/postern-mark.svg; the maskable one keeps the mark inside the
         // safe zone on a limestone ground.

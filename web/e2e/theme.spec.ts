@@ -11,8 +11,8 @@ const KEY = "postern.display";
 const scheme = (page: Page) => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme);
 const canvas = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
-const LIGHT_CANVAS = "rgb(242, 244, 241)";
-const DARK_CANVAS = "rgb(17, 21, 19)";
+const LIGHT_CANVAS = "rgb(232, 235, 231)";
+const DARK_CANVAS = "rgb(13, 17, 15)";
 
 async function keepChoice(context: BrowserContext, theme: string): Promise<void> {
   await context.addInitScript(

@@ -35,17 +35,17 @@
 
   /* ---- Colour: surfaces ------------------------------------------------ */
   /* The page behind the navigation and top bar: limestone. */
-  --color-canvas: light-dark(#f2f4f1, #111513);
+  --color-canvas: light-dark(#e8ebe7, #0d110f);
   /* The main panel, where the list and conversations sit. */
-  --color-surface: light-dark(#ffffff, #191f1c);
+  --color-surface: light-dark(#ffffff, #1d2421);
   /* Menus, popovers, dialogs. */
-  --color-surface-raised: light-dark(#ffffff, #212825);
+  --color-surface-raised: light-dark(#ffffff, #262e2a);
   /* Wells and inputs on the canvas. */
-  --color-surface-sunken: light-dark(#ebeeea, #151a17);
+  --color-surface-sunken: light-dark(#e1e5e0, #121714);
   /* Hover on any row, nav item or quiet button. */
-  --color-hover: light-dark(#e7ebe7, #28302c);
+  --color-hover: light-dark(#dbe0db, #27302b);
   /* Pressed. */
-  --color-active: light-dark(#dce2dd, #303a35);
+  --color-active: light-dark(#cfd6d0, #313c36);
 
   /* ---- Colour: text ---------------------------------------------------- */
   --color-text: light-dark(#18201c, #e3e9e5);
@@ -54,7 +54,7 @@
   --color-text-subtle: light-dark(#5d6862, #9aa59f);
 
   /* ---- Colour: lines --------------------------------------------------- */
-  --color-border: light-dark(#d3d9d4, #323b36);
+  --color-border: light-dark(#c4ccc6, #3b4641);
   /* Input outlines and anything that must be seen (3:1). */
   --color-border-strong: light-dark(#7d8882, #76827b);
 
@@ -63,8 +63,8 @@
   --color-accent-hover: light-dark(#155444, #8ed8bf);
   --color-on-accent: light-dark(#ffffff, #062a20);
   /* The selected label in the navigation, chips, soft buttons. */
-  --color-accent-soft: light-dark(#d5ebe2, #1d3b32);
-  --color-accent-soft-hover: light-dark(#c6e3d7, #24473c);
+  --color-accent-soft: light-dark(#d5ebe2, #1f3d33);
+  --color-accent-soft-hover: light-dark(#c6e3d7, #26493d);
   --color-on-accent-soft: light-dark(#0e4537, #b4ead7);
   --color-focus: light-dark(#1c6a57, #72cbae);
   --color-selection: light-dark(#c6e3d7, #2b5547);
@@ -79,9 +79,9 @@
 
   /* ---- Colour: list rows ------------------------------------ */
   --color-row: var(--color-surface);
-  --color-row-read: light-dark(#f6f8f5, #161b19);
-  --color-row-hover: light-dark(#eef1ed, #222a26);
-  --color-row-selected: light-dark(#e3f0ea, #1f3029);
+  --color-row-read: light-dark(#f4f6f3, #171d1a);
+  --color-row-hover: light-dark(#edf1ec, #232b27);
+  --color-row-selected: light-dark(#d5ebe2, #1f3d33);
 
   /* ---- Colour: toasts and tooltips (inverse) --------------------------- */
   --color-inverse: light-dark(#1f2924, #e3e9e5);
@@ -103,6 +103,13 @@
   --text-lg: 1rem; /* 16px: message bodies, inputs */
   --text-xl: 1.25rem; /* 20px: the wordmark, panel titles */
   --text-2xl: 1.5rem; /* 24px: page titles, sign-in */
+  /* Line heights per size (board: 12/16, 13/18, 14/20, 16/24, 20/28, 24/32). */
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.125rem;
+  --text-md--line-height: 1.25rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
   --leading-tight: 1.25;
   --leading-normal: 1.45;
 
@@ -196,8 +203,11 @@
     --duration-normal: 200ms;
 
     /* ---- Layout ---- */
-    --topbar-height: 4rem;
-    --nav-width: 16rem;
+    --topbar-height: 3.5rem;
+    --nav-width: 15rem;
+    --list-width: 27.5rem;
+    --lhead-height: 3rem;
+    --bottombar-height: 4rem;
     --nav-rail-width: 4.5rem;
     --icon-size: 1.25rem;
     --icon-stroke: 1.75;
@@ -205,9 +215,9 @@
     --focus-offset: 2px;
 
     /* ---- Density: default (changes at run time with data-density on <html>) ---- */
-    --row-height: 3rem;
+    --row-height: 4.5rem;
     --row-padding-inline: 1rem;
-    --nav-item-height: 2rem;
+    --nav-item-height: 2.25rem;
     --toolbar-height: 3rem;
   }
 
@@ -220,14 +230,14 @@
   }
 
   :root[data-density="comfortable"] {
-    --row-height: 2.5rem;
+    --row-height: 4rem;
     --row-padding-inline: 1rem;
     --nav-item-height: 2rem;
     --toolbar-height: 3rem;
   }
 
   :root[data-density="compact"] {
-    --row-height: 2rem;
+    --row-height: 3.25rem;
     --row-padding-inline: 0.75rem;
     --nav-item-height: 1.75rem;
     --toolbar-height: 2.5rem;

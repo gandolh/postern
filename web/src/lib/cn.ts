@@ -6,8 +6,9 @@ import { extendTailwindMerge } from "tailwind-merge";
  * `text-md` as a colour, so `cn("text-md", "text-text")` would drop one of the two. Keep the lists in step
  * with @theme.
  *
- * The sizes carry no line height (the body's applies, and an element sets its own `leading-*`), so a size must
- * not remove a `leading-*`, which tailwind-merge does by default: `cn("leading-tight", "text-sm")` keeps both.
+ * Each size carries its own line height (--text-*--line-height), and an element may still set a `leading-*` on top,
+ * so a size must not remove a `leading-*`, which tailwind-merge does by default: `cn("leading-tight", "text-sm")`
+ * keeps both.
  */
 const twMerge = extendTailwindMerge({
   extend: {
