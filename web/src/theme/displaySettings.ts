@@ -33,7 +33,8 @@ export const DEFAULT_DISPLAY_SETTINGS: Readonly<DisplaySettings> = Object.freeze
   // Light on a first visit, whatever the system prefers; a stored choice is restored over it.
   theme: "light",
   density: "default",
-  readingPane: "none",
+  // The reading pane is on, to the right of the list; a phone shows one column whatever this says.
+  readingPane: "right",
 });
 
 let current: DisplaySettings = { ...DEFAULT_DISPLAY_SETTINGS };

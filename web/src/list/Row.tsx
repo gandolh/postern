@@ -1,6 +1,8 @@
-// One conversation row: checkbox, star, important marker, senders, label
-// chips, subject and snippet, attachment, date; archive, delete and
-// read/unread on hover. Exactly one `--row-height` tall.
+// One conversation row, three lines: the senders and the date; the label chips and the subject (which wraps
+// before it is cut); the snippet, faded at the edge. An unread row hangs a patina dot in the gutter beside the
+// checkbox and is bold; star and Important stack in the right padding; archive, delete and read/unread take
+// the date's place on hover. At least `--row-height` tall: a long subject makes the row taller, so the list
+// measures its rows (useVirtualRows).
 
 import type { Id } from "@postern/jmap";
 import { Archive, Bookmark, Mail, MailOpen, Paperclip, Star, Trash2 } from "lucide-react";
@@ -87,7 +89,7 @@ function Chip({ chip }: { chip: ChipLabel }) {
   const color = useLabelColor(chip.id);
   return (
     <span
-      className="block min-h-0 min-w-11 flex-[0_1_auto] overflow-hidden rounded-sm bg-surface-sunken px-2 text-xs leading-5 font-medium text-ellipsis whitespace-nowrap text-text-muted data-label-color:bg-(color:--label-chip-bg) data-label-color:text-text"
+      className="mt-px block flex-none rounded-md border border-border bg-surface-sunken px-[7px] py-px text-xs leading-4 whitespace-nowrap text-text-muted data-label-color:bg-(color:--label-chip-bg) data-label-color:text-text group-aria-selected/row:bg-surface group-data-open/row:bg-surface"
       data-label-color={color}
     >
       {chip.title}
@@ -118,7 +120,7 @@ function Senders({ summary }: { summary: SenderSummary }) {
             {part.kind === "more" ? (
               "…"
             ) : part.kind === "draft" ? (
-              <span className="text-danger">Draft</span>
+              <span className="font-medium text-danger">Draft</span>
             ) : (
               <span className="data-unread:font-bold" data-unread={part.unread || undefined}>
                 {part.text}
@@ -127,9 +129,7 @@ function Senders({ summary }: { summary: SenderSummary }) {
           </Fragment>
         );
       })}
-      {summary.count ? (
-        <span className="text-text-muted group-data-unread/row:font-bold"> ({summary.count})</span>
-      ) : null}
+      {summary.count ? <span className="font-normal text-text-muted"> ({summary.count})</span> : null}
     </>
   );
 }
@@ -193,7 +193,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       aria-selected={selected}
       aria-current={open ? "true" : undefined}
       tabIndex={tabbable ? 0 : -1}
-      className="group/row grid h-(--row-height) cursor-pointer grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border bg-row-read py-0 pr-3 pl-1 text-md leading-tight text-text select-none hover:bg-row-hover hover:shadow-[inset_0_-1px_0_var(--color-border-strong)] focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover max-sm:relative max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:hover:shadow-none min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] [&[draggable=true]]:cursor-default"
+      className="group/row relative grid min-h-(--row-height) cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] grid-rows-[auto_auto] content-center items-start border-b border-border bg-row-read py-1.5 pr-11 pl-1 text-md text-text select-none hover:bg-row-hover focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover in-data-[density=comfortable]:py-1 max-sm:min-h-0 max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:pr-13 max-sm:pl-0 [&[draggable=true]]:cursor-default"
       draggable
       onDragStart={(event) => startDrag(event, row, selected)}
       data-row-id={row.id}
@@ -207,8 +207,14 @@ export const ConversationRowView = memo(function ConversationRowView({
         if (event.target === event.currentTarget) handlers.onFocus(row.id);
       }}
     >
-      <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:self-start max-sm:[grid-area:controls]">
-        <label className="inline-grid size-8 flex-none cursor-pointer place-items-center in-data-[density=compact]:size-7 max-sm:size-11 [&_input]:m-0 [&_input]:size-4 [&_input]:cursor-pointer [&_input]:accent-accent">
+      {view.unread ? (
+        <span
+          className="pointer-events-none absolute top-3 left-[2.1875rem] size-2 rounded-pill bg-accent max-sm:left-[2.5rem]"
+          aria-hidden="true"
+        />
+      ) : null}
+      <div role="gridcell" className="col-start-1 row-span-2 row-start-1 flex min-w-0 items-start">
+        <label className="inline-grid h-11 w-10 flex-none cursor-pointer place-items-center max-sm:w-11 [&_input]:m-0">
           <input
             type="checkbox"
             tabIndex={-1}
@@ -221,75 +227,36 @@ export const ConversationRowView = memo(function ConversationRowView({
             }}
           />
         </label>
-        <IconButton
-          className="size-8 in-data-[density=compact]:size-7 aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:hover:bg-hover max-sm:absolute max-sm:right-0 max-sm:bottom-0 max-sm:size-11 [&_.lucide]:[--icon-size:1.125rem] aria-pressed:[&_.lucide]:fill-current"
-          label={view.starred ? "Starred" : "Not starred"}
-          icon={Star}
-          aria-pressed={view.starred}
-          tabIndex={-1}
-          tooltip="start"
-          onClick={stop(() => handlers.onStar(row))}
-        />
-        <IconButton
-          className="size-8 text-text-subtle in-data-[density=compact]:size-7 aria-pressed:bg-transparent aria-pressed:text-accent aria-pressed:hover:bg-hover max-sm:hidden max-sm:size-8 @max-[46rem]/list:hidden [&_.lucide]:[--icon-size:1.125rem] aria-pressed:[&_.lucide]:fill-current"
-          label={view.important ? "Important" : "Not important"}
-          icon={Bookmark}
-          aria-pressed={view.important}
-          tabIndex={-1}
-          tooltip="start"
-          onClick={stop(() => handlers.onImportant(row))}
-        />
+        <div className="absolute top-1.5 right-3 flex flex-col items-center max-sm:right-1 max-sm:top-1.5">
+          <IconButton
+            className="size-7 rounded-md text-text-muted aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:hover:bg-hover max-sm:size-11 max-sm:rounded-pill [&_.lucide]:[--icon-size:1.125rem] max-sm:[&_.lucide]:[--icon-size:1.25rem] aria-pressed:[&_.lucide]:fill-current"
+            label={view.starred ? "Starred" : "Not starred"}
+            icon={Star}
+            aria-pressed={view.starred}
+            tabIndex={-1}
+            tooltip="end"
+            onClick={stop(() => handlers.onStar(row))}
+          />
+          <IconButton
+            className="size-7 rounded-md text-text-muted aria-pressed:bg-transparent aria-pressed:text-accent aria-pressed:hover:bg-hover max-sm:hidden [&_.lucide]:[--icon-size:1.125rem] aria-pressed:[&_.lucide]:fill-current"
+            label={view.important ? "Important" : "Not important"}
+            icon={Bookmark}
+            aria-pressed={view.important}
+            tabIndex={-1}
+            tooltip="end"
+            onClick={stop(() => handlers.onImportant(row))}
+          />
+        </div>
       </div>
       <div
         role="gridcell"
-        className="block min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:self-center max-sm:[grid-area:senders]"
+        className="col-start-2 row-start-1 block h-5 min-w-0 pl-0.5 leading-5 whitespace-nowrap text-text [mask-image:linear-gradient(to_right,black_calc(100%-1rem),transparent)] max-sm:pl-1"
         title={view.senders.text}
       >
         {view.unread ? <span className="sr-only">Unread, </span> : null}
         <Senders summary={view.senders} />
       </div>
-      <div
-        role="gridcell"
-        className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:items-start max-sm:pr-10 max-sm:[grid-area:main]"
-      >
-        {view.chips.length || view.snoozed ? (
-          <span className="flex max-w-[45%] flex-none gap-1 overflow-hidden @max-[46rem]/list:hidden">
-            {view.snoozed ? (
-              <span
-                className="block min-h-0 min-w-11 flex-[0_1_auto] overflow-hidden rounded-sm bg-accent-soft px-2 text-xs leading-5 font-medium text-ellipsis whitespace-nowrap text-on-accent-soft"
-                title={formatFullDate(view.snoozed.toISOString())}
-              >
-                Snoozed until {formatSnoozeTime(view.snoozed, now)}
-              </span>
-            ) : null}
-            {view.chips.map((chip) => (
-              <Chip key={chip.id} chip={chip} />
-            ))}
-          </span>
-        ) : null}
-        <span className="min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap max-sm:line-clamp-2 max-sm:whitespace-normal">
-          {context.renderSubject ? (
-            context.renderSubject(row)
-          ) : (
-            <>
-              <span className="text-text group-data-unread/row:font-bold max-sm:block max-sm:overflow-hidden max-sm:text-ellipsis max-sm:whitespace-nowrap">
-                <Highlighted html={row.snippet?.subject} fallback={subject} />
-              </span>
-              {row.preview || row.snippet?.preview ? (
-                <span className="text-text-muted max-sm:inline min-sm:@max-[30rem]/list:hidden">
-                  {/* Its own span so the phone row (mobile.css), which puts the snippet on a line of its own, can drop it. */}
-                  <span className="max-sm:hidden">{" – "}</span>
-                  <Highlighted html={row.snippet?.preview} fallback={row.preview} />
-                </span>
-              ) : null}
-            </>
-          )}
-        </span>
-      </div>
-      <div
-        role="gridcell"
-        className="flex min-w-22 items-center justify-end gap-2 max-sm:min-w-0 max-sm:self-center max-sm:[grid-area:end] min-sm:@max-[30rem]/list:min-w-0"
-      >
+      <div role="gridcell" className="col-start-3 row-start-1 flex h-5 items-center justify-end gap-1.5 pl-2">
         {row.hasAttachment ? (
           <span
             className="inline-flex text-text-muted group-focus-within/row:hidden group-hover/row:hidden max-sm:group-focus-within/row:inline-flex max-sm:group-hover/row:inline-flex [&_.lucide]:[--icon-size:1rem]"
@@ -300,7 +267,7 @@ export const ConversationRowView = memo(function ConversationRowView({
           </span>
         ) : null}
         <time
-          className="text-sm whitespace-nowrap text-text-muted tabular-nums group-focus-within/row:hidden group-hover/row:hidden group-data-unread/row:font-bold group-data-unread/row:text-text max-sm:group-focus-within/row:inline-flex max-sm:group-hover/row:inline-flex"
+          className="text-xs leading-4 whitespace-nowrap text-text-muted tabular-nums group-focus-within/row:hidden group-hover/row:hidden group-data-unread/row:font-bold group-data-unread/row:text-text max-sm:group-focus-within/row:inline-flex max-sm:group-hover/row:inline-flex"
           dateTime={row.receivedAt}
           title={date.full}
         >
@@ -309,7 +276,7 @@ export const ConversationRowView = memo(function ConversationRowView({
         <div className="hidden items-center gap-0 group-focus-within/row:flex group-hover/row:flex max-sm:group-focus-within/row:hidden max-sm:group-hover/row:hidden">
           {context.canArchive ? (
             <IconButton
-              className="size-8 in-data-[density=compact]:size-7 max-sm:size-8 [&_.lucide]:[--icon-size:1.125rem]"
+              className="-my-1 size-7 rounded-md [&_.lucide]:[--icon-size:1.125rem]"
               label="Archive"
               icon={Archive}
               tabIndex={-1}
@@ -318,7 +285,7 @@ export const ConversationRowView = memo(function ConversationRowView({
             />
           ) : null}
           <IconButton
-            className="size-8 in-data-[density=compact]:size-7 max-sm:size-8 [&_.lucide]:[--icon-size:1.125rem]"
+            className="-my-1 size-7 rounded-md [&_.lucide]:[--icon-size:1.125rem]"
             label={context.deleteForever ? "Delete forever" : "Delete"}
             icon={Trash2}
             tabIndex={-1}
@@ -326,7 +293,7 @@ export const ConversationRowView = memo(function ConversationRowView({
             onClick={stop(() => handlers.onDelete(row))}
           />
           <IconButton
-            className="size-8 in-data-[density=compact]:size-7 max-sm:size-8 [&_.lucide]:[--icon-size:1.125rem]"
+            className="-my-1 size-7 rounded-md [&_.lucide]:[--icon-size:1.125rem]"
             label={view.unread ? "Mark as read" : "Mark as unread"}
             icon={view.unread ? MailOpen : Mail}
             tabIndex={-1}
@@ -335,39 +302,59 @@ export const ConversationRowView = memo(function ConversationRowView({
           />
         </div>
       </div>
+      <div role="gridcell" className="col-span-2 col-start-2 row-start-2 min-w-0 pl-0.5 max-sm:pl-1">
+        {context.renderSubject ? (
+          <div className="leading-5 wrap-anywhere">{context.renderSubject(row)}</div>
+        ) : (
+          <>
+            <div className="flex items-start gap-2 leading-5 max-sm:text-lg max-sm:leading-6 max-sm:font-semibold">
+              {view.chips.length || view.snoozed ? (
+                <span className="flex flex-none gap-1 max-sm:hidden">
+                  {view.snoozed ? (
+                    <span
+                      className="mt-px block flex-none rounded-md bg-accent-soft px-[7px] py-px text-xs leading-4 font-medium whitespace-nowrap text-on-accent-soft"
+                      title={formatFullDate(view.snoozed.toISOString())}
+                    >
+                      Snoozed until {formatSnoozeTime(view.snoozed, now)}
+                    </span>
+                  ) : null}
+                  {view.chips.map((chip) => (
+                    <Chip key={chip.id} chip={chip} />
+                  ))}
+                </span>
+              ) : null}
+              <span className="min-w-0 flex-[1_1_auto] text-text [text-wrap:pretty] wrap-anywhere group-data-unread/row:font-bold max-sm:group-data-unread/row:font-semibold">
+                <Highlighted html={row.snippet?.subject} fallback={subject} />
+              </span>
+            </div>
+            {row.preview || row.snippet?.preview ? (
+              <div className="text-sm leading-[1.125rem] whitespace-nowrap text-text-muted [mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)] in-data-[density=comfortable]:text-xs in-data-[density=comfortable]:leading-4 in-data-[density=compact]:hidden">
+                <Highlighted html={row.snippet?.preview} fallback={row.preview} />
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
     </div>
   );
 });
 
-/** A row not loaded yet: a placeholder of the same height. */
+/** A row not loaded yet: three still bars where the sender, subject and snippet go. */
 export function PlaceholderRow({ index }: { index: number }) {
   return (
     <div
       role="row"
       aria-rowindex={index + 1}
       aria-busy="true"
-      className="group/row grid h-(--row-height) cursor-default grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border bg-row py-0 pr-3 pl-1 text-md leading-tight text-text select-none hover:bg-row hover:shadow-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover max-sm:relative max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:hover:shadow-none min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] [&[draggable=true]]:cursor-default"
+      className="grid min-h-(--row-height) cursor-default grid-cols-[2.5rem_minmax(0,1fr)] items-center border-b border-border bg-row py-1.5 pr-11 pl-1 max-sm:grid-cols-[2.75rem_minmax(0,1fr)] max-sm:pr-13 max-sm:pl-0"
     >
-      <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:self-start max-sm:[grid-area:controls]">
-        <span className="ml-2 block size-4 rounded-sm bg-skeleton" />
+      <div role="gridcell" className="grid place-items-center">
+        <span className="block size-4 rounded-sm bg-skeleton" />
       </div>
-      <div
-        role="gridcell"
-        className="block min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:self-center max-sm:[grid-area:senders]"
-      >
-        <span className="block h-3 w-[70%] rounded-sm bg-skeleton" />
-      </div>
-      <div
-        role="gridcell"
-        className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:items-start max-sm:pr-10 max-sm:[grid-area:main]"
-      >
-        <span className="block h-3 w-[70%] rounded-sm bg-skeleton" style={{ width: `${40 + ((index * 37) % 45)}%` }} />
-      </div>
-      <div
-        role="gridcell"
-        className="flex min-w-22 items-center justify-end gap-2 max-sm:min-w-0 max-sm:self-center max-sm:[grid-area:end] min-sm:@max-[30rem]/list:min-w-0"
-      >
-        <span className="block h-3 w-12 rounded-sm bg-skeleton" />
+      <div role="gridcell" className="flex flex-col gap-2.5 pl-1">
+        <span className="block h-2.5 w-[34%] rounded-sm bg-skeleton" />
+        <span className="block h-2.5 rounded-sm bg-skeleton" style={{ width: `${40 + ((index * 37) % 45)}%` }} />
+        <span className="block h-2.5 w-[88%] rounded-sm bg-skeleton" />
       </div>
     </div>
   );

@@ -391,10 +391,11 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
   const bodyRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const groupRef = useRef<HTMLDivElement>(null);
 
   const rows = snapshot.rows;
   const count = snapshot.status === "ready" ? snapshot.total : 0;
-  const virtual = useVirtualRows(bodyRef, probeRef, count);
+  const virtual = useVirtualRows(bodyRef, probeRef, groupRef, count);
   const { scrollToIndex } = virtual;
   const scope = query.scope;
 
@@ -596,11 +597,16 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
 
         onKeyDown={onKeyDown}
       >
-        <div role="presentation" className="relative max-sm:mb-20" style={{ height: virtual.totalHeight }}>
+        <div
+          role="presentation"
+          className="relative max-sm:mb-[calc(var(--bottombar-height)+3.5rem+2rem+env(safe-area-inset-bottom,0px))]"
+          style={{ height: virtual.totalHeight }}
+        >
           <div
+            ref={groupRef}
             role="rowgroup"
             className="absolute inset-x-0 top-0"
-            style={{ transform: `translateY(${virtual.start * virtual.rowHeight}px)` }}
+            style={{ transform: `translateY(${virtual.startOffset}px)` }}
           >
             {items}
           </div>
@@ -626,6 +632,7 @@ function ListBody(props: ConversationListProps & { conversationView: boolean }) 
         someNotImportant={selection.all || selectedRows.some((r) => !isImportant(r, scope))}
         someSnoozed={selectedRows.some((r) => snoozedUntil(r.messages) !== null)}
         paging={paging}
+        heading={props.heading ?? title}
         conversationIds={selectedRows.map((r) => r.id)}
         emailIds={selectedRows.flatMap((r) => shownMessages(r, scope).map((m) => m.id))}
         labelRoute={props.labelRoute}

@@ -1,6 +1,6 @@
-// The list's toolbar, as Gmail's: the select checkbox and menu; with nothing
-// selected, refresh and where you are ("1–17 of 2,035"); with a selection,
-// archive, report spam, delete, mark read or unread, snooze, move
+// The list's head, one 48 px band: the select checkbox and menu; with nothing
+// selected, the label, where you are ("1–17 of 2,035") and refresh; with a
+// selection, archive, report spam, delete, mark read or unread, snooze, move
 // to, labels and more ("Filter messages like these"). In Spam and
 // Trash with nothing selected: "Delete all spam messages now" / "Empty Trash now".
 
@@ -37,6 +37,8 @@ export interface ToolbarProps {
   someSnoozed: boolean;
   /** "1–17 of 2,035", or empty. */
   paging: string;
+  /** The label being viewed, drawn in the head (the section's heading names it for a screen reader). */
+  heading: string;
   /** For the label menus. */
   conversationIds: readonly Id[];
   emailIds: readonly Id[];
@@ -106,12 +108,12 @@ export function Toolbar(props: ToolbarProps) {
 
   return (
     <div
-      className="relative z-sticky flex min-h-(--toolbar-height) flex-none items-center gap-1 border-b border-border bg-surface px-2 max-sm:flex-wrap max-sm:gap-0 max-sm:px-1"
+      className="relative z-sticky flex min-h-(--lhead-height) flex-none items-center gap-1 border-b border-border bg-surface pr-1 pl-1 max-sm:flex-wrap max-sm:gap-0"
       role="toolbar"
       aria-label="Conversation actions"
     >
-      <div className="mr-1 flex items-center">
-        <label className="inline-grid size-8 flex-none cursor-pointer place-items-center max-sm:size-11 [&_input]:m-0 [&_input]:size-4 [&_input]:cursor-pointer [&_input]:accent-accent">
+      <div className="flex items-center">
+        <label className="inline-grid size-10 flex-none cursor-pointer place-items-center max-sm:size-11 [&_input]:m-0">
           <input
             ref={checkRef}
             type="checkbox"
@@ -176,18 +178,20 @@ export function Toolbar(props: ToolbarProps) {
           </div>
         </>
       ) : (
-        <div className="flex items-center gap-1 max-sm:gap-0">
-          <IconButton label="Refresh" icon={RefreshCw} onClick={props.onRefresh} />
+        <>
+          <p className="ml-1 min-w-0 truncate text-xl leading-7 font-bold" aria-hidden="true">
+            {props.heading}
+          </p>
           {emptyable ? <EmptyLabelButton label={emptyable} /> : null}
-        </div>
+          <p
+            className="ml-auto px-1 text-xs leading-4 whitespace-nowrap text-text-muted tabular-nums max-sm:hidden"
+            aria-live="off"
+          >
+            {props.paging}
+          </p>
+          <IconButton className="max-sm:ml-auto" label="Refresh" icon={RefreshCw} onClick={props.onRefresh} />
+        </>
       )}
-
-      <p
-        className="ml-auto px-2 text-sm whitespace-nowrap text-text-muted tabular-nums @max-[46rem]/list:hidden"
-        aria-live="off"
-      >
-        {props.paging}
-      </p>
     </div>
   );
 }

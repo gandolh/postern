@@ -353,7 +353,6 @@
   @media (width < 37.5rem) {
     :root,
     :root[data-density] {
-      --row-height: 5rem;
       --nav-item-height: 2.75rem;
       --toolbar-height: 3rem;
     }
@@ -368,6 +367,53 @@
 }
 
 @layer components {
+  /* Checkboxes: an 18 px box with a 2 px edge that clears 3:1 (--color-border-strong), filled with the accent when
+     checked or mixed. Native inputs, so the keyboard and the forms keep working. */
+  input[type="checkbox"] {
+    appearance: none;
+    position: relative;
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+  }
+
+  input[type="checkbox"]:checked,
+  input[type="checkbox"]:indeterminate {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 4px;
+    width: 4px;
+    height: 9px;
+    border: solid var(--color-on-accent);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  input[type="checkbox"]:indeterminate::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 2px;
+    width: 10px;
+    height: 2px;
+    background: var(--color-on-accent);
+  }
+
+  input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
   /* The composer's editor body holds the user's own content (paragraphs, lists, links, tables), which no
      class of ours reaches, so its element rules stay as selectors. Tailwind's reset is undone for them. */
   [data-editor-body] {
