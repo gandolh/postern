@@ -24,6 +24,7 @@ export interface VirtualRows {
 /** Without layout (tests, first paint) assume a screenful. */
 const FALLBACK_VIEWPORT = 800;
 const FALLBACK_ROW = 48;
+const NONE: ReadonlyMap<number, number> = new Map();
 
 /** The first index whose row ends below `y` (offsets has count + 1 entries). */
 function indexAt(offsets: readonly number[], y: number): number {
@@ -48,7 +49,12 @@ export function useVirtualRows(
   const { density } = useDisplaySettings();
   const [rowHeight, setRowHeight] = useState(FALLBACK_ROW);
   const [viewport, setViewport] = useState({ top: 0, height: 0 });
-  const [heights, setHeights] = useState<ReadonlyMap<number, number>>(() => new Map());
+  // What was measured, kept with the density it was measured at: a new density changes the wrapping, so it starts over.
+  const [measured, setMeasured] = useState<{ density: string; map: ReadonlyMap<number, number> }>(() => ({
+    density,
+    map: new Map(),
+  }));
+  const heights = measured.density === density ? measured.map : NONE;
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -59,9 +65,6 @@ export function useVirtualRows(
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [probeRef, density]);
-
-  // A new density or width changes what a row's text wraps to: forget what was measured.
-  useLayoutEffect(() => setHeights(new Map()), [density]);
 
   // Measure the rendered rows after every render, and again when the list's width (hence the wrapping) changes.
   useLayoutEffect(() => {
@@ -77,7 +80,7 @@ export function useVirtualRows(
         next ??= new Map(heights);
         next.set(index, h);
       }
-      if (next) setHeights(next);
+      if (next) setMeasured({ density, map: next });
     };
     measure();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
