@@ -573,7 +573,7 @@ when the local Stalwart is down. They wait on the grilling of 2026-11-10.
 
 ## [2026-11-10] todo | Briefs 01-03 revised to the owner's grilling, and brief 04 added
 
-The owner's grilling of 2026-11-10 (and the technical calls beside it) changed the three briefs. **01** (the harness): `house-style` vendored with a `house-style:sync` script (Q6), width 120 (Q8, Q51) with the one-off cost stated (10,398 diff lines in 274 files; at least 160 files change at any width), and the 536 non-null assertions settled as an error in source and a warning in tests (Q47: 82 fixed, 454 left as warnings). **02** (Base UI): the 7 files behind wrappers in `web/src/components/ui/`, which stays the wrappers' home (Q15, Q59); the navigation drawer becomes Base UI's `Drawer`, closed by a swipe too (Q40); the invite answer a guarded `ToggleGroup`, the settings radios stay a `RadioGroup` (Q41, Q57); form dialogs set `disablePointerDismissal` (Q58); jsdom tests only for wrappers with logic (Q60). **03** (Tailwind): the `layer(legacy)` method kept; a first visit now shows the light theme and the theme setting reads Light, Dark and System, with a `data-theme` `@custom-variant dark` declared (Q18); parity "close enough" (Q19); the 60 class-based test selectors move to roles (Q62); Postern is ninth in the migration order (Q20). Every brief now says commits on `main`, no branch, no pull request (Q4, Q31). New: [brief 04](briefs/todo/04-a-redesign-with-hallmark-on-the-estate-board.md), a redesign with Hallmark on the estate board (Q39).
+The owner's grilling of 2026-11-10 (and the technical calls beside it) changed the three briefs. **01** (the harness): `house-style` vendored with a `house-style:sync` script (Q6), width 120 (Q8, Q51) with the one-off cost stated (10,398 diff lines in 274 files; at least 160 files change at any width), and the 536 non-null assertions settled as an error in source and a warning in tests (Q47: 82 fixed, 454 left as warnings). **02** (Base UI): the 7 files behind wrappers in `web/src/components/ui/`, which stays the wrappers' home (Q15, Q59); the navigation drawer becomes Base UI's `Drawer`, closed by a swipe too (Q40); the invite answer a guarded `ToggleGroup`, the settings radios stay a `RadioGroup` (Q41, Q57); form dialogs set `disablePointerDismissal` (Q58); jsdom tests only for wrappers with logic (Q60). **03** (Tailwind): the `layer(legacy)` method kept; a first visit now shows the light theme and the theme setting reads Light, Dark and System, with a `data-theme` `@custom-variant dark` declared (Q18); parity "close enough" (Q19); the 60 class-based test selectors move to roles (Q62); Postern is ninth in the migration order (Q20). Every brief now says commits on `main`, no branch, no pull request (Q4, Q31). New: [brief 04](briefs/done/04-a-redesign-with-hallmark-on-the-estate-board.md), a redesign with Hallmark on the estate board (Q39).
 
 ## [2026-11-11] brief | 01 The house style and the quality harness
 
@@ -637,3 +637,13 @@ The owner approved the redesign direction "The reading desk" on the estate redes
 question on the board standing as proposed. Brief 04's build starts: tokens first, then one screen per
 commit. Three decisions reopen with the approval (the reading pane's default, the phone's navigation, the
 row density); `wiki/decisions.md` records each when the build lands.
+
+## [2026-11-13] feat | The redesign, "The reading desk"
+
+Brief 04 built on `main`: the board's tokens, two islands on a deeper canvas, three-line rows with an unread
+dot under one 48 px head, the reading pane on by default, a phone bottom bar, the reader's head band, a 520 px
+composer window, still loading rows. Three design lines reopened and changed (the reading pane's default, the
+phone's navigation, the row density), each dated in `wiki/decisions.md` with the old line kept. A contrast
+script joined `npm run check`; Docker-free Floor specs (focus ring, reduced motion, 390 px overflow) run on a
+stub of the mail API in `web/e2e/desk/`. The owner deploys with `node cli.ts postern deploy` and runs the
+Stalwart browser suite once (`npm run test:e2e`).

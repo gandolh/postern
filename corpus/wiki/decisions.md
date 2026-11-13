@@ -1,5 +1,5 @@
 ---
-summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; the access token in memory and the refresh token in sessionStorage, so a reload keeps the session and closing the tab ends it (owner, 2026-10-28, revisiting 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native, styled with Tailwind since 2026-11-12; the redesign "The reading desk" of 2026-11-13 reopened three layout lines (the reading pane's default, the phone's navigation, the row density). How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
+summary: Locked calls for Postern, each with date, rejected alternatives and reason. Own Gmail-like app rather than an existing client; JMAP not IMAP; no backend of its own; served at the root of its own host, postern.<domain>, with Stalwart at /webmail-api on the same host (revisited 2026-10-21 from /webmail on the shared estate origin, and what that cost); message HTML only in a sandboxed iframe; the access token in memory and the refresh token in sessionStorage, so a reload keeps the session and closing the tab ends it (owner, 2026-10-28, revisiting 2026-10-20); Postern not registered as an OAuth client; the house stack; Base UI under the overlays, with the composer window left native, styled with Tailwind since 2026-11-12; the redesign "The reading desk" of 2026-11-13 reopened three layout lines (the reading pane's default, the phone's navigation, the row density), recorded in decisions-ui.md. How mail behaves (labels, per-device settings, offline, notifications, snooze) is in decisions-mail.md. Read before proposing to change any of these.
 updated: 2026-11-13
 ---
 
@@ -7,8 +7,8 @@ updated: 2026-11-13
 
 Each entry passed three tests: hard to reverse, surprising without context, a
 real trade-off. Changing one needs an explicit revisit and a `log.md` entry.
-How mail behaves (labels and archive, per-device settings, offline, notifications,
-snooze) is in [decisions-mail.md](decisions-mail.md).
+How mail behaves is in [decisions-mail.md](decisions-mail.md), the layout since the
+redesign in [decisions-ui.md](decisions-ui.md).
 
 
 
@@ -189,32 +189,6 @@ Tailwind v4 on Base UI wrappers (brief 03): one stylesheet,
 `web/src/styles/index.css`, its tokens the `@theme`. Unchanged: Base UI behind
 `components/ui/`, the native composer `<dialog>`, the hand-built comboboxes and
 sender card; shadcn stays rejected, since the wrappers are Postern's own.
-
-## The redesign, "The reading desk" (2026-11-13)
-
-_2026-11-13_, the owner approved the direction on the estate redesign board, with every question on the board
-standing as proposed (brief 04). It keeps "Our own webmail, shaped like Gmail" (Gmail has a reading pane and a phone
-bottom bar too), the patina on limestone identity, the keyboard model, the sandboxed message frame and both
-themes. Three lines of [design.md](design.md) were reopened and changed; the old line stays here as history.
-
-- **Reading pane, changed.** Was: "Reading pane: none, right, below", with `none` the default
-  (the list and the conversation stack as routes). Now: the default is `right`
-  (`DEFAULT_DISPLAY_SETTINGS`); `none` and `below` stay as settings, a stored choice still wins, and the pane stays
-  off on a phone. Why: the list and the reader side by side are what the redesign is for, and a first visit should
-  show them.
-- **Phone navigation, changed.** Was: "under 600 px it is hidden until the menu opens it" (a menu button in the top bar,
-  Compose floating alone). Now: a 64 px bottom bar (Inbox, Starred, Sent, Labels); Labels opens the drawer with the
-  whole tree, so the top bar drops its menu button; an open conversation takes the whole screen with its own toolbar,
-  and the bottom bar and Compose go. The rail (600 to 1023 px) and the full navigation (from 1024 px) stay. The
-  drawer's focus returns to Labels.
-- **Densities, changed.** Was: "rows 48, 40 and 32 px, one line each", every row "exactly one `--row-height` tall".
-  Now: three lines (senders and date; chips and subject; snippet), 72 px (6 px padding), 64 px (a 12/16 snippet) and
-  52 px (no snippet) as floors, a subject that wraps before it is cut, and a virtual list that measures its rows.
-  The keyboard model is unchanged.
-- **The loading skeleton stops pulsing** (the board's open sticky): the rows draw still, and `--animate-skeleton` and
-  `--color-skeleton-shine` are gone.
-- **The canvas deepened** (`#e8ebe7`, `#0d110f`), so the `theme-color` metas and the PWA manifest's colours followed it
-  (the controller's call, 2026-11-13).
 
 ## The house style, formatted and checked
 _2026-11-11_. The house-style harness, vendored into `vendor/house-style/` (refreshed by
