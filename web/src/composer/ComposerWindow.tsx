@@ -80,7 +80,7 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
   return (
     <dialog
       ref={ref}
-      className="relative inset-auto m-0 flex h-[min(38rem,calc(100vh-var(--topbar-height)-1rem))] max-h-none w-136 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-t-lg border border-b-0 border-border bg-surface p-0 text-text shadow-lg not-open:hidden backdrop:bg-scrim data-[placement=fullscreen]:fixed data-[placement=fullscreen]:inset-0 data-[placement=fullscreen]:m-auto data-[placement=fullscreen]:h-[min(56rem,calc(100vh-4rem))] data-[placement=fullscreen]:w-[min(72rem,calc(100vw-4rem))] data-[placement=fullscreen]:max-w-none data-[placement=fullscreen]:rounded-xl data-[placement=fullscreen]:border-b data-[placement=minimised]:h-auto data-[placement=minimised]:w-64 motion-safe:animate-compose-in max-sm:data-[placement=docked]:fixed max-sm:data-[placement=docked]:inset-0 max-sm:data-[placement=docked]:z-overlay max-sm:data-[placement=docked]:h-auto max-sm:data-[placement=docked]:w-auto max-sm:data-[placement=docked]:max-w-none max-sm:data-[placement=docked]:rounded-none max-sm:data-[placement=docked]:border-0 max-sm:data-[placement=fullscreen]:fixed max-sm:data-[placement=fullscreen]:inset-0 max-sm:data-[placement=fullscreen]:z-overlay max-sm:data-[placement=fullscreen]:h-auto max-sm:data-[placement=fullscreen]:w-auto max-sm:data-[placement=fullscreen]:max-w-none max-sm:data-[placement=fullscreen]:rounded-none max-sm:data-[placement=fullscreen]:border-0"
+      className="relative inset-auto m-0 flex h-[min(32.5rem,calc(100vh-var(--topbar-height)-1rem))] max-h-none w-[max(22rem,min(35rem,calc(100vw-var(--nav-width)-var(--list-width)-2rem)))] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-t-xl border border-b-0 border-border bg-surface-raised p-0 text-text shadow-lg not-open:hidden backdrop:bg-scrim data-[placement=fullscreen]:fixed data-[placement=fullscreen]:inset-0 data-[placement=fullscreen]:m-auto data-[placement=fullscreen]:h-[min(56rem,calc(100vh-4rem))] data-[placement=fullscreen]:w-[min(72rem,calc(100vw-4rem))] data-[placement=fullscreen]:max-w-none data-[placement=fullscreen]:rounded-xl data-[placement=fullscreen]:border-b data-[placement=minimised]:h-auto data-[placement=minimised]:w-64 motion-safe:animate-compose-in max-lg:w-136 max-sm:data-[placement=docked]:fixed max-sm:data-[placement=docked]:inset-0 max-sm:data-[placement=docked]:z-overlay max-sm:data-[placement=docked]:h-auto max-sm:data-[placement=docked]:w-auto max-sm:data-[placement=docked]:max-w-none max-sm:data-[placement=docked]:rounded-none max-sm:data-[placement=docked]:border-0 max-sm:data-[placement=fullscreen]:fixed max-sm:data-[placement=fullscreen]:inset-0 max-sm:data-[placement=fullscreen]:z-overlay max-sm:data-[placement=fullscreen]:h-auto max-sm:data-[placement=fullscreen]:w-auto max-sm:data-[placement=fullscreen]:max-w-none max-sm:data-[placement=fullscreen]:rounded-none max-sm:data-[placement=fullscreen]:border-0"
       data-placement={placement}
       aria-labelledby={titleId}
       {...{ [COMPOSER_ATTR]: state.key }}
@@ -111,8 +111,8 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
         session.addFiles(Array.from(e.dataTransfer.files));
       }}
     >
-      <div className="flex min-h-10 flex-none items-center bg-surface-sunken pr-1 pl-4">
-        <h2 id={titleId} className="min-w-0 flex-[1_1_auto] text-md font-semibold">
+      <div className="flex h-12 flex-none items-center border-b border-border bg-surface-sunken pr-1 pl-5 max-sm:h-14 max-sm:pl-4">
+        <h2 id={titleId} className="min-w-0 flex-[1_1_auto] text-md font-bold">
           {fullscreen ? (
             <span className="block w-full overflow-hidden py-2 text-left text-ellipsis whitespace-nowrap text-text">
               {titleOf(state)}
@@ -128,7 +128,7 @@ export function ComposerWindow({ state }: { state: ComposeSnapshot }) {
             </button>
           )}
         </h2>
-        <span className="flex flex-none [--icon-size:1.125rem] [&_[data-slot=icon-button]]:size-8 max-sm:[&_[data-slot=icon-button]]:size-11">
+        <span className="flex flex-none [--icon-size:1.125rem] [&_[data-slot=icon-button]]:size-9 max-sm:[&_[data-slot=icon-button]]:size-11">
           {!fullscreen ? (
             <IconButton
               label={minimised ? "Restore" : "Minimise"}

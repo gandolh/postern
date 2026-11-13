@@ -8,6 +8,8 @@ export interface Screen {
   hash: string | ((desk: Desk) => string);
   /** Waits until the screen has drawn. */
   ready: (page: Page) => Promise<void>;
+  /** Then does something to reach the state (opens a window, a menu). */
+  after?: (page: Page) => Promise<void>;
   /** Drawn on the board: shot and compared with its twin. */
   drawn?: boolean;
 }
@@ -33,6 +35,17 @@ export const SCREENS: Screen[] = [
     name: "conversation-long",
     hash: (desk) => `#inbox/${desk.threadBySubject("Q4 roadmap review")}`,
     ready: conversation,
+    drawn: true,
+  },
+  {
+    name: "composer",
+    hash: "#inbox",
+    ready: list,
+    after: async (page) => {
+      await page.getByRole("button", { name: "Compose" }).click();
+      await page.locator("dialog[open]").waitFor();
+      await page.waitForTimeout(400);
+    },
     drawn: true,
   },
   { name: "starred", hash: "#starred", ready: list },

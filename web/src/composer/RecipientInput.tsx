@@ -166,12 +166,12 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
 
   return (
     <div
-      className="relative mx-4 flex min-h-10 flex-none items-center gap-2 border-b border-border first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:min-h-11"
+      className="relative mx-5 flex min-h-12 flex-none items-center gap-3 border-b border-border-strong first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:mx-4 max-sm:min-h-12"
       onClick={(e) => {
         if (e.target === e.currentTarget) inputRef.current?.focus();
       }}
     >
-      <label className="flex-none text-md text-text-muted" htmlFor={`${id}-input`}>
+      <label className="w-14 flex-none text-md text-text-muted" htmlFor={`${id}-input`}>
         {label}
       </label>
       <ul

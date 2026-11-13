@@ -450,7 +450,7 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
       <div
         ref={rootRef}
         data-editor-body
-        className="min-h-32 flex-[1_0_auto] px-4 py-3 text-lg leading-normal wrap-anywhere whitespace-pre-wrap text-text outline-none"
+        className="min-h-32 flex-[1_0_auto] px-5 py-4 text-lg leading-6 wrap-anywhere whitespace-pre-wrap text-text outline-none"
         contentEditable
         suppressContentEditableWarning
         role="textbox"
@@ -519,7 +519,7 @@ export function Editor({ session, revision, label, showToolbar, toolbarId, onAtt
       {showToolbar ? (
         <div
           id={toolbarId}
-          className="sticky bottom-0 z-header mx-3 mt-1 flex flex-none flex-wrap gap-0.5 rounded-md border border-border bg-surface p-1 [--icon-size:1.125rem]"
+          className="sticky bottom-0 z-header mx-3 mt-1 flex flex-none flex-wrap gap-0.5 rounded-lg border border-border bg-surface p-1 [--icon-size:1.125rem]"
           role="toolbar"
           aria-label="Formatting options"
         >

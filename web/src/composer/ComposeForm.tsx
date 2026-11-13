@@ -235,8 +235,8 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
       data-variant={variant}
     >
       {identities.length > 1 ? (
-        <div className="relative mx-4 flex min-h-10 flex-none items-center gap-2 border-b border-border first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:min-h-11">
-          <label className="flex-none text-md text-text-muted" htmlFor={fromId}>
+        <div className="relative mx-5 flex min-h-12 flex-none items-center gap-3 border-b border-border-strong first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:mx-4">
+          <label className="w-14 flex-none text-md text-text-muted" htmlFor={fromId}>
             From
           </label>
           <select
@@ -269,14 +269,13 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         <RecipientInput session={session} source={store.recipients} field="bcc" label="Bcc" recipients={state.bcc} />
       ) : null}
       {variant === "window" ? (
-        <div className="relative mx-4 flex min-h-10 flex-none items-center gap-2 border-b border-border first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:min-h-11">
-          <label className="sr-only" htmlFor={subjectId}>
+        <div className="relative mx-5 flex min-h-12 flex-none items-center gap-3 border-b border-border-strong first:group-data-[variant=inline]/form:mt-1 focus-within:border-b-focus focus-within:shadow-[inset_0_-1px_0_var(--color-focus)] max-sm:mx-4">
+          <label className="w-14 flex-none text-md text-text-muted" htmlFor={subjectId}>
             Subject
           </label>
           <input
             id={subjectId}
             className="min-w-24 flex-[1_1_auto] bg-transparent py-2 text-md text-text outline-none placeholder:text-text-subtle max-sm:min-h-11"
-            placeholder="Subject"
             value={state.subject}
             onChange={(e) => session.setSubject(e.target.value)}
           />
@@ -313,7 +312,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
           <>
             <textarea
               ref={textRef}
-              className="min-h-32 flex-[1_0_auto] resize-none bg-transparent px-4 py-3 text-lg leading-normal wrap-anywhere whitespace-pre-wrap text-text outline-none"
+              className="min-h-32 flex-[1_0_auto] resize-none bg-transparent px-4 py-3 text-lg leading-6 wrap-anywhere whitespace-pre-wrap text-text outline-none"
               aria-label="Message body"
               value={state.text}
               onChange={(e) => session.setText(e.target.value)}
@@ -335,12 +334,12 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
         )}
       </div>
 
-      <div className="flex flex-none items-center gap-1 px-3 py-2 [&_[data-slot=icon-button]]:after:top-auto [&_[data-slot=icon-button]]:after:bottom-[calc(100%+0.25rem)]">
+      <div className="flex flex-none items-center gap-1 px-3 pt-2 pb-3 [&_[data-slot=icon-button]]:after:top-auto [&_[data-slot=icon-button]]:after:bottom-[calc(100%+0.25rem)]">
         <span className="mr-2 inline-flex flex-none" data-split={canSchedule || undefined} ref={sendMenuAnchor}>
           <Button
             variant="primary"
             type="button"
-            className="mr-0 min-h-10 rounded-pill px-6 font-semibold in-data-split:rounded-r-none in-data-split:pr-4 max-sm:min-h-11"
+            className="mr-0 min-h-12 rounded-pill px-6 font-bold in-data-split:rounded-r-none in-data-split:pr-5 in-data-split:pl-7"
             onClick={() => send()}
             aria-describedby={state.sendError ? errorId : undefined}
             title="Send (Ctrl+Enter)"
@@ -353,7 +352,7 @@ export function ComposeForm({ session, state, variant, onPopOut }: ComposeFormPr
                 ref={sendMenuButton}
                 className={buttonClass(
                   "primary",
-                  "min-h-10 rounded-l-none rounded-r-pill border-l border-l-on-accent/35 py-0 pr-2 pl-1 [&_svg]:size-4.5",
+                  "min-h-12 rounded-l-none rounded-r-pill border-l border-l-on-accent py-0 pr-3.5 pl-3 [&_svg]:size-4.5",
                 )}
                 aria-label="More send options"
                 title="More send options"

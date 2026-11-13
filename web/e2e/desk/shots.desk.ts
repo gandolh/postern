@@ -24,6 +24,7 @@ for (const theme of THEMES) {
       for (const screen of SCREENS) {
         await page.goto(`/${hashOf(screen, desk)}`);
         await screen.ready(page);
+        await screen.after?.(page);
         await page.waitForTimeout(300);
         await page.screenshot({ path: join(DIR as string, `${screen.name}-${theme}-${size.label}.png`) });
       }
