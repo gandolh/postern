@@ -183,23 +183,32 @@ function PlaceholderHeading({ noun }: { noun: RowNoun }) {
   );
 }
 
+/**
+ * The reader's head band: the toolbar (icon-only, with names and tooltips) and the subject, on the `row-read`
+ * step, hairline-edged, with a 3 px `row-selected` rule on top. The messages scroll under it.
+ */
 function ConversationToolbarShell({
   backHref,
   backLabel,
   children,
+  heading,
 }: {
   backHref: string;
   backLabel: string;
   children?: ReactNode;
+  heading?: ReactNode;
 }) {
   return (
-    <div
-      className="relative z-sticky flex min-h-(--toolbar-height) flex-none flex-wrap items-center gap-1 border-b border-border bg-surface px-2"
-      role="toolbar"
-      aria-label="Conversation actions"
-    >
-      <IconButton label={backLabel} icon={ArrowLeft} href={backHref} tooltip="start" />
-      {children}
+    <div className="relative z-sticky flex-none border-b border-border bg-row-read shadow-[inset_0_3px_0_var(--color-row-selected)]">
+      <div
+        className="flex h-13 flex-none flex-wrap items-center gap-0.5 px-2 pt-[3px] max-sm:h-14 max-sm:justify-between max-sm:gap-0 max-sm:px-1"
+        role="toolbar"
+        aria-label="Conversation actions"
+      >
+        <IconButton label={backLabel} icon={ArrowLeft} href={backHref} tooltip="start" />
+        {children}
+      </div>
+      {heading}
     </div>
   );
 }
@@ -587,8 +596,33 @@ function ConversationBody({
       <ConversationToolbarShell
         backHref={formatRoute(backRoute)}
         backLabel={label ? `Back to ${label.title}` : "Back to search results"}
+        heading={
+          <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 pt-1 pb-3.5 @max-[40rem]/conv:px-4">
+            <h1
+              id="conv-subject"
+              className="text-xl font-bold wrap-anywhere focus:outline-none focus-visible:rounded-sm focus-visible:[outline:var(--focus-ring)] focus-visible:outline-offset-(--focus-offset) max-sm:text-2xl"
+              ref={headingRef}
+              tabIndex={-1}
+            >
+              {subject}
+            </h1>
+            {chips.length > 0 ? (
+              <ul className="m-0 flex list-none flex-wrap gap-1 p-0" aria-label="Labels">
+                {chips.map((c) => (
+                  <li
+                    key={c.id}
+                    className="inline-flex min-h-6 items-center gap-1 rounded-md border border-border bg-surface px-2 text-sm leading-none text-text-muted [&_.lucide]:[--icon-size:0.875rem]"
+                  >
+                    {c.system === "inbox" ? <Inbox aria-hidden="true" /> : null}
+                    {c.title}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </header>
+        }
       >
-        <span className="mx-1 h-5 w-px flex-none bg-border" aria-hidden="true" />
+        <span className="mx-1.5 h-5 w-px flex-none bg-border-strong max-sm:hidden" aria-hidden="true" />
         {!inTrashOrSpam ? <IconButton label="Archive" icon={Archive} onClick={conversationActions.archive} /> : null}
         {kind === "spam" ? (
           <IconButton label="Not spam" icon={ShieldCheck} onClick={conversationActions.notSpam} />
@@ -600,39 +634,15 @@ function ConversationBody({
         ) : (
           <IconButton label="Delete" icon={Trash2} onClick={conversationActions.trash} />
         )}
-        <span className="mx-1 h-5 w-px flex-none bg-border" aria-hidden="true" />
+        <span className="mx-1.5 h-5 w-px flex-none bg-border-strong max-sm:hidden" aria-hidden="true" />
         <IconButton label="Mark as unread" icon={MailOpen} onClick={conversationActions.markUnread} />
         <LabelMenu conversationIds={labelTargets} emailIds={emailIds} current={current} mode="move" />
         <LabelMenu conversationIds={labelTargets} emailIds={emailIds} current={current} mode="label" />
       </ConversationToolbarShell>
 
       <div className="min-h-0 flex-[1_1_auto] overflow-auto">
-        <header className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-5 pr-6 pb-3 pl-19 @max-[40rem]/conv:px-4">
-          <h1
-            id="conv-subject"
-            className="text-xl leading-tight font-normal wrap-anywhere focus:outline-none focus-visible:rounded-sm focus-visible:[outline:var(--focus-ring)] focus-visible:outline-offset-(--focus-offset)"
-            ref={headingRef}
-            tabIndex={-1}
-          >
-            {subject}
-          </h1>
-          {chips.length > 0 ? (
-            <ul className="m-0 flex list-none flex-wrap gap-1 p-0" aria-label="Labels">
-              {chips.map((c) => (
-                <li
-                  key={c.id}
-                  className="inline-flex min-h-6 items-center gap-1 rounded-sm bg-surface-sunken px-2 text-sm leading-none text-text-muted [&_.lucide]:[--icon-size:0.875rem]"
-                >
-                  {c.system === "inbox" ? <Inbox aria-hidden="true" /> : null}
-                  {c.title}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </header>
-
         {hiddenCount > 0 && scope.kind === "normal" && !single ? (
-          <p className="my-2 py-0 pr-6 pl-19 text-sm text-text-muted @max-[40rem]/conv:px-4">
+          <p className="my-2 px-5 text-sm text-text-muted @max-[40rem]/conv:px-4">
             {hiddenCount === 1
               ? "One message in this conversation is in Trash or Spam."
               : `${hiddenCount} messages in this conversation are in Trash or Spam.`}
@@ -644,7 +654,7 @@ function ConversationBody({
             item.kind === "fold" ? (
               <li
                 key={item.key}
-                className="relative px-6 py-2 before:absolute before:inset-x-0 before:top-1/2 before:border-t before:border-border before:content-[''] @max-[40rem]/conv:px-4 [li+&]:border-t [li+&]:border-border"
+                className="relative px-5 py-2 before:absolute before:inset-x-0 before:top-1/2 before:border-t before:border-border before:content-[''] @max-[40rem]/conv:px-4 [li+&]:border-t [li+&]:border-border"
               >
                 <button
                   type="button"
@@ -682,7 +692,7 @@ function ConversationBody({
           )}
         </ol>
 
-        <div className="pr-6 pb-6 pl-19 empty:hidden @max-[40rem]/conv:px-4" id={inlineReplySlotId(conversationId)}>
+        <div className="pr-5 pb-6 pl-18 empty:hidden @max-[40rem]/conv:px-4" id={inlineReplySlotId(conversationId)}>
           {renderInlineReply && last
             ? renderInlineReply({ threadId: conversationId, lastMessageId: last.id, messageIds: emailIds, subject })
             : null}

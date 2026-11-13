@@ -3,7 +3,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "@playwright/test";
-import { SCREENS, THEMES, WIDTHS } from "./screens.ts";
+import { hashOf, SCREENS, THEMES, WIDTHS } from "./screens.ts";
 import { openDesk } from "./stub.ts";
 
 const DIR = process.env["SHOTS_DIR"];
@@ -22,7 +22,7 @@ for (const theme of THEMES) {
       }, theme);
       const desk = await openDesk(page);
       for (const screen of SCREENS) {
-        await page.goto(`/${screen.hash}`);
+        await page.goto(`/${hashOf(screen, desk)}`);
         await screen.ready(page);
         await page.waitForTimeout(300);
         await page.screenshot({ path: join(DIR as string, `${screen.name}-${theme}-${size.label}.png`) });

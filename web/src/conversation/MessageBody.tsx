@@ -235,14 +235,14 @@ function TextBody({ text }: { text: string }) {
   const split = useMemo(() => splitPlainQuote(text), [text]);
   return (
     <>
-      <div className="text-lg leading-normal wrap-anywhere whitespace-pre-wrap">
+      <div className="text-lg leading-6 wrap-anywhere whitespace-pre-wrap">
         <TextRuns text={split.main} />
       </div>
       {split.quote !== null ? (
         <>
           <QuoteToggle open={quoteOpen} onToggle={() => setQuoteOpen((o) => !o)} />
           {quoteOpen ? (
-            <div className="mt-2 border-l-2 border-border-strong pl-3 text-lg leading-normal wrap-anywhere whitespace-pre-wrap text-text-muted">
+            <div className="mt-2 border-l-2 border-border-strong pl-3 text-lg leading-6 wrap-anywhere whitespace-pre-wrap text-text-muted">
               <TextRuns text={split.quote} />
             </div>
           ) : null}

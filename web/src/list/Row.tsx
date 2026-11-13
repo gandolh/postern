@@ -89,7 +89,7 @@ function Chip({ chip }: { chip: ChipLabel }) {
   const color = useLabelColor(chip.id);
   return (
     <span
-      className="mt-px block flex-none rounded-md border border-border bg-surface-sunken px-[7px] py-px text-xs leading-4 whitespace-nowrap text-text-muted data-label-color:bg-(color:--label-chip-bg) data-label-color:text-text group-aria-selected/row:bg-surface group-data-open/row:bg-surface"
+      className="mt-px block flex-none rounded-md border border-border bg-surface-sunken px-[7px] py-px text-xs leading-4 whitespace-nowrap text-text-muted group-aria-selected/row:bg-surface group-data-open/row:bg-surface data-label-color:bg-(color:--label-chip-bg) data-label-color:text-text"
       data-label-color={color}
     >
       {chip.title}
@@ -193,7 +193,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       aria-selected={selected}
       aria-current={open ? "true" : undefined}
       tabIndex={tabbable ? 0 : -1}
-      className="group/row relative grid min-h-(--row-height) cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] grid-rows-[auto_auto] content-center items-start border-b border-border bg-row-read py-1.5 pr-11 pl-1 text-md text-text select-none hover:bg-row-hover focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover in-data-[density=comfortable]:py-1 max-sm:min-h-0 max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:pr-13 max-sm:pl-0 [&[draggable=true]]:cursor-default"
+      className="group/row relative grid min-h-(--row-height) cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] grid-rows-[auto_auto] content-center items-start border-b border-border bg-row-read py-1.5 pr-11 pl-1 text-md text-text select-none hover:bg-row-hover focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 in-data-[density=comfortable]:py-1 aria-selected:bg-row-selected! data-open:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover max-sm:min-h-0 max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:pr-13 max-sm:pl-0 [&[draggable=true]]:cursor-default"
       draggable
       onDragStart={(event) => startDrag(event, row, selected)}
       data-row-id={row.id}
@@ -227,9 +227,9 @@ export const ConversationRowView = memo(function ConversationRowView({
             }}
           />
         </label>
-        <div className="absolute top-1.5 right-3 flex flex-col items-center max-sm:right-1 max-sm:top-1.5">
+        <div className="absolute top-1.5 right-3 flex flex-col items-center max-sm:top-1.5 max-sm:right-1">
           <IconButton
-            className="size-7 rounded-md text-text-muted aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:hover:bg-hover max-sm:size-11 max-sm:rounded-pill [&_.lucide]:[--icon-size:1.125rem] max-sm:[&_.lucide]:[--icon-size:1.25rem] aria-pressed:[&_.lucide]:fill-current"
+            className="size-7 rounded-md text-text-muted aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:hover:bg-hover max-sm:size-11 max-sm:rounded-pill [&_.lucide]:[--icon-size:1.125rem] aria-pressed:[&_.lucide]:fill-current max-sm:[&_.lucide]:[--icon-size:1.25rem]"
             label={view.starred ? "Starred" : "Not starred"}
             icon={Star}
             aria-pressed={view.starred}
@@ -250,7 +250,7 @@ export const ConversationRowView = memo(function ConversationRowView({
       </div>
       <div
         role="gridcell"
-        className="col-start-2 row-start-1 block h-5 min-w-0 pl-0.5 leading-5 whitespace-nowrap text-text [mask-image:linear-gradient(to_right,black_calc(100%-1rem),transparent)] max-sm:pl-1"
+        className="col-start-2 row-start-1 block h-5 min-w-0 [mask-image:linear-gradient(to_right,black_calc(100%-1rem),transparent)] pl-0.5 leading-5 whitespace-nowrap text-text max-sm:pl-1"
         title={view.senders.text}
       >
         {view.unread ? <span className="sr-only">Unread, </span> : null}
@@ -323,12 +323,12 @@ export const ConversationRowView = memo(function ConversationRowView({
                   ))}
                 </span>
               ) : null}
-              <span className="min-w-0 flex-[1_1_auto] text-text [text-wrap:pretty] wrap-anywhere group-data-unread/row:font-bold max-sm:group-data-unread/row:font-semibold">
+              <span className="min-w-0 flex-[1_1_auto] [text-wrap:pretty] wrap-anywhere text-text group-data-unread/row:font-bold max-sm:group-data-unread/row:font-semibold">
                 <Highlighted html={row.snippet?.subject} fallback={subject} />
               </span>
             </div>
             {row.preview || row.snippet?.preview ? (
-              <div className="text-sm leading-[1.125rem] whitespace-nowrap text-text-muted [mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)] in-data-[density=comfortable]:text-xs in-data-[density=comfortable]:leading-4 in-data-[density=compact]:hidden">
+              <div className="[mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)] text-sm leading-[1.125rem] whitespace-nowrap text-text-muted in-data-[density=comfortable]:text-xs in-data-[density=comfortable]:leading-4 in-data-[density=compact]:hidden">
                 <Highlighted html={row.snippet?.preview} fallback={row.preview} />
               </div>
             ) : null}

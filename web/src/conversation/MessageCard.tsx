@@ -129,7 +129,7 @@ export function MessageCard({
     return (
       <article
         id={messageCardId(message.id)}
-        className="group/msg px-6 focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 @max-[40rem]/conv:px-4 [li+li>&]:border-t [li+li>&]:border-border"
+        className="group/msg px-5 hover:bg-row-hover focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 @max-[40rem]/conv:px-4 [li+li>&]:border-t [li+li>&]:border-border"
         data-expanded="false"
         data-unread={unread || undefined}
         tabIndex={-1}
@@ -139,30 +139,31 @@ export function MessageCard({
         <h2 className="m-0 [font-size:inherit] [line-height:inherit] [font-weight:inherit]" id={headingId}>
           <button
             type="button"
-            className="group/line grid min-h-14 w-full cursor-pointer grid-cols-[2.5rem_minmax(8rem,14rem)_minmax(0,1fr)_auto] items-center gap-3 bg-transparent py-2 text-start text-text @max-[40rem]/conv:grid-cols-[2rem_minmax(0,1fr)_auto]"
+            className="group/line grid min-h-13 w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)] items-start gap-x-3 bg-transparent py-3 text-start text-text"
             aria-expanded={false}
             onClick={actions.toggle}
           >
             <Avatar name={name} small />
-            <span className="overflow-hidden font-semibold text-ellipsis whitespace-nowrap group-hover/line:underline group-data-unread/msg:font-bold">
-              <bdi>{name}</bdi>
+            <span className="flex min-w-0 items-baseline gap-2">
+              <span className="flex-none font-semibold group-hover/line:underline group-data-unread/msg:font-bold">
+                <bdi>{name}</bdi>
+              </span>
               {from && displayName(from) ? (
-                <>
-                  {" "}
-                  <bdi className="text-sm font-normal text-text-muted">{from.email}</bdi>
-                </>
+                <bdi className="min-w-0 flex-1 [mask-image:linear-gradient(to_right,black_calc(100%-1rem),transparent)] text-sm leading-[1.125rem] font-normal whitespace-nowrap text-text-muted @max-[40rem]/conv:hidden">
+                  {from.email}
+                </bdi>
               ) : null}
+              <time
+                className="ml-auto flex-none text-xs leading-4 whitespace-nowrap text-text-muted tabular-nums"
+                dateTime={date}
+                title={formatFullDate(date)}
+              >
+                {cardDate(date)}
+              </time>
             </span>
-            <span className="overflow-hidden text-md text-ellipsis whitespace-nowrap text-text-muted @max-[40rem]/conv:hidden">
+            <span className="col-start-2 block min-w-0 [mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)] text-sm leading-[1.125rem] whitespace-nowrap text-text-muted">
               {message.preview}
             </span>
-            <time
-              className="text-sm whitespace-nowrap text-text-muted tabular-nums"
-              dateTime={date}
-              title={formatFullDate(date)}
-            >
-              {cardDate(date)}
-            </time>
           </button>
         </h2>
       </article>
@@ -185,13 +186,13 @@ export function MessageCard({
   return (
     <article
       id={messageCardId(message.id)}
-      className="group/msg px-6 focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 @max-[40rem]/conv:px-4 [li+li>&]:border-t [li+li>&]:border-border"
+      className="group/msg px-5 focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 @max-[40rem]/conv:px-4 [li+li>&]:border-t [li+li>&]:border-border"
       data-expanded="true"
       tabIndex={-1}
       aria-labelledby={headingId}
       onFocus={onFocusCard}
     >
-      <header className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-start gap-3 pt-4 pb-2 @max-[40rem]/conv:grid-cols-[2.5rem_minmax(0,1fr)]">
+      <header className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-start gap-3 pt-5 pb-1 @max-[40rem]/conv:grid-cols-[2.5rem_minmax(0,1fr)]">
         <Avatar name={name} />
         <div className="min-w-0">
           <SenderHoverCard address={from}>
@@ -205,7 +206,7 @@ export function MessageCard({
               >
                 <bdi className="text-md font-bold wrap-anywhere">{name}</bdi>
                 {from && displayName(from) ? (
-                  <span className="text-sm wrap-anywhere text-text-muted">
+                  <span className="text-sm leading-[1.125rem] wrap-anywhere text-text-muted">
                     &lt;<bdi>{from.email}</bdi>&gt;
                   </span>
                 ) : null}
@@ -246,23 +247,29 @@ export function MessageCard({
           </div>
           {details ? <MessageDetails message={message} id={detailsId} /> : null}
         </div>
-        <div className="flex items-center gap-1 @max-[40rem]/conv:col-span-full @max-[40rem]/conv:justify-end">
+        <div className="flex items-center gap-0 @max-[40rem]/conv:col-span-full @max-[40rem]/conv:justify-end">
           <time
-            className="mr-1 text-sm whitespace-nowrap text-text-muted tabular-nums"
+            className="mr-2 text-xs leading-4 whitespace-nowrap text-text-muted tabular-nums"
             dateTime={date}
             title={formatFullDate(date)}
           >
             {cardDate(date)}
           </time>
           <IconButton
-            className="aria-pressed:bg-transparent aria-pressed:text-star aria-pressed:[&_.lucide]:fill-current"
+            className="size-9 aria-pressed:bg-transparent aria-pressed:text-star max-sm:size-11 aria-pressed:[&_.lucide]:fill-current"
             label={starred ? "Remove star" : "Star this message"}
             icon={Star}
             aria-pressed={starred}
             onClick={actions.toggleStar}
           />
-          <IconButton label="Reply" icon={CornerUpLeft} onClick={actions.reply} />
-          <MenuButton label="More" icon={MoreVertical} items={moreItems} align="end" />
+          <IconButton className="size-9 max-sm:size-11" label="Reply" icon={CornerUpLeft} onClick={actions.reply} />
+          <MenuButton
+            label="More"
+            icon={MoreVertical}
+            items={moreItems}
+            align="end"
+            className="[&_[data-slot=icon-button]]:size-9 max-sm:[&_[data-slot=icon-button]]:size-11"
+          />
         </div>
       </header>
       {/* A calendar invite's card, from parsed text only; the body below is untouched. */}
@@ -291,14 +298,26 @@ export function MessageCard({
         />
       ) : null}
       {last ? (
-        <div className="ml-13 flex flex-wrap gap-2 pt-3 pb-5 @max-[40rem]/conv:ml-0 [&_.lucide]:[--icon-size:1.125rem]">
-          <Button type="button" className="rounded-pill" onClick={actions.reply}>
+        <div className="ml-13 flex flex-wrap gap-2 pt-1.5 pb-5 @max-[40rem]/conv:ml-0 [&_.lucide]:[--icon-size:1.125rem]">
+          <Button
+            type="button"
+            className="h-10 rounded-pill border-border-strong bg-surface font-medium max-sm:h-11"
+            onClick={actions.reply}
+          >
             <CornerUpLeft aria-hidden="true" /> Reply
           </Button>
-          <Button type="button" className="rounded-pill" onClick={actions.replyAll}>
+          <Button
+            type="button"
+            className="h-10 rounded-pill border-border-strong bg-surface font-medium max-sm:h-11"
+            onClick={actions.replyAll}
+          >
             <ReplyAll aria-hidden="true" /> Reply all
           </Button>
-          <Button type="button" className="rounded-pill" onClick={actions.forward}>
+          <Button
+            type="button"
+            className="h-10 rounded-pill border-border-strong bg-surface font-medium max-sm:h-11"
+            onClick={actions.forward}
+          >
             <CornerUpRight aria-hidden="true" /> Forward
           </Button>
         </div>

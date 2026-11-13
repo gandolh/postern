@@ -1,10 +1,11 @@
 // One table of screens, shared by the shots, the focus-ring, the reduced-motion and the 390-overflow specs.
 
 import type { Page } from "@playwright/test";
+import type { Desk } from "./stub.ts";
 
 export interface Screen {
   name: string;
-  hash: string;
+  hash: string | ((desk: Desk) => string);
   /** Waits until the screen has drawn. */
   ready: (page: Page) => Promise<void>;
   /** Drawn on the board: shot and compared with its twin. */
@@ -15,8 +16,25 @@ const list = async (page: Page) => {
   await page.locator("[data-row], [role='row'], li").first().waitFor();
 };
 
+const conversation = async (page: Page) => {
+  await page.locator("[data-conversation-page]").waitFor();
+  await page.locator("[data-expanded='true']").first().waitFor();
+};
+
 export const SCREENS: Screen[] = [
   { name: "list", hash: "#inbox", ready: list, drawn: true },
+  {
+    name: "conversation",
+    hash: (desk) => `#inbox/${desk.threadBySubject("Saturday plans")}`,
+    ready: conversation,
+    drawn: true,
+  },
+  {
+    name: "conversation-long",
+    hash: (desk) => `#inbox/${desk.threadBySubject("Q4 roadmap review")}`,
+    ready: conversation,
+    drawn: true,
+  },
   { name: "starred", hash: "#starred", ready: list },
   { name: "sent", hash: "#sent", ready: list },
   {
@@ -27,6 +45,10 @@ export const SCREENS: Screen[] = [
   { name: "contacts", hash: "#contacts", ready: async (p) => void (await p.getByRole("heading").first().waitFor()) },
   { name: "scheduled", hash: "#scheduled", ready: async (p) => void (await p.getByRole("heading").first().waitFor()) },
 ];
+
+export function hashOf(screen: Screen, desk: Desk): string {
+  return typeof screen.hash === "function" ? screen.hash(desk) : screen.hash;
+}
 
 export const WIDTHS = [
   { label: "1280", width: 1280, height: 800 },

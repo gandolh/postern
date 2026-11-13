@@ -157,7 +157,7 @@ export class Desk {
     return {
       key,
       id: `mb-${key.replace(/[^a-z0-9]+/gi, "-")}`,
-      name: isLabel ? (path[path.length - 1]) : (ROLE_NAMES[key]),
+      name: isLabel ? path[path.length - 1] : ROLE_NAMES[key],
       parentId: path.length > 1 ? `mb-${("label:" + path.slice(0, -1).join("/")).replace(/[^a-z0-9]+/gi, "-")}` : null,
       role: isLabel ? null : key,
       sortOrder,
@@ -178,6 +178,15 @@ export class Desk {
       },
       isSubscribed: true,
     };
+  }
+
+  /** The thread id of the first conversation whose subject has this text (the screens table opens threads by subject). */
+  threadBySubject(text: string, box = "inbox"): string {
+    for (const e of this.entries) {
+      if (!e.seed.mailboxes.includes(box as never)) continue;
+      if (String(this.#parse(e).email["subject"] ?? "").includes(text)) return e.threadId;
+    }
+    throw new Error(`no thread with "${text}" in ${box}`);
   }
 
   #mailboxId(key: string): string | undefined {
@@ -276,10 +285,7 @@ export class Desk {
     if (typeof filter["hasKeyword"] === "string" && !entry.seed.keywords.includes(filter["hasKeyword"])) return false;
     if (typeof filter["notKeyword"] === "string" && entry.seed.keywords.includes(filter["notKeyword"])) return false;
     if (typeof filter["text"] === "string") {
-      const hay = JSON.stringify([
-        (this.#parse(entry).email)["subject"],
-        (this.#parse(entry).email)["preview"],
-      ]);
+      const hay = JSON.stringify([this.#parse(entry).email["subject"], this.#parse(entry).email["preview"]]);
       if (!hay.toLowerCase().includes(filter["text"].toLowerCase())) return false;
     }
     if (
@@ -418,7 +424,7 @@ export class Desk {
         newState: "s1",
         created: null,
         updated: Object.fromEntries(Object.keys(update).map((k) => [k, null])),
-        destroyed: (args["destroy"]) ?? null,
+        destroyed: args["destroy"] ?? null,
       };
     }
     this.unhandled.push(name);
