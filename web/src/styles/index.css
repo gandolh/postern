@@ -409,6 +409,13 @@
     background: var(--color-on-accent);
   }
 
+  /* A date field's calendar button is inside the browser's own control and never matches :focus-visible there: the
+     field draws its ring while anything in it has focus. */
+  input[type="date"]:focus-within {
+    outline: var(--focus-ring);
+    outline-offset: -1px;
+  }
+
   input[type="checkbox"]:disabled {
     cursor: not-allowed;
     opacity: 0.5;

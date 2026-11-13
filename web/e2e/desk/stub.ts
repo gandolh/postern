@@ -30,6 +30,7 @@ interface Leaf {
   disposition: string | null;
   size: number;
   value: string | null;
+  bytes: Buffer;
 }
 
 function headerOf(block: string): Map<string, string> {
@@ -95,6 +96,7 @@ function walk(raw: string, partId: string, out: Leaf[]): void {
     disposition,
     size: bytes.length,
     value: text && disposition !== "attachment" ? bytes.toString("utf8") : null,
+    bytes,
   });
 }
 
@@ -187,6 +189,14 @@ export class Desk {
       if (String(this.#parse(e).email["subject"] ?? "").includes(text)) return e.threadId;
     }
     throw new Error(`no thread with "${text}" in ${box}`);
+  }
+
+  /** A part's bytes by blob id (`b-<email id>-<part id>`), for the download route. */
+  blob(blobId: string): { type: string; bytes: Buffer } | undefined {
+    const m = /^b-(e\d+)-(.+)$/.exec(blobId);
+    const entry = m ? this.entries.find((e) => e.id === m[1]) : undefined;
+    const leaf = entry ? this.#parse(entry).leaves.find((l) => l.partId === m?.[2]) : undefined;
+    return leaf ? { type: leaf.type, bytes: leaf.bytes } : undefined;
   }
 
   #mailboxId(key: string): string | undefined {
@@ -564,6 +574,11 @@ export async function openDesk(page: Page, options: { signedIn?: boolean; desk?:
     if (path === "/auth/userinfo")
       return json(route, { sub: ACCOUNT, email: "alice@postern.test", name: "Alice Archer" });
     if (path === "/jmap/session") return json(route, SESSION);
+    const download = /^\/jmap\/download\/[^/]+\/([^/]+)\//.exec(path);
+    if (download) {
+      const blob = desk.blob(decodeURIComponent(download[1] as string));
+      if (blob) return route.fulfill({ status: 200, contentType: blob.type, body: blob.bytes });
+    }
     if (path.startsWith("/jmap/eventsource")) {
       // Held open: the reader stays "connecting", so no "Reconnecting..." pill shows in a shot.
       await new Promise((done) => setTimeout(done, 120_000));

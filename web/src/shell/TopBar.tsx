@@ -26,7 +26,7 @@ export function TopBar({ route, phone, navExpanded, onToggleNav }: TopBarProps) 
         className={
           phone
             ? "hidden"
-            : "flex w-[calc(var(--nav-width)-0.5rem)] flex-none items-center gap-1 in-data-[nav=hidden]:w-auto in-data-[nav=rail]:w-auto"
+            : "flex w-(--nav-width) flex-none items-center gap-1 in-data-[nav=hidden]:w-auto in-data-[nav=rail]:w-auto"
         }
       >
         {phone ? null : (
@@ -50,7 +50,7 @@ export function TopBar({ route, phone, navExpanded, onToggleNav }: TopBarProps) 
           </span>
         </a>
       </div>
-      <div className="max-w-[45rem] min-w-0 flex-[1_1_auto] max-sm:max-w-none">
+      <div className="ml-2 max-w-[45rem] min-w-0 flex-[1_1_auto] max-sm:ml-0 max-sm:max-w-none">
         <SearchBox query={route.kind === "search" ? route.query : undefined} />
       </div>
       <div className="ml-auto flex flex-none items-center gap-1">

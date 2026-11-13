@@ -36,7 +36,7 @@ export function SignInPage({ onSignIn, notice }: SignInPageProps) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-canvas p-4 text-text">
       <div className="w-full max-w-md rounded-xl border border-border bg-surface px-8 pt-10 pb-8 text-text shadow-sm max-sm:px-5 max-sm:pt-8 max-sm:pb-6">
-        <p className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-[-0.01em] before:size-7 before:flex-none before:bg-accent before:content-[''] before:[mask:var(--mask-mark)_center/contain_no-repeat]">
+        <p className="mb-6 flex items-center gap-2 text-xl font-bold tracking-[-0.01em] before:size-7 before:flex-none before:bg-accent before:content-[''] before:[mask:var(--mask-mark)_center/contain_no-repeat]">
           Postern
         </p>
         {notice === "idle" ? (
@@ -72,7 +72,7 @@ export function ResumingPage() {
       aria-busy="true"
     >
       <div className="w-full max-w-md rounded-xl border border-border bg-surface px-8 pt-10 pb-8 text-text shadow-sm max-sm:px-5 max-sm:pt-8 max-sm:pb-6">
-        <p className="mb-3 flex items-center gap-2 text-xl font-semibold tracking-[-0.01em] before:size-7 before:flex-none before:bg-accent before:content-[''] before:[mask:var(--mask-mark)_center/contain_no-repeat]">
+        <p className="mb-3 flex items-center gap-2 text-xl font-bold tracking-[-0.01em] before:size-7 before:flex-none before:bg-accent before:content-[''] before:[mask:var(--mask-mark)_center/contain_no-repeat]">
           Postern
         </p>
         <p className="m-0 text-text-muted" role="status">

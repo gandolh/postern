@@ -18,6 +18,10 @@ const list = async (page: Page) => {
   await page.locator("[data-row], [role='row'], li").first().waitFor();
 };
 
+const heading = async (page: Page) => {
+  await page.getByRole("heading").first().waitFor();
+};
+
 const conversation = async (page: Page) => {
   await page.locator("[data-conversation-page]").waitFor();
   await page.locator("[data-expanded='true']").first().waitFor();
@@ -50,13 +54,62 @@ export const SCREENS: Screen[] = [
   },
   { name: "starred", hash: "#starred", ready: list },
   { name: "sent", hash: "#sent", ready: list },
+  { name: "spam", hash: "#spam", ready: list },
+  { name: "search", hash: "#search/plans", ready: list },
   {
-    name: "settings",
-    hash: "#settings/general",
-    ready: async (p) => void (await p.getByRole("heading").first().waitFor()),
+    name: "invite",
+    hash: (desk) => `#inbox/${desk.threadBySubject("Invitation: Q1 planning")}`,
+    ready: conversation,
   },
-  { name: "contacts", hash: "#contacts", ready: async (p) => void (await p.getByRole("heading").first().waitFor()) },
-  { name: "scheduled", hash: "#scheduled", ready: async (p) => void (await p.getByRole("heading").first().waitFor()) },
+  {
+    name: "attachments",
+    hash: (desk) => `#inbox/${desk.threadBySubject("Invitation: Book club")}`,
+    ready: conversation,
+  },
+  { name: "settings-general", hash: "#settings/general", ready: heading },
+  { name: "settings-accounts", hash: "#settings/accounts", ready: heading },
+  { name: "settings-labels", hash: "#settings/labels", ready: heading },
+  { name: "settings-filters", hash: "#settings/filters", ready: heading },
+  { name: "contacts", hash: "#contacts", ready: heading },
+  { name: "scheduled", hash: "#scheduled", ready: heading },
+  {
+    name: "account-menu",
+    hash: "#inbox",
+    ready: list,
+    after: async (page) => {
+      await page.getByRole("button", { name: /^Account:/ }).click();
+      await page.getByRole("button", { name: "Sign out" }).waitFor();
+    },
+  },
+  {
+    name: "help",
+    hash: "#inbox",
+    ready: list,
+    after: async (page) => {
+      await page.keyboard.press("?");
+      await page.getByRole("dialog").waitFor();
+    },
+  },
+  {
+    name: "composer-full",
+    hash: "#inbox",
+    ready: list,
+    after: async (page) => {
+      await page.getByRole("button", { name: "Compose" }).click();
+      await page.locator("dialog[open]").waitFor();
+      await page.getByRole("button", { name: "Full screen" }).click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: "search-advanced",
+    hash: "#inbox",
+    ready: list,
+    after: async (page) => {
+      await page.getByRole("button", { name: "Search options" }).click();
+      await page.waitForTimeout(300);
+    },
+  },
 ];
 
 export function hashOf(screen: Screen, desk: Desk): string {

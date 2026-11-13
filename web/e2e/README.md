@@ -86,3 +86,19 @@ passes, Playwright reports the unexpected pass, and the mark comes off
   git-ignored. Take any screenshot to `screenshots/<spec>-<step>.png`.
 - **`POSTERN_CSP`** overrides the policy for one run, to try a change before
   writing it into the Caddyfile and `lib/headers.ts`.
+
+## The Docker-free checks: `desk/`
+
+`desk/` holds the redesign's checks, which need neither Docker nor a mail server. [desk/stub.ts](desk/stub.ts)
+answers `/webmail-api` with `page.route` (the token and userinfo calls, the JMAP session, the mailboxes, and the
+threads taken from `dev/seed/`, with a frozen clock), and `desk.config.ts` runs the built app under `vite preview`
+on port 5197 (`POSTERN_DESK_PORT`), two workers. The specs end in `.desk.ts`, so `npm run test:e2e` never picks them up.
+
+```
+npm run build
+npx playwright test -c web/e2e/desk/desk.config.ts floor                     # focus ring, reduced motion, 390 px overflow
+SHOTS_DIR=<dir> npx playwright test -c web/e2e/desk/desk.config.ts shots     # <screen>-<theme>-<width>.png
+```
+
+[desk/screens.ts](desk/screens.ts) is the one table of screens the specs share. Any `/webmail-api` request the stub
+does not know is recorded in `desk.unhandled`, and the floor specs fail on it.

@@ -37,7 +37,7 @@ export function NavDrawer({ open, onClose, returnFocus, contentRef, children }: 
         <Drawer.Viewport className="fixed inset-x-0 top-(--topbar-height) bottom-0 z-drawer">
           <Drawer.Popup
             ref={popupRef}
-            className="flex h-full w-(--nav-width) transform-[translateX(var(--drawer-swipe-movement-x,0))] flex-col rounded-tr-xl bg-canvas shadow-lg outline-none data-ending-style:transform-[translateX(-1.5rem)] data-ending-style:opacity-0 data-starting-style:transform-[translateX(-1.5rem)] data-starting-style:opacity-0 data-swiping:duration-0 data-swiping:select-none motion-safe:transition-[transform,opacity] motion-safe:duration-(--duration-normal) motion-safe:ease-out"
+            className="flex h-full w-[calc(var(--nav-width)+1rem)] transform-[translateX(var(--drawer-swipe-movement-x,0))] flex-col rounded-tr-xl bg-canvas shadow-lg outline-none data-ending-style:transform-[translateX(-1.5rem)] data-ending-style:opacity-0 data-starting-style:transform-[translateX(-1.5rem)] data-starting-style:opacity-0 data-swiping:duration-0 data-swiping:select-none motion-safe:transition-[transform,opacity] motion-safe:duration-(--duration-normal) motion-safe:ease-out"
             // The first control of the navigation, not the hidden close control before it.
             initialFocus={() =>
               popupRef.current?.querySelector<HTMLElement>("[data-drawer-content] :is(button, a)") ?? true

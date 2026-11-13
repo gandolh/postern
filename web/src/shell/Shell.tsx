@@ -114,7 +114,7 @@ function ShellLayout() {
 
   return (
     <div
-      className="grid h-dvh min-h-dvh grid-cols-[var(--nav-width)_minmax(0,1fr)] grid-rows-[var(--topbar-height)_minmax(0,1fr)] overflow-hidden bg-canvas [grid-template-areas:'top_top'_'nav_main'] data-[nav=hidden]:grid-cols-[0_minmax(0,1fr)] data-[nav=rail]:grid-cols-[var(--nav-rail-width)_minmax(0,1fr)] data-[reading=true]:grid-rows-[0_minmax(0,1fr)]"
+      className="grid h-dvh min-h-dvh grid-cols-[calc(var(--nav-width)+1rem)_minmax(0,1fr)] grid-rows-[var(--topbar-height)_minmax(0,1fr)] overflow-hidden bg-canvas [grid-template-areas:'top_top'_'nav_main'] data-[nav=hidden]:grid-cols-[0_minmax(0,1fr)] data-[nav=rail]:grid-cols-[var(--nav-rail-width)_minmax(0,1fr)] data-[reading=true]:grid-rows-[0_minmax(0,1fr)]"
       data-nav={mode}
       data-reading={reading || undefined}
     >

@@ -87,7 +87,7 @@ export function ContactsRoute() {
   return (
     <section className="flex min-h-full flex-col" aria-labelledby="contacts-title">
       <header className="sticky top-0 z-header flex min-h-[calc(var(--toolbar-height)+0.5rem)] flex-wrap items-center gap-x-3 gap-y-1 border-b border-border bg-surface px-6 py-2 max-sm:px-4">
-        <h1 id="contacts-title" className="text-xl font-semibold">
+        <h1 id="contacts-title" className="text-xl font-bold">
           Contacts
         </h1>
         <span className="text-sm text-text-muted tabular-nums">
