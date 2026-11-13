@@ -12,35 +12,45 @@ import { StatusSlot } from "./status";
 
 export interface TopBarProps {
   route: Route;
+  /** Under 600 px: no menu button (the bottom bar's Labels opens the navigation), no brand, no help. */
+  phone: boolean;
   navExpanded: boolean;
   onToggleNav: () => void;
 }
 
-export function TopBar({ route, navExpanded, onToggleNav }: TopBarProps) {
+export function TopBar({ route, phone, navExpanded, onToggleNav }: TopBarProps) {
   const help = useHelpSheet();
   return (
-    <header className="flex min-w-0 items-center gap-2 pr-3 pl-2 [grid-area:top] max-sm:gap-1 max-sm:px-1">
-      <div className="flex w-[calc(var(--nav-width)-0.5rem)] flex-none items-center gap-1 in-data-[nav=hidden]:w-auto in-data-[nav=rail]:w-auto">
-        <IconButton
-          label="Main menu"
-          icon={Menu}
-          tooltip="start"
-          aria-expanded={navExpanded}
-          aria-controls="shell-nav"
-          onClick={onToggleNav}
-        />
+    <header className="flex min-w-0 items-center gap-2 pr-4 pl-2 [grid-area:top] max-sm:gap-1 max-sm:px-2">
+      <div
+        className={
+          phone
+            ? "hidden"
+            : "flex w-[calc(var(--nav-width)-0.5rem)] flex-none items-center gap-1 in-data-[nav=hidden]:w-auto in-data-[nav=rail]:w-auto"
+        }
+      >
+        {phone ? null : (
+          <IconButton
+            label="Main menu"
+            icon={Menu}
+            tooltip="start"
+            aria-expanded={navExpanded}
+            aria-controls="shell-nav"
+            onClick={onToggleNav}
+          />
+        )}
         <a
-          className="inline-flex min-h-10 items-center gap-2 rounded-md px-2 text-text no-underline hover:text-text max-sm:hidden [&_svg]:flex-none"
+          className="inline-flex min-h-10 items-center gap-2 rounded-md px-2 text-text no-underline hover:text-text [&_svg]:flex-none"
           href={formatRoute(INBOX)}
           aria-label="Postern, go to Inbox"
         >
           <PosternMark />
-          <span className="text-xl font-semibold tracking-[-0.01em] max-sm:hidden" aria-hidden="true">
+          <span className="text-xl leading-7 font-bold" aria-hidden="true">
             Postern
           </span>
         </a>
       </div>
-      <div className="max-w-[45rem] min-w-0 flex-[1_1_auto]">
+      <div className="max-w-[45rem] min-w-0 flex-[1_1_auto] max-sm:max-w-none">
         <SearchBox query={route.kind === "search" ? route.query : undefined} />
       </div>
       <div className="ml-auto flex flex-none items-center gap-1">

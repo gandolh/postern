@@ -349,28 +349,25 @@ export function PlaceholderRow({ index }: { index: number }) {
       className="group/row grid h-(--row-height) cursor-default grid-cols-[auto_minmax(8rem,13rem)_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border bg-row py-0 pr-3 pl-1 text-md leading-tight text-text select-none hover:bg-row hover:shadow-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 aria-selected:bg-row-selected! data-open:shadow-[inset_3px_0_0_var(--color-accent)] data-swiping:relative data-swiping:z-above data-swiping:shadow-sm data-unread:bg-row hover:data-unread:bg-row-hover max-sm:relative max-sm:touch-pan-y max-sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-sm:grid-rows-[auto_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2 max-sm:pr-3 max-sm:pl-1 max-sm:[grid-template-areas:'controls_senders_end''controls_main_main'] max-sm:hover:shadow-none min-sm:@max-[46rem]/list:grid-cols-[auto_minmax(6rem,9rem)_minmax(0,1fr)_auto] min-sm:@max-[46rem]/list:gap-x-2 min-sm:@max-[46rem]/list:pr-2 min-sm:@max-[30rem]/list:grid-cols-[auto_minmax(4rem,7rem)_minmax(0,1fr)_auto] [&[draggable=true]]:cursor-default"
     >
       <div role="gridcell" className="flex min-w-0 items-center gap-0 max-sm:self-start max-sm:[grid-area:controls]">
-        <span className="ml-2 block size-4 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+        <span className="ml-2 block size-4 rounded-sm bg-skeleton" />
       </div>
       <div
         role="gridcell"
         className="block min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text max-sm:self-center max-sm:[grid-area:senders]"
       >
-        <span className="block h-3 w-[70%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+        <span className="block h-3 w-[70%] rounded-sm bg-skeleton" />
       </div>
       <div
         role="gridcell"
         className="flex min-w-0 items-center gap-2 overflow-hidden max-sm:items-start max-sm:pr-10 max-sm:[grid-area:main]"
       >
-        <span
-          className="block h-3 w-[70%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton"
-          style={{ width: `${40 + ((index * 37) % 45)}%` }}
-        />
+        <span className="block h-3 w-[70%] rounded-sm bg-skeleton" style={{ width: `${40 + ((index * 37) % 45)}%` }} />
       </div>
       <div
         role="gridcell"
         className="flex min-w-22 items-center justify-end gap-2 max-sm:min-w-0 max-sm:self-center max-sm:[grid-area:end] min-sm:@max-[30rem]/list:min-w-0"
       >
-        <span className="block h-3 w-12 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+        <span className="block h-3 w-12 rounded-sm bg-skeleton" />
       </div>
     </div>
   );

@@ -21,6 +21,13 @@ import { ConnectionLost, EmptyState, ListSkeleton } from "./states";
 import { useMediaQuery } from "./useMediaQuery";
 import { buttonClass } from "../components/ui/Button";
 
+/** The screens' surface: an island on the canvas, edged by a hairline. */
+const ISLAND = "min-h-0 min-w-0 rounded-xl border border-border bg-surface shadow-sm";
+
+export function Island({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {
+  return <div className={`h-full ${ISLAND} ${scroll ? "overflow-auto" : "overflow-hidden"}`}>{children}</div>;
+}
+
 export function MainArea({ route }: { route: Route }) {
   const { readingPane: chosen } = useDisplaySettings();
   // A phone has room for one column, so the list and the conversation
@@ -29,11 +36,23 @@ export function MainArea({ route }: { route: Route }) {
   const readingPane: ReadingPane = phone ? "none" : chosen;
   switch (route.kind) {
     case "settings":
-      return <SettingsRoutes section={route.section} />;
+      return (
+        <Island>
+          <SettingsRoutes section={route.section} />
+        </Island>
+      );
     case "contacts":
-      return <ContactsRoute />;
+      return (
+        <Island>
+          <ContactsRoute />
+        </Island>
+      );
     case "scheduled":
-      return <ScheduledRoute />;
+      return (
+        <Island>
+          <ScheduledRoute />
+        </Island>
+      );
     case "search":
       return (
         <MailSplit
@@ -52,26 +71,37 @@ export function MainArea({ route }: { route: Route }) {
 function LabelArea({ route, pane }: { route: LabelRoute; pane: ReadingPane }) {
   const labels = useLabels();
 
-  if (labels.status === "loading") return <ListSkeleton />;
+  if (labels.status === "loading")
+    return (
+      <Island>
+        <ListSkeleton />
+      </Island>
+    );
   if (labels.status === "error") {
-    return labels.offline ? (
-      <ConnectionLost onRetry={() => void labels.store.sync()} />
-    ) : (
-      <ConnectionLost title="Your labels didn't load" onRetry={() => void labels.store.sync()}>
-        <p>Something went wrong on the way. Try again in a moment.</p>
-      </ConnectionLost>
+    return (
+      <Island>
+        {labels.offline ? (
+          <ConnectionLost onRetry={() => void labels.store.sync()} />
+        ) : (
+          <ConnectionLost title="Your labels didn't load" onRetry={() => void labels.store.sync()}>
+            <p>Something went wrong on the way. Try again in a moment.</p>
+          </ConnectionLost>
+        )}
+      </Island>
     );
   }
 
   const label = resolveLabelRoute(route, labels);
   if (!label) {
     return (
-      <EmptyState icon={SearchX} title="This label doesn't exist">
-        <p>It may have been deleted or renamed.</p>
-        <a className={buttonClass("default")} href={formatRoute(INBOX)}>
-          Go to Inbox
-        </a>
-      </EmptyState>
+      <Island>
+        <EmptyState icon={SearchX} title="This label doesn't exist">
+          <p>It may have been deleted or renamed.</p>
+          <a className={buttonClass("default")} href={formatRoute(INBOX)}>
+            Go to Inbox
+          </a>
+        </EmptyState>
+      </Island>
     );
   }
 
@@ -92,15 +122,15 @@ function LabelArea({ route, pane }: { route: LabelRoute; pane: ReadingPane }) {
 function MailSplit({ pane, list, conversation }: { pane: ReadingPane; list: ReactNode; conversation: ReactNode }) {
   // With conversation view off a row is a message.
   const noun = rowNoun(usePrefs().prefs.conversationView);
-  if (pane === "none") return conversation ?? list;
+  if (pane === "none") return conversation ? <Island>{conversation}</Island> : <Island scroll={false}>{list}</Island>;
   return (
     <div
-      className="grid h-full data-[pane=below]:grid-rows-[minmax(0,1fr)_minmax(0,1fr)] data-[pane=right]:grid-cols-[minmax(18rem,2fr)_minmax(0,3fr)] max-sm:data-[pane=right]:grid-cols-[minmax(0,1fr)]"
+      className="grid h-full gap-2 data-[pane=below]:grid-rows-[minmax(0,1fr)_minmax(0,1fr)] data-[pane=right]:grid-cols-[minmax(20rem,var(--list-width))_minmax(0,1fr)] max-sm:data-[pane=right]:grid-cols-[minmax(0,1fr)]"
       data-pane={pane}
     >
-      <div className="min-h-0 min-w-0 overflow-auto">{list}</div>
-      <div className="min-h-0 min-w-0 overflow-auto in-data-[pane=below]:border-t in-data-[pane=below]:border-border in-data-[pane=right]:border-l in-data-[pane=right]:border-border max-sm:in-data-[pane=right]:hidden">
-        {conversation ?? <EmptyState title={`No ${noun} selected`} />}
+      <Island scroll={false}>{list}</Island>
+      <div className="min-h-0 min-w-0 max-sm:in-data-[pane=right]:hidden">
+        <Island>{conversation ?? <EmptyState title={`No ${noun} selected`} />}</Island>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import { LiveHost } from "../live/LiveHost";
 import { PrefsHost } from "../prefs";
 import { PushHost } from "../push/PushHost";
 import { SnoozeHost } from "../snooze/SnoozeHost";
-import { PhoneComposeButton } from "../mobile";
+import { BottomBar, PhoneComposeButton } from "../mobile";
 import { PHONE_QUERY, WIDE_QUERY } from "./breakpoints";
 import { MainArea } from "./MainArea";
 import { Nav, NavMemoryProvider, type NavMemory, type NavProps } from "./Nav";
@@ -102,6 +102,9 @@ function ShellLayout() {
   // The navigation inline: names and icons, a rail, or (on a phone) none. Narrower than wide, the menu opens it in a drawer.
   const mode: NavProps["mode"] = wide ? (railOnWide ? "rail" : "expanded") : phone ? "hidden" : "rail";
   const inDrawer = !wide && drawerOpen;
+  // On a phone an open conversation takes the whole screen: its own toolbar replaces the top bar, and the
+  // bottom bar and Compose go.
+  const reading = phone && "conversationId" in route && route.conversationId !== undefined;
 
   function toggleNav(): void {
     if (wide) setRailOnWide((r) => !r);
@@ -111,8 +114,9 @@ function ShellLayout() {
 
   return (
     <div
-      className="grid h-dvh grid-cols-[var(--nav-width)_minmax(0,1fr)] grid-rows-[var(--topbar-height)_minmax(0,1fr)] overflow-hidden bg-canvas [grid-template-areas:'top_top'_'nav_main'] data-[nav=hidden]:grid-cols-[0_minmax(0,1fr)] data-[nav=rail]:grid-cols-[var(--nav-rail-width)_minmax(0,1fr)]"
+      className="grid h-dvh min-h-dvh grid-cols-[var(--nav-width)_minmax(0,1fr)] grid-rows-[var(--topbar-height)_minmax(0,1fr)] overflow-hidden bg-canvas [grid-template-areas:'top_top'_'nav_main'] data-[nav=hidden]:grid-cols-[0_minmax(0,1fr)] data-[nav=rail]:grid-cols-[var(--nav-rail-width)_minmax(0,1fr)] data-[reading=true]:grid-rows-[0_minmax(0,1fr)]"
       data-nav={mode}
+      data-reading={reading || undefined}
     >
       <button
         type="button"
@@ -121,7 +125,9 @@ function ShellLayout() {
       >
         Skip to main content
       </button>
-      <TopBar route={route} navExpanded={mode === "expanded" || inDrawer} onToggleNav={toggleNav} />
+      {reading ? null : (
+        <TopBar route={route} phone={phone} navExpanded={mode === "expanded" || inDrawer} onToggleNav={toggleNav} />
+      )}
       <NavMemoryProvider memory={navMemory}>
         {mode === "hidden" || inDrawer ? null : (
           <div className="min-h-0 [scrollbar-gutter:stable] overflow-x-hidden overflow-y-auto [grid-area:nav]">
@@ -137,7 +143,7 @@ function ShellLayout() {
           <Nav route={route} mode="drawer" onNavigate={closeDrawer} />
         </NavDrawer>
       </NavMemoryProvider>
-      <div className="flex min-h-0 min-w-0 flex-col gap-2 pr-4 pb-4 [grid-area:main] max-lg:pr-2 max-lg:pb-2 max-sm:p-0">
+      <div className="flex min-h-0 min-w-0 flex-col gap-2 pr-2 pb-2 [grid-area:main] max-sm:px-2 max-sm:pb-0 max-sm:in-data-[reading=true]:pt-2">
         <ConnectionBanner
           offline={!online}
           unreachable={labels.status === "ready" && labels.offline}
@@ -146,14 +152,15 @@ function ShellLayout() {
         <main
           ref={mainRef}
           id="main"
-          className="min-h-0 flex-[1_1_auto] overflow-auto rounded-xl bg-surface focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2 max-sm:rounded-t-lg max-sm:rounded-b-none"
+          className="min-h-0 flex-[1_1_auto] overflow-hidden focus:outline-none focus-visible:[outline:var(--focus-ring)] focus-visible:-outline-offset-2"
           tabIndex={-1}
         >
           <MainArea route={route} />
         </main>
       </div>
-      {/* Phones have no navigation on screen, so Compose floats bottom-right. */}
-      {phone && !inDrawer ? <PhoneComposeButton route={route} /> : null}
+      {/* A phone has a bottom bar, and Compose floats above it. */}
+      {phone && !reading ? <BottomBar route={route} labelsOpen={inDrawer} onLabels={toggleNav} /> : null}
+      {phone && !inDrawer && !reading ? <PhoneComposeButton route={route} /> : null}
       <div className="pointer-events-none fixed right-4 bottom-0 z-compose flex items-end gap-4 [&>*]:pointer-events-auto">
         <ComposerHost />
       </div>

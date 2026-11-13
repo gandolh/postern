@@ -43,34 +43,29 @@ const WIDTHS = [62, 48, 70, 55, 66, 44, 58, 51, 68, 46, 60, 53];
 export interface ListSkeletonProps {
   /** How many rows; default 12. */
   rows?: number;
-  /** Shimmer (loading). Default true; false draws still placeholder rows. */
+  /** Announce the loading to a screen reader (the rows are still either way). Default true. */
   animated?: boolean;
   /** Read out while loading. Default "Loading conversations". */
   label?: string;
 }
 
-/** Placeholder conversation rows, `--row-height` tall, so they match the density. */
+/** Placeholder conversation rows, `--row-height` tall, so they match the density. They draw still: nothing pulses. */
 export function ListSkeleton({ rows = 12, animated = true, label = "Loading conversations" }: ListSkeletonProps) {
   return (
-    <div
-      className="group/skel"
-      data-animated={animated ? undefined : "false"}
-      role={animated ? "status" : undefined}
-      aria-label={animated ? label : undefined}
-    >
+    <div role={animated ? "status" : undefined} aria-label={animated ? label : undefined}>
       {Array.from({ length: rows }, (_, i) => (
         <div
-          className="grid h-(--row-height) grid-cols-[1.25rem_minmax(6rem,12rem)_minmax(0,1fr)_3.5rem] items-center gap-4 border-b border-border px-(--row-padding-inline) max-sm:grid-cols-[1.25rem_minmax(0,1fr)_3rem]"
+          className="grid min-h-(--row-height) grid-cols-[2.5rem_minmax(0,1fr)_2.25rem] items-center border-b border-border py-1.5 pr-2 pl-1 max-sm:grid-cols-[2.75rem_minmax(0,1fr)_3rem]"
           key={i}
           aria-hidden="true"
         >
-          <span className="block size-4 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
-          <span className="block h-3 w-[70%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton max-sm:hidden" />
-          <span
-            className="block h-3 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton"
-            style={{ width: `${WIDTHS[i % WIDTHS.length]}%` }}
-          />
-          <span className="block h-3 w-full justify-self-end rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+          <span className="ml-2.5 block size-4 rounded-sm bg-skeleton max-sm:ml-3" />
+          <span className="flex flex-col gap-2.5 pl-1">
+            <span className="block h-2.5 w-[34%] rounded-sm bg-skeleton" />
+            <span className="block h-2.5 rounded-sm bg-skeleton" style={{ width: `${WIDTHS[i % WIDTHS.length]}%` }} />
+            <span className="block h-2.5 w-[88%] rounded-sm bg-skeleton" />
+          </span>
+          <span className="block size-4 justify-self-center rounded-sm bg-skeleton" />
         </div>
       ))}
     </div>
@@ -83,9 +78,9 @@ export function NavSkeleton({ rows = 4 }: { rows?: number }) {
     <div className="in-data-[nav=rail]:hidden" aria-hidden="true">
       {Array.from({ length: rows }, (_, i) => (
         <div className="flex h-(--nav-item-height) items-center gap-3 pr-3 pl-(--nav-inset)" key={i}>
-          <span className="block size-4.5 flex-none rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+          <span className="block size-4.5 flex-none rounded-sm bg-skeleton" />
           <span
-            className="block h-2.5 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton"
+            className="block h-2.5 rounded-sm bg-skeleton"
             style={{ width: `${WIDTHS[(i + 3) % WIDTHS.length]}%` }}
           />
         </div>

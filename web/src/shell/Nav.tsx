@@ -131,7 +131,7 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
     >
       <button
         type="button"
-        className="mb-4 inline-flex h-13 cursor-pointer items-center gap-3 self-start rounded-lg bg-accent pr-6 pl-5 text-md font-semibold text-on-accent shadow-sm transition-[background-color,box-shadow] duration-(--duration-fast) ease-out hover:bg-accent-hover hover:shadow-md in-data-[nav=rail]:w-13 in-data-[nav=rail]:justify-center in-data-[nav=rail]:self-center in-data-[nav=rail]:p-0"
+        className="mb-3 inline-flex h-12 cursor-pointer items-center gap-3 self-start rounded-lg bg-accent pr-6 pl-5 text-md font-bold text-on-accent shadow-sm transition-[background-color,box-shadow] duration-(--duration-fast) ease-out hover:bg-accent-hover hover:shadow-md in-data-[nav=rail]:w-13 in-data-[nav=rail]:justify-center in-data-[nav=rail]:self-center in-data-[nav=rail]:p-0"
         onClick={() => compose.open()}
         title={rail ? "Compose" : undefined}
       >
@@ -164,8 +164,8 @@ export function Nav({ route, mode, onNavigate }: NavProps) {
         ))}
       </ul>
 
-      <div className="mt-4 in-data-[nav=rail]:mt-2 in-data-[nav=rail]:w-full in-data-[nav=rail]:border-t in-data-[nav=rail]:border-border in-data-[nav=rail]:pt-2">
-        <h2 className="flex min-h-9 items-center pr-3 pl-(--nav-inset) text-md font-semibold text-text in-data-[nav=rail]:hidden">
+      <div className="mt-1 in-data-[nav=rail]:mt-2 in-data-[nav=rail]:w-full in-data-[nav=rail]:border-t in-data-[nav=rail]:border-border in-data-[nav=rail]:pt-2">
+        <h2 className="flex items-center pt-5 pr-3 pb-1.5 pl-3 text-md leading-5 font-bold text-text-muted in-data-[nav=rail]:hidden">
           Labels
         </h2>
         {labels.status === "loading" ? (

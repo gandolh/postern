@@ -1,7 +1,7 @@
-// The floating Compose button on phones, bottom-right as in
-// Gmail's app: the navigation, which holds Compose on wider screens, is
-// hidden there until the menu opens it. Shown over mail lists only; an open
-// conversation has Reply and Forward instead.
+// The floating Compose button on phones, bottom-right above the bottom bar:
+// the navigation, which holds Compose on wider screens, is hidden there until
+// Labels opens it. Shown over mail lists only; an open conversation has
+// Reply and Forward instead. Filled, the screen's one accent button.
 
 import { Pencil } from "lucide-react";
 import { useCompose } from "../composer";
@@ -16,7 +16,7 @@ export function PhoneComposeButton({ route }: { route: Route }) {
     <button
       type="button"
       data-compose-fab
-      className="fixed right-[calc(1rem+env(safe-area-inset-right,0px))] bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-scrim inline-flex min-h-14 cursor-pointer items-center gap-3 rounded-xl bg-accent-soft pr-5 pl-4 text-md font-semibold text-on-accent-soft shadow-md hover:bg-accent-soft-hover focus-visible:[outline:var(--focus-ring)] focus-visible:outline-offset-(--focus-offset)"
+      className="fixed right-[calc(1rem+env(safe-area-inset-right,0px))] bottom-[calc(var(--bottombar-height)+1rem+env(safe-area-inset-bottom,0px))] z-card inline-flex min-h-14 cursor-pointer items-center gap-3 rounded-xl bg-accent pr-5 pl-5 text-md font-bold text-on-accent shadow-lg hover:bg-accent-hover focus-visible:[outline:var(--focus-ring)] focus-visible:outline-offset-(--focus-offset)"
       onClick={() => compose.open()}
     >
       <Pencil aria-hidden="true" />

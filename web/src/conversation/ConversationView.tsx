@@ -165,9 +165,9 @@ export function ConversationLoading({
       <ConversationToolbarShell backHref={backHref} backLabel={backLabel} />
       <div className="min-h-0 flex-[1_1_auto] overflow-auto">
         <div className="grid gap-4 p-6" role="status" aria-label={`Loading the ${noun}`}>
-          <span className="block h-6 w-[min(30rem,70%)] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
-          <span className="block h-24 rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
-          <span className="block h-24 rounded-md bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+          <span className="block h-6 w-[min(30rem,70%)] rounded-sm bg-skeleton" />
+          <span className="block h-24 rounded-md bg-skeleton" />
+          <span className="block h-24 rounded-md bg-skeleton" />
         </div>
       </div>
     </section>

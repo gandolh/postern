@@ -90,7 +90,6 @@
 
   /* ---- Colour: loading ------------------------------------------------- */
   --color-skeleton: light-dark(#e3e8e4, #26302b);
-  --color-skeleton-shine: light-dark(#eef2ef, #2e3833);
   --color-scrim: light-dark(rgb(17 21 19 / 0.32), rgb(0 0 0 / 0.55));
 
   --font-sans: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", system-ui, sans-serif;
@@ -133,20 +132,6 @@
   --duration-fast: 120ms;
   --duration-normal: 200ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* ---- Motion ---------------------------------------------------------- */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-
-  --animate-skeleton: skeleton-shine 1.6s linear infinite;
-
-  @keyframes skeleton-shine {
-    from {
-      background-position: 100% 0;
-    }
-    to {
-      background-position: -100% 0;
-    }
-  }
 
   --animate-compose-in: compose-in var(--duration-normal) var(--ease-out);
 

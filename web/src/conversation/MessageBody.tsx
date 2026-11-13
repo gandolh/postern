@@ -30,9 +30,9 @@ export function MessageBody({ state, ...rest }: MessageBodyProps) {
   if (!state || state.status === "loading") {
     return (
       <div className="ml-13 grid gap-2 pt-2 pb-4 @max-[40rem]/conv:ml-0" role="status" aria-label="Loading the message">
-        <span className="block h-3.5 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
-        <span className="block h-3.5 rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
-        <span className="block h-3.5 w-[60%] rounded-sm bg-skeleton bg-[linear-gradient(90deg,var(--color-skeleton)_0%,var(--color-skeleton-shine)_50%,var(--color-skeleton)_100%)] bg-size-[200%_100%] bg-position-[0_0] group-data-[animated=false]/skel:animate-none motion-safe:animate-skeleton" />
+        <span className="block h-3.5 rounded-sm bg-skeleton" />
+        <span className="block h-3.5 rounded-sm bg-skeleton" />
+        <span className="block h-3.5 w-[60%] rounded-sm bg-skeleton" />
       </div>
     );
   }
