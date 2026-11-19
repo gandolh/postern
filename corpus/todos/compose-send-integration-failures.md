@@ -1,9 +1,11 @@
 ---
 title: Three compose-send integration tests failed against the dev Stalwart, then passed
 created: 2026-11-12
-status: open
+status: promoted
 tags: [tests, dev-stalwart]
 ---
+
+Promoted 2026-11-19 to [brief 05](../briefs/todo/05-compose-send-tests-pass-every-time-or-the-bug-is-found.md).
 
 `web/test/integration/compose-send.test.ts` has three tests that failed with the
 local Stalwart up and seeded, on the untouched tree before the Base UI brief
