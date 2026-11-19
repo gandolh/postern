@@ -1,6 +1,6 @@
 ---
 summary: Which Gmail feature maps to which JMAP object or method on Stalwart 0.16, and whether it is native, client-side, needs checking, or impossible without server work. Conversations, labels and archive, stars and unread, search operators, drafts and sending, undo send, signatures, vacation, filters, spam, contacts, push, attachments, quota, and the Gmail features deferred to todos. Read before writing or working any feature brief.
-updated: 2026-11-02
+updated: 2026-11-19
 ---
 
 # Gmail on JMAP
@@ -80,6 +80,13 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `bcc` is accepted but unproven. Gmail's `rfc822msgid:`, `list:`,
   `deliveredto:`, `replyto:`, `filename:` and `category:` have nothing to map
   to; Postern searches them as text and says so.
+- **Search trails writes** (2026-11-19). New mail is indexed for search in
+  the background: a `subject` (or other text) condition sent right after a
+  create can miss the new message for some milliseconds, longer when the
+  server is busy. `Email/get` by id, `inMailbox`, `hasKeyword` and
+  `Thread/get` see it at once. Read your own writes by id or mailbox; search
+  only for mail that arrives by delivery, and poll for it. The compose-send
+  integration tests failed on this until brief 05.
 - **Writing mail** (2026-10-20): an existing Email's subject and body cannot be
   updated, so a draft is replaced by create plus destroy in one request,
   keeping its Message-ID and so its conversation. A create refuses `null` on

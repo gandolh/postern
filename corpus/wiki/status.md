@@ -1,6 +1,6 @@
 ---
 summary: Snapshot as of 2026-11-02, per area. Postern is built (foundations, reading, writing, live, settings, keyboard, PWA and security 2026-10-20; its own host 2026-10-22; Base UI 2026-10-23; conversation view off, schedule send, snooze, invite cards and a reload keeping the session 2026-10-27/28) deployed on its own host since 2026-11-02, the owner's smoke test passed 2026-11-05. The redesign "The reading desk" is built (2026-11-13, brief 04). The owner steps left (the Stalwart browser suite, screen reader, Android install and reload, real push, production's token lifetimes).
-updated: 2026-11-13
+updated: 2026-11-19
 ---
 
 # Status (2026-11-02)
@@ -71,6 +71,10 @@ on 2026-11-02 (see [log.md](../log.md)).
   loading rows, and a contrast script in `npm run check`. Three design lines
   changed ([decisions.md](decisions.md)); [design.md](design.md) is the result.
   Docker-free browser checks live in `web/e2e/desk/`.
+- **The compose-send integration tests** (2026-11-19). They failed now and then
+  because they read a fresh draft through Stalwart's search index, which trails
+  writes; they read by id now, with a regression test. Tests only, nothing to
+  deploy ([gmail-on-jmap.md](gmail-on-jmap.md), "Search trails writes").
 
 ## Owner steps
 

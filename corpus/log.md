@@ -609,7 +609,8 @@ The 17 `toast.show` calls that report a failure now pass `duration: null` (the
 standing estate ruling), so none times out; the toast wrapper already supported
 it. One assertion in the composer store's tests covers the send failure. A todo
 records the three `compose-send` integration tests that fail against the dev
-Stalwart, from before brief 02: [todo](todos/compose-send-integration-failures.md).
+Stalwart, from before brief 02: `todos/compose-send-integration-failures.md`, replaced on
+2026-11-19 by [brief 05](briefs/done/05-compose-send-tests-pass-every-time-or-the-bug-is-found.md).
 
 ## [2026-11-12] decision | Tailwind, with Base UI
 
@@ -647,3 +648,23 @@ phone's navigation, the row density), each dated in `wiki/decisions.md` with the
 script joined `npm run check`; Docker-free Floor specs (focus ring, reduced motion, 390 px overflow) run on a
 stub of the mail API in `web/e2e/desk/`. The owner deploys with `node cli.ts postern deploy` and runs the
 Stalwart browser suite once (`npm run test:e2e`).
+
+## [2026-11-19] incident | The compose-send tests read their drafts through the search index
+
+**Symptom.** Three tests in `web/test/integration/compose-send.test.ts` failed now and then
+against the local Stalwart: `expected [] to deeply equal [ '<id>' ]`, a 5 s timeout, then
+`messageId` of undefined (the todo of 2026-11-12). Brief 05's loop: 20 of 20 runs passed
+alone on a quiet machine, 19 of 20 beside a full `npm run check`.
+
+**Root cause.** Stalwart indexes new mail for search in the background. The first test read
+its fresh draft with a `subject` search, which can miss a message for some milliseconds after
+it is written; `Email/get` by id, `inMailbox`, `hasKeyword` and `Thread/get` see it at once.
+The id in the failure was the draft's email id, not an inline image's content id. The draft
+was never sent, so the next two tests failed after it.
+
+**Fix.** `d90590a`: the file reads what it wrote by id and searches only to poll for
+delivered mail and to sweep up. A regression test saves behind 200 new messages in bob's
+account and reads the draft back by id; with the old read by search it failed 19 of 20 runs.
+After the fix: 20 of 20 alone, 15 of 15 beside a check, three full checks green with the
+local Stalwart up. The app reads its own writes by mailbox and keyword, not by search, so it
+is unaffected. Brief 05 done; no deploy.
