@@ -45,6 +45,25 @@ async function find(client: JmapClient, word: string): Promise<Email[]> {
   return res.list;
 }
 
+// Stalwart's search index trails writes by a few milliseconds, so a subject
+// search right after a write can miss the new message. Read what the test
+// wrote by id, and fail when an id is missing; `inInbox` filters by mailbox,
+// which is not indexed in the background.
+const PROPS = ["id", "mailboxIds", "keywords", "subject", "receivedAt"] as const;
+
+async function read(client: JmapClient, ids: Id[]): Promise<Email[]> {
+  const res = await client.email.get({ ids, properties: [...PROPS] });
+  expect(res.notFound ?? []).toEqual([]);
+  expect(res.list.map((e) => e.id).sort()).toEqual([...ids].sort());
+  return res.list;
+}
+
+async function inInbox(client: JmapClient, word: string): Promise<Email[]> {
+  const inbox = (await rolesOf(client)).inbox;
+  const res = await client.email.queryAndGet({ filter: { inMailbox: inbox } }, { properties: [...PROPS] });
+  return res.list.filter((e) => e.subject?.startsWith(word));
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
@@ -53,6 +72,8 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
   let aRoles: Roles;
   let identityId: Id;
   const mine: Id[] = [];
+  const made: Id[] = [];
+  const bobGot: Id[] = [];
 
   beforeAll(async () => {
     a = new JmapClient({ baseUrl: BASE, auth: basicAuth("alice") });
@@ -65,8 +86,11 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
   afterAll(async () => {
     if (!a || !b) return;
     if (mine.length) await a.call("EmailSubmission/set", { destroy: mine });
-    for (const client of [a, b]) {
-      const ids = (await find(client, TAG)).map((e) => e.id);
+    for (const [client, known] of [
+      [a, made],
+      [b, bobGot],
+    ] as const) {
+      const ids = [...new Set([...known, ...(await find(client, TAG)).map((e) => e.id)])];
       if (ids.length) await client.call("Email/set", { destroy: ids });
     }
     const list = (
@@ -105,7 +129,9 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
           [],
         );
       const kept = await draft("kept");
+      made.push(kept.id);
       const dropped = await draft("dropped");
+      made.push(dropped.id);
       const at = new Date(Date.now() + AHEAD_MS);
       const schedule = async (emailId: Id): Promise<Scheduled> => {
         const s = await scheduleDraft(a, { emailId, identityId, from: alice.email, at });
@@ -123,26 +149,29 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
           .map((m) => m.emailId)
           .sort(),
       ).toEqual([kept.id, dropped.id].sort());
-      expect(
-        (await find(a, TAG)).every((e) => e.keywords[SCHEDULED] === true && e.mailboxIds[aRoles.drafts] === true),
-      ).toBe(true);
+      const scheduled = await read(a, [kept.id, dropped.id]);
+      for (const e of scheduled) {
+        expect(e.keywords[SCHEDULED]).toBe(true);
+        expect(e.mailboxIds[aRoles.drafts]).toBe(true);
+      }
 
       expect(await cancelScheduled(a, two.submissionId, dropped.id)).toBe("canceled");
       // Not yet: the time has not come.
       expect((await reconcileScheduled(a, aRoles)).next).toBe(Date.parse(one.sendAt));
       await sleep(5_000);
-      expect(await find(b, TAG)).toEqual([]);
+      expect(await inInbox(b, TAG)).toEqual([]);
 
       // It arrives at its time, not before.
       let arrived: Email | undefined;
       for (const end = Date.now() + 60_000; !arrived && Date.now() < end; await sleep(1_000))
         arrived = (await find(b, TAG))[0];
+      if (arrived) bobGot.push(arrived.id);
       expect(arrived?.subject).toBe(`${TAG} kept`);
       expect(Date.parse(arrived!.receivedAt)).toBeGreaterThanOrEqual(Date.parse(one.sendAt) - 1_000);
 
       const result = await reconcileScheduled(a, aRoles);
       expect(result.filed).toContain(kept.id);
-      const after = new Map((await find(a, TAG)).map((e) => [e.id, e]));
+      const after = new Map((await read(a, [kept.id, dropped.id])).map((e) => [e.id, e]));
       expect(after.get(kept.id)?.mailboxIds).toEqual({ [aRoles.sent]: true });
       expect(after.get(kept.id)?.keywords).toEqual({ $seen: true });
       expect(after.get(dropped.id)?.mailboxIds).toEqual({ [aRoles.drafts]: true });
@@ -150,7 +179,7 @@ describe.skipIf(!live)("against the dev Stalwart: schedule send", () => {
 
       // The canceled one never comes.
       await sleep(5_000);
-      expect((await find(b, TAG)).map((e) => e.subject)).toEqual([`${TAG} kept`]);
+      expect((await inInbox(b, TAG)).map((e) => e.subject)).toEqual([`${TAG} kept`]);
     },
   );
 });
