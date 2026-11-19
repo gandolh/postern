@@ -81,7 +81,8 @@ calendars, principals, mail:share, websocket, plus Web Push for
   `deliveredto:`, `replyto:`, `filename:` and `category:` have nothing to map
   to; Postern searches them as text and says so.
 - **Search trails writes** (2026-11-19). New mail is indexed for search in
-  the background: a `subject` (or other text) condition sent right after a
+  the background: a `subject` condition (the one measured; the other text
+  conditions likely too) sent right after a
   create can miss the new message for some milliseconds, longer when the
   server is busy. `Email/get` by id, `inMailbox`, `hasKeyword` and
   `Thread/get` see it at once. Read your own writes by id or mailbox; search
