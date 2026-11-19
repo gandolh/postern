@@ -5,6 +5,12 @@
 // attachments, and every copy sits in one conversation in both mailboxes.
 // Everything the test creates is destroyed again, and the counts are checked
 // against dev/seed/manifest.json.
+//
+// Stalwart indexes new mail for search in the background, so a subject
+// search can miss a message for some milliseconds after it is written, and
+// longer when the server is busy. The file reads what it wrote by id (`read`,
+// Thread/get, a plain Email/query) and searches only to wait for mail to
+// arrive (`waitFor`) and to sweep up at the end.
 
 import {
   buildDraftEmail,
@@ -59,28 +65,41 @@ async function counts(client: JmapClient, roles: Roles) {
   );
 }
 
+const PROPERTIES = [
+  "id",
+  "threadId",
+  "mailboxIds",
+  "keywords",
+  "subject",
+  "messageId",
+  "inReplyTo",
+  "references",
+  "attachments",
+  "bodyStructure",
+  "from",
+  "to",
+] as const;
+
+/** A subject search: it trails new mail, so only for mail that comes by delivery, or for the sweep. */
 async function find(client: JmapClient, subjectWord: string): Promise<Email[]> {
   const res = await client.email.queryAndGet(
     { filter: { subject: subjectWord }, sort: [{ property: "receivedAt", isAscending: true }] },
-    {
-      properties: [
-        "id",
-        "threadId",
-        "mailboxIds",
-        "keywords",
-        "subject",
-        "messageId",
-        "inReplyTo",
-        "references",
-        "attachments",
-        "bodyStructure",
-        "from",
-        "to",
-      ],
-    },
+    { properties: [...PROPERTIES] },
   );
   return res.list;
 }
+
+/** Messages by id: sees a write at once. */
+async function read(client: JmapClient, ids: Id[]): Promise<{ list: Email[]; notFound: Id[] }> {
+  const res = await client.email.get({ ids, properties: [...PROPERTIES] });
+  return { list: res.list, notFound: res.notFound ?? [] };
+}
+
+const plainDraft = (from: typeof alice, subject: string, draftsMailboxId: Id) =>
+  buildDraftEmail(
+    { from, to: [bob], cc: [], bcc: [], subject, html: null, text: subject, attachments: [] },
+    { draftsMailboxId },
+  );
 
 async function waitFor<T>(check: () => Promise<T | undefined>, what: string, timeoutMs = 15_000): Promise<T> {
   const end = Date.now() + timeoutMs;
@@ -101,6 +120,9 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
   let bobIdentity: Id;
   let aliceSent: Email;
   let bobCopy: Email;
+  // What the tests wrote, so the sweep does not depend on the search alone.
+  const aliceMade: Id[] = [];
+  const bobMade: Id[] = [];
 
   beforeAll(async () => {
     a = new JmapClient({ baseUrl: BASE, auth: basicAuth("alice") });
@@ -119,11 +141,11 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
 
   afterAll(async () => {
     if (!a || !b) return;
-    for (const [client, roles, account] of [
-      [a, aRoles, "alice"],
-      [b, bRoles, "bob"],
+    for (const [client, roles, account, made] of [
+      [a, aRoles, "alice", aliceMade],
+      [b, bRoles, "bob", bobMade],
     ] as const) {
-      const ids = (await find(client, TAG)).map((e) => e.id);
+      const ids = [...new Set([...made, ...(await find(client, TAG)).map((e) => e.id)])];
       if (ids.length) await client.call("Email/set", { destroy: ids });
       const subs = await client.call("EmailSubmission/get", { ids: null });
       if (subs.list.length) await client.call("EmailSubmission/set", { destroy: subs.list.map((s) => s.id) });
@@ -157,12 +179,15 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       buildDraftEmail({ ...content, text: "first" }, { draftsMailboxId: aRoles.drafts }),
       [],
     );
+    aliceMade.push(first.id);
     const second = await saveDraft(a, buildDraftEmail(content, { draftsMailboxId: aRoles.drafts }), [first.id]);
+    aliceMade.push(second.id);
     expect(second.threadId).toBe(first.threadId);
-    const copies = await find(a, TAG);
-    expect(copies.map((e) => e.id)).toEqual([second.id]);
-    expect(copies[0]?.keywords).toEqual({ $draft: true, $seen: true });
-    const structure = JSON.stringify(copies[0]?.bodyStructure);
+    const copies = await read(a, [first.id, second.id]);
+    expect(copies.notFound).toEqual([first.id]);
+    expect(copies.list.map((e) => e.id)).toEqual([second.id]);
+    expect(copies.list[0]?.keywords).toEqual({ $draft: true, $seen: true });
+    const structure = JSON.stringify(copies.list[0]?.bodyStructure);
     expect(structure).toMatch(
       /multipart\/mixed.*multipart\/alternative.*text\/plain.*multipart\/related.*text\/html.*image\/png.*dot@postern.*notes\.txt/,
     );
@@ -173,13 +198,14 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       draftsMailboxId: aRoles.drafts,
       sentMailboxId: aRoles.sent,
     });
-    aliceSent = (await find(a, TAG))[0]!;
+    aliceSent = (await read(a, [second.id])).list[0]!;
     expect(aliceSent.mailboxIds).toEqual({ [aRoles.sent]: true });
     expect(aliceSent.keywords["$draft"]).toBeUndefined();
   });
 
   it("reaches bob with the same bytes", async () => {
     bobCopy = await waitFor(async () => (await find(b, TAG))[0], "bob's copy");
+    bobMade.push(bobCopy.id);
     expect(bobCopy.mailboxIds).toEqual({ [bRoles.inbox]: true });
     const files = new Map<string, string>();
     for (const part of bobCopy.attachments ?? []) {
@@ -212,6 +238,7 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       ),
       [],
     );
+    bobMade.push(bobDraft.id);
     await submitDraft(b, {
       emailId: bobDraft.id,
       identityId: bobIdentity,
@@ -222,6 +249,7 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       async () => (await find(a, TAG)).find((e) => e.mailboxIds[aRoles.inbox]),
       "the reply at alice's",
     );
+    aliceMade.push(aliceGotReply.id);
     expect(aliceGotReply.threadId).toBe(aliceSent.threadId);
 
     const forward = threadingHeaders(aliceSent);
@@ -245,6 +273,7 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       ),
       [],
     );
+    aliceMade.push(fwd.id);
     await submitDraft(a, {
       emailId: fwd.id,
       identityId: aliceIdentity,
@@ -255,12 +284,13 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       const list = await find(b, TAG);
       return list.length === 3 ? list : undefined;
     }, "the forward at bob's");
+    bobMade.push(...bobAll.map((e) => e.id));
     expect(new Set(bobAll.map((e) => e.threadId))).toEqual(new Set([bobCopy.threadId]));
     const bobForward = bobAll.find((e) => e.subject?.startsWith("Fwd:"))!;
     expect((bobForward.attachments ?? []).map((p) => p.name).sort()).toEqual(["dot.png", "notes.txt"]);
-    const aliceAll = await find(a, TAG);
-    expect(aliceAll).toHaveLength(3);
-    expect(new Set(aliceAll.map((e) => e.threadId))).toEqual(new Set([aliceSent.threadId]));
+    // Exactly alice's three copies, in one conversation: her sent message, bob's reply, her forward.
+    const aliceThread = (await a.call("Thread/get", { ids: [aliceSent.threadId] })).list[0];
+    expect(new Set(aliceThread?.emailIds)).toEqual(new Set([aliceSent.id, aliceGotReply.id, fwd.id]));
   });
 
   it("sends nothing for a draft that is never submitted (what Undo leaves)", async () => {
@@ -281,8 +311,38 @@ describe.skipIf(!live)("against the dev Stalwart: compose and send", () => {
       ),
       [],
     );
+    aliceMade.push(held.id);
     await new Promise((r) => setTimeout(r, 1500));
-    expect((await find(b, TAG)).some((e) => e.subject?.endsWith("held"))).toBe(false);
+    // Every message in bob's account, not a search, so a lagging index cannot hide an arrival.
+    const bobMail = await b.email.queryAndGet({}, { properties: ["subject"] });
+    expect(bobMail.list.some((e) => e.subject === `${TAG} held`)).toBe(false);
     await destroyDrafts(a, [held.id]);
+  });
+
+  it("reads a just-saved draft back while the search index is behind", async () => {
+    // 200 new messages in bob's account just before alice's save keep
+    // Stalwart's search index behind for a moment, so a subject search for the
+    // new draft usually comes back empty. Read by id, it is always there. The
+    // rounds make a read by search fail almost every run.
+    const backlog: Id[] = [];
+    const drafts: Id[] = [];
+    try {
+      for (let round = 0; round < 3; round++) {
+        const create = Object.fromEntries(
+          Array.from({ length: 200 }, (_, n) => [`n${n}`, plainDraft(bob, `${TAG} backlog ${n}`, bRoles.drafts)]),
+        );
+        const made = await b.call("Email/set", { create });
+        backlog.push(...Object.values(made.created ?? {}).map((e) => e.id));
+        expect(backlog).toHaveLength(200 * (round + 1));
+        const draft = await saveDraft(a, plainDraft(alice, `${TAG} behind ${round}`, aRoles.drafts), []);
+        drafts.push(draft.id);
+        const { list } = await read(a, [draft.id]);
+        expect(list.map((e) => e.subject)).toEqual([`${TAG} behind ${round}`]);
+        expect(list[0]?.mailboxIds).toEqual({ [aRoles.drafts]: true });
+      }
+    } finally {
+      for (let i = 0; i < backlog.length; i += 200) await b.call("Email/set", { destroy: backlog.slice(i, i + 200) });
+      await destroyDrafts(a, drafts);
+    }
   });
 });
