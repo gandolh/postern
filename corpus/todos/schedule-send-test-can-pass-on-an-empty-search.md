@@ -1,11 +1,13 @@
 ---
 title: A schedule-send test can pass on an empty search
 created: 2026-11-19
-status: open
+status: promoted
 tags: [tests, dev-stalwart]
 ---
 
 # A schedule-send test can pass on an empty search
+
+> Promoted to [brief 06](../briefs/todo/06-the-schedule-send-test-checks-what-it-scheduled.md) on 2026-11-19.
 
 Found by brief 05 (2026-11-19). `web/test/integration/schedule-send.test.ts:123`
 calls `(await find(a, TAG)).every(...)` right after scheduling. Stalwart's
