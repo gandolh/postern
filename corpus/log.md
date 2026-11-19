@@ -668,3 +668,14 @@ account and reads the draft back by id; with the old read by search it failed 19
 After the fix: 20 of 20 alone, 15 of 15 beside a check, three full checks green with the
 local Stalwart up. The app reads its own writes by mailbox and keyword, not by search, so it
 is unaffected. Brief 05 done; no deploy.
+
+## [2026-11-19] incident | The schedule-send test could pass on an empty search
+`schedule-send.test.ts` checked `(await find(a, TAG)).every(...)` right after scheduling;
+with Stalwart's search index behind, the list was empty and `every` passed without checking.
+**Fix.** `1e4a507`: it reads the two drafts by id (and fails on a missing id), reads bob's
+Inbox by `inMailbox` for the two "nothing arrived" checks, and records every id it makes so
+the sweep does not depend on the index (a lagging sweep had left two messages in bob's Inbox
+and failed the next compose-send run). With the drafts written to the Inbox instead of Drafts,
+the test fails; put back, 10 of 10 runs pass, then `npm run check` exit 0 with Stalwart up
+(1,322 tests) and with `CI=1` without it. No other integration test had the shape. Test only,
+no deploy. By [brief 06](briefs/done/06-the-schedule-send-test-checks-what-it-scheduled.md).

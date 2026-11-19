@@ -4,7 +4,7 @@
 
 **Before you start:** run `brief-board guide` (the repo's `CLAUDE.md` says so).
 
-Promoted 2026-11-19 by the controller (a test fix with one obvious shape), from the todo [schedule-send-test-can-pass-on-an-empty-search](../../todos/schedule-send-test-can-pass-on-an-empty-search.md).
+Promoted 2026-11-19 by the controller (a test fix with one obvious shape), from the todo `todos/schedule-send-test-can-pass-on-an-empty-search.md` (deleted at closeout).
 
 ## Context
 
@@ -28,3 +28,19 @@ Promoted 2026-11-19 by the controller (a test fix with one obvious shape), from 
 
 - [ ] The loop above; `npm run check` exit 0 (CI=1 without Stalwart, as brief 05's controller ran it); `bash corpus/lint.sh` OK.
 - [ ] End move `done` (test-only, nothing to deploy).
+
+## Outcome (2026-11-19)
+
+Done on `main`, local commit `1e4a507`; test only, no deploy (board: Done).
+
+- The test reads its two drafts by id (`Email/get`, failing on a missing id) and checks
+  bob's Inbox by `inMailbox` for "nothing arrived yet" and "only the kept one". It
+  records every id it makes (alice's drafts, bob's copy) so the sweep does not rely on
+  the search index; the index-behind sweep had left two messages in bob's Inbox and made
+  the next compose-send run fail on its count check.
+- Seen red: with the drafts built into the Inbox instead of Drafts, the test fails
+  (`expected undefined to be true`); put back, it passes.
+- Loop: 10 of 10 alone, twice (before and after the sweep fix). `npm run check` exit 0
+  with Stalwart up (1,322 tests) and `CI=1` without it (33 skipped).
+- Twins: none. compose-send was fixed by brief 05; list-actions has only `rows.find` on
+  data it did not just write.

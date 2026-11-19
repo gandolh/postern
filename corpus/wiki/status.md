@@ -74,7 +74,9 @@ on 2026-11-02 (see [log.md](../log.md)).
 - **The compose-send integration tests** (2026-11-19). They failed now and then
   because they read a fresh draft through Stalwart's search index, which trails
   writes; they read by id now, with a regression test. Tests only, nothing to
-  deploy ([gmail-on-jmap.md](gmail-on-jmap.md), "Search trails writes").
+  deploy ([gmail-on-jmap.md](gmail-on-jmap.md), "Search trails writes"). The
+  schedule-send test had the same shape (a `find(...).every(...)` that passed on
+  an empty list) and reads by id too (2026-11-19, brief 06).
 
 ## Owner steps
 
