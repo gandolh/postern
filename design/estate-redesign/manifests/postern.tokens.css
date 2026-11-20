@@ -1,0 +1,183 @@
+/* Postern, the reading desk: a drop-in for web/src/styles/index.css. The @theme block below replaces the file's own;
+   values are light-dark(light, dark) pairs, the way that file does it (there is no separate [data-theme="dark"] block),
+   so color-scheme on <html> resolves them. Only colour values changed; every name is the app's own. The :root block
+   after it updates the layout variables in the file's @layer base. */
+@theme static {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --animate-*: initial;
+  --breakpoint-sm: 37.5rem;
+
+  /* ---- Colour: surfaces ------------------------------------------------ */
+  /* The page behind the navigation and top bar: limestone. */
+  --color-canvas: light-dark(#e8ebe7, #0d110f);
+  /* The main panel, where the list and conversations sit. */
+  --color-surface: light-dark(#ffffff, #1d2421);
+  /* Menus, popovers, dialogs. */
+  --color-surface-raised: light-dark(#ffffff, #262e2a);
+  /* Wells and inputs on the canvas. */
+  --color-surface-sunken: light-dark(#e1e5e0, #121714);
+  /* Hover on any row, nav item or quiet button. */
+  --color-hover: light-dark(#dbe0db, #27302b);
+  /* Pressed. */
+  --color-active: light-dark(#cfd6d0, #313c36);
+
+  /* ---- Colour: text ---------------------------------------------------- */
+  --color-text: light-dark(#18201c, #e3e9e5);
+  --color-text-muted: light-dark(#4e5853, #aab5af);
+  /* Placeholders and tertiary text; still 4.5:1. */
+  --color-text-subtle: light-dark(#5d6862, #9aa59f);
+
+  /* ---- Colour: lines --------------------------------------------------- */
+  --color-border: light-dark(#c4ccc6, #3b4641);
+  /* Input outlines and anything that must be seen (3:1). */
+  --color-border-strong: light-dark(#7d8882, #76827b);
+
+  /* ---- Colour: the accent (patina) ------------------------------------- */
+  --color-accent: light-dark(#1c6a57, #72cbae);
+  --color-accent-hover: light-dark(#155444, #8ed8bf);
+  --color-on-accent: light-dark(#ffffff, #062a20);
+  /* The selected label in the navigation, chips, soft buttons. */
+  --color-accent-soft: light-dark(#d5ebe2, #1f3d33);
+  --color-accent-soft-hover: light-dark(#c6e3d7, #26493d);
+  --color-on-accent-soft: light-dark(#0e4537, #b4ead7);
+  --color-focus: light-dark(#1c6a57, #72cbae);
+  --color-selection: light-dark(#c6e3d7, #2b5547);
+
+  /* ---- Colour: meaning ------------------------------------------------- */
+  /* Star: brass. */
+  --color-star: light-dark(#a86a00, #e9b949);
+  --color-danger: light-dark(#a8352b, #f2998d);
+  --color-danger-soft: light-dark(#f9e3e0, #3b1f1b);
+  --color-warning-soft: light-dark(#fbeed3, #3a2e14);
+  --color-on-warning-soft: light-dark(#5a3b00, #f6dda6);
+
+  /* ---- Colour: list rows ------------------------------------ */
+  --color-row: var(--color-surface);
+  --color-row-read: light-dark(#f4f6f3, #171d1a);
+  --color-row-hover: light-dark(#edf1ec, #232b27);
+  --color-row-selected: light-dark(#d5ebe2, #1f3d33);
+
+  /* ---- Colour: toasts and tooltips (inverse) --------------------------- */
+  --color-inverse: light-dark(#1f2924, #e3e9e5);
+  --color-on-inverse: light-dark(#eef3f0, #18201c);
+  --color-inverse-accent: light-dark(#8cd9bf, #1c6a57);
+
+  /* ---- Colour: loading ------------------------------------------------- */
+  --color-skeleton: light-dark(#e3e8e4, #26302b);
+  --color-skeleton-shine: light-dark(#eef2ef, #2e3833);
+  --color-scrim: light-dark(rgb(17 21 19 / 0.32), rgb(0 0 0 / 0.55));
+
+  --font-sans: "Atkinson Hyperlegible Next Variable", "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Fixed rem scale, ratio ~1.14. */
+  --text-xs: 0.75rem; /* 12px: counts, captions */
+  --text-sm: 0.8125rem; /* 13px: secondary lines, chips */
+  --text-md: 0.875rem; /* 14px: the UI and list rows */
+  --text-lg: 1rem; /* 16px: message bodies, inputs */
+  --text-xl: 1.25rem; /* 20px: the wordmark, panel titles */
+  --text-2xl: 1.5rem; /* 24px: page titles, sign-in */
+  /* Line heights per size (board: 12/16, 13/18, 14/20, 16/24, 20/28, 24/32). */
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.125rem;
+  --text-md--line-height: 1.25rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
+  --leading-tight: 1.25;
+  --leading-normal: 1.45;
+
+  /* ---- Shape ----------------------------------------------------------- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-pill: 999px;
+
+  /* ---- Depth ----------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.5));
+  --shadow-md:
+    0 2px 6px light-dark(rgb(24 32 28 / 0.12), rgb(0 0 0 / 0.45)),
+    0 1px 2px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
+  --shadow-lg:
+    0 8px 24px light-dark(rgb(24 32 28 / 0.16), rgb(0 0 0 / 0.55)),
+    0 2px 6px light-dark(rgb(24 32 28 / 0.1), rgb(0 0 0 / 0.4));
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-skeleton: skeleton-shine 1.6s linear infinite;
+
+  @keyframes skeleton-shine {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+
+  --animate-compose-in: compose-in var(--duration-normal) var(--ease-out);
+
+  @keyframes compose-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+
+  /* ---- Stacking: one scale, in the order the layers stack ------------------ */
+  --z-index-above: 1;
+  --z-index-header: 2;
+  --z-index-sticky: 3;
+  --z-index-inline: 8;
+  --z-index-card: 20;
+  --z-index-scrim: 40;
+  --z-index-drawer: 45;
+  --z-index-tooltip: 50;
+  --z-index-compose: 55;
+  --z-index-popup: 60;
+  --z-index-overlay: 70;
+  --z-index-menu: 80;
+  --z-index-skip: 100;
+  --z-index-modal: 200;
+
+  /* ---- Keyframes: motion-safe:animate-* ------------------------------------ */
+  --animate-pop: pop var(--duration-normal) var(--ease-out);
+  --animate-toast-in: toast-in var(--duration-normal) var(--ease-out);
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
+}
+
+/* Layout variables in the app's @layer base :root (the board's measurements, changed or new). */
+:root {
+  --nav-width: 15rem; /* was 16rem: the labelled navigation is 240 px */
+  --row-height: 4.5rem; /* was 3rem: three-line rows, 72 px, 6 px padding; a two-line subject grows the row (measured rows) */
+  --list-width: 27.5rem; /* new: the list island at 1280, 440 px */
+  --bottombar-height: 4rem; /* new: the phone's bottom bar, plus the gesture inset */
+  --nav-item-height: 2.25rem; /* was 2rem */
+  --topbar-height: 3.5rem; /* was 4rem: 56 px, with a 44 px search pill */
+  --lhead-height: 3rem; /* new: the merged list head, 48 px */
+}
+:root[data-density="comfortable"] { --row-height: 4rem; } /* 64 px, 4 px padding, snippet 12/16 */
+:root[data-density="compact"] { --row-height: 3.25rem; } /* 52 px, no snippet line */

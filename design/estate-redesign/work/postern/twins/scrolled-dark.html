@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postern scrolled, proposed (dark twin)</title>
+<meta name="description" content="A plain-HTML twin of the board comp, for the local Floor checks.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400&amp;family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&amp;display=swap">
+<style>
+/* Hallmark · shape: app screen · genre: webmail client · theme: brand · redesign: full
+ * paper: #e8ebe7 limestone grey · surface: absolute · accent: #1c6a57 patina green · display: Atkinson Hyperlegible Next · body: Atkinson Hyperlegible Next
+ * nav: kept (top bar, 240 px labelled navigation with nested labels and counts, phone bottom bar Inbox Starred Sent Labels) · signature: the unread dot and the open row joined to the reading pane · states: empty label, connection lost, labels failed, loading rows, empty pane, send failed, discard confirm
+ * axes: green-tinted neutrals/humanist sans with a mono for keys/one patina green · posture: restrained · modes: light+dark · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: V, the green neutrals and Atkinson are today's, so the new things are the unread dot, the three-line row and the pane's quiet head band */
+/* Hallmark · answered F4 · one filled accent button per screen: Compose on the list and the conversation, Send in the composer; Reply, Reply all and Forward are outlined */
+/* Hallmark · waive 24b · rows pad 10px and the message header gaps of 6 and 10 are off the 4px scale · half steps so 20px icons centre in 44px boxes and the three-line row keeps its 80px minimum */
+/* Hallmark · waive 72 · .l3 and .sn snippets run 150 to 170px past their row box · the overflow is clipped and faded by a mask over its last 24px, so nothing meets the edge and no ellipsis is drawn */
+/* Hallmark · waive 7b · surface, row and on-accent are #ffffff against #e8ebe7 and #f4f6f3 neutrals · white is today's surface and the read row's step down needs it, with every neutral around it tinted green */
+[data-theme="light"]{color-scheme:light;--color-canvas:#e8ebe7;--color-surface:#ffffff;--color-surface-raised:#ffffff;--color-surface-sunken:#e1e5e0;--color-hover:#dbe0db;--color-active:#cfd6d0;--color-text:#18201c;--color-text-muted:#4e5853;--color-text-subtle:#5d6862;--color-border:#c4ccc6;--color-border-strong:#7d8882;--color-accent:#1c6a57;--color-accent-hover:#155444;--color-on-accent:#ffffff;--color-accent-soft:#d5ebe2;--color-accent-soft-hover:#c6e3d7;--color-on-accent-soft:#0e4537;--color-focus:#1c6a57;--color-selection:#c6e3d7;--color-star:#a86a00;--color-danger:#a8352b;--color-danger-soft:#f9e3e0;--color-warning-soft:#fbeed3;--color-on-warning-soft:#5a3b00;--color-row:#ffffff;--color-row-read:#f4f6f3;--color-row-hover:#edf1ec;--color-row-selected:#d5ebe2;--color-inverse:#1f2924;--color-on-inverse:#eef3f0;--color-inverse-accent:#8cd9bf;--color-skeleton:#e3e8e4;--color-skeleton-shine:#eef2ef;--color-scrim:rgb(17 21 19 / 0.32);--color-accent-ink:var(--color-on-accent);--font-sans:'Atkinson Hyperlegible Next',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--font-mono:'Atkinson Hyperlegible Mono',ui-monospace,Menlo,Consolas,monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:999px;--shadow-sm:0 1px 2px rgb(24 32 28 / .12);--shadow-md:0 2px 6px rgb(24 32 28 / .12),0 1px 2px rgb(24 32 28 / .1);--shadow-lg:0 8px 24px rgb(24 32 28 / .16),0 2px 6px rgb(24 32 28 / .1);}
+[data-theme="dark"]{color-scheme:dark;--color-canvas:#0d110f;--color-surface:#1d2421;--color-surface-raised:#262e2a;--color-surface-sunken:#121714;--color-hover:#27302b;--color-active:#313c36;--color-text:#e3e9e5;--color-text-muted:#aab5af;--color-text-subtle:#9aa59f;--color-border:#3b4641;--color-border-strong:#76827b;--color-accent:#72cbae;--color-accent-hover:#8ed8bf;--color-on-accent:#062a20;--color-accent-soft:#1f3d33;--color-accent-soft-hover:#26493d;--color-on-accent-soft:#b4ead7;--color-focus:#72cbae;--color-selection:#2b5547;--color-star:#e9b949;--color-danger:#f2998d;--color-danger-soft:#3b1f1b;--color-warning-soft:#3a2e14;--color-on-warning-soft:#f6dda6;--color-row:#1d2421;--color-row-read:#171d1a;--color-row-hover:#232b27;--color-row-selected:#1f3d33;--color-inverse:#e3e9e5;--color-on-inverse:#18201c;--color-inverse-accent:#1c6a57;--color-skeleton:#26302b;--color-skeleton-shine:#2e3833;--color-scrim:rgb(0 0 0 / 0.55);--color-accent-ink:var(--color-on-accent);--font-sans:'Atkinson Hyperlegible Next',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--font-mono:'Atkinson Hyperlegible Mono',ui-monospace,Menlo,Consolas,monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:999px;--shadow-sm:0 1px 2px rgb(0 0 0 / .5);--shadow-md:0 2px 6px rgb(0 0 0 / .45),0 1px 2px rgb(0 0 0 / .4);--shadow-lg:0 8px 24px rgb(0 0 0 / .55),0 2px 6px rgb(0 0 0 / .4);}
+
+html,body{overflow-x:clip}
+.pn,.pn *{box-sizing:border-box}
+.pn{container:page/inline-size;position:relative;background:var(--color-canvas);color:var(--color-text);font-family:var(--font-sans);font-size:14px;line-height:20px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;overflow-x:clip;scrollbar-color:var(--color-border-strong) transparent;caret-color:var(--color-accent)}
+.pn ul{list-style:none;margin:0;padding:0}
+.pn a{color:inherit;text-decoration:none}
+.pn button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.pn p,.pn h1,.pn h2{margin:0}
+.pn h1,.pn h2{text-wrap:balance}
+.pn [aria-disabled="true"],.pn :disabled{background:var(--color-surface-sunken);color:var(--color-text-subtle);cursor:not-allowed}
+.pn ::selection{background:var(--color-selection);color:var(--color-text)}
+.pn .ic{flex:none;display:block}
+.pn .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.pn .grow{flex:1}
+:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.pn .icb{width:40px;height:40px;border-radius:var(--radius-pill);display:grid;place-items:center;color:var(--color-text-muted);flex:none}
+.pn .icb:hover{background:var(--color-hover)}.pn .icb:active{background:var(--color-active)}
+.pn .island{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0;position:relative}
+/* top bar */
+.pn .top{height:56px;display:flex;align-items:center;gap:8px;padding:0 16px 0 8px;background:var(--color-canvas)}
+.pn .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;line-height:28px;padding:0 8px;width:200px;flex:none}
+.pn .brand svg{width:28px;height:28px}.pn .mk1{fill:var(--color-accent)}.pn .mk2{fill:var(--color-canvas)}
+.pn .search{flex:1;min-width:0;max-width:720px;height:44px;border-radius:var(--radius-xl);background:var(--color-surface);border:1px solid var(--color-border-strong);display:flex;align-items:center;gap:12px;padding:0 4px 0 16px;color:var(--color-text-muted);margin-left:8px;position:relative}
+.pn .search input{flex:1;min-width:0;border:0;background:none;font:400 16px/24px var(--font-sans);color:var(--color-text);outline:0;height:40px}
+.pn .search input::placeholder{color:var(--color-text-subtle);opacity:1}
+.pn .search:focus-within{outline:2px solid var(--color-focus);outline-offset:2px}
+.pn .srl{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.pn .avatar{width:32px;height:32px;border-radius:var(--radius-pill);background:var(--color-accent);color:var(--color-on-accent);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none;margin-left:8px}
+/* the desk */
+.pn .dk{display:grid;grid-template-columns:240px 440px minmax(0,1fr);gap:8px;padding:0 8px 8px;height:var(--dh,744px);position:relative}
+.pn .nav{display:flex;flex-direction:column;overflow:hidden;padding-bottom:4px;min-height:0}
+.pn .compose{display:flex;align-items:center;gap:12px;height:48px;padding:0 24px;border-radius:var(--radius-lg);background:var(--color-accent);color:var(--color-on-accent);font-weight:700;align-self:flex-start;margin:0 0 12px;box-shadow:var(--shadow-sm)}
+.pn .compose:hover{background:var(--color-accent-hover)}
+.pn .ni{display:flex;align-items:center;gap:16px;height:36px;padding:0 12px;border-radius:var(--radius-md);color:var(--color-text)}
+.pn .ni:hover{background:var(--color-hover)}
+.pn .ni .ic{color:var(--color-text-muted)}
+.pn .ni[aria-current="page"]{background:var(--color-accent-soft);color:var(--color-on-accent-soft);font-weight:700}
+.pn .ni[aria-current="page"] .ic{color:var(--color-on-accent-soft)}
+.pn .ni.strong{font-weight:700}
+.pn .nl{flex:1;min-width:0;white-space:nowrap}
+.pn .nc{font-size:12px;line-height:16px;color:var(--color-text-muted);font-weight:500}
+.pn .ni[aria-current="page"] .nc{color:var(--color-on-accent-soft);font-weight:700}
+.pn .nhead{font-size:14px;line-height:20px;font-weight:700;color:var(--color-text-muted);padding:20px 12px 6px}
+.pn .lab{position:relative}.pn .labs .ni{padding-left:26px}
+.pn .chev{position:absolute;left:2px;top:6px;width:24px;height:24px;z-index:1;display:grid;place-items:center;color:var(--color-text-muted);border-radius:var(--radius-pill)}
+.pn .sub2 .ni{padding-left:46px}
+.pn .navfoot{margin-top:auto;padding-top:8px}
+/* list island */
+.pn .list{display:flex;flex-direction:column}
+.pn .lhead{display:flex;align-items:center;height:48px;padding:0 4px 0 4px;border-bottom:1px solid var(--color-border);flex:none}
+.pn .lhead h1{font-size:20px;line-height:28px;font-weight:700;margin-left:4px}
+.pn .lhead .cnt{flex:1;text-align:right;font-size:12px;line-height:16px;color:var(--color-text-muted);margin-right:4px;white-space:nowrap}
+.pn .cb{width:40px;height:40px;display:grid;place-items:center;flex:none;cursor:pointer}
+.pn input[type=checkbox]{appearance:none;-webkit-appearance:none;margin:0;width:18px;height:18px;border:2px solid var(--color-border-strong);border-radius:var(--radius-sm);background:var(--color-surface);cursor:pointer}
+.pn input[type=checkbox]:checked{background:var(--color-accent);border-color:var(--color-accent);position:relative}
+.pn input[type=checkbox]:checked::after{content:"";position:absolute;left:4px;top:0;width:4px;height:9px;border:solid var(--color-on-accent);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.pn .row.chk{background:var(--color-row-selected)}
+.pn .lhead.bulk{gap:0}.pn .lhead.bulk .grow{flex:1}
+.pn .lhead .lnk{color:var(--color-accent);font-weight:700;font-size:13px;line-height:18px;padding:0 8px;white-space:nowrap}
+.pn .selchev{width:32px;height:40px;display:grid;place-items:center;color:var(--color-text-muted)}
+.pn .rows{overflow:hidden;flex:1;min-height:0}
+.pn .row{display:grid;grid-template-columns:40px minmax(0,1fr) 36px;min-height:72px;border-bottom:1px solid var(--color-border);background:var(--color-row);padding:6px 8px 6px 4px;position:relative;align-items:center}
+.pn .row:hover{background:var(--color-row-hover)}
+.pn .row.read{background:var(--color-row-read)}
+.pn .row.sel{background:var(--color-row-selected);box-shadow:inset 3px 0 0 var(--color-accent)}
+.pn .row.sel input[type=checkbox]{border-color:var(--color-text-muted);background:var(--color-surface)}
+.pn .row .cb{align-self:start;margin-top:0;height:44px}
+.pn .rb{display:flex;flex-direction:column;gap:0;padding:0 4px 0 2px;min-width:0;position:relative}
+.pn .l1{display:flex;align-items:center;gap:6px;min-width:0;height:20px}
+.pn .dot{position:absolute;left:35px;top:12px;width:8px;height:8px;border-radius:var(--radius-pill);background:var(--color-accent)}
+.pn .cup{display:inline-flex;vertical-align:-2px;color:var(--color-text-muted)}
+.pn .snd{flex:1;min-width:0;white-space:nowrap;overflow:hidden;font-weight:700;-webkit-mask-image:linear-gradient(to right,var(--color-text) calc(100% - 16px),transparent);mask-image:linear-gradient(to right,var(--color-text) calc(100% - 16px),transparent)}
+.pn .row.read .snd,.pn .row.part .snd{font-weight:400}
+.pn .snd b{font-weight:700}
+.pn .snd .n{font-weight:400;color:var(--color-text-muted)}
+.pn .snd .dr{color:var(--color-danger);font-weight:500}
+.pn .date{font-size:12px;line-height:16px;font-weight:700;flex:none;margin-left:6px}
+.pn .row.read .date{font-weight:400;color:var(--color-text-muted)}
+.pn .clipin{display:grid;color:var(--color-text-muted);flex:none}
+.pn .l2{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.pn .sub{flex:1;min-width:0;font-weight:700;overflow-wrap:anywhere;text-wrap:pretty}
+.pn .row.read .sub{font-weight:400}
+.pn .chip{flex:none;font-size:12px;line-height:16px;padding:1px 7px;border-radius:var(--radius-md);background:var(--color-surface-sunken);border:1px solid var(--color-border);color:var(--color-text-muted);margin-top:1px}
+.pn .row.sel .chip{background:var(--color-surface)}
+.pn .l3{font-size:13px;line-height:18px;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(to right,var(--color-text) calc(100% - 24px),transparent);mask-image:linear-gradient(to right,var(--color-text) calc(100% - 24px),transparent)}
+.pn .rc{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;align-self:start;gap:0}
+.pn .rbtn,.pn .cliprc{width:28px;height:28px;display:grid;place-items:center;color:var(--color-text-muted);border-radius:var(--radius-md)}
+.pn .rbtn .ic{width:18px;height:18px}.pn .cliprc .ic{width:16px;height:16px}
+.pn .rbtn.star.on{color:var(--color-star)}.pn .rbtn.star.on .ic{fill:currentColor}
+.pn .rbtn:hover{background:var(--color-hover)}
+.pn .row.skel{min-height:72px;display:grid;grid-template-columns:40px minmax(0,1fr) 36px}
+.pn .sk{display:flex;flex-direction:column;gap:10px;padding:6px 0 6px 16px}
+.pn .sk i{display:block;height:10px;border-radius:5px;background:var(--color-skeleton)}
+/* the pane */
+.pn .pane{display:flex;flex-direction:column}
+.pn .phead{background:var(--color-row-read);border-bottom:1px solid var(--color-border);box-shadow:inset 0 3px 0 var(--color-accent-soft);flex:none}
+.pn .ptb{display:flex;align-items:center;height:52px;padding:3px 12px 0 8px;gap:2px}
+.pn .ptb .div{width:1px;height:20px;background:var(--color-border-strong);margin:0 6px}
+.pn .phead h2{padding:4px 20px 14px;font-size:20px;line-height:28px;font-weight:700}
+.pn .pbody{overflow:hidden;flex:1;min-height:0}
+.pn .cm{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;padding:12px 20px;border-bottom:1px solid var(--color-border);background:var(--color-surface)}
+.pn .cm:hover{background:var(--color-row-hover)}
+.pn .cmb{display:flex;flex-direction:column;min-width:0}
+.pn .av{width:32px;height:32px;border-radius:var(--radius-pill);background:var(--color-accent-soft);color:var(--color-on-accent-soft);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.pn .av.big{width:40px;height:40px}.pn .av.sm{width:22px;height:22px;font-size:12px}
+.pn .who{display:flex;align-items:baseline;gap:8px;min-width:0}
+.pn .cm .nm{font-weight:700;flex:none}
+.pn .ad{font-size:13px;line-height:18px;color:var(--color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(to right,var(--color-text) calc(100% - 16px),transparent);mask-image:linear-gradient(to right,var(--color-text) calc(100% - 16px),transparent)}
+.pn .dt{font-size:12px;line-height:16px;color:var(--color-text-muted);flex:none;white-space:nowrap}
+.pn .sn{font-size:13px;line-height:18px;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(to right,var(--color-text) calc(100% - 24px),transparent);mask-image:linear-gradient(to right,var(--color-text) calc(100% - 24px),transparent)}
+.pn .fold{display:flex;align-items:center;gap:8px;width:100%;height:52px;padding:0 20px;border-bottom:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);font-size:13px;line-height:18px}
+.pn .fold .foldn{display:grid;place-items:center;width:40px;height:40px;border-radius:var(--radius-pill);border:1px solid var(--color-border-strong);background:var(--color-surface);color:var(--color-text);font-weight:600;font-size:14px}
+.pn .fold:hover{background:var(--color-row-hover)}
+.pn .om{padding:20px 20px 20px;border-bottom:1px solid var(--color-border)}
+.pn .omh{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:0 12px;align-items:start}
+.pn .omh .mid{min-width:0}
+.pn .omh .who{gap:0 6px;flex-wrap:wrap}.pn .omh .ad{flex:0 1 auto;overflow:visible;-webkit-mask-image:none;mask-image:none;white-space:nowrap}.pn .omh .nm{font-weight:700;flex:none}
+.pn .to{display:flex;align-items:center;gap:4px;height:32px;margin-top:-4px;font-size:13px;line-height:18px;color:var(--color-text-muted)}
+.pn .omh .dt{padding-top:12px}
+.pn .omh .acts{display:flex;margin:-2px -8px 0 0}
+.pn .omh .acts .icb{width:36px;height:36px}
+.pn .frame{padding:14px 0 0 52px;font-size:16px;line-height:24px;color:var(--color-text)}
+.pn .frame p{margin:0 0 14px}
+.pn .replies{display:flex;gap:8px;padding:6px 0 0 52px;flex-wrap:wrap}
+.pn .pill{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--radius-pill);border:1px solid var(--color-border-strong);background:var(--color-surface);color:var(--color-text);font-weight:500}
+.pn .pill:hover{background:var(--color-row-hover)}
+.pn .pane.empty{justify-content:flex-start;align-items:center}
+.pn .emp{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--color-text-muted);padding:96px 40px 40px}
+.pn .emp p{font-weight:700;color:var(--color-text);font-size:16px;line-height:24px}
+/* the composer */
+.pn .cw{position:fixed;right:16px;bottom:0;width:min(560px,calc(100cqw - 712px - 16px));height:520px;display:flex;flex-direction:column;background:var(--color-surface-raised);border:1px solid var(--color-border);border-bottom:0;border-radius:var(--radius-xl) var(--radius-xl) 0 0;box-shadow:var(--shadow-lg);z-index:4}
+.pn .cwh{display:flex;align-items:center;height:48px;padding:0 4px 0 20px;background:var(--color-surface-sunken);border-radius:var(--radius-xl) var(--radius-xl) 0 0;border-bottom:1px solid var(--color-border);gap:0;flex:none}
+.pn .cwh h2{flex:1;font-size:14px;line-height:20px;font-weight:700}
+.pn .cwh .icb{width:36px;height:36px}
+.pn .cf{display:flex;flex-direction:column;flex:1;min-height:0;padding:0 20px}
+.pn .cfld{display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid var(--color-border-strong)}
+.pn .cfld:focus-within,.pn .cfld.foc{border-bottom:2px solid var(--color-accent);margin-bottom:-1px}
+.pn .cfld label{width:56px;flex:none;color:var(--color-text-muted);font-size:14px}
+.pn .rcp{display:flex;align-items:center;gap:6px;flex:1;min-width:0;flex-wrap:wrap}
+.pn .rcp input,.pn .su{flex:1;min-width:24px;border:0;background:none;font:400 14px/20px var(--font-sans);color:var(--color-text);outline:0;height:44px}
+.pn .rchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 4px 0 5px;border-radius:var(--radius-pill);border:1px solid var(--color-border-strong);background:var(--color-surface);font-size:14px}
+.pn .rchip button{width:24px;height:24px;display:grid;place-items:center;border-radius:var(--radius-pill);color:var(--color-text-muted)}
+.pn .rchip button:hover{background:var(--color-hover)}
+.pn .ccb{display:flex;gap:2px;color:var(--color-text-muted)}
+.pn .ccb button{height:32px;padding:0 8px;border-radius:var(--radius-md);color:var(--color-text-muted);font-size:14px}
+.pn .ccb button:hover{background:var(--color-hover)}
+.pn .cbody{flex:1;min-height:0;padding:16px 0}
+.pn .bd{font-size:16px;line-height:24px;outline:0;min-height:100%}
+.pn .bd p{margin:0 0 8px}
+.pn .caret::after{content:"";display:inline-block;width:2px;height:20px;background:var(--color-accent);vertical-align:text-bottom}
+.pn .cdock{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px;flex:none}
+.pn .fmt{display:flex;align-items:center;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:2px 4px;background:var(--color-surface);flex-wrap:wrap}
+.pn .act{display:flex;align-items:center;gap:4px}
+.pn .send{display:inline-flex;height:48px;border-radius:var(--radius-pill);background:var(--color-accent);color:var(--color-on-accent);margin-right:8px;overflow:hidden}
+.pn .sbtn{padding:0 24px 0 28px;font-weight:700;font-size:14px}
+.pn .sdrop{width:48px;display:grid;place-items:center;border-left:1px solid var(--color-on-accent)}
+.pn .send:hover{background:var(--color-accent-hover)}
+.pn .icb.sq{border-radius:var(--radius-lg)}
+.pn .icb.on{background:var(--color-accent-soft);color:var(--color-on-accent-soft)}
+.pn .cph{display:none}
+/* phone chrome */
+.pn .ptop,.pn .bbar,.pn .fab,.pn .ph{display:none}
+.pn .co{display:none;position:absolute;width:22px;height:22px;border-radius:50%;background:var(--color-text);color:var(--color-canvas);font-weight:700;font-size:13px;line-height:22px;text-align:center;z-index:9}
+@container page (min-width:1200px){.pn .co{display:block}}
+/* tablet */
+@container page (min-width:900px) and (max-width:1099px){.pn .dk{grid-template-columns:200px 360px minmax(0,1fr)}.pn .brand{width:160px}.pn .cw{width:min(560px,calc(100cqw - 592px - 16px))}}
+/* phone: one island, a bottom bar, Compose above it */
+@container page (max-width:899px){
+ .pn .dk{display:none}
+ .pn .top{display:none}
+ .pn .ph{display:flex;flex-direction:column;position:relative;height:max(844px,100dvh);overflow:hidden}
+ .pn .ptop{display:flex;align-items:center;gap:4px;height:56px;padding:0 8px;flex:none}
+ .pn .ptop .search{margin:0 4px 0 0;max-width:none}
+ .pn .ptop .icb{width:44px;height:44px}.pn .ptop .avatar{width:44px;height:44px;margin-left:4px}
+ .pn .phs{flex:1;min-height:0;padding:0 8px;overflow:hidden;display:flex;flex-direction:column}
+ .pn .phs .island{flex:1;min-height:0;display:flex;flex-direction:column}
+ .pn .phs .lhead{height:48px}
+ .pn .phs .lhead .cb,.pn .phs .lhead .icb{width:44px;height:44px}
+ .pn .phs .lhead .selchev{width:44px;height:44px;margin-left:-8px}
+ .pn .phs .lhead h1{font-size:20px;line-height:28px;margin-left:0;flex:1}
+ .pn .phs .lhead .cnt{display:none}
+ .pn .phs .rows{overflow:hidden}
+ .pn .phs .rowsin{padding-bottom:calc(64px + 16px + 56px + 16px + env(safe-area-inset-bottom,0px))}
+ .pn .row{grid-template-columns:44px minmax(0,1fr) 48px;padding:6px 4px 6px 0;min-height:0}
+ .pn .row .cb{width:44px;height:44px;margin-top:0}
+ .pn .rb{padding:0 4px 0 3px}
+ .pn .l1{height:20px;gap:6px}
+ .pn .sub{font-size:16px;line-height:24px;font-weight:600}
+ .pn .row.read .sub{font-weight:400}
+ .pn .snd{font-size:14px}
+ .pn .imp,.pn .chip{display:none}
+ .pn .rbtn{width:44px;height:44px;border-radius:var(--radius-pill)}
+ .pn .rbtn .ic{width:20px;height:20px}
+ .pn .rc{padding-top:0}
+ .pn .row.sel{background:var(--color-row-read);box-shadow:none}
+ .pn .bbar{display:flex;position:absolute;left:0;right:0;bottom:0;z-index:6;height:calc(64px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--color-surface);border-top:1px solid var(--color-border);box-shadow:var(--shadow-md)}
+ .pn .bbar a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;line-height:16px;font-weight:500;color:var(--color-text-muted);min-width:0;min-height:48px}
+ .pn .bbar .pl{width:56px;height:28px;border-radius:var(--radius-pill);display:grid;place-items:center}
+ .pn .bbar a[aria-current="page"]{color:var(--color-on-accent-soft);font-weight:700}
+ .pn .bbar a[aria-current="page"] .pl{background:var(--color-accent-soft)}
+ .pn .fab{display:flex;position:absolute;right:16px;bottom:calc(64px + 16px + env(safe-area-inset-bottom,0px));z-index:7;align-items:center;gap:12px;height:56px;padding:0 20px;border-radius:var(--radius-xl);background:var(--color-accent);color:var(--color-on-accent);font-weight:700;font-size:14px;box-shadow:var(--shadow-lg)}
+ .pn .fab:hover{background:var(--color-accent-hover)}
+ .pn .co{display:none!important}
+ /* phone conversation */
+ .pn .phs .phead .ptb{height:56px;padding:0 4px;gap:0;justify-content:space-between}
+ .pn .phs .phead .ptb .icb{width:44px;height:44px}.pn .phs .phead .ptb .div{margin:0}
+ .pn .phs .phead h2{padding:4px 16px 14px;font-size:24px;line-height:32px}
+ .pn .phs .pbody{overflow:hidden}
+ .pn .cm{padding:12px 16px}
+ .pn .om{padding:16px 16px 20px}
+ .pn .omh{grid-template-columns:40px minmax(0,1fr) auto;grid-template-areas:"av nm dt" ". ad ad" ". to acts"}
+ .pn .omh .mid,.pn .omh .who{display:contents}
+ .pn .omh .av{grid-area:av}.pn .omh .nm{grid-area:nm;flex:none}.pn .omh .ad{grid-area:ad;overflow:visible;-webkit-mask-image:none;mask-image:none;white-space:normal;overflow-wrap:anywhere}
+ .pn .omh .acts{grid-area:acts;margin:0 -8px 0 0}
+ .pn .omh .to{grid-area:to;justify-self:start;min-height:44px;white-space:nowrap;padding-right:8px;margin-top:0}
+ .pn .omh .dt{grid-area:dt;align-self:center;justify-self:end;padding:0 4px 0 0}
+ .pn .omh .acts .icb{width:44px;height:44px}
+ .pn .frame{padding:14px 0 0 0}
+ .pn .replies{padding:6px 0 0 0}
+ .pn .pill{height:44px}
+ /* phone composer */
+ .pn .cph{display:flex;flex-direction:column;flex:1;min-height:0;background:var(--color-surface-raised);position:relative}
+ .pn .cph .cwh{border-radius:0;height:56px;padding:0 4px 0 16px}
+ .pn .cph .cwh .icb{width:44px;height:44px}
+ .pn .cph .cf{padding:0 16px}
+ .pn .cph .cdock{padding:0 8px calc(8px + env(safe-area-inset-bottom,0px))}
+ .pn .cph .icb{width:44px;height:44px}
+ .pn .cph .rchip{height:44px;padding:0 0 0 12px}.pn .cph .rchip .av{display:none}.pn .cph .rchip button{width:44px;height:44px}
+ .pn .cph .send{margin-right:4px}.pn .cph .sdrop{flex:none;width:48px}
+ .pn .cph .ccb button{height:44px;min-width:44px}
+ .pn .cph .send{height:48px}
+ .pn .ph.pc .phs{padding-top:8px;padding-bottom:8px}
+}
+@container page (max-width:399px){.pn .cph .act .photo{display:none}}
+@media (prefers-reduced-motion:reduce){.pn *{transition:none!important;animation:none!important}}
+body{margin:0}
+</style>
+</head>
+<body>
+<div data-theme="dark" class="pn">
+<div class="ph sc" data-s="scrolled"><header class="ptop"><div class="search" role="search"><label class="srl" for="q2">Search mail</label><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input id="q2" type="search" placeholder="Search mail" autocomplete="off"><button class="icb" type="button" aria-label="Search options"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></svg></button></div><button class="icb" type="button" aria-label="Settings"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.8l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.8v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg></button><button class="avatar" type="button" aria-label="Account">A</button></header><div class="phs"><section class="island list" aria-label="Inbox"><div class="lhead"><label class="cb"><input type="checkbox" aria-label="Select all"></label><button class="selchev" type="button" aria-label="Select"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><h1>Inbox</h1><span class="cnt">1‒17 of 2,038</span><button class="icb" type="button" aria-label="Refresh"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"></path></svg></button></div><div class="rows"><ul class="rowsin" style="margin-top:-785px"><li class="row read">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<a class="rb" href="#conversation"><span class="l1"><span class="snd">Olga, me <span class="n">(4)</span></span><span class="date">Oct 2</span></span>
+<span class="l2"><span class="sub">Re: Saturday plans</span></span>
+<span class="l3">Hello Alice, The kids say hello. I found the book you mentioned in a second-hand shop.</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Sam Rivera</span><span class="date">Oct 1</span></span>
+<span class="l2"><span class="sub">Climbing on Thursday?</span></span>
+<span class="l3">The wall has a new set of routes. Thursday at 7? Sam</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Corner Shop</span><span class="date">Sep 30</span></span>
+<span class="l2"><span class="chip">Receipts</span><span class="sub">Your bill for this month</span></span>
+<span class="l3">Hello Alice, The total includes VAT. The total includes VAT. Questions? Reply to this email</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Zoë Müller</span><span class="date">Sep 30</span></span>
+<span class="l2"><span class="sub">Café-Treffen am Samstag? <span class="cup" role="img" aria-label="hot beverage"><svg class="ic " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v2M14 2v2M6 2v2"></path><path d="M16 8h1a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8h13z"></path><path d="M18 11h1a3 3 0 0 1 0 6h-1"></path></svg></span></span></span>
+<span class="l3">Hallo Alice, hast du am Samstag Zeit für einen Kaffee? Ich kenne ein schönes Café a</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Bob Baker</span><span class="clipin" role="img" aria-label="Has attachment"><svg class="ic " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11-9.2 9.2a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.7 3.7 0 0 1 5.2 5.2l-9.2 9.2a1.8 1.8 0 0 1-2.6-2.6l8.5-8.5"></path></svg></span><span class="date">Sep 30</span></span>
+<span class="l2"><span class="sub">Cancelled: Sprint retro, Fri 30 Oct 2026 14:00 (UTC)</span></span>
+<span class="l3">Sprint retro on Friday 30 October is cancelled: we’ll fold it into Q1 planning.</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Bob Baker</span><span class="clipin" role="img" aria-label="Has attachment"><svg class="ic " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11-9.2 9.2a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.7 3.7 0 0 1 5.2 5.2l-9.2 9.2a1.8 1.8 0 0 1-2.6-2.6l8.5-8.5"></path></svg></span><span class="date">Sep 30</span></span>
+<span class="l2"><span class="sub">Invitation: Q1 planning, Thu 5 Nov 2026 10:00 (Lisbon)</span></span>
+<span class="l3">Q1 planning Thursday 5 November 2026, 10:00 to 11:30 (Lisbon) Room 2, third floor</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">The Weekly Byte</span><span class="date">Sep 30</span></span>
+<span class="l2"><span class="sub">The Weekly Byte #212: small models, big caches</span></span>
+<span class="l3">Small models, big caches * Why your cache hit rate lies to you</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row read">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<a class="rb" href="#conversation"><span class="l1"><span class="snd">Corner Shop</span><span class="date">Sep 30</span></span>
+<span class="l2"><span class="chip">Receipts</span><span class="sub">Refund processed for order #4378</span></span>
+<span class="l3">Hello Alice, Keep this email for your records. Thank you for your order. Your items are on</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Calendar</span><span class="date">Sep 29</span></span>
+<span class="l2"><span class="sub">Build #4641 passed</span></span>
+<span class="l3">Hello Alice, No action is needed. No action is needed. This is an automated message</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Luca Novak</span><span class="date">Sep 29</span></span>
+<span class="l2"><span class="chip">Work</span><span class="sub">Hiring update</span></span>
+<span class="l3">Hello Alice, I have updated the timeline accordingly. Two open q</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread part">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">me, <b>Bob</b> <span class="n">(2)</span></span><span class="date">Sep 29</span></span>
+<span class="l2"><span class="sub">Re: Lunch tomorrow?</span></span>
+<span class="l3">Yes please. 12:30? On Tue, 29 Sep 2026 11:20 UTC, Alice Archer</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread part">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd"><b>Carol</b> … <b>Dave</b>, <span class="dr">Draft</span> <span class="n">(15)</span></span><span class="date">Sep 29</span></span>
+<span class="l2"><span class="chip">Work</span><span class="sub">Re: Q4 roadmap review</span></span>
+<span class="l3">Thanks everyone. The final roadmap is on the calenda</span></a>
+<span class="rc"><button class="rbtn star on" type="button" aria-label="Starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread part">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd"><b>Pavel</b>, me <span class="n">(2)</span></span><span class="date">Sep 28</span></span>
+<span class="l2"><span class="sub">Workshop follow-up</span></span>
+<span class="l3">Hello Alice, Let us keep the scope as agreed. I have updated the ti</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Priya Raman</span><span class="clipin" role="img" aria-label="Has attachment"><svg class="ic " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11-9.2 9.2a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.7 3.7 0 0 1 5.2 5.2l-9.2 9.2a1.8 1.8 0 0 1-2.6-2.6l8.5-8.5"></path></svg></span><span class="date">Sep 28</span></span>
+<span class="l2"><span class="sub">Invitation: Book club dinner, Fri 6 Nov 2026 19:00 (UTC)</span></span>
+<span class="l3">Book club dinner Friday 6</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Hamid Jensen</span><span class="date">Sep 28</span></span>
+<span class="l2"><span class="sub">Quarterly numbers</span></span>
+<span class="l3">Hello Alice, Following up on our conversation. Following up on our c</span></a>
+<span class="rc"><button class="rbtn star on" type="button" aria-label="Starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row unread">
+<label class="cb"><input type="checkbox" aria-label="Select"></label>
+<span class="dot"><span class="vh">Unread</span></span><a class="rb" href="#conversation"><span class="l1"><span class="snd">Corner Shop</span><span class="date">Sep 28</span></span>
+<span class="l2"><span class="chip">Receipts</span><span class="sub">Your order #7777 has shipped</span></span>
+<span class="l3">Hello Alice, Thank you for your order. Keep t</span></a>
+<span class="rc"><button class="rbtn star" type="button" aria-label="Not starred"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></button><button class="rbtn imp" type="button" aria-label="Not important"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"></path></svg></button></span>
+</li><li class="row skel" aria-hidden="true"><span></span><span class="sk"><i style="width:34%"></i><i style="width:78%"></i><i style="width:92%"></i></span><span></span></li></ul></div></section></div><a class="fab" href="#compose"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg><span>Compose</span></a><nav class="bbar" aria-label="Mail"><a href="#inbox" aria-current="page"><span class="pl"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"></path><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"></path></svg></span>Inbox</a><a href="#starred"><span class="pl"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"></path></svg></span>Starred</a><a href="#sent"><span class="pl"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"></path><path d="M22 2 15 22l-4-9-9-4z"></path></svg></span>Sent</a><a href="#labels"><span class="pl"><svg class="ic " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"></path><circle cx="7.5" cy="7.5" r="1"></circle></svg></span>Labels</a></nav></div>
+</div>
+</body>
+</html>
