@@ -7,6 +7,9 @@ A webmail client for Stalwart, built on JMAP: a plain-TypeScript client (`jmap/`
 
 - `npm run dev`: the app. It needs `npm run dev:mail` (the local Stalwart) and `npm run dev:seed` first.
 - `npm run check`: typecheck, lint, format check, conventions, tests. Run it before every hand-back.
+- `npm run check` keeps going after a failing step and prints one line per step, then the end of each failure. The whole
+  output stays in `node_modules/.cache/check/last.log`, so read that log rather than running the gate again. While you
+  work, `npm run check:fast` and any test file you touched are enough; run the full gate once, after your last change.
 - `npm run check:fast`: `tsc -b`, `tsc -p web --noEmit`, then ESLint on the changed files. The Stop hook runs it.
 - `npx vitest run <file>`: one test file.
 - `npm run test:e2e`: Playwright. It builds, and needs Docker.

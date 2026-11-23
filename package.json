@@ -22,11 +22,11 @@
     "typecheck": "tsc -b && tsc -p jmap/tsconfig.test.json && tsc -p web --noEmit && tsc -p web/tsconfig.test.json && tsc -p dev && tsc -p web/e2e",
     "lint": "eslint .",
     "contrast": "node scripts/contrast.mjs",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:conventions && npm run contrast && npm test",
+    "check": "node scripts/check.mjs typecheck lint format:check check:conventions contrast test",
     "house-style:sync": "node vendor/house-style/bin/sync.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "check:conventions": "knip && depcruise web/src jmap/src && node vendor/house-style/bin/check-base-ui.mjs && node vendor/house-style/bin/check-structure.mjs",
+    "format:check": "prettier --check . --cache --cache-location node_modules/.cache/prettier-check/.prettier-cache",
+    "check:conventions": "knip && depcruise web/src jmap/src --cache node_modules/.cache/dependency-cruiser && node vendor/house-style/bin/check-base-ui.mjs && node vendor/house-style/bin/check-structure.mjs",
     "check:fast": "tsc -b && tsc -p web --noEmit && node scripts/check-fast.mjs"
   },
   "devDependencies": {

@@ -9,8 +9,9 @@ export default [
   ...houseStyle({
     root: import.meta.dirname,
     web: "web/src",
-    // Scripts run by hand: the seed and mail-server helpers. They print and read the environment directly.
-    scripts: ["dev"],
+    // Scripts run by hand: the seed and mail-server helpers, and the gate's own scripts. They print and read the
+    // environment directly.
+    scripts: ["dev", "scripts"],
     // Playwright specs and their support code: test relaxations, and no vitest rules.
     playwright: ["web/e2e/**"],
     // `fast` is the performance tests' own helper around `expect`.
