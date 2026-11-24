@@ -23,6 +23,7 @@ import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type Keybo
 import { filterLabels, labelChecks, validateLabelName, type LabelCheck } from "../actions/labels";
 import { rolesFrom } from "../actions";
 import { useJmap } from "../auth";
+import { isComposingKey } from "../lib/ime";
 import { IconButton } from "../shell/IconButton";
 import type { LabelRoute } from "../shell/router";
 import { isAllSelected, resolveConversations, scopeFor } from "./conversations";
@@ -281,6 +282,7 @@ export function LabelMenuPanel({ conversationIds, current, mode = "label", onDon
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             const [only] = shown;
+            if (isComposingKey(e)) return;
             if (e.key === "Enter" && shown.length === 1 && only !== undefined && ready) {
               e.preventDefault();
               void choose(only);

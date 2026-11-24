@@ -2,7 +2,7 @@
 // The label menu over the fake JMAP server: checkboxes with the indeterminate
 // state, applying and removing, search, "Create new", and Move to.
 
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeEmail, FakeMail, MAILBOXES, type FakeEmail } from "../actions/fakeMail";
@@ -108,6 +108,22 @@ describe("Labels (apply and remove)", () => {
     await user.type(screen.getByRole("textbox", { name: "Search labels" }), "rec");
     expect(screen.queryByRole("checkbox", { name: /Work/ })).toBeNull();
     expect(screen.getByRole("checkbox", { name: /Receipts/ })).toBeTruthy();
+  });
+
+  it("picks the only label shown on Enter, but not while the keyboard composes a word", async () => {
+    const { mail, user } = await renderMenu(two());
+    await user.click(screen.getByRole("button", { name: "Labels" }));
+    await screen.findByRole("checkbox", { name: /Work/ });
+    const search = screen.getByRole("textbox", { name: "Search labels" });
+    await user.type(search, "rec");
+    fireEvent.keyDown(search, { key: "Enter", isComposing: true });
+    fireEvent.keyDown(search, { key: "Enter", keyCode: 229 });
+    // Give a wrongly started apply time to reach the fake server.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(boxes(mail, "1")).toEqual(["a", "i"]);
+    expect(boxes(mail, "2")).toEqual(["a"]);
+    fireEvent.keyDown(search, { key: "Enter" });
+    await waitFor(() => expect(boxes(mail, "1")).toContain("j"));
   });
 
   it("creates a label from the typed text and applies it", async () => {

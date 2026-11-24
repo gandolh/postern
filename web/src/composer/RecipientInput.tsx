@@ -15,6 +15,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { isComposingKey } from "../lib/ime";
 import type { RecipientSuggestion, RecipientSource } from "./recipients";
 import type { ComposeSession, Recipient, RecipientField } from "./session";
 
@@ -132,6 +133,8 @@ export const RecipientInput = forwardRef<RecipientInputHandle, RecipientInputPro
       event.preventDefault();
       setActive((a) => (a <= 0 ? suggestions.length - 1 : a - 1));
     } else if (event.key === "Enter" || (event.key === "Tab" && !event.shiftKey && text.trim())) {
+      // The keyboard still owns this key while it composes a word.
+      if (isComposingKey(event)) return;
       if (event.ctrlKey || event.metaKey) {
         // Ctrl+Enter sends: take what is typed first.
         commit(text);

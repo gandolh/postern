@@ -87,6 +87,23 @@ describe("the composer window", () => {
     expect((to as HTMLInputElement).value).toBe("not-an-address");
   });
 
+  it("leaves Enter and Tab to the keyboard while it composes a word", async () => {
+    const { user, window } = await renderComposer();
+    const to = within(window).getByRole("combobox", { name: "To" });
+    const chips = within(window).getByRole("list", { name: "To recipients" });
+    // Only the text box's own item: no chip yet.
+    const count = () => within(chips).getAllByRole("listitem").length;
+    await user.type(to, "bob@postern.test");
+    fireEvent.keyDown(to, { key: "Enter", isComposing: true });
+    fireEvent.keyDown(to, { key: "Tab", isComposing: true });
+    fireEvent.keyDown(to, { key: "Enter", keyCode: 229 });
+    expect(count()).toBe(1);
+    expect((to as HTMLInputElement).value).toBe("bob@postern.test");
+    fireEvent.keyDown(to, { key: "Enter" });
+    expect(count()).toBe(2);
+    expect((to as HTMLInputElement).value).toBe("");
+  });
+
   it("refuses to send to an invalid address, then warns about a missing attachment", async () => {
     const { user, window } = await renderComposer();
     const to = within(window).getByRole("combobox", { name: "To" });
