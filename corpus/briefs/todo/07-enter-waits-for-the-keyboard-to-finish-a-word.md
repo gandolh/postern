@@ -4,7 +4,7 @@
 **Builder:** Sonnet.
 **Before you start:** run `brief-board guide` (the repo's `CLAUDE.md` says so).
 
-Promoted 2026-11-25 from the todo `todos/enter-waits-for-the-keyboard-to-finish-a-word.md` (modern-web-guidance
+Promoted 2026-11-24 from the todo `todos/enter-waits-for-the-keyboard-to-finish-a-word.md` (modern-web-guidance
 research of 2026-11-23 in the skills library). The todo said "unverified on a phone"; the check moves to the owner
 (below) and the fix is built now because it is one guard with no downside on a keyboard that does not compose.
 
@@ -68,6 +68,6 @@ with no `preventDefault`, when `event.nativeEvent.isComposing` is true or `event
 
 ## Owner decisions
 
-- Settled 2026-11-25 (owner): promote it.
+- Settled 2026-11-24 (owner): promote it.
 - Mine (technical): build the guard before the phone check, since it is harmless when there is no bug; Tab guarded
   together with Enter; a shared helper plus component tests.

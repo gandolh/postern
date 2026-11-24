@@ -7,7 +7,7 @@ tags: [web, phone]
 
 # Enter waits for the keyboard to finish a word
 
-Promoted 2026-11-25 to [brief 07](../briefs/todo/07-enter-waits-for-the-keyboard-to-finish-a-word.md).
+Promoted 2026-11-24 to [brief 07](../briefs/todo/07-enter-waits-for-the-keyboard-to-finish-a-word.md).
 
 From the modern-web-guidance research of 2026-11-23 (my-personal-skills, `corpus/wiki/modern-web-guidance-2026-11-23.md`
 there). Unverified on a phone: confirm it before building.
