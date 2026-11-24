@@ -10,6 +10,9 @@ Read the `base-ui` skill before UI work, then [wiki/design.md](../../corpus/wiki
 
 - Message HTML goes only into the sandboxed `<iframe>`, never into the app's DOM
   ([wiki/security.md](../../corpus/wiki/security.md)).
+- Browsers: Chrome on Android decides what to build; Safari on iPhone,
+  Firefox and desktop Safari must keep working. Before you use a platform
+  feature newer than Baseline Widely available, read the `web-platform` skill.
 - The access token lives in memory, the refresh token in `sessionStorage`, nothing in `localStorage`
   ([wiki/decisions.md](../../corpus/wiki/decisions.md)).
 - Base UI goes through the app's own wrappers, imported from subpaths. A trigger around a component
