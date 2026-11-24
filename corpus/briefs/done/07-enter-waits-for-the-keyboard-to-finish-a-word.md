@@ -71,3 +71,12 @@ with no `preventDefault`, when `event.nativeEvent.isComposing` is true or `event
 - Settled 2026-11-24 (owner): promote it.
 - Mine (technical): build the guard before the phone check, since it is harmless when there is no bug; Tab guarded
   together with Enter; a shared helper plus component tests.
+
+## Outcome (2026-11-24)
+
+- Built as specced: `isComposingKey` in `web/src/lib/ime.ts` (composing, or keyCode 229), called at the top of the Enter/Tab
+  branch in `RecipientInput` and in the label search's Enter handler (`a4e1138`). Ctrl+Enter, arrows and Escape untouched.
+- Tests: `ime.test.ts` (3 cases), one case each in `Composer.test.tsx` and `LabelMenu.test.tsx` (composing Enter, Tab and
+  keyCode 229 do nothing; a plain Enter still commits and picks). Both component tests fail with the guard removed.
+- `npm run check:fast` exit 0; `CI=1 npm run check` exit 0 (integration tests skipped, no local Stalwart).
+- Not run: the Android check, which stays the owner's. Deploy: `node cli.ts postern deploy` (static files only).

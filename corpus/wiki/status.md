@@ -1,6 +1,6 @@
 ---
 summary: Snapshot as of 2026-11-02, per area. Postern is built (foundations, reading, writing, live, settings, keyboard, PWA and security 2026-10-20; its own host 2026-10-22; Base UI 2026-10-23; conversation view off, schedule send, snooze, invite cards and a reload keeping the session 2026-10-27/28) deployed on its own host since 2026-11-02, the owner's smoke test passed 2026-11-05. The redesign "The reading desk" is built (2026-11-13, brief 04). The owner steps left (the Stalwart browser suite, screen reader, Android install and reload, real push, production's token lifetimes).
-updated: 2026-11-19
+updated: 2026-11-24
 ---
 
 # Status (2026-11-02)
@@ -125,3 +125,6 @@ Things only the owner can do, collected from the briefs as they finished.
   apart, and in DevTools (Application, Session Storage) see `postern.session`
   hold a new refresh token after each refresh, with the reload still
   signed in.
+- **Enter waits for the keyboard** (2026-11-24). Built, local on `main`, not deployed: the recipient field and the
+  label search ignore Enter and Tab while a phone keyboard composes a word (`web/src/lib/ime.ts`). Owner step: the
+  Android check after the deploy (brief 07).

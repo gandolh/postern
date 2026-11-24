@@ -689,3 +689,10 @@ The estate redesign board is a private canvas, so `design/estate-redesign/` now 
 From the modern-web-guidance research (my-personal-skills): `RecipientInput` and `LabelMenu` act on Enter with no
 composition check, unlike the global shortcuts. Unverified; the
 [todo](todos/enter-waits-for-the-keyboard-to-finish-a-word.md) starts with a check on Android.
+
+## [2026-11-24] fix | Enter and Tab wait for the keyboard to finish a word
+
+`RecipientInput` and the label menu's search now return early on a key the input method still owns
+(`event.nativeEvent.isComposing`, or keyCode 229 for Safari), through one `isComposingKey` helper in `web/src/lib/ime.ts`.
+Component tests cover both. Unverified on a phone: the owner's Android check follows the deploy. By
+[brief 07](briefs/done/07-enter-waits-for-the-keyboard-to-finish-a-word.md).
